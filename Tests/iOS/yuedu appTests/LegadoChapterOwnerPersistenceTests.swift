@@ -64,6 +64,13 @@ struct LegadoChapterOwnerPersistenceTests {
         let chapter = OnlineChapterRef(index: 0, title: "Owned", url: "https://owned.invalid/chapter")
         owner.setChapters([chapter], for: book); try await onOwner(queue) { try owner.flushReportingFailure(for: book) }
         let snapshot = try #require(try await onOwner(queue) { try owner.runtimeVariablesSnapshot(bookID: book, index: 0, url: chapter.url) })
+        let beforeGate = try Data(contentsOf: owner.fileURL(for: book))
+        await #expect(throws: CancellationError.self) {
+            _ = try await onOwner(queue) {
+                try owner.compareRuntimeVariables(expected: snapshot, variables: ["sealed": "forbidden"], claimCommit: { false })
+            }
+        }
+        #expect(try Data(contentsOf: owner.fileURL(for: book)) == beforeGate)
         #expect(try await onOwner(queue) { try owner.compareRuntimeVariables(expected: snapshot, variables: ["large": String(repeating: "x", count: 10000)]) })
         #expect(owner.chapters(for: book)?.first?.id == chapter.id)
         #expect(!owner.hasUnwrittenChanges)

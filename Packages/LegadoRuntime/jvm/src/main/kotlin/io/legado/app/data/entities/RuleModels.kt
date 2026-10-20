@@ -93,9 +93,13 @@ data class BookChapter(
     var endFragmentId: String? = null,
     var variable: String? = null,
     var imgUrl: String? = null,
+    // Explicit batch DTOs are supplied by the actual App chapter owner. Skipping
+    // only eager restoration lets index-distinct duplicate URLs keep their body
+    // identity; later URL-keyed variable accesses still require the real owner.
+    @Transient private val restorePersistentVariables: Boolean = true,
 ) : RuleDataInterface {
     init {
-        if (environment.persistence != null && bookUrl.isNotEmpty() && url.isNotEmpty())
+        if (restorePersistentVariables && environment.persistence != null && bookUrl.isNotEmpty() && url.isNotEmpty())
             variable = environment.state.restoreVariables("chapter", bookUrl, url, variable)
     }
     @delegate:Transient override val variableMap: HashMap<String, String> by lazy {

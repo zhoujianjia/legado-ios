@@ -17,11 +17,11 @@ struct CachedBookTXTExportTests {
             OnlineChapterRef(index: 3, title: "Stale", url: "https://example.test/new"),
             OnlineChapterRef(index: 9, title: "Missing", url: "https://example.test/9"),
         ]
-        try save(repository, bookID: bookID, position: 1, chapter: chapters[1], body: "first body")
-        try save(repository, bookID: bookID, position: 2, chapter: chapters[2], body: "second body")
+        try await save(repository, bookID: bookID, position: 1, chapter: chapters[1], body: "first body")
+        try await save(repository, bookID: bookID, position: 2, chapter: chapters[2], body: "second body")
         var stale = chapters[3]
         stale.url = "https://example.test/old"
-        try save(repository, bookID: bookID, position: 3, chapter: stale, body: "stale body")
+        try await save(repository, bookID: bookID, position: 3, chapter: stale, body: "stale body")
 
         let result = try await CachedBookTXTExportService.export(
             CachedBookTXTExportRequest(bookID: bookID, title: "../A:Book", author: "Author", chapters: chapters),
@@ -44,7 +44,7 @@ struct CachedBookTXTExportTests {
         let bookID = UUID()
         let chapter = OnlineChapterRef(index: 0, title: "第一章", url: "https://example.test/0")
         let html = "<p>简体中文正文。</p><p>第二段。<img src=\"https://example.test/cover\"></p>"
-        try save(repository, bookID: bookID, position: 0, chapter: chapter, body: html, rawHTML: html)
+        try await save(repository, bookID: bookID, position: 0, chapter: chapter, body: html, rawHTML: html)
         let result = try await CachedBookTXTExportService.export(
             CachedBookTXTExportRequest(bookID: bookID, title: "测试书", author: "作者", chapters: [chapter]),
             repository: repository, temporaryDirectory: directory
@@ -62,7 +62,7 @@ struct CachedBookTXTExportTests {
         let bookID = UUID()
         let chapter = OnlineChapterRef(index: 0, title: "第一章 <literal> &lt;", url: "https://example.test/plain")
         let body = "  原样保留 <标签> 与 &lt;code&gt;、&amp;。\r\n\t第二行。\n"
-        try save(repository, bookID: bookID, position: 0, chapter: chapter, body: body)
+        try await save(repository, bookID: bookID, position: 0, chapter: chapter, body: body)
         let package = try #require(repository.loadChapterPackageSync(
             bookId: bookID, chapterIndex: 0, expectedSourceURL: chapter.sanitizedContentURL,
             expectedTOCTitle: chapter.title
@@ -99,8 +99,8 @@ struct CachedBookTXTExportTests {
     private func save(
         _ repository: ChapterCacheRepository, bookID: UUID, position: Int, chapter: OnlineChapterRef,
         body: String, rawHTML: String? = nil
-    ) throws {
-        try repository.saveChapterPackageToCache(ChapterPackage(
+    ) async throws {
+        try await repository.saveChapterPackageToCache(ChapterPackage(
             bookId: bookID, chapterIndex: position, sourceURL: chapter.sanitizedContentURL,
             tocTitle: chapter.title, canonicalTitle: chapter.title, content: body,
             contentChecksum: "", rawHTMLFilename: rawHTML == nil ? nil : "\(position).raw.html", normalizedHTMLFilename: nil,

@@ -6,7 +6,8 @@ import Foundation
 extension BookSourceFetcher {
 
     func fetchChapter(
-        ref: OnlineChapterRef, bookId: UUID, source: BookSource, chapterReferer: String? = nil
+        ref: OnlineChapterRef, bookId: UUID, source: BookSource, chapterReferer: String? = nil,
+        cacheWriteGeneration: OriginalRuntimeChapterGeneration? = nil
     ) async throws
         -> String
     {
@@ -14,16 +15,20 @@ extension BookSourceFetcher {
             ref: ref,
             bookId: bookId,
             source: source,
-            chapterReferer: chapterReferer
+            chapterReferer: chapterReferer,
+            cacheWriteGeneration: cacheWriteGeneration
         )
         return package.content
     }
 
     func fetchChapterPackage(
-        ref: OnlineChapterRef, bookId: UUID, source: BookSource, chapterReferer: String? = nil
+        ref: OnlineChapterRef, bookId: UUID, source: BookSource, chapterReferer: String? = nil,
+        cacheWriteGeneration: OriginalRuntimeChapterGeneration? = nil
     ) async throws -> ChapterPackage {
+        await BookStore.queuedWritesLanded()
+        try Task.checkCancellation()
         if source.isJsSource {
-            return try await fetchMainJSChapterPackage(ref: ref, bookId: bookId, source: source)
+            return try await fetchMainJSChapterPackage(ref: ref, bookId: bookId, source: source, cacheWriteGeneration: cacheWriteGeneration)
         }
         logChapterFetchGate(ref: ref, source: source)
         guard !ref.shouldRenderAsVolumeSeparator else {
@@ -45,7 +50,8 @@ extension BookSourceFetcher {
                     ref: ref,
                     bookId: bookId,
                     source: source,
-                    chapterReferer: chapterReferer
+                    chapterReferer: chapterReferer,
+            cacheWriteGeneration: cacheWriteGeneration
                 )
             }
             group.addTask {
@@ -61,7 +67,8 @@ extension BookSourceFetcher {
     }
 
     private func fetchChapterPackageInner(
-        ref: OnlineChapterRef, bookId: UUID, source: BookSource, chapterReferer: String? = nil
+        ref: OnlineChapterRef, bookId: UUID, source: BookSource, chapterReferer: String? = nil,
+        cacheWriteGeneration: OriginalRuntimeChapterGeneration? = nil
     ) async throws
         -> ChapterPackage
     {
@@ -82,7 +89,8 @@ extension BookSourceFetcher {
             return try await fetchLegadoRuntimeChapterPackage(
                 ref: ref,
                 bookId: bookId,
-                source: source
+                source: source,
+                cacheWriteGeneration: cacheWriteGeneration
             )
         }
         // Sanitize: old TOC cache may contain HTML fragments (e.g. <a href="...">), sanitize before parsing
@@ -272,10 +280,11 @@ extension BookSourceFetcher {
             try await fetchChapterHTML(nextPageURL, "GET", nil, false)
         }
 
-        try saveChapterPackageToCache(
+        try await saveChapterPackageToCache(
             buildResult.package,
             rawHTML: buildResult.rawHTML,
-            normalizedHTML: buildResult.normalizedHTML
+            normalizedHTML: buildResult.normalizedHTML,
+            validateGrant: { try cacheWriteGeneration?.checkCacheWrite(deadline: .distantFuture) }
         )
         // #region agent log
         _dbgLog(
@@ -294,7 +303,7 @@ extension BookSourceFetcher {
         return reloaded
     }
 
-    private func fetchMainJSChapterPackage(ref: OnlineChapterRef, bookId: UUID, source: BookSource) async throws -> ChapterPackage {
+    private func fetchMainJSChapterPackage(ref: OnlineChapterRef, bookId: UUID, source: BookSource, cacheWriteGeneration: OriginalRuntimeChapterGeneration?) async throws -> ChapterPackage {
         guard !ref.shouldRenderAsVolumeSeparator else { throw FetchError.volumeSeparator(ref.title) }
         let content = try await mainJSService.content(ref: ref, source: source)
         try ChapterFetcher.shared.validateResolvedContent(content)
@@ -305,7 +314,8 @@ extension BookSourceFetcher {
             tocTitle: ref.title, canonicalTitle: nil, content: content, contentChecksum: checksum,
             rawHTMLFilename: nil, normalizedHTMLFilename: nil,
             savedAt: Date(), state: .cached, failureReason: nil)
-        try saveChapterPackageToCache(package, rawHTML: nil, normalizedHTML: nil)
+        try await saveChapterPackageToCache(package, rawHTML: nil, normalizedHTML: nil,
+            validateGrant: { try cacheWriteGeneration?.checkCacheWrite(deadline: .distantFuture) })
         guard let reloaded = loadChapterPackageSync(bookId: bookId, chapterIndex: ref.index,
             expectedSourceURL: ref.url, expectedTOCTitle: ref.title) else {
             throw ChapterCacheWriteError.verificationFailed
@@ -316,7 +326,8 @@ extension BookSourceFetcher {
     private func fetchLegadoRuntimeChapterPackage(
         ref: OnlineChapterRef,
         bookId: UUID,
-        source: BookSource
+        source: BookSource,
+        cacheWriteGeneration: OriginalRuntimeChapterGeneration?
     ) async throws -> ChapterPackage {
         logChapterFetchGate(ref: ref, source: source)
         guard !ref.shouldRenderAsVolumeSeparator else {
@@ -374,10 +385,11 @@ extension BookSourceFetcher {
             state: .cached,
             failureReason: nil
         )
-        try saveChapterPackageToCache(
+        try await saveChapterPackageToCache(
             package,
             rawHTML: html,
-            normalizedHTML: normalizedHTML
+            normalizedHTML: normalizedHTML,
+            validateGrant: { try cacheWriteGeneration?.checkCacheWrite(deadline: .distantFuture) }
         )
         guard let reloaded = loadChapterPackageSync(
             bookId: bookId,

@@ -1,4 +1,5 @@
 import Foundation
+import LegadoRuntime
 import os
 
 /// Every book's table of contents on this device: one file per book, beside the shelf.
@@ -120,7 +121,7 @@ final class BookChapterStore: @unchecked Sendable {
         dispatchPrecondition(condition: .onQueue(persistenceQueue))
         let entry = try ownerEntry(for: bookID)
         guard let chapters = entry.chapters, chapters.indices.contains(index),
-              chapters[index].index == index, chapters[index].url == url else { return nil }
+              chapters[index].index == index, chapters[index].url.utf8.elementsEqual(url.utf8) else { return nil }
         let chapter = chapters[index]
         return RuntimeVariablesSnapshot(bookID: bookID, chapterID: chapter.id, index: index, url: url,
             revision: entry.revision, variables: chapter.runtimeVariables)
@@ -131,18 +132,19 @@ final class BookChapterStore: @unchecked Sendable {
     /// this transaction. They cannot mutate this owner's candidate or be overwritten by
     /// its publication. Success acknowledges this ordered durable mutation, not a promise
     /// that a later overlapping App edit cannot replace it.
-    func compareRuntimeVariables(expected: RuntimeVariablesSnapshot, variables: [String: String]?, beforeWrite: () throws -> Void = {}) throws -> Bool {
+    func compareRuntimeVariables(expected: RuntimeVariablesSnapshot, variables: [String: String]?,
+                                 claimCommit: @Sendable () -> Bool = { true }, beforeWrite: () throws -> Void = {}) throws -> Bool {
         dispatchPrecondition(condition: .onQueue(persistenceQueue))
         let entry = try ownerEntry(for: expected.bookID)
         guard entry.revision == expected.revision, var candidate = entry.chapters,
               candidate.indices.contains(expected.index), candidate[expected.index].id == expected.chapterID,
-              candidate[expected.index].url == expected.url,
+              candidate[expected.index].url.utf8.elementsEqual(expected.url.utf8),
               candidate[expected.index].runtimeVariables == expected.variables else { return false }
         if variables == expected.variables, !entry.isDirty { return true }
         candidate[expected.index].runtimeVariables = variables
         committing = true
         defer { committing = false }
-        try write(candidate, for: expected.bookID, beforeWrite: beforeWrite)
+        try write(candidate, for: expected.bookID, beforeWrite: beforeWrite, claimCommit: claimCommit)
         let revision = variables == expected.variables ? entry.revision : state.withLock { state in
             state.nextRevision &+= 1
             return state.nextRevision
@@ -160,6 +162,48 @@ final class BookChapterStore: @unchecked Sendable {
             Self.evictLeastRecentlyUsed(in: &state)
         }
         return true
+    }
+
+    struct CachedFileUpdate: Sendable {
+        let index: Int
+        let chapterID: UUID
+        let url: String
+        let filename: String
+    }
+
+    /// One existing chapter-file transaction for the verified saved prefix. Candidate
+    /// construction/encoding stays on the library writer; a UI mutation queued later
+    /// retains the same ordering and cannot be overwritten by late publication.
+    func publishCachedFiles(bookID: UUID, updates: [CachedFileUpdate], beforeWrite: () throws -> Void) throws -> Bool {
+        dispatchPrecondition(condition: .onQueue(persistenceQueue))
+        guard updates.count <= 32, Set(updates.map(\.index)).count == updates.count else {
+            throw LegadoRuntimeError(code: "INVALID_STATE_REQUEST", message: "Cached chapter publication exceeds its grant")
+        }
+        let entry = try ownerEntry(for: bookID)
+        guard var candidate = entry.chapters else { throw LegadoRuntimeError(code: "STATE_CONFLICT", message: "The App TOC is missing") }
+        for value in updates {
+            guard candidate.indices.contains(value.index), candidate[value.index].index == value.index,
+                  candidate[value.index].id == value.chapterID, candidate[value.index].url.utf8.elementsEqual(value.url.utf8) else {
+                throw LegadoRuntimeError(code: "STATE_CONFLICT", message: "The cached chapter no longer has its granted TOC identity")
+            }
+        }
+        let changed = updates.contains { candidate[$0.index].cachedFilename != $0.filename }
+        if !changed && !entry.isDirty { try beforeWrite(); return false }
+        for value in updates { candidate[value.index].cachedFilename = value.filename }
+        committing = true; defer { committing = false }
+        try SourcePerfTrace.span("library.chapters.cachePublication", "chapters=\(candidate.count) saved=\(updates.count) main=\(Thread.isMainThread)") {
+            _ = try write(candidate, for: bookID, beforeWrite: beforeWrite)
+        }
+        let revision = state.withLock { state in state.nextRevision &+= 1; return state.nextRevision }
+        let published = Entry(chapters: candidate, isDirty: false, revision: revision)
+        ownerState.entries[bookID] = published
+        Self.touch(bookID, entry: published, in: &ownerState); Self.evictLeastRecentlyUsed(in: &ownerState)
+        state.withLock { state in
+            guard state.entries[bookID]?.revision == entry.revision else { return }
+            state.entries[bookID] = published
+            Self.touch(bookID, entry: published, in: &state); Self.evictLeastRecentlyUsed(in: &state)
+        }
+        return changed
     }
 
     /// The host reads the queue-owned list, never a partially published UI mutation.
@@ -347,11 +391,13 @@ final class BookChapterStore: @unchecked Sendable {
     }
 
     /// Returns the bytes written.
-    private func write(_ chapters: [OnlineChapterRef]?, for bookID: UUID, beforeWrite: () throws -> Void = {}) throws -> Int {
+    private func write(_ chapters: [OnlineChapterRef]?, for bookID: UUID, beforeWrite: () throws -> Void = {},
+                       claimCommit: @Sendable () -> Bool = { true }) throws -> Int {
         try beforeWrite()
         let url = fileURL(for: bookID)
         guard let chapters else {
             if FileManager.default.fileExists(atPath: url.path) {
+                guard claimCommit() else { throw CancellationError() }
                 try FileManager.default.removeItem(at: url)
             }
             return 0
@@ -359,6 +405,7 @@ final class BookChapterStore: @unchecked Sendable {
         try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
         let data = try JSONEncoder().encode(chapters)
         try beforeWrite()
+        guard claimCommit() else { throw CancellationError() }
         try data.write(to: url, options: .atomic)
         return data.count
     }

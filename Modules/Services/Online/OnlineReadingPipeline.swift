@@ -1,4 +1,5 @@
 import Foundation
+import LegadoRuntime
 import SwiftUI
 
 extension Notification.Name {
@@ -140,6 +141,118 @@ actor ChapterFetchManager {
         originalGenerations.removeValue(forKey: taskKey)?.revoke()
     }
 
+    /// Explicit traditional-runtime batch operation. Existing reader/download routes
+    /// do not select it implicitly. This manager creates the real per-chapter jobs and
+    /// generations before borrowing them into the Host; JSON contains no App grants.
+    func fetchOriginalContentBatch(bookID: UUID, sourceID: UUID, book: LegadoOriginalBook,
+                                   chapterIndexes: [Int], store: BookStore,
+                                   timeout: TimeInterval = 60,
+                                   cache: ChapterCacheRepository = BookSourceFetcher.chapterCacheRepository) async throws -> LegadoOriginalContentBatchResult {
+        guard timeout.isFinite, timeout > 0, timeout <= 300, !chapterIndexes.isEmpty,
+              chapterIndexes.count <= 32, Set(chapterIndexes).count == chapterIndexes.count else {
+            throw LegadoRuntimeError(code: "INVALID_REQUEST", message: "Original batch requires 1...32 unique chapter indexes and a bounded deadline")
+        }
+        let deadline = Date().addingTimeInterval(timeout)
+        let refs = try await store.originalRuntimeChapters(bookID: bookID)
+        let resolveSource = sourceResolver
+        guard let source = await MainActor.run(body: { resolveSource(sourceID) }),
+              source.bookSourceUrl.utf8.elementsEqual(book.origin.utf8),
+              await store.prepareOriginalRuntimeBookSnapshot(id: bookID, sourceID: sourceID, bookURL: book.bookURL) != nil else {
+            throw LegadoRuntimeError(code: "INVALID_STATE_OWNER", message: "Batch requires the actual App book/source UUID and immutable source")
+        }
+        var selected: [OnlineChapterRef] = []
+        for index in chapterIndexes {
+            guard refs.indices.contains(index), refs[index].index == index,
+                  !refs[index].shouldRenderAsVolumeSeparator, !refs[index].url.isEmpty,
+                  tasks[key(bookId: bookID, chapterIndex: index)] == nil else {
+                throw LegadoRuntimeError(code: "STATE_CONFLICT", message: "Batch chapter is missing, a volume separator or already has an active job")
+            }
+            selected.append(refs[index])
+        }
+        var grants: [OriginalRuntimeBatchChapter] = []
+        for ref in selected {
+            guard let index = Int32(exactly: ref.index) else { throw LegadoRuntimeError(code: "INVALID_REQUEST", message: "Chapter index exceeds original Int") }
+            let taskKey = key(bookId: bookID, chapterIndex: ref.index); let token = UUID()
+            let generation = OriginalRuntimeChapterGeneration(bookID: bookID, chapter: ref, token: token,
+                validateCacheIdentity: { try store.validateOriginalRuntimeCacheChapter(bookID: bookID,
+                    chapterID: ref.id, index: ref.index, url: ref.url) })
+            var dto = LegadoOriginalChapter(bookURL: book.bookURL, url: ref.url, index: index, title: ref.title, baseURL: book.tocURL)
+            dto.isVolume = ref.isVolume; dto.isVip = ref.isVip; dto.isPay = ref.isPay
+            if let variables = ref.runtimeVariables {
+                try LegadoPreviewVariableCodec.validateRepresentable([variables])
+                dto.variable = String(decoding: try JSONEncoder().encode(variables), as: UTF8.self)
+            }
+            grants.append(.init(chapter: ref, generation: generation, dto: dto))
+        }
+        let granted = grants
+        for value in granted {
+            let taskKey = key(bookId: bookID, chapterIndex: value.chapter.index)
+            generationTokens[taskKey] = value.generation.token; originalGenerations[taskKey] = value.generation
+            priorities[taskKey] = .download; states[taskKey] = .loading
+        }
+        let service = bookSourceFetcher.mainJSService
+        let operation = Task { try await service.originalContentBatch(source: source, store: store, bookID: bookID,
+            book: book, chapters: granted, taskID: UUID().uuidString, deadline: deadline, cache: cache) }
+        var children: [(OriginalRuntimeBatchChapter, Task<ChapterPackage, Error>)] = []
+        for value in granted {
+            let child = Task { () throws -> ChapterPackage in
+                let result = await operation.result
+                try Task.checkCancellation(); try value.generation.check(deadline: deadline)
+                let package = try await BookStore.chapterCachePersistence {
+                    try value.generation.checkCacheWrite(deadline: deadline)
+                    return cache.loadChapterPackageSync(bookId: bookID, chapterIndex: value.chapter.index,
+                        expectedSourceURL: value.chapter.url, expectedTOCTitle: value.chapter.title, scheduleLegacyMigration: false)
+                }
+                if let package, package.sourceURL.map({ $0.utf8.elementsEqual(value.chapter.url.utf8) }) == true,
+                    OnlineChapterCacheWritePolicy.isReusableCachedPackage(package, hasBookSource: true) { return package }
+                if case .failure(let error) = result { throw error }
+                throw FetchError.emptyContent
+            }
+            tasks[key(bookId: bookID, chapterIndex: value.chapter.index)] = child
+            children.append((value, child))
+        }
+        defer {
+            for value in granted { clearRequestTracking(for: key(bookId: bookID, chapterIndex: value.chapter.index), token: value.generation.token) }
+        }
+        let ownedChildren = children
+        return try await withTaskCancellationHandler {
+            let result = await operation.result
+            var verified: [Int] = []
+            for (value, child) in children {
+                let childResult = await child.result
+                let taskKey = key(bookId: bookID, chapterIndex: value.chapter.index)
+                guard generationTokens[taskKey] == value.generation.token else { continue }
+                switch childResult {
+                case .success: verified.append(value.chapter.index); states[taskKey] = .cached
+                case .failure(let error): states[taskKey] = Self.isCancellation(error) ? .missing : .failed
+                }
+            }
+            var publicationError: Error?
+            do {
+                _ = try await store.publishOriginalBatchCache(bookID: bookID, sourceID: sourceID, bookURL: book.bookURL,
+                    chapters: granted, cache: cache, deadline: deadline)
+            } catch {
+                publicationError = error
+                for value in granted {
+                    let taskKey = key(bookId: bookID, chapterIndex: value.chapter.index)
+                    if generationTokens[taskKey] == value.generation.token { states[taskKey] = .missing }
+                }
+            }
+            switch result {
+            case .success(let value):
+                guard publicationError == nil else { throw OriginalContentBatchFailure(executionError: nil,
+                    publicationError: publicationError, verifiedSavedIndexes: verified) }
+                return value // Original contract: missing chapters, not a fabricated contents array.
+            case .failure(let error):
+                throw OriginalContentBatchFailure(executionError: error, publicationError: publicationError,
+                    verifiedSavedIndexes: verified)
+            }
+        } onCancel: {
+            operation.cancel()
+            for (value, child) in ownedChildren { value.generation.revoke(); child.cancel() }
+        }
+    }
+
     /// Determines whether cached chapter content is suspiciously abnormal
     /// (excessively long, or containing multiple chapter titles).
     /// Used to reject bad caches where multiple chapters were merged,
@@ -225,6 +338,7 @@ actor ChapterFetchManager {
 
         let sanitizedURL = RuleEngine.sanitizeExtractedURL(ref.url)
         var shouldClearCachedChapter = false
+        var rejectedPackage: ChapterPackage?
         var candidateURLs = [sanitizedURL]
         if sanitizedURL != ref.url {
             candidateURLs.append(ref.url)
@@ -243,10 +357,11 @@ actor ChapterFetchManager {
                 return cached
             }
             shouldClearCachedChapter = true
+            rejectedPackage = cached
         }
 
         if shouldClearCachedChapter {
-            bookSourceFetcher.clearChapterCache(bookId: book.id, chapterIndex: chapterIndex)
+            bookSourceFetcher.clearChapterCache(bookId: book.id, chapterIndex: chapterIndex, ifUnchanged: rejectedPackage)
         }
 
         return nil
@@ -267,6 +382,8 @@ actor ChapterFetchManager {
         priority: ChapterFetchPriority,
         store: BookStore?
     ) async throws -> ChapterPackage {
+        await BookStore.queuedWritesLanded()
+        try Task.checkCancellation()
         guard let refs = book.onlineChapters, refs.indices.contains(chapterIndex) else {
             throw NSError(
                 domain: "OnlineReadingPipeline", code: -1,
@@ -295,6 +412,7 @@ actor ChapterFetchManager {
         }
 
         var shouldClearCachedChapter = false
+        var rejectedPackage: ChapterPackage?
 
         // Load once and branch on the result. The `else if` this replaces re-ran the same
         // call with the same arguments purely to tell "no cache" from "unusable cache" —
@@ -312,6 +430,7 @@ actor ChapterFetchManager {
                 return cached
             }
             shouldClearCachedChapter = true
+            rejectedPackage = cached
         }
         // Also accept caches stored under the original URL (legacy path)
         if sanitizedURL != refs[chapterIndex].url,
@@ -326,10 +445,11 @@ actor ChapterFetchManager {
                 return legacyCached
             }
             shouldClearCachedChapter = true
+            rejectedPackage = legacyCached
         }
 
         if shouldClearCachedChapter {
-            bookSourceFetcher.clearChapterCache(bookId: book.id, chapterIndex: chapterIndex)
+            bookSourceFetcher.clearChapterCache(bookId: book.id, chapterIndex: chapterIndex, ifUnchanged: rejectedPackage)
         }
 
         let taskKey = key(bookId: book.id, chapterIndex: chapterIndex)
@@ -378,7 +498,18 @@ actor ChapterFetchManager {
         let myToken = UUID()
         generationTokens[taskKey] = myToken
         revokeOriginalGeneration(taskKey)
-        originalGenerations[taskKey] = OriginalRuntimeChapterGeneration(bookID: book.id, chapter: ref, token: myToken)
+        let actualChapter = refs[chapterIndex]
+        originalGenerations[taskKey] = OriginalRuntimeChapterGeneration(bookID: book.id, chapter: actualChapter, token: myToken,
+            validateCacheIdentity: {
+                do {
+                    try store?.validateOriginalRuntimeCacheChapter(bookID: book.id, chapterID: actualChapter.id,
+                        index: actualChapter.index, url: actualChapter.url)
+                } catch let error as LegadoRuntimeError where error.code == "STATE_CONFLICT" {
+                    // A superseded normal job is cancelled, not a source failure or
+                    // permission to quarantine the replacement chapter.
+                    throw CancellationError()
+                }
+            })
 
         // A jump used to cancel every other in-flight fetch for this book "to free
         // WKWebView slots". It was a workaround for contention the pool already handles —
@@ -412,6 +543,7 @@ actor ChapterFetchManager {
             ]
         )
 
+        let writeGeneration = originalGenerations[taskKey]!
         let task = Task(priority: priority.taskPriority) { () throws -> ChapterPackage in
             if let sourceId = book.bookSourceId {
                 guard
@@ -427,7 +559,8 @@ actor ChapterFetchManager {
                     ref: ref,
                     bookId: book.id,
                     source: source,
-                    chapterReferer: book.tocURL ?? book.bookInfoURL ?? book.source
+                    chapterReferer: book.tocURL ?? book.bookInfoURL ?? book.source,
+                    cacheWriteGeneration: writeGeneration
                 )
             }
 
@@ -443,20 +576,20 @@ actor ChapterFetchManager {
                         Task {
                             guard await selfRef.isTokenValid(taskKey: taskKey, token: myToken) else { return }
                             do {
-                                let filename = try bsf.saveToCache(
+                                let filename = try await bsf.saveToCache(
                                     content: partial,
                                     bookId: bookId,
                                     chapterIndex: chapterIndex,
                                     sourceURL: ref.url,
                                     tocTitle: ref.title,
-                                    storeNormalizedHTML: false
+                                    storeNormalizedHTML: false,
+                                    validateGrant: { try writeGeneration.checkCacheWrite(deadline: .distantFuture) }
                                 )
+                                try await capturedStore?.publishVerifiedChapterCache(bookID: bookId, chapter: actualChapter,
+                                    generation: writeGeneration, cache: BookSourceFetcher.chapterCacheRepository,
+                                    sourceURL: ref.url, filename: filename)
+                                try writeGeneration.check(deadline: .distantFuture)
                                 await MainActor.run {
-                                    capturedStore?.updateCachedChapter(
-                                        bookId: bookId,
-                                        chapterIndex: chapterIndex,
-                                        filename: filename
-                                    )
                                     NotificationCenter.default.post(
                                         name: .onlineChapterCacheDidUpdate,
                                         object: nil,
@@ -470,20 +603,20 @@ actor ChapterFetchManager {
                     }
                 )
             } catch {
-                bookSourceFetcher.clearChapterCache(
-                    bookId: book.id,
-                    chapterIndex: chapterIndex
-                )
+                // A failed/cancelled browser request grants no deletion authority.
+                // Progressive or newer-generation successful files remain readable;
+                // the validated cache-read path separately removes invalid artifacts.
                 throw error
             }
             if !content.isEmpty {
-                _ = try bookSourceFetcher.saveToCache(
+                _ = try await bookSourceFetcher.saveToCache(
                     content: content,
                     bookId: book.id,
                     chapterIndex: chapterIndex,
                     sourceURL: ref.url,
                     tocTitle: ref.title,
-                    storeNormalizedHTML: false
+                    storeNormalizedHTML: false,
+                    validateGrant: { try writeGeneration.checkCacheWrite(deadline: .distantFuture) }
                 )
                 guard let persistedPackage = bookSourceFetcher.loadChapterPackageSync(
                     bookId: book.id,
@@ -520,19 +653,20 @@ actor ChapterFetchManager {
                     // such as paragraph-review badges.
                     filename = OnlineChapterCacheWritePolicy.contentFilename(chapterIndex: chapterIndex)
                 } else {
-                    filename = try bookSourceFetcher.saveToCache(
+                    filename = try await bookSourceFetcher.saveToCache(
                         content: package.content,
                         bookId: book.id,
                         chapterIndex: chapterIndex,
                         sourceURL: ref.url,
                         tocTitle: ref.title,
-                        storeNormalizedHTML: book.bookSourceId != nil
+                        storeNormalizedHTML: book.bookSourceId != nil,
+                        validateGrant: { try writeGeneration.checkCacheWrite(deadline: .distantFuture) }
                     )
                 }
-                await MainActor.run {
-                    store?.updateCachedChapter(
-                        bookId: book.id, chapterIndex: chapterIndex, filename: filename)
-                }
+                try await store?.publishVerifiedChapterCache(bookID: book.id, chapter: actualChapter,
+                    generation: writeGeneration, cache: BookSourceFetcher.chapterCacheRepository,
+                    sourceURL: ref.url, filename: filename)
+                guard generationTokens[taskKey] == myToken else { throw CancellationError() }
                 states[taskKey] = .cached
                 // Success: reset failure counter
                 bookFailureCounts[bookId] = 0
@@ -686,7 +820,7 @@ actor ChapterFetchManager {
         // `errorDownloadMap`.
         _ = sourceURL
         _ = tocTitle
-        bookSourceFetcher.clearChapterCache(bookId: bookId, chapterIndex: chapterIndex)
+        bookSourceFetcher.clearChapterCache(bookId: bookId, chapterIndex: chapterIndex, onlyIfInvalid: true)
 
         let failCount = (bookFailureCounts[bookId] ?? 0) + 1
         bookFailureCounts[bookId] = failCount
@@ -748,6 +882,8 @@ actor ChapterFetchManager {
             directFailure = error
         }
 
+        // A cancelled direct request cannot start a fresh WK lease.
+        try Task.checkCancellation()
         // Browser-imported pages sometimes require JavaScript rendering. Enter
         // this fallback only when the primary fetch threw or returned no body.
         guard let firstURL = URL(string: urlString) else {
@@ -937,7 +1073,8 @@ final class OnlineBookCoordinator {
             } else if hasLooseCache {
                 bsf.clearChapterCache(
                     bookId: book.id,
-                    chapterIndex: ref.index
+                    chapterIndex: ref.index,
+                    onlyIfInvalid: true
                 )
                 html = Self.placeholderHTML(
                     title: displayTitle,

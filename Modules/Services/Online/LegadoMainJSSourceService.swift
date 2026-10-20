@@ -39,6 +39,16 @@ actor LegadoRuntimeProcess {
             chapter: chapter, generation: generation)
     }
 
+    func bindPersistentContentBatch(_ request: LegadoContentBatchExecutionRequest) async throws -> String {
+        try await persistentHost().bindContentBatch(sourceURL: request.sourceURL, sourceRevision: request.sourceRevision,
+            taskID: request.taskID, store: request.store, bookID: request.bookID, sourceID: request.sourceID,
+            book: request.book, chapters: request.chapters, deadline: request.deadline, cache: request.cache)
+    }
+
+    func finishContentBatchResult(owner: String, request: LegadoContentBatchExecutionRequest, book: LegadoOriginalBook) async throws -> Bool {
+        try await persistentHost().finishContentBatchResult(owner: owner, taskID: request.taskID, book: book, deadline: request.deadline)
+    }
+
     func bindPersistentPreview(grant: OriginalRuntimePreviewGrant) async throws -> String {
         try await persistentHost().bindPreview(grant: grant)
     }
@@ -146,6 +156,7 @@ struct NativeLegadoMainJSExecutor: LegadoMainJSExecuting {
 actor LegadoMainJSSourceService {
     static let contextKey = "__legado.jvm.mainJs.context.v1"
     private let executor: any LegadoMainJSExecuting
+    private let contentBatchExecutor: any LegadoOriginalContentBatchExecuting
     private let originalExecutor: any LegadoOriginalPreviewExecuting
     private var originalSourceRevisions: [String: (signature: String, clock: Int64)] = [:]
     private let configuredDirectory: URL?
@@ -181,9 +192,11 @@ actor LegadoMainJSSourceService {
 
     init(executor: any LegadoMainJSExecuting = NativeLegadoMainJSExecutor(), contextDirectory: URL? = nil,
          operationTimeout: TimeInterval = 60,
-         originalExecutor: any LegadoOriginalPreviewExecuting = NativeLegadoOriginalPreviewExecutor()) {
+         originalExecutor: any LegadoOriginalPreviewExecuting = NativeLegadoOriginalPreviewExecutor(),
+         contentBatchExecutor: any LegadoOriginalContentBatchExecuting = NativeLegadoOriginalContentBatchExecutor()) {
         self.executor = executor
         self.originalExecutor = originalExecutor
+        self.contentBatchExecutor = contentBatchExecutor
         self.configuredDirectory = contextDirectory
         self.operationTimeout = operationTimeout
     }
@@ -792,7 +805,8 @@ extension LegadoMainJSSourceService {
 
     func commitPreviewEntity(_ grant: OriginalRuntimePreviewGrant, snapshot: LegadoPreviewEntitySnapshot,
                              keys: [LegadoEntityStateKey], changes: [String: Data?], deadline: Date,
-                             cancellation: OriginalRuntimeCommitCancellation) throws -> Bool {
+                             cancellation: OriginalRuntimeCommitCancellation,
+                             claimCommit: @Sendable () -> Bool = { true }) throws -> Bool {
         try cancellation.check(deadline: deadline); try grant.check(deadline: deadline)
         let reference = grantReference(grant)
         var read = try readPreview(reference, check: {
@@ -840,7 +854,10 @@ extension LegadoMainJSSourceService {
         } else { read.record.book.variable = raw; read.record.bookLargeVariables = large }
         try cancellation.check(deadline: deadline); try grant.check(deadline: deadline)
         let accepted = try replacePreview(read.record, previous: read, id: grant.recordID, deadline: deadline,
-            beforeWrite: { try cancellation.check(deadline: deadline); try grant.check(deadline: deadline) })
+            beforeWrite: {
+                try cancellation.check(deadline: deadline); try grant.check(deadline: deadline)
+                guard claimCommit() else { throw CancellationError() }
+            })
         grant.accepted(revision: accepted.record.revision, sha256: accepted.sha256)
         return true
     }
@@ -900,6 +917,25 @@ extension LegadoMainJSSourceService {
             else { read.record.chapterVariables.removeValue(forKey: LegadoPreviewIdentity.key(chapter.url)) }
         }
         return try replacePreview(read.record, previous: read, id: reference.bookRecordID, deadline: deadline).record
+    }
+
+    /// Explicit App-owned batch entry; shares the existing per-source operation
+    /// lease, immutable source revision and sole runtime process with all other calls.
+    func originalContentBatch(source: BookSource, store: BookStore, bookID: UUID,
+                              book: LegadoOriginalBook, chapters: [OriginalRuntimeBatchChapter],
+                              taskID: String, deadline: Date,
+                              cache: ChapterCacheRepository = BookSourceFetcher.chapterCacheRepository) async throws -> LegadoOriginalContentBatchResult {
+        let signature = try originalSignature(source)
+        try validateOriginalBook(book, sourceURL: source.bookSourceUrl)
+        try await acquire(source.bookSourceUrl, deadline: deadline)
+        defer { release(source.bookSourceUrl) }
+        try acceptOriginalRevision(source, signature: signature)
+        try Task.checkCancellation()
+        guard deadline.timeIntervalSinceNow > 0 else { throw failure("TIMEOUT", "Original batch deadline elapsed") }
+        let sourceJSON = String(decoding: try encoded(source), as: UTF8.self)
+        return try await contentBatchExecutor.execute(.init(sourceJSON: sourceJSON, sourceURL: source.bookSourceUrl,
+            sourceRevision: signature, sourceID: source.id, store: store, bookID: bookID, book: book,
+            chapters: chapters, taskID: taskID, deadline: deadline, cache: cache))
     }
 
     private func originalSignature(_ source: BookSource) throws -> String {

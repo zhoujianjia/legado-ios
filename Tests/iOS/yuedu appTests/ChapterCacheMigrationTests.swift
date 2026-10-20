@@ -6,7 +6,7 @@ import Testing
 @Suite("Chapter cache migration", .serialized)
 struct ChapterCacheMigrationTests {
     @Test("package loader upgrades a downloaded legacy chapter")
-    func packageLoaderUpgradesDownloadedLegacyChapter() throws {
+    func packageLoaderUpgradesDownloadedLegacyChapter() async throws {
         let bookId = UUID()
         let chapterIndex = 3
         let sourceURL = "https://example.com/book/3"
@@ -43,6 +43,7 @@ struct ChapterCacheMigrationTests {
             expectedTOCTitle: tocTitle
         )
 
+        await BookStore.queuedWritesLanded()
         #expect(package?.state == .cached)
         #expect(package?.content == content)
         #expect(package?.contentChecksum == checksum(content))
@@ -54,7 +55,7 @@ struct ChapterCacheMigrationTests {
     }
 
     @Test("missing package cannot bless a body that differs from its saved checksum", arguments: [false, true])
-    func corruptLegacyBodyDoesNotRewriteStoredChecksum(hasCachedState: Bool) throws {
+    func corruptLegacyBodyDoesNotRewriteStoredChecksum(hasCachedState: Bool) async throws {
         let root = temporaryRoot()
         defer { try? FileManager.default.removeItem(at: root) }
         let repository = ChapterCacheRepository(rootDirectory: root)
@@ -91,7 +92,7 @@ struct ChapterCacheMigrationTests {
     }
 
     @Test("legacy metadata without a checksum can still migrate", arguments: [false, true])
-    func legacyBodyWithoutChecksumRemainsUpgradeable(hasCachedState: Bool) throws {
+    func legacyBodyWithoutChecksumRemainsUpgradeable(hasCachedState: Bool) async throws {
         let root = temporaryRoot()
         defer { try? FileManager.default.removeItem(at: root) }
         let repository = ChapterCacheRepository(rootDirectory: root)
@@ -118,6 +119,7 @@ struct ChapterCacheMigrationTests {
             bookId: bookId, chapterIndex: 0,
             expectedSourceURL: metadata.sourceURL, expectedTOCTitle: metadata.tocTitle
         )
+        await BookStore.queuedWritesLanded()
         #expect(reopened == migrated)
     }
 

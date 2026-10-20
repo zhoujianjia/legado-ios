@@ -56,7 +56,7 @@ struct ChapterContentValidationTests {
         let bookID = UUID()
         let content = String(repeating: "夕陽照著遠方的山，旅人沿著溪流走回村莊。他想起朋友說過的話，又翻開手中的書。\n", count: 256)
         let url = "https://example.com/chapter/0"
-        try repository.saveToCache(content: content, bookId: bookID, chapterIndex: 0, sourceURL: url, tocTitle: "旅程")
+        try await repository.saveToCache(content: content, bookId: bookID, chapterIndex: 0, sourceURL: url, tocTitle: "旅程")
         let store = OfflineChapterStore(roots: roots)
         let start = SourcePerfTrace.now
         var completed = 0

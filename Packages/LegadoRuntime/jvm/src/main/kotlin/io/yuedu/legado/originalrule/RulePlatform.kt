@@ -44,6 +44,10 @@ open class RulePlatform {
     /** Existing task deadline; no fresh rate-wait budget or scheduling owner. */
     open fun originalRateDelayBudgetMillis(source: BaseSource): Long =
         unsupportedRule("original concurrent rate needs the existing task deadline")
+    /** Explicit embedding authority for actual body saves; never inferred from DTOs. */
+    open fun authorizeOriginalContentBatch(source: BaseSource, bookUrl: String, chapters: List<Pair<Int, String>>) {
+        unsupportedRule("original public batch requires the App book/chapter-generation save owner")
+    }
     open fun storeLoginHeader(source: BaseSource, value: String?): Boolean = false
     open val userAgent: String? = null
     open val cookie: RuleCookieHost = RuleCookieHost()

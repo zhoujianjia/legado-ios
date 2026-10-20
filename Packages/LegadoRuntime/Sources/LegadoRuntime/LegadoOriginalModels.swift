@@ -125,3 +125,17 @@ internal struct OriginalExploreRequest: Encodable, Sendable {
 internal struct OriginalExploreContextRequest: Encodable, Sendable {
     let action: String; let script: String?; let timeoutMs: Int64
 }
+
+/// Original getContentBatchAwait result: chapters not marked saved, never inferred bodies.
+public struct LegadoOriginalContentBatchResult: Codable, Sendable, Equatable {
+    public let book: LegadoOriginalBook
+    public let missingChapters: [LegadoOriginalChapter]
+    public init(book: LegadoOriginalBook, missingChapters: [LegadoOriginalChapter]) {
+        self.book = book; self.missingChapters = missingChapters
+    }
+}
+internal struct OriginalContentBatchRequest: Encodable, Sendable {
+    let book: LegadoOriginalBook
+    let chapters: [LegadoOriginalChapter]
+    let timeoutMs: Int64
+}

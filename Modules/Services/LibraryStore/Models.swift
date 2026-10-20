@@ -748,7 +748,7 @@ enum OnlineChapterRenderArtifact {
     static let currentVersion = 4
 }
 
-struct ChapterPackageArtifact: Codable, Equatable {
+struct ChapterPackageArtifact: Codable, Equatable, Sendable {
     let sourceURL: String?
     let tocTitle: String?
     let canonicalTitle: String?
@@ -759,12 +759,12 @@ struct ChapterPackageArtifact: Codable, Equatable {
     let savedAt: Date
 }
 
-enum ChapterPackageState: String, Codable, Equatable {
+enum ChapterPackageState: String, Codable, Equatable, Sendable {
     case cached
     case failed
 }
 
-struct ChapterPackage: Codable, Equatable {
+struct ChapterPackage: Codable, Equatable, Sendable {
     let bookId: UUID
     let chapterIndex: Int
     let sourceURL: String?

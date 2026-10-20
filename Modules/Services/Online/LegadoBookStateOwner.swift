@@ -10,13 +10,20 @@ final class OriginalRuntimeChapterGeneration: @unchecked Sendable {
     let url: String
     let token: UUID
     private let cancellation = OriginalRuntimeCommitCancellation()
+    private let validateCacheIdentity: @Sendable () throws -> Void
 
-    init(bookID: UUID, chapter: OnlineChapterRef, token: UUID) {
+    init(bookID: UUID, chapter: OnlineChapterRef, token: UUID,
+         validateCacheIdentity: @escaping @Sendable () throws -> Void = {}) {
         self.bookID = bookID; self.chapterID = chapter.id
         self.index = chapter.index; self.url = chapter.url; self.token = token
+        self.validateCacheIdentity = validateCacheIdentity
     }
     func revoke() { cancellation.cancel() }
     func check(deadline: Date) throws { try cancellation.check(deadline: deadline) }
+    func checkCacheWrite(deadline: Date) throws {
+        BookStore.assertChapterCachePersistenceQueue()
+        try check(deadline: deadline); try validateCacheIdentity()
+    }
 }
 
 struct LegadoEntityStateKey: Sendable {
@@ -45,9 +52,11 @@ final class AppLegadoBookStateOwner: @unchecked Sendable {
     private let store: BookStore
     private let generation: OriginalRuntimeChapterGeneration?
     private let lifetime = OriginalRuntimeCommitCancellation()
+    private let acceptedBookCommit: @Sendable (OriginalRuntimeBookMetadataOwner.Snapshot) -> Void
 
     init(store: BookStore, bookID: UUID, sourceID: UUID, bookURL: String,
-         chapter: OnlineChapterRef?, generation: OriginalRuntimeChapterGeneration?) throws {
+         chapter: OnlineChapterRef?, generation: OriginalRuntimeChapterGeneration?,
+         acceptedBookCommit: @escaping @Sendable (OriginalRuntimeBookMetadataOwner.Snapshot) -> Void = { _ in }) throws {
         guard store.originalRuntimeBookSnapshot(id: bookID, sourceID: sourceID, bookURL: bookURL) != nil else {
             throw Self.failure("An existing App book UUID, source and URL must be explicitly granted")
         }
@@ -59,6 +68,7 @@ final class AppLegadoBookStateOwner: @unchecked Sendable {
         } else if generation != nil { throw Self.failure("A generation without its chapter is not a valid grant") }
         self.store = store; self.bookID = bookID; self.sourceID = sourceID
         self.bookURL = bookURL; self.chapter = chapter; self.generation = generation
+        self.acceptedBookCommit = acceptedBookCommit
     }
 
     func revoke() { lifetime.cancel() }
@@ -122,7 +132,8 @@ final class AppLegadoBookStateOwner: @unchecked Sendable {
     }
 
     func commit(snapshot: LegadoEntityStateSnapshot, keys: [LegadoEntityStateKey], changes: [String: Data?],
-                deadline: Date, cancellation: OriginalRuntimeCommitCancellation) async throws -> Bool {
+                deadline: Date, cancellation: OriginalRuntimeCommitCancellation,
+                claimCommit: @escaping @Sendable () -> Bool = { true }) async throws -> Bool {
         guard snapshot.chapter != nil || snapshot.bookVariables != nil else { throw Self.failure("Entity snapshot has no App owner proof") }
         guard try currentBook(deadline: deadline) == snapshot.book else { return false }
         let priorVariables = snapshot.chapter?.variables ?? snapshot.bookVariables?.book.variables
@@ -150,7 +161,7 @@ final class AppLegadoBookStateOwner: @unchecked Sendable {
         let variables: [String: String]? = deletedSmall && large.isEmpty ? nil : small.merging(large) { first, _ in first }
         if let expected = snapshot.chapter {
           return try await store.compareOriginalRuntimeChapter(expected: expected, variables: variables,
-            deadline: deadline, cancellation: cancellation) { [self] in
+            deadline: deadline, cancellation: cancellation, claimCommit: claimCommit) { [self] in
                 guard try currentBook(deadline: deadline) == snapshot.book else {
                     throw Self.failure("The granted App book changed before its chapter write")
                 }
@@ -158,7 +169,7 @@ final class AppLegadoBookStateOwner: @unchecked Sendable {
             }
         }
         return try await store.compareOriginalRuntimeBook(expected: snapshot.bookVariables!, expectedView: snapshot.book,
-            variables: variables, deadline: deadline, cancellation: cancellation) { [self] in
+            variables: variables, deadline: deadline, cancellation: cancellation, claimCommit: claimCommit, accepted: acceptedBookCommit) { [self] in
                 guard try currentBook(deadline: deadline) == snapshot.book else {
                     throw Self.failure("The App book changed before its metadata write")
                 }

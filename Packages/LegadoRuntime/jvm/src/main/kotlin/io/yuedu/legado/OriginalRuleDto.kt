@@ -33,7 +33,8 @@ internal object OriginalRuleDto {
         return book
     }
 
-    fun chapter(value: JsonObject, environment: RuleEnvironment, book: Book): BookChapter {
+    @JvmOverloads
+    fun chapter(value: JsonObject, environment: RuleEnvironment, book: Book, restorePersistentVariables: Boolean = true): BookChapter {
         require(value.keySet().all { it in chapterFields }) { "Unknown original chapter field" }
         require(value.requiredText("bookUrl") == book.bookUrl) { "Chapter belongs to another book" }
         val url = value.requiredText("url"); require(url.isNotBlank()) { "chapter.url must not be blank" }
@@ -41,7 +42,7 @@ internal object OriginalRuleDto {
         return BookChapter(environment, url, value.requiredText("title"), value.boolean("isVolume", false), value.requiredText("baseUrl"),
             book.bookUrl, index, value.boolean("isVip", false), value.boolean("isPay", false), value.text("resourceUrl"), value.text("tag"),
             value.text("wordCount"), value.long("start"), value.long("end"), value.text("startFragmentId"), value.text("endFragmentId"),
-            variable(value), value.text("imgUrl")).also { it.titleMD5 = value.text("titleMD5") }
+            variable(value), value.text("imgUrl"), restorePersistentVariables).also { it.titleMD5 = value.text("titleMD5") }
     }
 
     fun book(book: Book): JsonObject = jsonObject(

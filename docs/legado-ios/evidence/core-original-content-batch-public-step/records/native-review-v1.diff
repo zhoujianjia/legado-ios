@@ -1,0 +1,3204 @@
+--- baseline/Modules/Core/BookSource/BookSourceFetcher+Chapter.swift
++++ work/Modules/Core/BookSource/BookSourceFetcher+Chapter.swift
+@@ -6,7 +6,8 @@
+ extension BookSourceFetcher {
+ 
+     func fetchChapter(
+-        ref: OnlineChapterRef, bookId: UUID, source: BookSource, chapterReferer: String? = nil
++        ref: OnlineChapterRef, bookId: UUID, source: BookSource, chapterReferer: String? = nil,
++        cacheWriteGeneration: OriginalRuntimeChapterGeneration? = nil
+     ) async throws
+         -> String
+     {
+@@ -14,16 +15,20 @@
+             ref: ref,
+             bookId: bookId,
+             source: source,
+-            chapterReferer: chapterReferer
++            chapterReferer: chapterReferer,
++            cacheWriteGeneration: cacheWriteGeneration
+         )
+         return package.content
+     }
+ 
+     func fetchChapterPackage(
+-        ref: OnlineChapterRef, bookId: UUID, source: BookSource, chapterReferer: String? = nil
++        ref: OnlineChapterRef, bookId: UUID, source: BookSource, chapterReferer: String? = nil,
++        cacheWriteGeneration: OriginalRuntimeChapterGeneration? = nil
+     ) async throws -> ChapterPackage {
++        await BookStore.queuedWritesLanded()
++        try Task.checkCancellation()
+         if source.isJsSource {
+-            return try await fetchMainJSChapterPackage(ref: ref, bookId: bookId, source: source)
++            return try await fetchMainJSChapterPackage(ref: ref, bookId: bookId, source: source, cacheWriteGeneration: cacheWriteGeneration)
+         }
+         logChapterFetchGate(ref: ref, source: source)
+         guard !ref.shouldRenderAsVolumeSeparator else {
+@@ -45,7 +50,8 @@
+                     ref: ref,
+                     bookId: bookId,
+                     source: source,
+-                    chapterReferer: chapterReferer
++                    chapterReferer: chapterReferer,
++            cacheWriteGeneration: cacheWriteGeneration
+                 )
+             }
+             group.addTask {
+@@ -61,7 +67,8 @@
+     }
+ 
+     private func fetchChapterPackageInner(
+-        ref: OnlineChapterRef, bookId: UUID, source: BookSource, chapterReferer: String? = nil
++        ref: OnlineChapterRef, bookId: UUID, source: BookSource, chapterReferer: String? = nil,
++        cacheWriteGeneration: OriginalRuntimeChapterGeneration? = nil
+     ) async throws
+         -> ChapterPackage
+     {
+@@ -82,7 +89,8 @@
+             return try await fetchLegadoRuntimeChapterPackage(
+                 ref: ref,
+                 bookId: bookId,
+-                source: source
++                source: source,
++                cacheWriteGeneration: cacheWriteGeneration
+             )
+         }
+         // Sanitize: old TOC cache may contain HTML fragments (e.g. <a href="...">), sanitize before parsing
+@@ -272,10 +280,11 @@
+             try await fetchChapterHTML(nextPageURL, "GET", nil, false)
+         }
+ 
+-        try saveChapterPackageToCache(
++        try await saveChapterPackageToCache(
+             buildResult.package,
+             rawHTML: buildResult.rawHTML,
+-            normalizedHTML: buildResult.normalizedHTML
++            normalizedHTML: buildResult.normalizedHTML,
++            validateGrant: { try cacheWriteGeneration?.checkCacheWrite(deadline: .distantFuture) }
+         )
+         // #region agent log
+         _dbgLog(
+@@ -294,7 +303,7 @@
+         return reloaded
+     }
+ 
+-    private func fetchMainJSChapterPackage(ref: OnlineChapterRef, bookId: UUID, source: BookSource) async throws -> ChapterPackage {
++    private func fetchMainJSChapterPackage(ref: OnlineChapterRef, bookId: UUID, source: BookSource, cacheWriteGeneration: OriginalRuntimeChapterGeneration?) async throws -> ChapterPackage {
+         guard !ref.shouldRenderAsVolumeSeparator else { throw FetchError.volumeSeparator(ref.title) }
+         let content = try await mainJSService.content(ref: ref, source: source)
+         try ChapterFetcher.shared.validateResolvedContent(content)
+@@ -305,7 +314,8 @@
+             tocTitle: ref.title, canonicalTitle: nil, content: content, contentChecksum: checksum,
+             rawHTMLFilename: nil, normalizedHTMLFilename: nil,
+             savedAt: Date(), state: .cached, failureReason: nil)
+-        try saveChapterPackageToCache(package, rawHTML: nil, normalizedHTML: nil)
++        try await saveChapterPackageToCache(package, rawHTML: nil, normalizedHTML: nil,
++            validateGrant: { try cacheWriteGeneration?.checkCacheWrite(deadline: .distantFuture) })
+         guard let reloaded = loadChapterPackageSync(bookId: bookId, chapterIndex: ref.index,
+             expectedSourceURL: ref.url, expectedTOCTitle: ref.title) else {
+             throw ChapterCacheWriteError.verificationFailed
+@@ -316,7 +326,8 @@
+     private func fetchLegadoRuntimeChapterPackage(
+         ref: OnlineChapterRef,
+         bookId: UUID,
+-        source: BookSource
++        source: BookSource,
++        cacheWriteGeneration: OriginalRuntimeChapterGeneration?
+     ) async throws -> ChapterPackage {
+         logChapterFetchGate(ref: ref, source: source)
+         guard !ref.shouldRenderAsVolumeSeparator else {
+@@ -374,10 +385,11 @@
+             state: .cached,
+             failureReason: nil
+         )
+-        try saveChapterPackageToCache(
++        try await saveChapterPackageToCache(
+             package,
+             rawHTML: html,
+-            normalizedHTML: normalizedHTML
++            normalizedHTML: normalizedHTML,
++            validateGrant: { try cacheWriteGeneration?.checkCacheWrite(deadline: .distantFuture) }
+         )
+         guard let reloaded = loadChapterPackageSync(
+             bookId: bookId,
+--- baseline/Modules/Core/BookSource/BookSourceFetcher+ChapterCache.swift
++++ work/Modules/Core/BookSource/BookSourceFetcher+ChapterCache.swift
+@@ -32,13 +32,19 @@
+         )
+     }
+ 
+-    nonisolated func clearChapterCache(bookId: UUID, chapterIndex: Int) {
+-        Self.chapterCacheRepository.clearChapterCache(bookId: bookId, chapterIndex: chapterIndex)
++    nonisolated func clearChapterCache(bookId: UUID, chapterIndex: Int, ifUnchanged: ChapterPackage? = nil, onlyIfInvalid: Bool = false) {
++        Self.chapterCacheRepository.clearChapterCache(bookId: bookId, chapterIndex: chapterIndex, ifUnchanged: ifUnchanged, onlyIfInvalid: onlyIfInvalid)
+     }
+-
+-    /// Clear all chapter caches for a book (called when switching sources)
++    nonisolated func clearChapterCacheAwait(bookId: UUID, chapterIndex: Int, ifUnchanged: ChapterPackage? = nil,
++                                           onlyIfInvalid: Bool = false) async throws {
++        try await Self.chapterCacheRepository.clearChapterCacheAwait(bookId: bookId, chapterIndex: chapterIndex,
++            ifUnchanged: ifUnchanged, onlyIfInvalid: onlyIfInvalid)
++    }
+     nonisolated func clearAllChapterCache(bookId: UUID) {
+         Self.chapterCacheRepository.clearAllChapterCache(bookId: bookId)
++    }
++    nonisolated func clearAllChapterCacheAwait(bookId: UUID) async throws {
++        try await Self.chapterCacheRepository.clearAllChapterCacheAwait(bookId: bookId)
+     }
+ 
+     @discardableResult
+@@ -50,9 +56,10 @@
+         tocTitle: String? = nil,
+         extractedTitle: String? = nil,
+         rawHTML: String? = nil,
+-        storeNormalizedHTML: Bool = true
+-    ) throws -> String {
+-        try Self.chapterCacheRepository.saveToCache(
++        storeNormalizedHTML: Bool = true,
++        validateGrant: @escaping @Sendable () throws -> Void = {}
++    ) async throws -> String {
++        try await Self.chapterCacheRepository.saveToCache(
+             content: content,
+             bookId: bookId,
+             chapterIndex: chapterIndex,
+@@ -60,7 +67,8 @@
+             tocTitle: tocTitle,
+             extractedTitle: extractedTitle,
+             rawHTML: rawHTML,
+-            storeNormalizedHTML: storeNormalizedHTML
++            storeNormalizedHTML: storeNormalizedHTML,
++            validateGrant: validateGrant
+         )
+     }
+ 
+@@ -68,12 +76,14 @@
+     nonisolated func saveChapterPackageToCache(
+         _ package: ChapterPackage,
+         rawHTML: String?,
+-        normalizedHTML: String?
+-    ) throws -> String {
+-        try Self.chapterCacheRepository.saveChapterPackageToCache(
++        normalizedHTML: String?,
++        validateGrant: @escaping @Sendable () throws -> Void = {}
++    ) async throws -> String {
++        try await Self.chapterCacheRepository.saveChapterPackageToCache(
+             package,
+             rawHTML: rawHTML,
+-            normalizedHTML: normalizedHTML
++            normalizedHTML: normalizedHTML,
++            validateGrant: validateGrant
+         )
+     }
+ 
+--- baseline/Modules/Core/BookSource/BookSourceFetcher.swift
++++ work/Modules/Core/BookSource/BookSourceFetcher.swift
+@@ -244,7 +244,7 @@
+     }
+ }
+ 
+-struct CachedChapterMetadata: Codable {
++struct CachedChapterMetadata: Codable, Sendable {
+     let sourceURL: String?
+     let tocTitle: String?
+     let extractedTitle: String?
+--- baseline/Modules/Features/Settings/CacheManagementView.swift
++++ work/Modules/Features/Settings/CacheManagementView.swift
+@@ -30,7 +30,7 @@
+         let service = service
+         do {
+             try await Task.detached(priority: .utility) {
+-                try service.clear(category)
++                try await service.clear(category)
+             }.value
+             snapshot = await Task.detached(priority: .utility) {
+                 service.snapshot()
+@@ -48,7 +48,7 @@
+         let service = service
+         do {
+             try await Task.detached(priority: .utility) {
+-                try service.clearAll()
++                try await service.clearAll()
+             }.value
+             snapshot = CacheStorageSnapshot()
+         } catch {
+--- baseline/Modules/Services/LibraryStore/BookChapterStore.swift
++++ work/Modules/Services/LibraryStore/BookChapterStore.swift
+@@ -1,4 +1,5 @@
+ import Foundation
++import LegadoRuntime
+ import os
+ 
+ /// Every book's table of contents on this device: one file per book, beside the shelf.
+@@ -120,7 +121,7 @@
+         dispatchPrecondition(condition: .onQueue(persistenceQueue))
+         let entry = try ownerEntry(for: bookID)
+         guard let chapters = entry.chapters, chapters.indices.contains(index),
+-              chapters[index].index == index, chapters[index].url == url else { return nil }
++              chapters[index].index == index, chapters[index].url.utf8.elementsEqual(url.utf8) else { return nil }
+         let chapter = chapters[index]
+         return RuntimeVariablesSnapshot(bookID: bookID, chapterID: chapter.id, index: index, url: url,
+             revision: entry.revision, variables: chapter.runtimeVariables)
+@@ -136,7 +137,7 @@
+         let entry = try ownerEntry(for: expected.bookID)
+         guard entry.revision == expected.revision, var candidate = entry.chapters,
+               candidate.indices.contains(expected.index), candidate[expected.index].id == expected.chapterID,
+-              candidate[expected.index].url == expected.url,
++              candidate[expected.index].url.utf8.elementsEqual(expected.url.utf8),
+               candidate[expected.index].runtimeVariables == expected.variables else { return false }
+         if variables == expected.variables, !entry.isDirty { return true }
+         candidate[expected.index].runtimeVariables = variables
+@@ -160,6 +161,48 @@
+             Self.evictLeastRecentlyUsed(in: &state)
+         }
+         return true
++    }
++
++    struct CachedFileUpdate: Sendable {
++        let index: Int
++        let chapterID: UUID
++        let url: String
++        let filename: String
++    }
++
++    /// One existing chapter-file transaction for the verified saved prefix. Candidate
++    /// construction/encoding stays on the library writer; a UI mutation queued later
++    /// retains the same ordering and cannot be overwritten by late publication.
++    func publishCachedFiles(bookID: UUID, updates: [CachedFileUpdate], beforeWrite: () throws -> Void) throws -> Bool {
++        dispatchPrecondition(condition: .onQueue(persistenceQueue))
++        guard updates.count <= 32, Set(updates.map(\.index)).count == updates.count else {
++            throw LegadoRuntimeError(code: "INVALID_STATE_REQUEST", message: "Cached chapter publication exceeds its grant")
++        }
++        let entry = try ownerEntry(for: bookID)
++        guard var candidate = entry.chapters else { throw LegadoRuntimeError(code: "STATE_CONFLICT", message: "The App TOC is missing") }
++        for value in updates {
++            guard candidate.indices.contains(value.index), candidate[value.index].index == value.index,
++                  candidate[value.index].id == value.chapterID, candidate[value.index].url.utf8.elementsEqual(value.url.utf8) else {
++                throw LegadoRuntimeError(code: "STATE_CONFLICT", message: "The cached chapter no longer has its granted TOC identity")
++            }
++        }
++        let changed = updates.contains { candidate[$0.index].cachedFilename != $0.filename }
++        if !changed && !entry.isDirty { try beforeWrite(); return false }
++        for value in updates { candidate[value.index].cachedFilename = value.filename }
++        committing = true; defer { committing = false }
++        try SourcePerfTrace.span("library.chapters.cachePublication", "chapters=\(candidate.count) saved=\(updates.count) main=\(Thread.isMainThread)") {
++            _ = try write(candidate, for: bookID, beforeWrite: beforeWrite)
++        }
++        let revision = state.withLock { state in state.nextRevision &+= 1; return state.nextRevision }
++        let published = Entry(chapters: candidate, isDirty: false, revision: revision)
++        ownerState.entries[bookID] = published
++        Self.touch(bookID, entry: published, in: &ownerState); Self.evictLeastRecentlyUsed(in: &ownerState)
++        state.withLock { state in
++            guard state.entries[bookID]?.revision == entry.revision else { return }
++            state.entries[bookID] = published
++            Self.touch(bookID, entry: published, in: &state); Self.evictLeastRecentlyUsed(in: &state)
++        }
++        return changed
+     }
+ 
+     /// The host reads the queue-owned list, never a partially published UI mutation.
+--- baseline/Modules/Services/LibraryStore/BookStore.swift
++++ work/Modules/Services/LibraryStore/BookStore.swift
+@@ -470,6 +470,7 @@
+                                     variables: [String: String]?,
+                                     deadline: Date, cancellation: OriginalRuntimeCommitCancellation,
+                                     beforeWrite: @escaping @Sendable () throws -> Void = {},
++                                     accepted didAccept: @escaping @Sendable (OriginalRuntimeBookMetadataOwner.Snapshot) -> Void = { _ in },
+                                     validateGrant: @escaping @Sendable () throws -> Void) async throws -> Bool {
+         try Task.checkCancellation()
+         guard let sourceID = expected.book.sourceID else {
+@@ -500,6 +501,7 @@
+                         }
+                         if location.shelf { persistedFiles.shelfData = bytes } else { persistedFiles.readingData = bytes }
+                         runtimeBookMetadata.accepted(expected, candidate: candidate)
++                         didAccept(candidate) // Exact accepted proof, before any later owner's queue turn.
+                         continuation.resume(returning: (candidate, location, bytes))
+                     } catch { continuation.resume(throwing: error) }
+                 }
+@@ -1921,12 +1923,8 @@
+             }
+             if book.isOnline {
+                 // Delete cache directory
+-                let cacheDir = StorageLocations.onlineCache.appendingPathComponent(bookId.uuidString)
+-                do {
+-                    try FileManager.default.removeItem(at: cacheDir)
+-                } catch {
+-                    AppLogger.cache("Failed to remove cache directory \(cacheDir): \(error)")
+-                }
++                // Same writer as pending chapter saves/rollback; no main-thread disk I/O.
++                BookSourceFetcher.chapterCacheRepository.clearAllChapterCache(bookId: bookId)
+             } else {
+                 do {
+                     let fileUrl = documentsURL(for: book.contentFilename)
+@@ -4137,3 +4135,95 @@
+     func set(_ task: Task<Void, Never>) { lock.lock(); self.task = task; lock.unlock() }
+     var value: Task<Void, Never>? { lock.lock(); defer { lock.unlock() }; return task }
+ }
++
++// ChapterCacheRepository shares this existing writer with the App's book/chapter
++// owner. No new queue, store or synchronous main-thread barrier is introduced.
++extension BookStore {
++    static func chapterCachePersistence<T: Sendable>(_ operation: @escaping @Sendable () throws -> T) async throws -> T {
++        try Task.checkCancellation()
++        let hold = BackgroundTaskHold(name: "chapter.cache.persist")
++        return try await withCheckedThrowingContinuation { continuation in
++            persistQueue.async {
++                defer { hold.release() }
++                do { continuation.resume(returning: try operation()) }
++                catch { continuation.resume(throwing: error) }
++            }
++        }
++    }
++    static func enqueueChapterCacheMaintenance(_ operation: @escaping @Sendable () -> Void) {
++        let hold = BackgroundTaskHold(name: "chapter.cache.migrate")
++        persistQueue.async { defer { hold.release() }; operation() }
++    }
++    func validateOriginalRuntimeCacheChapter(bookID: UUID, chapterID: UUID, index: Int, url: String) throws {
++        Self.assertChapterCachePersistenceQueue()
++        guard let current = try chapterStore.runtimeVariablesSnapshot(bookID: bookID, index: index, url: url),
++              current.chapterID == chapterID else {
++            throw LegadoRuntimeError(code: "STATE_CONFLICT", message: "The granted App chapter TOC identity changed")
++        }
++    }
++    func validateOriginalRuntimeBookProof(_ expected: OriginalRuntimeBookMetadataOwner.Snapshot,
++                                         deadline: Date, cancellation: OriginalRuntimeCommitCancellation,
++                                         validateGrant: @escaping @Sendable () throws -> Void) async throws -> Bool {
++        try await Self.chapterCachePersistence { [self] in
++            try cancellation.check(deadline: deadline); try validateGrant(); try validateRuntimeMetadataPermission()
++            guard runtimeBookMetadata.matches(expected) else { return false }
++            _ = try runtimeMetadataLocation(for: expected.book)
++            try cancellation.check(deadline: deadline); try validateGrant()
++            return runtimeBookMetadata.matches(expected)
++        }
++    }
++    /// The real cache files are checked again in the same writer turn as the one
++    /// chapter-metadata publication. A returned JVM missing-list is not a disk receipt.
++    func publishOriginalBatchCache(bookID: UUID, sourceID: UUID, bookURL: String,
++                                   chapters: [OriginalRuntimeBatchChapter], cache: ChapterCacheRepository,
++                                   deadline: Date) async throws -> [Int] {
++        let cancellation = OriginalRuntimeCommitCancellation()
++        return try await withTaskCancellationHandler {
++            let saved: [Int] = try await Self.chapterCachePersistence { [self] in
++                try cancellation.check(deadline: deadline)
++                guard originalRuntimeBookSnapshot(id: bookID, sourceID: sourceID, bookURL: bookURL) != nil else {
++                    throw LegadoRuntimeError(code: "STATE_CONFLICT", message: "Batch publication lost its App book/source grant")
++                }
++                var updates: [BookChapterStore.CachedFileUpdate] = []
++                for value in chapters {
++                    try cancellation.check(deadline: deadline); try value.generation.check(deadline: deadline)
++                    try validateOriginalRuntimeCacheChapter(bookID: bookID, chapterID: value.chapter.id, index: value.chapter.index, url: value.chapter.url)
++                    guard let package = cache.loadChapterPackageSync(bookId: bookID, chapterIndex: value.chapter.index,
++                        expectedSourceURL: value.chapter.url, expectedTOCTitle: value.chapter.title, scheduleLegacyMigration: false),
++                        package.sourceURL.map({ $0.utf8.elementsEqual(value.chapter.url.utf8) }) == true,
++                        OnlineChapterCacheWritePolicy.isReusableCachedPackage(package, hasBookSource: true) else { continue }
++                    updates.append(.init(index: value.chapter.index, chapterID: value.chapter.id, url: value.chapter.url,
++                        filename: "\(value.chapter.index).txt"))
++                }
++                guard !updates.isEmpty else { return [] }
++                _ = try chapterStore.publishCachedFiles(bookID: bookID, updates: updates) {
++                    try cancellation.check(deadline: deadline)
++                    for value in chapters { try value.generation.check(deadline: deadline) }
++                }
++                return updates.map(\.index)
++            }
++            if !saved.isEmpty { await MainActor.run { self.objectWillChange.send() } }
++            return saved
++        } onCancel: { cancellation.cancel() }
++    }
++    func publishVerifiedChapterCache(bookID: UUID, chapter: OnlineChapterRef,
++                                     generation: OriginalRuntimeChapterGeneration, cache: ChapterCacheRepository,
++                                     sourceURL: String, filename: String) async throws {
++        let cancellation = OriginalRuntimeCommitCancellation()
++        let changed = try await withTaskCancellationHandler {
++            try await Self.chapterCachePersistence { [chapterStore] in
++                let check = { try cancellation.check(deadline: .distantFuture); try generation.checkCacheWrite(deadline: .distantFuture) }
++                try check()
++                guard let package = cache.loadChapterPackageSync(bookId: bookID, chapterIndex: chapter.index,
++                    expectedSourceURL: sourceURL, expectedTOCTitle: chapter.title, scheduleLegacyMigration: false),
++                    package.state == .cached, !package.content.isEmpty else { throw ChapterCacheWriteError.verificationFailed }
++                return try chapterStore.publishCachedFiles(bookID: bookID,
++                    updates: [.init(index: chapter.index, chapterID: chapter.id, url: chapter.url, filename: filename)], beforeWrite: check)
++            }
++        } onCancel: { cancellation.cancel() }
++        if changed { await MainActor.run { self.objectWillChange.send() } }
++    }
++    static func assertChapterCachePersistenceQueue() {
++        dispatchPrecondition(condition: .onQueue(persistQueue))
++    }
++}
+--- baseline/Modules/Services/LibraryStore/CacheManagementService.swift
++++ work/Modules/Services/LibraryStore/CacheManagementService.swift
+@@ -173,7 +173,7 @@
+         )
+     }
+ 
+-    func clear(_ category: CacheCategory) throws {
++    func clear(_ category: CacheCategory) async throws {
+         // The diagnostics directory has a live writer behind it. Deleting the files
+         // from under it would race the batched append; `DiagnosticLog.clear()` does
+         // the same work on the queue that owns those files.
+@@ -182,6 +182,12 @@
+             return
+         }
+         do {
++            if category == .chapters {
++                // All prose artifact mutations, including Settings cleanup, share
++                // the existing library writer with staging/rollback and migrations.
++                try await BookStore.chapterCachePersistence { [self] in try clearDirectory(roots.chapters) }
++                return
++            }
+             if category == .remoteBooks {
+                 try remoteLibraryCache.clearInactive()
+                 return
+@@ -206,9 +212,9 @@
+         }
+     }
+ 
+-    func clearAll() throws {
++    func clearAll() async throws {
+         for category in CacheCategory.allCases {
+-            try clear(category)
++            try await clear(category)
+         }
+     }
+ 
+--- baseline/Modules/Services/LibraryStore/Models.swift
++++ work/Modules/Services/LibraryStore/Models.swift
+@@ -748,7 +748,7 @@
+     static let currentVersion = 4
+ }
+ 
+-struct ChapterPackageArtifact: Codable, Equatable {
++struct ChapterPackageArtifact: Codable, Equatable, Sendable {
+     let sourceURL: String?
+     let tocTitle: String?
+     let canonicalTitle: String?
+@@ -759,12 +759,12 @@
+     let savedAt: Date
+ }
+ 
+-enum ChapterPackageState: String, Codable, Equatable {
++enum ChapterPackageState: String, Codable, Equatable, Sendable {
+     case cached
+     case failed
+ }
+ 
+-struct ChapterPackage: Codable, Equatable {
++struct ChapterPackage: Codable, Equatable, Sendable {
+     let bookId: UUID
+     let chapterIndex: Int
+     let sourceURL: String?
+--- baseline/Modules/Services/Offline/OfflineChapterStore.swift
++++ work/Modules/Services/Offline/OfflineChapterStore.swift
+@@ -430,15 +430,11 @@
+     }
+ 
+     func removeBook(bookId: UUID) async throws {
+-        for directory in [
+-            roots.textBookDirectory(bookId: bookId),
+-            roots.mangaBookDirectory(bookId: bookId),
+-        ] where fileManager.fileExists(atPath: directory.path) {
+-            do {
+-                try fileManager.removeItem(at: directory)
+-            } catch {
+-                throw OfflineChapterStoreError.remove(error.localizedDescription)
+-            }
++        try await ChapterCacheRepository(rootDirectory: roots.textRoot).clearAllChapterCacheAwait(bookId: bookId)
++        let directory = roots.mangaBookDirectory(bookId: bookId)
++        if fileManager.fileExists(atPath: directory.path) {
++            do { try fileManager.removeItem(at: directory) }
++            catch { throw OfflineChapterStoreError.remove(error.localizedDescription) }
+         }
+     }
+ 
+@@ -456,47 +452,25 @@
+         let maximumCount = max(oldRefs.count, newRefs.count)
+         guard maximumCount > 0 else { return }
+ 
+-        // Two directory listings up front instead of six `fileExists` probes per chapter.
+-        // A source switch mismatches nearly every index, so the probe-per-chapter form
+-        // issued 6 × chapterCount stat syscalls — thousands for a long novel — almost all
+-        // of them just to discover there was nothing cached at that index. Books with no
+-        // offline data at all now cost two listings and return immediately.
+-        let textDirectory = roots.textBookDirectory(bookId: bookId)
+-        let cachedTextFiles = Set(
+-            (try? fileManager.contentsOfDirectory(atPath: textDirectory.path)) ?? []
+-        )
++        let repository = ChapterCacheRepository(rootDirectory: roots.textRoot)
+         let mangaDirectory = roots.mangaBookDirectory(bookId: bookId)
+-        let cachedMangaChapters = Set(
+-            (try? fileManager.contentsOfDirectory(atPath: mangaDirectory.path)) ?? []
+-        )
+-        guard !cachedTextFiles.isEmpty || !cachedMangaChapters.isEmpty else { return }
+-
++        let cachedMangaChapters: Set<String>
++        do { cachedMangaChapters = Set(try fileManager.contentsOfDirectory(atPath: mangaDirectory.path)) }
++        catch let error as CocoaError where error.code == .fileReadNoSuchFile { cachedMangaChapters = [] }
++        catch { throw OfflineChapterStoreError.remove(error.localizedDescription) }
+         for index in 0..<maximumCount {
+             let oldRef = oldRefs.indices.contains(index) ? oldRefs[index] : nil
+             let newRef = newRefs.indices.contains(index) ? newRefs[index] : nil
+-            let matches = oldRef.map { old in
+-                newRef.map { new in
+-                    normalizedURL(old.url) == normalizedURL(new.url)
+-                        && normalizedTitle(old.title) == normalizedTitle(new.title)
+-                } ?? false
+-            } ?? true
+-            guard !matches else { continue }
++            let matches = oldRef.map { old in newRef.map { new in
++                normalizedURL(old.url) == normalizedURL(new.url) && normalizedTitle(old.title) == normalizedTitle(new.title)
++            } ?? false } ?? true
++            guard !matches, let oldRef else { continue }
+             do {
+-                for suffix in ["txt", "meta.json", "package.json", "raw.html", "normalized.xhtml"] {
+-                    let filename = "\(index).\(suffix)"
+-                    guard cachedTextFiles.contains(filename) else { continue }
+-                    try fileManager.removeItem(
+-                        at: textDirectory.appendingPathComponent(filename)
+-                    )
++                try await repository.reconcileChapterCache(bookId: bookId, old: oldRef, new: newRef)
++                if cachedMangaChapters.contains(String(index)) {
++                    try fileManager.removeItem(at: roots.mangaChapterDirectory(bookId: bookId, chapterIndex: index))
+                 }
+-                if cachedMangaChapters.contains(String(index)) {
+-                    try fileManager.removeItem(
+-                        at: roots.mangaChapterDirectory(bookId: bookId, chapterIndex: index)
+-                    )
+-                }
+-            } catch {
+-                throw OfflineChapterStoreError.remove(error.localizedDescription)
+-            }
++            } catch { throw OfflineChapterStoreError.remove(error.localizedDescription) }
+         }
+     }
+ 
+--- baseline/Modules/Services/Online/ChapterCacheRepository.swift
++++ work/Modules/Services/Online/ChapterCacheRepository.swift
+@@ -1,5 +1,6 @@
+ import CryptoKit
+ import Foundation
++import Darwin
+ 
+ enum ChapterCacheWriteError: LocalizedError, Equatable, Sendable {
+     case emptyContent
+@@ -8,6 +9,9 @@
+     case writeMetadata(String)
+     case writeArtifact(String)
+     case verificationFailed
++    case invalidIdentity
++    case committedProofRead(String)
++    case rollbackFailed(original: String, rollback: String)
+ 
+     var errorDescription: String? {
+         switch self {
+@@ -23,8 +27,31 @@
+             return "Unable to write chapter artifact: \(message)"
+         case .verificationFailed:
+             return "Chapter cache verification failed"
+-        }
+-    }
++        case .invalidIdentity:
++            return "Chapter cache identity or file is invalid"
++        case .committedProofRead(let message):
++            return "Chapter cache was committed but its final proof could not be read: \(message)"
++        case .rollbackFailed(let original, let rollback):
++            return "Chapter cache write failed (\(original)); restoration also failed (\(rollback))"
++        }
++    }
++}
++
++struct ChapterCacheWriteReceipt: Sendable {
++    let filename: String
++    let changed: Bool
++}
++
++struct OriginalChapterCacheSnapshot: Sendable {
++    let bookID: UUID
++    let index: Int
++    let package: ChapterPackage?
++    let fingerprints: [String: String]
++}
++
++struct OriginalChapterCacheCommitReceipt: Sendable {
++    let write: ChapterCacheWriteReceipt
++    let snapshot: OriginalChapterCacheSnapshot
+ }
+ 
+ struct ChapterCacheRepository: Sendable {
+@@ -70,22 +97,89 @@
+         guard FileManager.default.fileExists(atPath: url.path) else { return false }
+         // Upgrade legacy entries that predate the .package.json artifact so that
+         // loadChapterPackageSync (which requires the artifact) can validate them.
+-        upgradeLegacyChapterCacheIfNeeded(bookId: bookId, chapterIndex: chapterIndex)
++        _ = legacyChapterCandidate(bookId: bookId, chapterIndex: chapterIndex)
+         return true
+     }
+ 
+-    func clearChapterCache(bookId: UUID, chapterIndex: Int) {
+-        try? FileManager.default.removeItem(at: cachePath(bookId: bookId, chapterIndex: chapterIndex))
+-        try? FileManager.default.removeItem(at: cacheMetadataPath(bookId: bookId, chapterIndex: chapterIndex))
+-        try? FileManager.default.removeItem(at: chapterPackagePath(bookId: bookId, chapterIndex: chapterIndex))
+-        try? FileManager.default.removeItem(at: chapterRawHTMLPath(bookId: bookId, chapterIndex: chapterIndex))
+-        try? FileManager.default.removeItem(
+-            at: chapterNormalizedHTMLPath(bookId: bookId, chapterIndex: chapterIndex)
+-        )
+-    }
+-
++    /// Compatibility commands enqueue on the actual owner and make no durable
++    /// ACK claim. Strict runtime callbacks use the awaited variant below.
++    func clearChapterCache(bookId: UUID, chapterIndex: Int, ifUnchanged: ChapterPackage? = nil,
++                           onlyIfInvalid: Bool = false) {
++        BookStore.enqueueChapterCacheMaintenance {
++            do { try clearChapterFiles(bookId: bookId, chapterIndex: chapterIndex,
++                expected: ifUnchanged, onlyIfInvalid: onlyIfInvalid, check: {}) }
++            catch { AppLogger.error("Queued chapter cache removal failed", error: error) }
++        }
++    }
+     func clearAllChapterCache(bookId: UUID) {
+-        try? FileManager.default.removeItem(at: cacheDir(for: bookId))
++        BookStore.enqueueChapterCacheMaintenance {
++            do { try clearBookFiles(bookId: bookId) }
++            catch { AppLogger.error("Queued book cache removal failed", error: error) }
++        }
++    }
++    func clearChapterCacheAwait(bookId: UUID, chapterIndex: Int, ifUnchanged: ChapterPackage? = nil,
++                                onlyIfInvalid: Bool = false) async throws {
++        let cancellation = OriginalRuntimeCommitCancellation()
++        try await withTaskCancellationHandler {
++            try await BookStore.chapterCachePersistence {
++                try clearChapterFiles(bookId: bookId, chapterIndex: chapterIndex, expected: ifUnchanged,
++                    onlyIfInvalid: onlyIfInvalid, check: { try cancellation.check(deadline: .distantFuture) })
++            }
++        } onCancel: { cancellation.cancel() }
++    }
++    private func clearChapterFiles(bookId: UUID, chapterIndex: Int, expected: ChapterPackage?,
++                                    onlyIfInvalid: Bool, check: @Sendable () throws -> Void) throws {
++        BookStore.assertChapterCachePersistenceQueue(); try check()
++        guard chapterIndex >= 0 else { throw ChapterCacheWriteError.invalidIdentity }
++        let current = loadChapterPackageSync(bookId: bookId, chapterIndex: chapterIndex)
++        if let expected, current != expected { return }
++        if onlyIfInvalid, let current, current.state == .cached, !current.content.isEmpty { return }
++        let directory = cacheDir(for: bookId)
++        var status = stat()
++        if lstat(directory.path, &status) != 0 {
++            if errno == ENOENT { return }
++            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
++        }
++        let index = String(chapterIndex)
++        let names = [index+".txt", index+".meta.json", index+".raw.html", index+".normalized.xhtml", index+".package.json"]
++        try SourcePerfTrace.span("chapter.cache.clear", "files=5 main=\(Thread.isMainThread)") {
++            try installChapterFiles(directory: directory, index: index, candidates: names.map { ($0, nil) }, validateGrant: check) {
++                for name in names {
++                    var status = stat()
++                    if lstat(directory.appendingPathComponent(name).path, &status) == 0 { throw ChapterCacheWriteError.verificationFailed }
++                    if errno != ENOENT { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
++                }
++            }
++        }
++    }
++    func clearAllChapterCacheAwait(bookId: UUID) async throws {
++        try await BookStore.chapterCachePersistence { try clearBookFiles(bookId: bookId) }
++    }
++    /// TOC refresh can only remove a package still identifying the old chapter.
++    /// Re-read on the same writer; an earlier directory listing is not authority to
++    /// delete a freshly written replacement. Unknown/corrupt legacy identity is kept.
++    func reconcileChapterCache(bookId: UUID, old: OnlineChapterRef, new: OnlineChapterRef?) async throws {
++        try await BookStore.chapterCachePersistence {
++            guard let current = loadChapterPackageSync(bookId: bookId, chapterIndex: old.index, scheduleLegacyMigration: false),
++                  current.sourceURL.map({ $0.utf8.elementsEqual(old.url.utf8) }) == true, current.tocTitle.map({ $0.utf8.elementsEqual(old.title.utf8) }) == true else { return }
++            if let new, current.sourceURL.map({ $0.utf8.elementsEqual(new.url.utf8) }) == true, current.tocTitle.map({ $0.utf8.elementsEqual(new.title.utf8) }) == true { return }
++            try clearChapterFiles(bookId: bookId, chapterIndex: old.index, expected: current, onlyIfInvalid: false, check: {})
++        }
++    }
++    private func clearBookFiles(bookId: UUID) throws {
++        BookStore.assertChapterCachePersistenceQueue()
++        try SourcePerfTrace.span("chapter.cache.clearBook", "books=1 main=\(Thread.isMainThread)") {
++            let directory = cacheDir(for: bookId)
++            var status = stat()
++            if lstat(directory.path, &status) != 0 {
++                if errno == ENOENT { return }
++                throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
++            }
++            guard status.st_mode & mode_t(S_IFMT) == mode_t(S_IFDIR) else { throw ChapterCacheWriteError.invalidIdentity }
++            // Explicit user deletion, not failed-write cleanup. Recursive-delete
++            // errors propagate; this operation is not claimed all-or-nothing.
++            try FileManager.default.removeItem(at: directory)
++        }
+     }
+ 
+     @discardableResult
+@@ -97,8 +191,9 @@
+         tocTitle: String? = nil,
+         extractedTitle: String? = nil,
+         rawHTML: String? = nil,
+-        storeNormalizedHTML: Bool = true
+-    ) throws -> String {
++        storeNormalizedHTML: Bool = true,
++        validateGrant: @escaping @Sendable () throws -> Void = {}
++    ) async throws -> String {
+         let canonicalTitle = extractedTitle.map {
+             ReaderHTMLUtilities.displayText(fromHTMLFragment: $0)
+                 .trimmingCharacters(in: .whitespacesAndNewlines)
+@@ -129,91 +224,243 @@
+             state: .cached,
+             failureReason: nil
+         )
+-        return try saveChapterPackageToCache(
++        return try await saveChapterPackageToCache(
+             package,
+             rawHTML: rawHTML,
+-            normalizedHTML: normalizedHTML
++            normalizedHTML: normalizedHTML,
++            validateGrant: validateGrant
+         )
+     }
+ 
+     @discardableResult
+     func saveChapterPackageToCache(
+-        _ package: ChapterPackage,
+-        rawHTML: String?,
+-        normalizedHTML: String?
+-    ) throws -> String {
+-        guard !package.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+-            throw ChapterCacheWriteError.emptyContent
+-        }
+-
+-        let dir = cacheDir(for: package.bookId)
++        _ package: ChapterPackage, rawHTML: String?, normalizedHTML: String?,
++        validateGrant: @escaping @Sendable () throws -> Void = {}
++    ) async throws -> String {
++        try await saveChapterPackageOwned(package, rawHTML: rawHTML, normalizedHTML: normalizedHTML,
++            validateGrant: validateGrant).filename
++    }
++
++    func saveChapterPackageOwned(_ package: ChapterPackage, rawHTML: String?, normalizedHTML: String?,
++                                  validateGrant: @escaping @Sendable () throws -> Void = {}) async throws -> ChapterCacheWriteReceipt {
++        let cancellation = OriginalRuntimeCommitCancellation()
++        return try await withTaskCancellationHandler {
++            try await BookStore.chapterCachePersistence {
++                try SourcePerfTrace.span("chapter.cache.persist", "bytes=\(package.content.utf8.count) main=\(Thread.isMainThread)") {
++                    let check: @Sendable () throws -> Void = {
++                        try cancellation.check(deadline: .distantFuture); try validateGrant()
++                    }
++                    try check()
++                    return try persistChapterPackage(package, rawHTML: rawHTML, normalizedHTML: normalizedHTML,
++                        validateGrant: check)
++                }
++            }
++        } onCancel: { cancellation.cancel() }
++    }
++
++    /// All actual file mutations are on the existing book/chapter persistence
++    /// queue. Candidate bytes are complete before any committed path changes.
++    /// Hard-linked backups preserve the original bytes without copying a whole
++    /// chapter into a second in-memory/file cache. Failure restores old paths;
++    /// rollback failure is an unknown partial mutation, never an uncommitted ACK.
++    private func persistChapterPackage(_ package: ChapterPackage, rawHTML: String?, normalizedHTML: String?,
++                                       validateGrant: @Sendable () throws -> Void, migrationOnly: Bool = false,
++                                       claimCommit: @Sendable () -> Bool = { true }) throws -> ChapterCacheWriteReceipt {
++        BookStore.assertChapterCachePersistenceQueue()
++        guard package.chapterIndex >= 0 else { throw ChapterCacheWriteError.invalidIdentity }
++        guard !package.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw ChapterCacheWriteError.emptyContent }
++        let manager = FileManager.default
++        let directory = cacheDir(for: package.bookId)
++        do { try manager.createDirectory(at: directory, withIntermediateDirectories: true) }
++        catch { throw ChapterCacheWriteError.createDirectory(error.localizedDescription) }
++        let index = String(package.chapterIndex)
++        let filename = index + ".txt"
++        let checksum = cacheChecksum(for: package.content)
++        let hasRaw = rawHTML?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
++        let rawName = hasRaw ? index + ".raw.html" : nil
++        let normalizedName = hasRaw && normalizedHTML != nil ? index + ".normalized.xhtml" : nil
++        if !migrationOnly,
++           try cacheFileBytes(chapterPackagePath(bookId: package.bookId, chapterIndex: package.chapterIndex), limit: 1_048_576) != nil,
++           let current = loadChapterPackageSync(bookId: package.bookId, chapterIndex: package.chapterIndex),
++           current.state == .cached, current.content.utf8.elementsEqual(package.content.utf8),
++           Self.sameRaw(current.sourceURL, package.sourceURL), Self.sameRaw(current.tocTitle, package.tocTitle),
++           Self.sameRaw(current.canonicalTitle, package.canonicalTitle), current.rawHTMLFilename == rawName,
++           current.normalizedHTMLFilename == normalizedName,
++           current.renderArtifactVersion == OnlineChapterRenderArtifact.currentVersion,
++           try cacheFileBytes(chapterRawHTMLPath(bookId: package.bookId, chapterIndex: package.chapterIndex), limit: 67_108_864) == (hasRaw ? rawHTML.map { Data($0.utf8) } : nil),
++           try cacheFileBytes(chapterNormalizedHTMLPath(bookId: package.bookId, chapterIndex: package.chapterIndex), limit: 67_108_864) == (normalizedName != nil ? normalizedHTML.map { Data($0.utf8) } : nil) {
++            try validateGrant()
++            return .init(filename: filename, changed: false)
++        }
++        let metadata = CachedChapterMetadata(sourceURL: package.sourceURL, tocTitle: package.tocTitle,
++            extractedTitle: package.canonicalTitle, contentChecksum: checksum, savedAt: package.savedAt,
++            state: .cached, failureReason: nil)
++        let artifact = ChapterPackageArtifact(sourceURL: package.sourceURL, tocTitle: package.tocTitle,
++            canonicalTitle: package.canonicalTitle, contentChecksum: checksum, rawHTMLFilename: rawName,
++            normalizedHTMLFilename: normalizedName, renderArtifactVersion: OnlineChapterRenderArtifact.currentVersion,
++            savedAt: package.savedAt)
++        let fullCandidates: [(String, Data?)] = [
++            (filename, Data(package.content.utf8)),
++            (index + ".meta.json", try JSONEncoder().encode(metadata)),
++            (index + ".raw.html", hasRaw ? rawHTML.map { Data($0.utf8) } : nil),
++            (index + ".normalized.xhtml", normalizedName != nil ? normalizedHTML.map { Data($0.utf8) } : nil),
++            (index + ".package.json", try JSONEncoder().encode(artifact))
++        ]
++        let candidates = migrationOnly ? fullCandidates.filter { $0.0.hasSuffix(".meta.json") || $0.0.hasSuffix(".package.json") } : fullCandidates
++        try installChapterFiles(directory: directory, index: index, candidates: candidates, validateGrant: validateGrant, claimCommit: claimCommit) {
++            guard let verified = loadChapterPackageSync(bookId: package.bookId, chapterIndex: package.chapterIndex,
++                expectedSourceURL: package.sourceURL, expectedTOCTitle: package.tocTitle),
++                verified.state == .cached, verified.content == package.content, verified.contentChecksum == checksum else {
++                throw ChapterCacheWriteError.verificationFailed
++            }
++        }
++        return .init(filename: filename, changed: true)
++    }
++
++    /// The runtime borrows this proof from the same real cache files and writer.
++    /// It does not mint an edit generation or choose a book/chapter from URL text.
++    func originalBatchSnapshot(bookID: UUID, index: Int, sourceURL: String, tocTitle: String,
++                                validateGrant: @escaping @Sendable () throws -> Void) async throws -> OriginalChapterCacheSnapshot {
++        try await BookStore.chapterCachePersistence {
++            try validateGrant()
++            return try SourcePerfTrace.span("chapter.cache.original.snapshot", "files=5 main=\(Thread.isMainThread)") {
++                let fingerprints = try chapterFingerprints(bookID: bookID, index: index, check: validateGrant)
++                let package = loadChapterPackageSync(bookId: bookID, chapterIndex: index,
++                    expectedSourceURL: sourceURL, expectedTOCTitle: tocTitle, scheduleLegacyMigration: false)
++                if package == nil && fingerprints.values.contains(where: { $0 != "missing" }) {
++                    throw ChapterCacheWriteError.verificationFailed
++                }
++                if let package, !Self.sameRaw(package.sourceURL, sourceURL) { throw ChapterCacheWriteError.invalidIdentity }
++                try validateGrant()
++                return .init(bookID: bookID, index: index, package: package, fingerprints: fingerprints)
++            }
++        }
++    }
++
++    /// nil means a stale, unmodified CAS. Actual write errors throw; a successful
++    /// receipt is returned even if cancellation arrives after the committed IO.
++    func compareOriginalBatchSnapshot(_ expected: OriginalChapterCacheSnapshot, package: ChapterPackage,
++                                       validateGrant: @escaping @Sendable () throws -> Void,
++                                       claimCommit: @escaping @Sendable () -> Bool) async throws -> OriginalChapterCacheCommitReceipt? {
++        guard package.bookId == expected.bookID, package.chapterIndex == expected.index else {
++            throw ChapterCacheWriteError.invalidIdentity
++        }
++        let cancellation = OriginalRuntimeCommitCancellation()
++        return try await withTaskCancellationHandler {
++            try await BookStore.chapterCachePersistence {
++                let check: @Sendable () throws -> Void = { try cancellation.check(deadline: .distantFuture); try validateGrant() }
++                try check()
++                guard try chapterFingerprints(bookID: expected.bookID, index: expected.index, check: check) == expected.fingerprints else { return nil }
++                let currentPackage = loadChapterPackageSync(bookId: expected.bookID, chapterIndex: expected.index,
++                    scheduleLegacyMigration: false)
++                if let existing = currentPackage, existing.state == .cached,
++                   existing.content.utf8.elementsEqual(package.content.utf8),
++                   Self.sameRaw(existing.sourceURL, package.sourceURL) {
++                    // Identical resolved text is already durable: retain existing
++                    // canonical title/raw/render artifacts instead of stripping them.
++                    return .init(write: .init(filename: String(expected.index)+".txt", changed: false), snapshot: expected)
++                }
++                let receipt = try persistChapterPackage(package, rawHTML: nil, normalizedHTML: nil,
++                    validateGrant: check, claimCommit: claimCommit)
++                if !receipt.changed { return .init(write: receipt, snapshot: expected) }
++                do {
++                    // Already committed: complete its proof without turning a late
++                    // cancellation/revoke into a claim of no file mutation.
++                    let fingerprints = try chapterFingerprints(bookID: expected.bookID, index: expected.index, check: {})
++                    let current = loadChapterPackageSync(bookId: expected.bookID, chapterIndex: expected.index,
++                        scheduleLegacyMigration: false)
++                    guard current != nil else { throw ChapterCacheWriteError.verificationFailed }
++                    return .init(write: receipt, snapshot: .init(bookID: expected.bookID, index: expected.index,
++                        package: current, fingerprints: fingerprints))
++                } catch { throw ChapterCacheWriteError.committedProofRead(error.localizedDescription) }
++            }
++        } onCancel: { cancellation.cancel() }
++    }
++
++    private func chapterFingerprints(bookID: UUID, index: Int, check: () throws -> Void) throws -> [String: String] {
++        BookStore.assertChapterCachePersistenceQueue()
++        guard index >= 0 else { throw ChapterCacheWriteError.invalidIdentity }
++        var result: [String: String] = [:]
++        for suffix in [".txt", ".meta.json", ".raw.html", ".normalized.xhtml", ".package.json"] {
++            try check()
++            let path = cacheDir(for: bookID).appendingPathComponent(String(index) + suffix)
++            if let data = try cacheFileBytes(path, limit: suffix.hasSuffix("json") ? 1_048_576 : 67_108_864, check: check) {
++                result[suffix] = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
++            } else { result[suffix] = "missing" }
++        }
++        return result
++    }
++
++    private static func sameRaw(_ lhs: String?, _ rhs: String?) -> Bool {
++        switch (lhs, rhs) {
++        case (nil, nil): return true
++        case let (left?, right?): return left.utf8.elementsEqual(right.utf8)
++        default: return false
++        }
++    }
++
++    private func installChapterFiles(directory: URL, index: String, candidates: [(String, Data?)],
++                                     validateGrant: @Sendable () throws -> Void, claimCommit: @Sendable () -> Bool = { true },
++                                     verify: () throws -> Void) throws {
++        BookStore.assertChapterCachePersistenceQueue()
++        let manager = FileManager.default
++        let staging = directory.appendingPathComponent(".chapter-\(index)-\(UUID().uuidString).pending", isDirectory: true)
++        try manager.createDirectory(at: staging, withIntermediateDirectories: false)
++        var backups = Set<String>(); var installed: [String] = []
+         do {
+-            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
++            // Preflight every destination before touching an existing committed file.
++            for (name, bytes) in candidates {
++                let target = directory.appendingPathComponent(name)
++                var status = stat()
++                if lstat(target.path, &status) == 0 {
++                    guard status.st_mode & mode_t(S_IFMT) == mode_t(S_IFREG) else { throw ChapterCacheWriteError.invalidIdentity }
++                    try manager.linkItem(at: target, to: staging.appendingPathComponent(name + ".previous"))
++                    backups.insert(name)
++                } else if errno != ENOENT { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
++                if let bytes { try bytes.write(to: staging.appendingPathComponent(name + ".candidate"), options: .atomic) }
++            }
++            try validateGrant()
++            // This request-local gate races native deadline sealing under its
++            // existing lock; never enter an irreversible rename after denial.
++            guard claimCommit() else { throw CancellationError() }
++            for (name, bytes) in candidates {
++                try validateGrant()
++                let target = directory.appendingPathComponent(name)
++                if bytes != nil {
++                    guard rename(staging.appendingPathComponent(name + ".candidate").path, target.path) == 0 else {
++                        throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
++                    }
++                } else if backups.contains(name) {
++                    guard unlink(target.path) == 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
++                } else { continue }
++                installed.append(name)
++            }
++            try verify()
+         } catch {
+-            throw ChapterCacheWriteError.createDirectory(error.localizedDescription)
+-        }
+-
+-        let filename = "\(package.chapterIndex).txt"
+-        let contentPath = cachePath(bookId: package.bookId, chapterIndex: package.chapterIndex)
+-        let checksum = cacheChecksum(for: package.content)
+-
+-        do {
+-            try package.content.write(to: contentPath, atomically: true, encoding: .utf8)
+-        } catch {
+-            clearChapterCache(bookId: package.bookId, chapterIndex: package.chapterIndex)
+-            throw ChapterCacheWriteError.writeBody(error.localizedDescription)
+-        }
+-
+-        let metadata = CachedChapterMetadata(
+-            sourceURL: package.sourceURL,
+-            tocTitle: package.tocTitle,
+-            extractedTitle: package.canonicalTitle,
+-            contentChecksum: checksum,
+-            savedAt: package.savedAt,
+-            state: .cached,
+-            failureReason: nil
+-        )
+-        do {
+-            let data = try JSONEncoder().encode(metadata)
+-            try data.write(
+-                to: cacheMetadataPath(bookId: package.bookId, chapterIndex: package.chapterIndex),
+-                options: .atomic
+-            )
+-        } catch {
+-            clearChapterCache(bookId: package.bookId, chapterIndex: package.chapterIndex)
+-            throw ChapterCacheWriteError.writeMetadata(error.localizedDescription)
+-        }
+-
+-        do {
+-            try saveChapterArtifact(
+-                package: package,
+-                contentChecksum: checksum,
+-                rawHTML: rawHTML,
+-                normalizedHTML: normalizedHTML
+-            )
+-        } catch let error as ChapterCacheWriteError {
+-            clearChapterCache(bookId: package.bookId, chapterIndex: package.chapterIndex)
+-            throw error
+-        } catch {
+-            clearChapterCache(bookId: package.bookId, chapterIndex: package.chapterIndex)
+-            throw ChapterCacheWriteError.writeArtifact(error.localizedDescription)
+-        }
+-
+-        guard
+-            let verified = loadChapterPackageSync(
+-                bookId: package.bookId,
+-                chapterIndex: package.chapterIndex,
+-                expectedSourceURL: package.sourceURL,
+-                expectedTOCTitle: package.tocTitle
+-            ),
+-            verified.state == .cached,
+-            verified.content == package.content,
+-            verified.contentChecksum == checksum
+-        else {
+-            clearChapterCache(bookId: package.bookId, chapterIndex: package.chapterIndex)
+-            throw ChapterCacheWriteError.verificationFailed
+-        }
+-        return filename
++            let original = error
++            do {
++                for name in installed.reversed() {
++                    let target = directory.appendingPathComponent(name)
++                    if backups.contains(name) {
++                        guard rename(staging.appendingPathComponent(name + ".previous").path, target.path) == 0 else {
++                            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
++                        }
++                    } else if unlink(target.path) != 0 && errno != ENOENT {
++                        throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
++                    }
++                }
++            } catch {
++                AppLogger.error("Chapter cache restoration failed; retained transaction directory", error: error)
++                throw ChapterCacheWriteError.rollbackFailed(original: original.localizedDescription, rollback: error.localizedDescription)
++            }
++            do { try manager.removeItem(at: staging) }
++            catch { AppLogger.error("Chapter cache failed transaction cleanup", error: error) }
++            throw original
++        }
++        // All committed files were verified. A late cancellation cannot turn an
++        // acknowledged cache mutation into a claim that nothing was committed.
++        do { try manager.removeItem(at: staging) }
++        catch { AppLogger.error("Chapter cache committed transaction cleanup", error: error) }
+     }
+ 
+     func loadCachedChapterMetadataSync(bookId: UUID, chapterIndex: Int) -> CachedChapterMetadata? {
+@@ -226,16 +473,17 @@
+         bookId: UUID,
+         chapterIndex: Int,
+         expectedSourceURL: String? = nil,
+-        expectedTOCTitle: String? = nil
++        expectedTOCTitle: String? = nil,
++        scheduleLegacyMigration: Bool = true
+     ) -> ChapterPackage? {
+         // The package loader is the reading pipeline's source of truth. Upgrade
+         // old offline downloads here (not only from `isChapterCached`) so opening
+         // an already-downloaded chapter can never miss its valid `.txt` body.
+-        upgradeLegacyChapterCacheIfNeeded(bookId: bookId, chapterIndex: chapterIndex)
++        let legacy = legacyChapterCandidate(bookId: bookId, chapterIndex: chapterIndex, scheduleMigration: scheduleLegacyMigration)
+         // "No metadata at all" is the ordinary not-cached-yet path and is checked
+         // once per chapter by the offline validator — logging it would drown the
+         // rejections below, which are the ones that mean a cache went bad.
+-        guard let metadata = loadCachedChapterMetadataSync(bookId: bookId, chapterIndex: chapterIndex) else {
++        guard let metadata = legacy?.metadata ?? loadCachedChapterMetadataSync(bookId: bookId, chapterIndex: chapterIndex) else {
+             return nil
+         }
+         if let expectedSourceURL,
+@@ -272,8 +520,8 @@
+         let packageURL = chapterPackagePath(bookId: bookId, chapterIndex: chapterIndex)
+         let bodyURL = cachePath(bookId: bookId, chapterIndex: chapterIndex)
+         let artifactData = try? Data(contentsOf: packageURL)
+-        let artifact = artifactData.flatMap { try? JSONDecoder().decode(ChapterPackageArtifact.self, from: $0) }
+-        let body = (try? String(contentsOf: bodyURL, encoding: .utf8)) ?? ""
++        let artifact = legacy?.artifact ?? artifactData.flatMap { try? JSONDecoder().decode(ChapterPackageArtifact.self, from: $0) }
++        let body = legacy?.package.content ?? ((try? String(contentsOf: bodyURL, encoding: .utf8)) ?? "")
+         let cachedTitle = metadata.extractedTitle ?? metadata.tocTitle ?? ""
+ 
+         if metadata.state == .cached {
+@@ -408,128 +656,105 @@
+         return digest.compactMap { String(format: "%02x", $0) }.joined()
+     }
+ 
+-    /// Synthesises a missing `.package.json` artifact from the existing `.txt` and
+-    /// `.meta.json` files.  Chapters cached by older app versions lack the artifact,
+-    /// which makes `loadChapterPackageSync` (and therefore `isChapterContentAvailable`)
+-    /// always return `nil` even though the content is valid — causing a permanent
+-    /// "loading" state in the reader.
+-    private func upgradeLegacyChapterCacheIfNeeded(bookId: UUID, chapterIndex: Int) {
+-        let packageURL = chapterPackagePath(bookId: bookId, chapterIndex: chapterIndex)
+-        guard !FileManager.default.fileExists(atPath: packageURL.path) else { return }
+-
+-        let bodyURL = cachePath(bookId: bookId, chapterIndex: chapterIndex)
+-        guard
+-            let body = try? String(contentsOf: bodyURL, encoding: .utf8),
+-            !body.isEmpty,
+-            let metadata = loadCachedChapterMetadataSync(bookId: bookId, chapterIndex: chapterIndex),
+-            metadata.state == .cached || metadata.state == nil
+-        else { return }
+-
+-        let checksum = cacheChecksum(for: body)
+-        // A missing package may be a legacy download or an interrupted write. An
+-        // existing checksum still describes the committed body; replacing it with
+-        // the current bytes would turn damaged content into a valid cache entry.
+-        guard metadata.contentChecksum.isEmpty || metadata.contentChecksum == checksum else {
+-            AppLogger.cache("⟐ chapterPackage migration rejected", context: [
+-                "index": chapterIndex,
+-                "reason": "checksumMismatch",
+-            ])
+-            return
+-        }
+-
+-        // Write upgraded .package.json using the existing body checksum.
+-        let artifact = ChapterPackageArtifact(
+-            sourceURL: metadata.sourceURL,
+-            tocTitle: metadata.tocTitle,
+-            canonicalTitle: metadata.extractedTitle,
+-            contentChecksum: checksum,
+-            rawHTMLFilename: nil,
+-            normalizedHTMLFilename: nil,
+-            savedAt: metadata.savedAt
+-        )
+-        if let data = try? JSONEncoder().encode(artifact) {
+-            try? data.write(to: packageURL, options: .atomic)
+-        }
+-
+-        // Backfill both fields used by the current package loader. Some legacy
+-        // metadata already has a checksum but predates the explicit state field.
+-        if metadata.contentChecksum != checksum || metadata.state != .cached {
+-            let updated = CachedChapterMetadata(
+-                sourceURL: metadata.sourceURL,
+-                tocTitle: metadata.tocTitle,
+-                extractedTitle: metadata.extractedTitle,
+-                contentChecksum: checksum,
+-                savedAt: metadata.savedAt,
+-                state: .cached,
+-                failureReason: nil
+-            )
+-            if let data = try? JSONEncoder().encode(updated) {
+-                try? data.write(
+-                    to: cacheMetadataPath(bookId: bookId, chapterIndex: chapterIndex),
+-                    options: .atomic
+-                )
+-            }
+-        }
+-    }
+-
+-    private func saveChapterArtifact(
+-        package: ChapterPackage,
+-        contentChecksum: String,
+-        rawHTML: String?,
+-        normalizedHTML: String?
+-    ) throws {
+-        let rawPath = chapterRawHTMLPath(bookId: package.bookId, chapterIndex: package.chapterIndex)
+-        let normalizedPath = chapterNormalizedHTMLPath(bookId: package.bookId, chapterIndex: package.chapterIndex)
+-        let packagePath = chapterPackagePath(bookId: package.bookId, chapterIndex: package.chapterIndex)
+-
+-        let rawFilename: String?
+-        if let rawHTML, !rawHTML.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+-            do {
+-                try rawHTML.write(to: rawPath, atomically: true, encoding: .utf8)
+-                rawFilename = rawPath.lastPathComponent
+-            } catch {
+-                throw ChapterCacheWriteError.writeArtifact(error.localizedDescription)
+-            }
+-        } else {
+-            if FileManager.default.fileExists(atPath: rawPath.path) {
+-                try FileManager.default.removeItem(at: rawPath)
+-            }
+-            rawFilename = nil
+-        }
+-
+-        // A normalized copy without its raw HTML is exactly the legacy shape
+-        // `shouldRefetchStrippedRenderArtifacts` purges and refetches. Writing one
+-        // here made the read path delete and refetch the chapter on *every* open,
+-        // and re-queued it for any offline download that had counted it complete —
+-        // the refetch reproduced the same shape, so the loop never terminated.
+-        // Without raw HTML the normalized copy is always the plain-text rebuild the
+-        // reader falls back to on its own, so dropping it changes no rendering.
+-        let normalizedFilename: String?
+-        if let normalizedHTML, rawFilename != nil {
+-            do {
+-                try normalizedHTML.write(to: normalizedPath, atomically: true, encoding: .utf8)
+-            } catch {
+-                throw ChapterCacheWriteError.writeArtifact(error.localizedDescription)
+-            }
+-            normalizedFilename = normalizedPath.lastPathComponent
+-        } else {
+-            if FileManager.default.fileExists(atPath: normalizedPath.path) {
+-                try FileManager.default.removeItem(at: normalizedPath)
+-            }
+-            normalizedFilename = nil
+-        }
+-
+-        let artifact = ChapterPackageArtifact(
+-            sourceURL: package.sourceURL,
+-            tocTitle: package.tocTitle,
+-            canonicalTitle: package.canonicalTitle,
+-            contentChecksum: contentChecksum,
+-            rawHTMLFilename: rawFilename,
+-            normalizedHTMLFilename: normalizedFilename,
+-            renderArtifactVersion: OnlineChapterRenderArtifact.currentVersion,
+-            savedAt: package.savedAt
+-        )
+-        let data = try JSONEncoder().encode(artifact)
+-        try data.write(to: packagePath, options: .atomic)
++    private struct LegacyCandidate: Sendable {
++        let metadata: CachedChapterMetadata
++        let artifact: ChapterPackageArtifact
++        let package: ChapterPackage
++    }
++    /// This is a bounded set of scheduled maintenance identities only, never a
++    /// second content cache. The lock protects no I/O and is released before enqueue.
++    private final class PendingMigrations: @unchecked Sendable {
++        private let lock = NSLock()
++        private var keys = Set<String>()
++        func begin(_ key: String) -> Bool { lock.withLock {
++            guard keys.count < 64, !keys.contains(key) else { return false }
++            keys.insert(key); return true
++        } }
++        func end(_ key: String) { lock.withLock { _ = keys.remove(key) } }
++    }
++    private static let pendingMigrations = PendingMigrations()
++
++    private func legacyChapterCandidate(bookId: UUID, chapterIndex: Int, scheduleMigration: Bool = true) -> LegacyCandidate? {
++        do {
++            guard let candidate = try readLegacyCandidate(bookId: bookId, chapterIndex: chapterIndex) else { return nil }
++            let key = cachePath(bookId: bookId, chapterIndex: chapterIndex).path
++            if scheduleMigration && Self.pendingMigrations.begin(key) {
++                BookStore.enqueueChapterCacheMaintenance {
++                    defer { Self.pendingMigrations.end(key) }
++                    do {
++                        // Never publish a stale UI-read candidate over a newer write.
++                        guard let current = try readLegacyCandidate(bookId: bookId, chapterIndex: chapterIndex) else { return }
++                        _ = try persistChapterPackage(current.package, rawHTML: nil, normalizedHTML: nil,
++                            validateGrant: {}, migrationOnly: true)
++                    } catch { AppLogger.error("Chapter cache legacy migration failed", error: error) }
++                }
++            }
++            return candidate
++        } catch {
++            AppLogger.error("Chapter cache legacy record could not be read", error: error)
++            return nil // Compatibility UI read; strict Host snapshots use the throwing owner API.
++        }
++    }
++
++    private func readLegacyCandidate(bookId: UUID, chapterIndex: Int) throws -> LegacyCandidate? {
++        guard try cacheFileBytes(chapterPackagePath(bookId: bookId, chapterIndex: chapterIndex), limit: 1_048_576) == nil else { return nil }
++        guard let bodyData = try cacheFileBytes(cachePath(bookId: bookId, chapterIndex: chapterIndex), limit: 67_108_864),
++              let body = String(data: bodyData, encoding: .utf8), !body.isEmpty,
++              let metadataData = try cacheFileBytes(cacheMetadataPath(bookId: bookId, chapterIndex: chapterIndex), limit: 1_048_576) else { return nil }
++        let prior = try JSONDecoder().decode(CachedChapterMetadata.self, from: metadataData)
++        guard prior.state == .cached || prior.state == nil else { return nil }
++        return try SourcePerfTrace.span("chapter.cache.legacy.read", "bytes=\(bodyData.count) main=\(Thread.isMainThread)") {
++            let checksum = cacheChecksum(for: body)
++            guard prior.contentChecksum.isEmpty || prior.contentChecksum == checksum else { return nil }
++            let metadata = CachedChapterMetadata(sourceURL: prior.sourceURL, tocTitle: prior.tocTitle,
++                extractedTitle: prior.extractedTitle, contentChecksum: checksum, savedAt: prior.savedAt,
++                state: .cached, failureReason: nil)
++            let artifact = ChapterPackageArtifact(sourceURL: prior.sourceURL, tocTitle: prior.tocTitle,
++                canonicalTitle: prior.extractedTitle, contentChecksum: checksum, rawHTMLFilename: nil,
++                normalizedHTMLFilename: nil, renderArtifactVersion: OnlineChapterRenderArtifact.currentVersion, savedAt: prior.savedAt)
++            let package = ChapterPackage(bookId: bookId, chapterIndex: chapterIndex, sourceURL: prior.sourceURL,
++                tocTitle: prior.tocTitle, canonicalTitle: prior.extractedTitle, content: body, contentChecksum: checksum,
++                rawHTMLFilename: nil, normalizedHTMLFilename: nil, renderArtifactVersion: OnlineChapterRenderArtifact.currentVersion,
++                savedAt: prior.savedAt, state: .cached, failureReason: nil)
++            return LegacyCandidate(metadata: metadata, artifact: artifact, package: package)
++        }
++    }
++
++    /// One descriptor, regular file, bound before allocation and exact ENOENT.
++    /// Cached chapter payloads are bounded to 64 MiB; metadata/artifacts to 1 MiB.
++    private func cacheFileBytes(_ path: URL, limit: Int, check: () throws -> Void = {}) throws -> Data? {
++        try check()
++        let descriptor = Darwin.open(path.path, O_RDONLY | O_NOFOLLOW | O_CLOEXEC | O_NONBLOCK)
++        if descriptor < 0 {
++            if errno == ENOENT { return nil }
++            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
++        }
++        var open = true
++        defer { if open { _ = Darwin.close(descriptor) } }
++        var before = stat()
++        guard Darwin.fstat(descriptor, &before) == 0,
++              before.st_mode & mode_t(S_IFMT) == mode_t(S_IFREG), before.st_size >= 0,
++              before.st_size <= limit else { throw ChapterCacheWriteError.invalidIdentity }
++        var result = Data(count: Int(before.st_size))
++        try result.withUnsafeMutableBytes { buffer in
++            var offset = 0
++            while offset < buffer.count {
++                try check()
++                let count = Darwin.pread(descriptor, buffer.baseAddress!.advanced(by: offset), min(262_144, buffer.count-offset), off_t(offset))
++                if count < 0 { if errno == EINTR { continue }; throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
++                guard count > 0 else { throw ChapterCacheWriteError.invalidIdentity }
++                offset += count
++            }
++        }
++        var after = stat(); var atPath = stat()
++        guard Darwin.fstat(descriptor, &after) == 0, Darwin.lstat(path.path, &atPath) == 0,
++              before.st_dev == after.st_dev, before.st_ino == after.st_ino, before.st_size == after.st_size,
++              before.st_mtimespec.tv_sec == after.st_mtimespec.tv_sec, before.st_mtimespec.tv_nsec == after.st_mtimespec.tv_nsec,
++              before.st_ctimespec.tv_sec == after.st_ctimespec.tv_sec, before.st_ctimespec.tv_nsec == after.st_ctimespec.tv_nsec,
++              after.st_dev == atPath.st_dev, after.st_ino == atPath.st_ino else { throw ChapterCacheWriteError.invalidIdentity }
++        open = false
++        guard Darwin.close(descriptor) == 0 else { throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO) }
++        try check()
++        return result
+     }
+ }
+--- baseline/Modules/Services/Online/LegadoBookStateOwner.swift
++++ work/Modules/Services/Online/LegadoBookStateOwner.swift
+@@ -10,13 +10,20 @@
+     let url: String
+     let token: UUID
+     private let cancellation = OriginalRuntimeCommitCancellation()
++    private let validateCacheIdentity: @Sendable () throws -> Void
+ 
+-    init(bookID: UUID, chapter: OnlineChapterRef, token: UUID) {
++    init(bookID: UUID, chapter: OnlineChapterRef, token: UUID,
++         validateCacheIdentity: @escaping @Sendable () throws -> Void = {}) {
+         self.bookID = bookID; self.chapterID = chapter.id
+         self.index = chapter.index; self.url = chapter.url; self.token = token
++        self.validateCacheIdentity = validateCacheIdentity
+     }
+     func revoke() { cancellation.cancel() }
+     func check(deadline: Date) throws { try cancellation.check(deadline: deadline) }
++    func checkCacheWrite(deadline: Date) throws {
++        BookStore.assertChapterCachePersistenceQueue()
++        try check(deadline: deadline); try validateCacheIdentity()
++    }
+ }
+ 
+ struct LegadoEntityStateKey: Sendable {
+@@ -45,9 +52,11 @@
+     private let store: BookStore
+     private let generation: OriginalRuntimeChapterGeneration?
+     private let lifetime = OriginalRuntimeCommitCancellation()
++    private let acceptedBookCommit: @Sendable (OriginalRuntimeBookMetadataOwner.Snapshot) -> Void
+ 
+     init(store: BookStore, bookID: UUID, sourceID: UUID, bookURL: String,
+-         chapter: OnlineChapterRef?, generation: OriginalRuntimeChapterGeneration?) throws {
++         chapter: OnlineChapterRef?, generation: OriginalRuntimeChapterGeneration?,
++         acceptedBookCommit: @escaping @Sendable (OriginalRuntimeBookMetadataOwner.Snapshot) -> Void = { _ in }) throws {
+         guard store.originalRuntimeBookSnapshot(id: bookID, sourceID: sourceID, bookURL: bookURL) != nil else {
+             throw Self.failure("An existing App book UUID, source and URL must be explicitly granted")
+         }
+@@ -59,6 +68,7 @@
+         } else if generation != nil { throw Self.failure("A generation without its chapter is not a valid grant") }
+         self.store = store; self.bookID = bookID; self.sourceID = sourceID
+         self.bookURL = bookURL; self.chapter = chapter; self.generation = generation
++        self.acceptedBookCommit = acceptedBookCommit
+     }
+ 
+     func revoke() { lifetime.cancel() }
+@@ -158,7 +168,7 @@
+             }
+         }
+         return try await store.compareOriginalRuntimeBook(expected: snapshot.bookVariables!, expectedView: snapshot.book,
+-            variables: variables, deadline: deadline, cancellation: cancellation) { [self] in
++            variables: variables, deadline: deadline, cancellation: cancellation, accepted: acceptedBookCommit) { [self] in
+                 guard try currentBook(deadline: deadline) == snapshot.book else {
+                     throw Self.failure("The App book changed before its metadata write")
+                 }
+--- baseline/Modules/Services/Online/LegadoContentBatchOwner.swift
++++ work/Modules/Services/Online/LegadoContentBatchOwner.swift
+@@ -0,0 +1,370 @@
++import Foundation
++import LegadoRuntime
++
++struct OriginalRuntimeBatchChapter: @unchecked Sendable {
++    let chapter: OnlineChapterRef
++    let generation: OriginalRuntimeChapterGeneration
++    let dto: LegadoOriginalChapter
++}
++struct LegadoContentStateKey: Sendable {
++    let wire: String
++    let index: Int? // nil is the actual App book TOC projection, never a body grant.
++}
++struct LegadoContentStateSnapshot: Sendable {
++    let index: Int
++    let cache: OriginalChapterCacheSnapshot
++    let state: LegadoOwnedStateSnapshot
++}
++
++/// One exact accepted metadata revision, with no readback/adoption of later App edits.
++private final class BatchBookCompletionProof: @unchecked Sendable {
++    private let lock = NSLock()
++    private var value: OriginalRuntimeBookMetadataOwner.Snapshot?
++    func initialize(_ snapshot: OriginalRuntimeBookMetadataOwner.Snapshot) {
++        lock.withLock { precondition(value == nil); value = snapshot }
++    }
++    func accepted(_ snapshot: OriginalRuntimeBookMetadataOwner.Snapshot) { lock.withLock { value = snapshot } }
++    func snapshot() -> OriginalRuntimeBookMetadataOwner.Snapshot? { lock.withLock { value } }
++}
++
++/// An adapter borrowing the existing BookStore, chapter owner, cache repository and
++/// in-flight fetch generations. It owns no file/queue/body cache. At most 32 transient
++/// accepted-file proofs prevent a later CAS retry from legitimizing a foreign edit.
++final class AppLegadoContentBatchOwner: @unchecked Sendable, LegadoEntityStateBacking {
++    let taskID: String
++    let book: LegadoOriginalBook
++    private let store: BookStore
++    private let bookID: UUID
++    private let sourceID: UUID
++    private let expiresAt: Date
++    private let cache: ChapterCacheRepository
++    private let bookVariables: AppLegadoBookStateOwner
++    private let chapterVariables: [Data: [AppLegadoBookStateOwner]]
++    private let granted: [Int: OriginalRuntimeBatchChapter]
++    private let lifetime = OriginalRuntimeCommitCancellation()
++    private let bookCompletion: BatchBookCompletionProof
++    private let proofLock = NSLock()
++    private var accepted: [Int: [String: String]] = [:]
++    private var busy = Set<Int>()
++
++    init(taskID: String, store: BookStore, bookID: UUID, sourceID: UUID, book: LegadoOriginalBook,
++         chapters: [OriginalRuntimeBatchChapter], deadline: Date,
++         cache: ChapterCacheRepository = BookSourceFetcher.chapterCacheRepository) throws {
++        guard !taskID.isEmpty, chapters.count <= 32, Set(chapters.map { $0.chapter.index }).count == chapters.count,
++              Set(chapters.map { $0.chapter.id }).count == chapters.count else { throw Self.failure("INVALID_STATE_OWNER", "Batch requires bounded actual chapter identities") }
++        self.taskID = taskID; self.store = store; self.bookID = bookID; self.sourceID = sourceID
++        self.book = book; self.expiresAt = deadline; self.cache = cache
++        let completion = BatchBookCompletionProof()
++        self.bookCompletion = completion
++        self.bookVariables = try AppLegadoBookStateOwner(store: store, bookID: bookID, sourceID: sourceID,
++            bookURL: book.bookURL, chapter: nil, generation: nil,
++            acceptedBookCommit: { completion.accepted($0) })
++        var variables: [Data: [AppLegadoBookStateOwner]] = [:]
++        var values: [Int: OriginalRuntimeBatchChapter] = [:]
++        for value in chapters {
++            let ref = value.chapter; let generation = value.generation
++            guard ref.index >= 0, Int(value.dto.index) == ref.index, value.dto.bookURL.utf8.elementsEqual(book.bookURL.utf8),
++                  value.dto.url.utf8.elementsEqual(ref.url.utf8), generation.bookID == bookID,
++                  generation.chapterID == ref.id, generation.index == ref.index,
++                  generation.url.utf8.elementsEqual(ref.url.utf8) else { throw Self.failure("INVALID_STATE_OWNER", "Batch chapter lacks its actual App generation") }
++            values[ref.index] = value
++            variables[Data(ref.url.utf8), default: []].append(try AppLegadoBookStateOwner(store: store,
++                bookID: bookID, sourceID: sourceID, bookURL: book.bookURL, chapter: ref, generation: generation))
++        }
++        granted = values; chapterVariables = variables
++    }
++    func revoke() {
++        lifetime.cancel(); bookVariables.revoke()
++        for values in chapterVariables.values { values.forEach { $0.revoke() } }
++    }
++    func validateRequest(_ request: LegadoHostRequest) throws {
++        guard request.taskID == taskID else { throw Self.failure("INVALID_STATE_OWNER", "Batch grant belongs to one actual runtime task") }
++        try check(deadline: min(expiresAt, Date().addingTimeInterval(request.remainingTimeoutSeconds)))
++    }
++    func validateState(deadline: Date) async throws { try check(deadline: deadline) }
++    private func check(deadline: Date) throws {
++        try lifetime.check(deadline: min(deadline, expiresAt))
++        guard store.originalRuntimeBookSnapshot(id: bookID, sourceID: sourceID, bookURL: book.bookURL) != nil else {
++            throw Self.failure("STATE_CONFLICT", "The granted App book changed source or identity")
++        }
++    }
++    private func checkChapter(_ index: Int, deadline: Date) throws {
++        try check(deadline: deadline)
++        guard let value = granted[index] else { throw Self.failure("UNSUPPORTED_CAPABILITY", "Chapter was not granted by the actual batch job") }
++        try value.generation.check(deadline: min(deadline, expiresAt))
++    }
++    private func checkChapterOnWriter(_ index: Int, deadline: Date,
++                                       cancellation: OriginalRuntimeCommitCancellation) throws {
++        try cancellation.check(deadline: min(deadline, expiresAt)); try checkChapter(index, deadline: deadline)
++        let ref = granted[index]!.chapter
++        try store.validateOriginalRuntimeCacheChapter(bookID: bookID, chapterID: ref.id, index: ref.index, url: ref.url)
++    }
++
++    func authorize(bookURL: String, chapters: [(Int, String)], deadline: Date) throws {
++        try check(deadline: deadline)
++        guard bookURL.utf8.elementsEqual(book.bookURL.utf8), chapters.count == granted.count,
++              Set(chapters.map { $0.0 }).count == chapters.count else { throw Self.failure("UNSUPPORTED_CAPABILITY", "Batch DTOs differ from the explicitly granted App chapters") }
++        for (index, url) in chapters {
++            guard let value = granted[index], value.chapter.url.utf8.elementsEqual(url.utf8) else {
++                throw Self.failure("UNSUPPORTED_CAPABILITY", "Batch URL/index was not granted")
++            }
++            try checkChapter(index, deadline: deadline)
++        }
++    }
++
++    func prepareBookCompletion(deadline: Date) async throws {
++        let snapshot = try await store.originalRuntimeBookVariableSnapshot(bookID: bookID, sourceID: sourceID,
++            bookURL: book.bookURL, deadline: min(deadline, expiresAt), cancellation: lifetime,
++            validateGrant: { [self] in try check(deadline: deadline) })
++        bookCompletion.initialize(snapshot)
++    }
++
++    /// Direct Book.variable assignment is the original returned small-map field.
++    /// Merge it with the large companions of this task's exact last accepted proof;
++    /// another App/Host edit is a conflict, never a fresh snapshot to overwrite.
++    func finishResultBook(_ result: LegadoOriginalBook, deadline: Date) async throws -> Bool {
++        try check(deadline: deadline)
++        guard result.bookURL.utf8.elementsEqual(book.bookURL.utf8),
++              result.origin.utf8.elementsEqual(book.origin.utf8), result.type == book.type else {
++            throw Self.failure("INVALID_RESULT", "Original batch changed its granted book/source identity")
++        }
++        guard let expected = bookCompletion.snapshot() else { throw Self.failure("INVALID_STATE_OWNER", "Batch completion has no initial App book proof") }
++        let small = try result.variable.map(LegadoPreviewVariableCodec.decodeMap)
++        guard small?.values.allSatisfy({ $0.utf16.count < 10_000 }) != false else {
++            throw Self.failure("INVALID_RESULT", "Original returned small variables contain a large companion")
++        }
++        let large = expected.book.variables?.filter { $0.value.utf16.count >= 10_000 } ?? [:]
++        try LegadoPreviewVariableCodec.validateRepresentable([small ?? [:], large])
++        guard Set((small ?? [:]).keys).isDisjoint(with: large.keys) else {
++            throw Self.failure("UNSUPPORTED_CAPABILITY", "Small and large original variable companions cannot share one App map key")
++        }
++        let variables: [String: String]? = small == nil && large.isEmpty ? nil : (small ?? [:]).merging(large) { first, _ in first }
++        let validate: @Sendable () throws -> Void = { [self] in try check(deadline: deadline) }
++        if BookStore.RuntimeBookSnapshot.sameVariables(variables, expected.book.variables) {
++            guard try await store.validateOriginalRuntimeBookProof(expected, deadline: deadline,
++                cancellation: lifetime, validateGrant: validate) else {
++                throw Self.failure("STATE_CONFLICT", "App book changed after the batch's last accepted variable commit")
++            }
++            return false // No semantic change: no write, revision bump or UI publication.
++        }
++        guard try await store.compareOriginalRuntimeBook(expected: expected, expectedView: expected.book,
++            variables: variables, deadline: deadline, cancellation: lifetime,
++            accepted: { [bookCompletion] in bookCompletion.accepted($0) }, validateGrant: validate) else {
++            throw Self.failure("STATE_CONFLICT", "App book changed after the batch's last accepted variable commit")
++        }
++        return true
++    }
++
++    // Variable operations delegate to the actual existing per-entity owner. Original
++    // URL-keyed variable ABI cannot silently select between two distinct App chapters.
++    private func variableOwner(_ wires: [String], decoded: [String: [String]]) throws -> AppLegadoBookStateOwner {
++        guard let wire = wires.first, let parts = decoded[wire], parts.count >= 5 else { throw Self.failure("INVALID_STATE_REQUEST", "Entity identity is malformed") }
++        if parts[2] == "book" { return bookVariables }
++        guard let owners = chapterVariables[Data(parts[4].utf8)], owners.count == 1 else {
++            throw Self.failure("UNSUPPORTED_CAPABILITY", "URL-keyed original variables do not identify a unique granted App chapter")
++        }
++        return owners[0]
++    }
++    func parse(_ wires: [String], sourceURL: String, decodedParts: [String: [String]]) throws -> [LegadoEntityStateKey] {
++        try variableOwner(wires, decoded: decodedParts).parse(wires, sourceURL: sourceURL, decodedParts: decodedParts)
++    }
++    func readState(keys: [LegadoEntityStateKey], deadline: Date, cancellation: OriginalRuntimeCommitCancellation) async throws -> LegadoEntityBackingSnapshot {
++        try check(deadline: deadline)
++        let owner = try ownerForKeys(keys)
++        return try await owner.readState(keys: keys, deadline: deadline, cancellation: cancellation)
++    }
++    func commitState(snapshot: LegadoEntityBackingSnapshot, keys: [LegadoEntityStateKey], changes: [String: Data?],
++                     deadline: Date, cancellation: OriginalRuntimeCommitCancellation) async throws -> Bool {
++        try check(deadline: deadline)
++        return try await ownerForKeys(keys).commitState(snapshot: snapshot, keys: keys, changes: changes,
++            deadline: deadline, cancellation: cancellation)
++    }
++    private func ownerForKeys(_ keys: [LegadoEntityStateKey]) throws -> AppLegadoBookStateOwner {
++        guard let key = keys.first else { throw Self.failure("INVALID_STATE_REQUEST", "Entity keys are empty") }
++        guard let url = key.chapterURL else { return bookVariables }
++        guard let values = chapterVariables[Data(url.utf8)], values.count == 1 else { throw Self.failure("UNSUPPORTED_CAPABILITY", "Chapter variable owner is ambiguous") }
++        return values[0]
++    }
++
++    func parseContent(_ wires: [String], sourceURL: String, decoded: [String: [String]]) throws -> [LegadoContentStateKey] {
++        var values: [LegadoContentStateKey] = []
++        for wire in wires {
++            guard let parts = decoded[wire], parts.count == 3 || parts.count == 4,
++                  parts[0].utf8.elementsEqual(sourceURL.utf8), parts[2].utf8.elementsEqual(book.bookURL.utf8) else {
++                throw Self.failure("UNSUPPORTED_CAPABILITY", "Body key does not match the granted App book")
++            }
++            if parts[1] == "toc", parts.count == 3 { values.append(.init(wire: wire, index: nil)) }
++            else if parts[1] == "content", parts.count == 4, let index = Int(parts[3]), String(index) == parts[3], granted[index] != nil {
++                values.append(.init(wire: wire, index: index))
++            } else { throw Self.failure("UNSUPPORTED_CAPABILITY", "Body key has no actual chapter generation grant") }
++        }
++        guard values.count <= 2, values.filter({ $0.index != nil }).count == 1 else {
++            throw Self.failure("UNSUPPORTED_CAPABILITY", "One original save snapshot must belong to one granted chapter")
++        }
++        return values
++    }
++
++    private func begin(_ index: Int) throws {
++        try proofLock.withLock {
++            guard !busy.contains(index) else { throw Self.failure("STATE_CONFLICT", "This chapter already has an active owner operation") }
++            busy.insert(index)
++        }
++    }
++    private func end(_ index: Int) { proofLock.withLock { _ = busy.remove(index) } }
++    private func acceptRead(_ value: OriginalChapterCacheSnapshot) throws {
++        try proofLock.withLock {
++            if let prior = accepted[value.index], prior != value.fingerprints {
++                throw Self.failure("STATE_CONFLICT", "Another cache writer changed the actual chapter files")
++            }
++            accepted[value.index] = value.fingerprints
++        }
++    }
++    func readContent(keys: [LegadoContentStateKey], deadline: Date,
++                     cancellation: OriginalRuntimeCommitCancellation) async throws -> LegadoContentStateSnapshot {
++        let index = keys.compactMap(\.index)[0]
++        try begin(index); defer { end(index) }
++        try checkChapter(index, deadline: deadline)
++        let value = granted[index]!
++        let snapshot = try await cache.originalBatchSnapshot(bookID: bookID, index: index, sourceURL: value.chapter.url,
++            tocTitle: value.chapter.title, validateGrant: { [self] in try checkChapterOnWriter(index, deadline: deadline, cancellation: cancellation) })
++        try cancellation.check(deadline: min(deadline, expiresAt)); try checkChapter(index, deadline: deadline)
++        try acceptRead(snapshot)
++        var result: [String: Data] = [:]
++        for key in keys {
++            if key.index != nil {
++                let row = ContentRecord(version: 0, bookUrl: book.bookURL, index: index, chapterUrl: value.chapter.url,
++                    name: book.name, author: book.author, title: value.dto.title, imgUrl: value.dto.imgURL, body: snapshot.package?.content ?? "")
++                result[key.wire] = try JSONEncoder().encode(row)
++            } else {
++                let chapters = try await store.originalRuntimeChapters(bookID: bookID)
++                result[key.wire] = try JSONEncoder().encode(chapters.map { TocRecord(chapter: $0, book: book) })
++            }
++        }
++        try checkChapter(index, deadline: deadline)
++        return .init(index: index, cache: snapshot, state: .init(revision: 0, values: result))
++    }
++
++    func commitContent(snapshot: LegadoContentStateSnapshot, keys: [LegadoContentStateKey], changes: [String: Data?],
++                       deadline: Date, cancellation: OriginalRuntimeCommitCancellation,
++                       request: LegadoHostRequest) async throws -> Bool {
++        let index = snapshot.index
++        try begin(index); defer { end(index) }
++        try checkChapter(index, deadline: deadline)
++        guard let key = keys.first(where: { $0.index == index }), changes.count == 1,
++              let optional = changes[key.wire], let bytes = optional, bytes.count <= 1_048_576 else {
++            throw Self.failure("UNSUPPORTED_CAPABILITY", "Original batch saves only one content value; TOC metadata/deletion is not granted")
++        }
++        let row: ContentRecord
++        do { row = try JSONDecoder().decode(ContentRecord.self, from: bytes) }
++        catch { throw Self.failure("INVALID_STATE_REQUEST", "Original content record is incompatible with the granted save") }
++        let value = granted[index]!
++        guard row.version == 0, row.index == index, row.bookUrl.utf8.elementsEqual(book.bookURL.utf8),
++              row.chapterUrl.utf8.elementsEqual(value.chapter.url.utf8), row.name.utf8.elementsEqual(book.name.utf8),
++              row.author.utf8.elementsEqual(book.author.utf8), !row.body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
++            throw Self.failure("INVALID_STATE_REQUEST", "Original body identity differs from the captured App save grant")
++        }
++        guard row.body.range(of: #"<\s*/?\s*[a-zA-Z!][^>]*>"#, options: .regularExpression) == nil else {
++            throw Self.failure("UNSUPPORTED_CAPABILITY", "App original batch HTML/media render artifacts are not connected")
++        }
++        let package = ChapterPackage(bookId: bookID, chapterIndex: index, sourceURL: value.chapter.url,
++            tocTitle: value.chapter.title, canonicalTitle: nil, content: row.body, contentChecksum: "",
++            rawHTMLFilename: nil, normalizedHTMLFilename: nil, savedAt: Date(), state: .cached, failureReason: nil)
++        do {
++            guard let receipt = try await cache.compareOriginalBatchSnapshot(snapshot.cache, package: package,
++                validateGrant: { [self] in try checkChapterOnWriter(index, deadline: deadline, cancellation: cancellation) },
++                claimCommit: { request.recordPossibleEffect("chapterContentMayCommit") }) else { return false }
++            proofLock.withLock { accepted[index] = receipt.snapshot.fingerprints }
++            if receipt.write.changed { request.recordPossibleEffect("chapterContentCommitted") }
++            return true
++        } catch let error as ChapterCacheWriteError {
++            switch error {
++            case .rollbackFailed, .committedProofRead:
++                throw LegadoRuntimeError(code: "STATE_IO", message: error.localizedDescription,
++                    completedEffects: ["chapterContentMayCommit"])
++            default: throw error
++            }
++        }
++    }
++    // version=0 is only the finite JVM record representation. Authorization/edit
++    // protection is the real generation plus captured complete file proofs above.
++    private struct ContentRecord: Codable {
++        let version: Int64; let bookUrl: String; let index: Int; let chapterUrl: String
++        let name: String; let author: String; let title: String; let imgUrl: String?; let body: String
++    }
++    private struct TocRecord: Codable {
++        let url: String; let title: String; let bookUrl: String; let index: Int; let baseUrl: String
++        let isVolume: Bool; let isVip: Bool; let isPay: Bool
++        init(chapter: OnlineChapterRef, book: LegadoOriginalBook) {
++            url = chapter.url; title = chapter.title; bookUrl = book.bookURL; index = chapter.index; baseUrl = book.tocURL
++            isVolume = chapter.isVolume; isVip = chapter.isVip; isPay = chapter.isPay
++        }
++    }
++    private static func failure(_ code: String, _ message: String) -> LegadoRuntimeError { .init(code: code, message: message) }
++}
++
++
++/// Values borrowed from real App owners, never decoded from imported source JSON.
++struct LegadoContentBatchExecutionRequest: @unchecked Sendable {
++    let sourceJSON: String
++    let sourceURL: String
++    let sourceRevision: String
++    let sourceID: UUID
++    let store: BookStore
++    let bookID: UUID
++    let book: LegadoOriginalBook
++    let chapters: [OriginalRuntimeBatchChapter]
++    let taskID: String
++    let deadline: Date
++    let cache: ChapterCacheRepository
++}
++protocol LegadoOriginalContentBatchExecuting: Sendable {
++    func execute(_ request: LegadoContentBatchExecutionRequest) async throws -> LegadoOriginalContentBatchResult
++}
++struct NativeLegadoOriginalContentBatchExecutor: LegadoOriginalContentBatchExecuting {
++    func execute(_ request: LegadoContentBatchExecutionRequest) async throws -> LegadoOriginalContentBatchResult {
++        let process = LegadoRuntimeProcess.shared
++        let owner = try await process.bindPersistentContentBatch(request)
++        var finalBookCommitted = false
++        do {
++            let runtime = try await process.executor()
++            try check(request.deadline)
++            let session = try await runtime.createSession(sourceJSON: request.sourceJSON,
++                options: NativeLegadoOriginalPreviewExecutor.embeddingOptions(owner: owner))
++            let result: LegadoOriginalContentBatchResult
++            do {
++                try check(request.deadline)
++                result = try await runtime.contentBatchOriginal(session: session, book: request.book,
++                    chapters: request.chapters.map(\.dto),
++                    timeoutMilliseconds: Int64(min(300_000, max(1, request.deadline.timeIntervalSinceNow * 1000))), taskID: request.taskID)
++                finalBookCommitted = try await process.finishContentBatchResult(owner: owner, request: request, book: result.book)
++            } catch {
++                do { try await runtime.close(session: session) }
++                catch { AppLogger.error("Original batch session cleanup failed after execution error", error: error) }
++                throw error
++            }
++            try await runtime.close(session: session)
++            await process.revokePersistentSource(owner: owner)
++            return result
++        } catch {
++            await process.revokePersistentSource(owner: owner)
++            if finalBookCommitted {
++                let failure = error as? LegadoRuntimeError
++                throw LegadoRuntimeError(code: failure?.code ?? "STATE_IO", message: error.localizedDescription,
++                    completedEffects: Array(Set((failure?.completedEffects ?? []) + ["bookVariablesCommitted"])).sorted())
++            }
++            throw error
++        }
++    }
++    private func check(_ deadline: Date) throws {
++        try Task.checkCancellation()
++        guard deadline.timeIntervalSinceNow > 0 else { throw LegadoRuntimeError(code: "TIMEOUT", message: "Original batch absolute deadline elapsed") }
++    }
++}
++
++/// Actual cache-readback facts survive ordinary JVM and later metadata errors.
++/// A saved prefix is never rolled back merely because another chapter failed.
++struct OriginalContentBatchFailure: Error {
++    let executionError: Error?
++    let publicationError: Error?
++    let verifiedSavedIndexes: [Int]
++}
+--- baseline/Modules/Services/Online/LegadoMainJSSourceService.swift
++++ work/Modules/Services/Online/LegadoMainJSSourceService.swift
+@@ -37,6 +37,16 @@
+         try await persistentHost().bindBook(sourceURL: sourceURL, sourceRevision: sourceRevision,
+             store: store, bookID: bookID, sourceID: sourceID, bookURL: bookURL,
+             chapter: chapter, generation: generation)
++    }
++
++    func bindPersistentContentBatch(_ request: LegadoContentBatchExecutionRequest) async throws -> String {
++        try await persistentHost().bindContentBatch(sourceURL: request.sourceURL, sourceRevision: request.sourceRevision,
++            taskID: request.taskID, store: request.store, bookID: request.bookID, sourceID: request.sourceID,
++            book: request.book, chapters: request.chapters, deadline: request.deadline, cache: request.cache)
++    }
++
++    func finishContentBatchResult(owner: String, request: LegadoContentBatchExecutionRequest, book: LegadoOriginalBook) async throws -> Bool {
++        try await persistentHost().finishContentBatchResult(owner: owner, taskID: request.taskID, book: book, deadline: request.deadline)
+     }
+ 
+     func bindPersistentPreview(grant: OriginalRuntimePreviewGrant) async throws -> String {
+@@ -146,6 +156,7 @@
+ actor LegadoMainJSSourceService {
+     static let contextKey = "__legado.jvm.mainJs.context.v1"
+     private let executor: any LegadoMainJSExecuting
++    private let contentBatchExecutor: any LegadoOriginalContentBatchExecuting
+     private let originalExecutor: any LegadoOriginalPreviewExecuting
+     private var originalSourceRevisions: [String: (signature: String, clock: Int64)] = [:]
+     private let configuredDirectory: URL?
+@@ -181,9 +192,11 @@
+ 
+     init(executor: any LegadoMainJSExecuting = NativeLegadoMainJSExecutor(), contextDirectory: URL? = nil,
+          operationTimeout: TimeInterval = 60,
+-         originalExecutor: any LegadoOriginalPreviewExecuting = NativeLegadoOriginalPreviewExecutor()) {
++         originalExecutor: any LegadoOriginalPreviewExecuting = NativeLegadoOriginalPreviewExecutor(),
++         contentBatchExecutor: any LegadoOriginalContentBatchExecuting = NativeLegadoOriginalContentBatchExecutor()) {
+         self.executor = executor
+         self.originalExecutor = originalExecutor
++        self.contentBatchExecutor = contentBatchExecutor
+         self.configuredDirectory = contextDirectory
+         self.operationTimeout = operationTimeout
+     }
+@@ -900,6 +913,25 @@
+             else { read.record.chapterVariables.removeValue(forKey: LegadoPreviewIdentity.key(chapter.url)) }
+         }
+         return try replacePreview(read.record, previous: read, id: reference.bookRecordID, deadline: deadline).record
++    }
++
++    /// Explicit App-owned batch entry; shares the existing per-source operation
++    /// lease, immutable source revision and sole runtime process with all other calls.
++    func originalContentBatch(source: BookSource, store: BookStore, bookID: UUID,
++                              book: LegadoOriginalBook, chapters: [OriginalRuntimeBatchChapter],
++                              taskID: String, deadline: Date,
++                              cache: ChapterCacheRepository = BookSourceFetcher.chapterCacheRepository) async throws -> LegadoOriginalContentBatchResult {
++        let signature = try originalSignature(source)
++        try validateOriginalBook(book, sourceURL: source.bookSourceUrl)
++        try await acquire(source.bookSourceUrl, deadline: deadline)
++        defer { release(source.bookSourceUrl) }
++        try acceptOriginalRevision(source, signature: signature)
++        try Task.checkCancellation()
++        guard deadline.timeIntervalSinceNow > 0 else { throw failure("TIMEOUT", "Original batch deadline elapsed") }
++        let sourceJSON = String(decoding: try encoded(source), as: UTF8.self)
++        return try await contentBatchExecutor.execute(.init(sourceJSON: sourceJSON, sourceURL: source.bookSourceUrl,
++            sourceRevision: signature, sourceID: source.id, store: store, bookID: bookID, book: book,
++            chapters: chapters, taskID: taskID, deadline: deadline, cache: cache))
+     }
+ 
+     private func originalSignature(_ source: BookSource) throws -> String {
+--- baseline/Modules/Services/Online/LegadoPersistentStateHost.swift
++++ work/Modules/Services/Online/LegadoPersistentStateHost.swift
+@@ -117,6 +117,12 @@
+     private var leases: [Int64: Lease] = [:]
+     private var bookOwners: [String: any LegadoEntityStateBacking] = [:]
+     private var entityLeases: [Int64: EntityLease] = [:]
++    private struct ContentLease {
++        let owner: String; let binding: Binding; let backing: AppLegadoContentBatchOwner
++        let keys: [LegadoContentStateKey]; let snapshot: LegadoContentStateSnapshot
++    }
++    private var contentOwners: [String: AppLegadoContentBatchOwner] = [:]
++    private var contentLeases: [Int64: ContentLease] = [:]
+     private var pendingEntityOperations: [String: [UUID: OriginalRuntimeCommitCancellation]] = [:]
+     private struct OriginalWebCookieOperation {
+         let owner: String
+@@ -148,10 +154,12 @@
+                 binding.cookieCancellation.cancel()
+                 cancelWebCookieOperations(owner: owner)
+                 bookOwners.removeValue(forKey: owner)?.revoke()
++                contentOwners.removeValue(forKey: owner)
+             }
+             bindings = bindings.filter { $0.value.sourceURL != sourceURL }
+             leases = leases.filter { $0.value.binding.sourceURL != sourceURL }
+             entityLeases = entityLeases.filter { $0.value.binding.sourceURL != sourceURL }
++            contentLeases = contentLeases.filter { $0.value.binding.sourceURL != sourceURL }
+         }
+         guard bindings.count < 256 else { throw failure("STATE_LIMIT", "Too many active source state owners") }
+         let owner = UUID().uuidString
+@@ -192,6 +200,44 @@
+         return owner
+     }
+ 
++    func bindContentBatch(sourceURL: String, sourceRevision: String, taskID: String, store: BookStore,
++                          bookID: UUID, sourceID: UUID, book: LegadoOriginalBook,
++                          chapters: [OriginalRuntimeBatchChapter], deadline: Date,
++                          cache: ChapterCacheRepository = BookSourceFetcher.chapterCacheRepository) async throws -> String {
++        let previous = revisions[sourceURL]
++        guard book.origin.utf8.elementsEqual(sourceURL.utf8),
++              await store.prepareOriginalRuntimeBookSnapshot(id: bookID, sourceID: sourceID, bookURL: book.bookURL) != nil else {
++            throw failure("UNSUPPORTED_CAPABILITY", "Batch requires an existing App book/source UUID")
++        }
++        let backing = try AppLegadoContentBatchOwner(taskID: taskID, store: store, bookID: bookID, sourceID: sourceID,
++            book: book, chapters: chapters, deadline: deadline, cache: cache)
++        for value in chapters {
++            guard let current = try await store.originalRuntimeChapterSnapshot(bookID: bookID,
++                index: value.chapter.index, url: value.chapter.url), current.chapterID == value.chapter.id else {
++                throw failure("UNSUPPORTED_CAPABILITY", "Batch chapter TOC identity is no longer current")
++            }
++            try value.generation.check(deadline: deadline)
++        }
++        try await backing.prepareBookCompletion(deadline: deadline)
++        try Task.checkCancellation(); try await backing.validateState(deadline: deadline)
++        guard revisions[sourceURL] == previous else { throw failure("SOURCE_CHANGED", "Source changed while binding the App batch owner") }
++        let owner = try bind(sourceURL: sourceURL, sourceRevision: sourceRevision)
++        bookOwners[owner] = backing; contentOwners[owner] = backing
++        return owner
++    }
++
++    func finishContentBatchResult(owner: String, taskID: String, book: LegadoOriginalBook, deadline: Date) async throws -> Bool {
++        try Task.checkCancellation()
++        guard !cancelled.contains(taskID) else { throw CancellationError() }
++        guard let binding = bindings[owner], revisions[binding.sourceURL] == binding.sourceRevision,
++              let backing = contentOwners[owner], backing.taskID == taskID else {
++            throw failure("INVALID_STATE_OWNER", "Batch completion no longer has its current source/task grant")
++        }
++        return try await backing.finishResultBook(book, deadline: deadline)
++        // A final CAS can already be durable. Do not convert a late revoke/cancel
++        // into false/no-mutation after its actual accepted receipt.
++    }
++
+     /// Only the existing context actor can issue this proof. Source JSON/reference text
+     /// alone cannot manufacture a preview grant or acquire a library UUID.
+     func bindPreview(grant: OriginalRuntimePreviewGrant) async throws -> String {
+@@ -213,6 +259,8 @@
+         removed?.cookieCancellation.cancel()
+         cancelWebCookieOperations(owner: owner)
+         bookOwners.removeValue(forKey: owner)?.revoke()
++        contentOwners.removeValue(forKey: owner)
++        contentLeases = contentLeases.filter { $0.value.owner != owner }
+         leases = leases.filter { $0.value.owner != owner }
+         entityLeases = entityLeases.filter { $0.value.owner != owner }
+         if let removed, !bindings.values.contains(where: { $0.sourceURL == removed.sourceURL }) {
+@@ -222,10 +270,11 @@
+ 
+     /// Value-free diagnostics for verifying bounded ownership bookkeeping.
+     func ownershipCounts() -> (bindings: Int, sourceRevisions: Int, leases: Int) {
+-        (bindings.count, revisions.count, leases.count + entityLeases.count)
++        (bindings.count, revisions.count, leases.count + entityLeases.count + contentLeases.count)
+     }
+ 
+     func dispatch(_ request: LegadoHostRequest) async throws -> String {
++        if request.operation == "content.batch.authorize" { return try authorizeContentBatch(request) }
+         if request.operation == "explore.owner.scope" { return try explorationOwnerScope(request) }
+         if request.operation == "cookie.owner.read" { return try await readCookieOwner(request) }
+         if request.operation == "cookie.owner.text" { return try await textCookieOwner(request) }
+@@ -236,6 +285,7 @@
+         do {
+           let decoded = try decodeStateRequest(request)
+           let input = decoded.input; let owner = decoded.owner; let binding = decoded.binding
++          if let result = try await dispatchContentStateIfNeeded(request, decoded: decoded) { return result }
+           if let result = try await dispatchEntityStateIfNeeded(request, decoded: decoded) { return result }
+           return try SourcePerfTrace.span("legado.state.host", "bytes=\(request.requestJSON.utf8.count) main=\(Thread.isMainThread)") {
+             if request.operation == "state.read" {
+@@ -648,6 +698,96 @@
+             let expired = leaseOrder.removeFirst()
+             leases.removeValue(forKey: expired)
+             entityLeases.removeValue(forKey: expired)
++            contentLeases.removeValue(forKey: expired)
++        }
++    }
++
++    private func authorizeContentBatch(_ request: LegadoHostRequest) throws -> String {
++        try check(request)
++        guard request.requestJSON.utf8.count <= 65_536 else { throw failure("STATE_LIMIT", "Batch grant request is oversized") }
++        let raw: Any
++        do { raw = try JSONSerialization.jsonObject(with: Data(request.requestJSON.utf8)) }
++        catch { throw failure("INVALID_STATE_REQUEST", "Batch grant request is not valid JSON") }
++        guard let input = raw as? [String: Any], Set(input.keys).isSubset(of: ["owner", "sourceURL", "bookURL", "chapters", "deadlineEpochMs", "remainingTimeoutMs"]),
++              let owner = input["owner"] as? String, let binding = bindings[owner],
++              revisions[binding.sourceURL] == binding.sourceRevision,
++              let sourceURL = input["sourceURL"] as? String, sourceURL.utf8.elementsEqual(binding.sourceURL.utf8),
++              let bookURL = input["bookURL"] as? String, let rows = input["chapters"] as? [[String: Any]], rows.count <= 32,
++              let backing = contentOwners[owner] else { throw failure("UNSUPPORTED_CAPABILITY", "No actual App batch save owner is bound") }
++        try backing.validateRequest(request)
++        let chapters: [(Int, String)] = try rows.map { row in
++            guard Set(row.keys) == ["index", "url"], let number = row["index"] as? NSNumber,
++                  CFGetTypeID(number) != CFBooleanGetTypeID(), let index = Int(number.stringValue), index >= 0,
++                  let url = row["url"] as? String, !url.isEmpty, url.utf8.count <= 8_192 else {
++                throw failure("INVALID_STATE_REQUEST", "Batch chapter identity is malformed")
++            }
++            return (index, url)
++        }
++        try backing.authorize(bookURL: bookURL, chapters: chapters, deadline: cookieReadDeadline(input))
++        return try encoded(["authorized": true])
++    }
++
++    private func dispatchContentStateIfNeeded(_ request: LegadoHostRequest, decoded: DecodedStateInput) async throws -> String? {
++        let isRead = request.operation == "state.read" && decoded.parts.values.contains { $0[1] == "content" || $0[1] == "toc" }
++        guard isRead || decoded.revision.flatMap({ contentLeases[$0] }) != nil else { return nil }
++        guard let backing = contentOwners[decoded.owner] else { throw failure("UNSUPPORTED_CAPABILITY", "Body state requires actual App chapter save grants") }
++        try backing.validateRequest(request)
++        let deadline = try cookieReadDeadline(decoded.input)
++        let ticket = OriginalRuntimeCommitCancellation(); let id = UUID()
++        pendingEntityOperations[request.taskID, default: [:]][id] = ticket
++        defer {
++            pendingEntityOperations[request.taskID]?.removeValue(forKey: id)
++            if pendingEntityOperations[request.taskID]?.isEmpty == true { pendingEntityOperations.removeValue(forKey: request.taskID) }
++        }
++        return try await SourcePerfTrace.spanAsync("legado.state.content", "bytes=\(request.requestJSON.utf8.count) main=\(Thread.isMainThread)") {
++            if isRead {
++                let keys = try backing.parseContent(decoded.keys!, sourceURL: decoded.binding.sourceURL, decoded: decoded.parts)
++                let snapshot = try await withTaskCancellationHandler {
++                    try await backing.readContent(keys: keys, deadline: deadline, cancellation: ticket)
++                } onCancel: { ticket.cancel() }
++                try check(request); try currentEntityBinding(owner: decoded.owner, binding: decoded.binding)
++                guard snapshot.state.values.values.reduce(0, { $0 + $1.count }) <= 1_048_576 else { throw failure("STATE_LIMIT", "Content snapshot exceeds its bridge byte budget") }
++                // contentSaveToken performs a value-only read; retaining an
++                // unused CAS lease for all 32 chapters would exhaust the first
++                // actual save. Only content+TOC read sets can enter a save CAS.
++                if keys.count == 1 {
++                    return try encoded(["revision": 0, "values": snapshot.state.values.mapValues { $0.base64EncodedString() }])
++                }
++                guard contentLeases.count < 32 else { throw failure("STATE_LIMIT", "Too many active content save CAS proofs") }
++                guard nextLease < Int64.max else { throw failure("STATE_LIMIT", "State revision space exhausted") }
++                nextLease += 1
++                // Retain only CAS identity/fingerprints, never the returned prose or
++                // whole TOC bytes as another in-memory body cache.
++                let proof = LegadoContentStateSnapshot(index: snapshot.index,
++                    cache: .init(bookID: snapshot.cache.bookID, index: snapshot.cache.index, package: nil,
++                        fingerprints: snapshot.cache.fingerprints),
++                    state: .init(revision: snapshot.state.revision, values: [:]))
++                contentLeases[nextLease] = .init(owner: decoded.owner, binding: decoded.binding, backing: backing, keys: keys, snapshot: proof)
++                leaseOrder.append(nextLease); trimLeases()
++                return try encoded(["revision": nextLease, "values": snapshot.state.values.mapValues { $0.base64EncodedString() }])
++            }
++            guard let revision = decoded.revision, let lease = contentLeases.removeValue(forKey: revision),
++                  lease.owner == decoded.owner, lease.binding.sourceRevision == decoded.binding.sourceRevision else {
++                return try encoded(["committed": false])
++            }
++            guard let rawChanges = decoded.input["changes"] as? [String: Any], rawChanges.count == 1,
++                  rawChanges.keys.allSatisfy({ key in lease.keys.contains(where: { $0.wire == key && $0.index != nil }) }) else {
++                throw failure("UNSUPPORTED_CAPABILITY", "Body commit cannot change another owner or TOC metadata")
++            }
++            var changes: [String: Data?] = [:]
++            for (key, raw) in rawChanges {
++                guard let value = raw as? String, value.utf8.count <= 1_398_104,
++                      let bytes = Data(base64Encoded: value), bytes.count <= 1_048_576 else { throw failure("STATE_LIMIT", "Content commit is malformed or oversized") }
++                changes.updateValue(bytes, forKey: key)
++            }
++            try check(request); try currentEntityBinding(owner: decoded.owner, binding: decoded.binding)
++            let committed = try await withTaskCancellationHandler {
++                try await lease.backing.commitContent(snapshot: lease.snapshot, keys: lease.keys, changes: changes,
++                    deadline: deadline, cancellation: ticket, request: request)
++            } onCancel: { ticket.cancel() }
++            // Commit receipt already crossed actual file IO. Never replace that
++            // fact with a later cancel/revoke "false" response.
++            return try encoded(["committed": committed])
+         }
+     }
+ 
+--- baseline/Modules/Services/Online/OnlineChapterContentService.swift
++++ work/Modules/Services/Online/OnlineChapterContentService.swift
+@@ -63,7 +63,7 @@
+             )
+             let suspiciousContent = ChapterFetchManager.isSuspiciousChapterContent(cached.content)
+             if invalidArtifacts || suspiciousContent {
+-                BookSourceFetcher.shared.clearChapterCache(bookId: book.id, chapterIndex: index)
++                BookSourceFetcher.shared.clearChapterCache(bookId: book.id, chapterIndex: index, ifUnchanged: cached)
+             } else {
+                 return makePayload(package: cached, ref: ref, index: index)
+             }
+--- baseline/Modules/Services/Online/OnlineReadingPipeline.swift
++++ work/Modules/Services/Online/OnlineReadingPipeline.swift
+@@ -1,4 +1,5 @@
+ import Foundation
++import LegadoRuntime
+ import SwiftUI
+ 
+ extension Notification.Name {
+@@ -138,6 +139,118 @@
+ 
+     private func revokeOriginalGeneration(_ taskKey: String) {
+         originalGenerations.removeValue(forKey: taskKey)?.revoke()
++    }
++
++    /// Explicit traditional-runtime batch operation. Existing reader/download routes
++    /// do not select it implicitly. This manager creates the real per-chapter jobs and
++    /// generations before borrowing them into the Host; JSON contains no App grants.
++    func fetchOriginalContentBatch(bookID: UUID, sourceID: UUID, book: LegadoOriginalBook,
++                                   chapterIndexes: [Int], store: BookStore,
++                                   timeout: TimeInterval = 60,
++                                   cache: ChapterCacheRepository = BookSourceFetcher.chapterCacheRepository) async throws -> LegadoOriginalContentBatchResult {
++        guard timeout.isFinite, timeout > 0, timeout <= 300, !chapterIndexes.isEmpty,
++              chapterIndexes.count <= 32, Set(chapterIndexes).count == chapterIndexes.count else {
++            throw LegadoRuntimeError(code: "INVALID_REQUEST", message: "Original batch requires 1...32 unique chapter indexes and a bounded deadline")
++        }
++        let deadline = Date().addingTimeInterval(timeout)
++        let refs = try await store.originalRuntimeChapters(bookID: bookID)
++        let resolveSource = sourceResolver
++        guard let source = await MainActor.run(body: { resolveSource(sourceID) }),
++              source.bookSourceUrl.utf8.elementsEqual(book.origin.utf8),
++              await store.prepareOriginalRuntimeBookSnapshot(id: bookID, sourceID: sourceID, bookURL: book.bookURL) != nil else {
++            throw LegadoRuntimeError(code: "INVALID_STATE_OWNER", message: "Batch requires the actual App book/source UUID and immutable source")
++        }
++        var selected: [OnlineChapterRef] = []
++        for index in chapterIndexes {
++            guard refs.indices.contains(index), refs[index].index == index,
++                  !refs[index].shouldRenderAsVolumeSeparator, !refs[index].url.isEmpty,
++                  tasks[key(bookId: bookID, chapterIndex: index)] == nil else {
++                throw LegadoRuntimeError(code: "STATE_CONFLICT", message: "Batch chapter is missing, a volume separator or already has an active job")
++            }
++            selected.append(refs[index])
++        }
++        var grants: [OriginalRuntimeBatchChapter] = []
++        for ref in selected {
++            guard let index = Int32(exactly: ref.index) else { throw LegadoRuntimeError(code: "INVALID_REQUEST", message: "Chapter index exceeds original Int") }
++            let taskKey = key(bookId: bookID, chapterIndex: ref.index); let token = UUID()
++            let generation = OriginalRuntimeChapterGeneration(bookID: bookID, chapter: ref, token: token,
++                validateCacheIdentity: { try store.validateOriginalRuntimeCacheChapter(bookID: bookID,
++                    chapterID: ref.id, index: ref.index, url: ref.url) })
++            var dto = LegadoOriginalChapter(bookURL: book.bookURL, url: ref.url, index: index, title: ref.title, baseURL: book.tocURL)
++            dto.isVolume = ref.isVolume; dto.isVip = ref.isVip; dto.isPay = ref.isPay
++            if let variables = ref.runtimeVariables {
++                try LegadoPreviewVariableCodec.validateRepresentable([variables])
++                dto.variable = String(decoding: try JSONEncoder().encode(variables), as: UTF8.self)
++            }
++            grants.append(.init(chapter: ref, generation: generation, dto: dto))
++        }
++        let granted = grants
++        for value in granted {
++            let taskKey = key(bookId: bookID, chapterIndex: value.chapter.index)
++            generationTokens[taskKey] = value.generation.token; originalGenerations[taskKey] = value.generation
++            priorities[taskKey] = .download; states[taskKey] = .loading
++        }
++        let service = bookSourceFetcher.mainJSService
++        let operation = Task { try await service.originalContentBatch(source: source, store: store, bookID: bookID,
++            book: book, chapters: granted, taskID: UUID().uuidString, deadline: deadline, cache: cache) }
++        var children: [(OriginalRuntimeBatchChapter, Task<ChapterPackage, Error>)] = []
++        for value in granted {
++            let child = Task { () throws -> ChapterPackage in
++                let result = await operation.result
++                try Task.checkCancellation(); try value.generation.check(deadline: deadline)
++                let package = try await BookStore.chapterCachePersistence {
++                    try value.generation.checkCacheWrite(deadline: deadline)
++                    return cache.loadChapterPackageSync(bookId: bookID, chapterIndex: value.chapter.index,
++                        expectedSourceURL: value.chapter.url, expectedTOCTitle: value.chapter.title, scheduleLegacyMigration: false)
++                }
++                if let package, package.sourceURL.map({ $0.utf8.elementsEqual(value.chapter.url.utf8) }) == true,
++                    OnlineChapterCacheWritePolicy.isReusableCachedPackage(package, hasBookSource: true) { return package }
++                if case .failure(let error) = result { throw error }
++                throw FetchError.emptyContent
++            }
++            tasks[key(bookId: bookID, chapterIndex: value.chapter.index)] = child
++            children.append((value, child))
++        }
++        defer {
++            for value in granted { clearRequestTracking(for: key(bookId: bookID, chapterIndex: value.chapter.index), token: value.generation.token) }
++        }
++        let ownedChildren = children
++        return try await withTaskCancellationHandler {
++            let result = await operation.result
++            var verified: [Int] = []
++            for (value, child) in children {
++                let childResult = await child.result
++                let taskKey = key(bookId: bookID, chapterIndex: value.chapter.index)
++                guard generationTokens[taskKey] == value.generation.token else { continue }
++                switch childResult {
++                case .success: verified.append(value.chapter.index); states[taskKey] = .cached
++                case .failure(let error): states[taskKey] = Self.isCancellation(error) ? .missing : .failed
++                }
++            }
++            var publicationError: Error?
++            do {
++                _ = try await store.publishOriginalBatchCache(bookID: bookID, sourceID: sourceID, bookURL: book.bookURL,
++                    chapters: granted, cache: cache, deadline: deadline)
++            } catch {
++                publicationError = error
++                for value in granted {
++                    let taskKey = key(bookId: bookID, chapterIndex: value.chapter.index)
++                    if generationTokens[taskKey] == value.generation.token { states[taskKey] = .missing }
++                }
++            }
++            switch result {
++            case .success(let value):
++                guard publicationError == nil else { throw OriginalContentBatchFailure(executionError: nil,
++                    publicationError: publicationError, verifiedSavedIndexes: verified) }
++                return value // Original contract: missing chapters, not a fabricated contents array.
++            case .failure(let error):
++                throw OriginalContentBatchFailure(executionError: error, publicationError: publicationError,
++                    verifiedSavedIndexes: verified)
++            }
++        } onCancel: {
++            operation.cancel()
++            for (value, child) in ownedChildren { value.generation.revoke(); child.cancel() }
++        }
+     }
+ 
+     /// Determines whether cached chapter content is suspiciously abnormal
+@@ -225,6 +338,7 @@
+ 
+         let sanitizedURL = RuleEngine.sanitizeExtractedURL(ref.url)
+         var shouldClearCachedChapter = false
++        var rejectedPackage: ChapterPackage?
+         var candidateURLs = [sanitizedURL]
+         if sanitizedURL != ref.url {
+             candidateURLs.append(ref.url)
+@@ -243,10 +357,11 @@
+                 return cached
+             }
+             shouldClearCachedChapter = true
++            rejectedPackage = cached
+         }
+ 
+         if shouldClearCachedChapter {
+-            bookSourceFetcher.clearChapterCache(bookId: book.id, chapterIndex: chapterIndex)
++            bookSourceFetcher.clearChapterCache(bookId: book.id, chapterIndex: chapterIndex, ifUnchanged: rejectedPackage)
+         }
+ 
+         return nil
+@@ -267,6 +382,8 @@
+         priority: ChapterFetchPriority,
+         store: BookStore?
+     ) async throws -> ChapterPackage {
++        await BookStore.queuedWritesLanded()
++        try Task.checkCancellation()
+         guard let refs = book.onlineChapters, refs.indices.contains(chapterIndex) else {
+             throw NSError(
+                 domain: "OnlineReadingPipeline", code: -1,
+@@ -295,6 +412,7 @@
+         }
+ 
+         var shouldClearCachedChapter = false
++        var rejectedPackage: ChapterPackage?
+ 
+         // Load once and branch on the result. The `else if` this replaces re-ran the same
+         // call with the same arguments purely to tell "no cache" from "unusable cache" —
+@@ -312,6 +430,7 @@
+                 return cached
+             }
+             shouldClearCachedChapter = true
++            rejectedPackage = cached
+         }
+         // Also accept caches stored under the original URL (legacy path)
+         if sanitizedURL != refs[chapterIndex].url,
+@@ -326,10 +445,11 @@
+                 return legacyCached
+             }
+             shouldClearCachedChapter = true
++            rejectedPackage = legacyCached
+         }
+ 
+         if shouldClearCachedChapter {
+-            bookSourceFetcher.clearChapterCache(bookId: book.id, chapterIndex: chapterIndex)
++            bookSourceFetcher.clearChapterCache(bookId: book.id, chapterIndex: chapterIndex, ifUnchanged: rejectedPackage)
+         }
+ 
+         let taskKey = key(bookId: book.id, chapterIndex: chapterIndex)
+@@ -378,7 +498,18 @@
+         let myToken = UUID()
+         generationTokens[taskKey] = myToken
+         revokeOriginalGeneration(taskKey)
+-        originalGenerations[taskKey] = OriginalRuntimeChapterGeneration(bookID: book.id, chapter: ref, token: myToken)
++        let actualChapter = refs[chapterIndex]
++        originalGenerations[taskKey] = OriginalRuntimeChapterGeneration(bookID: book.id, chapter: actualChapter, token: myToken,
++            validateCacheIdentity: {
++                do {
++                    try store?.validateOriginalRuntimeCacheChapter(bookID: book.id, chapterID: actualChapter.id,
++                        index: actualChapter.index, url: actualChapter.url)
++                } catch let error as LegadoRuntimeError where error.code == "STATE_CONFLICT" {
++                    // A superseded normal job is cancelled, not a source failure or
++                    // permission to quarantine the replacement chapter.
++                    throw CancellationError()
++                }
++            })
+ 
+         // A jump used to cancel every other in-flight fetch for this book "to free
+         // WKWebView slots". It was a workaround for contention the pool already handles —
+@@ -412,6 +543,7 @@
+             ]
+         )
+ 
++        let writeGeneration = originalGenerations[taskKey]!
+         let task = Task(priority: priority.taskPriority) { () throws -> ChapterPackage in
+             if let sourceId = book.bookSourceId {
+                 guard
+@@ -427,7 +559,8 @@
+                     ref: ref,
+                     bookId: book.id,
+                     source: source,
+-                    chapterReferer: book.tocURL ?? book.bookInfoURL ?? book.source
++                    chapterReferer: book.tocURL ?? book.bookInfoURL ?? book.source,
++                    cacheWriteGeneration: writeGeneration
+                 )
+             }
+ 
+@@ -443,20 +576,20 @@
+                         Task {
+                             guard await selfRef.isTokenValid(taskKey: taskKey, token: myToken) else { return }
+                             do {
+-                                let filename = try bsf.saveToCache(
++                                let filename = try await bsf.saveToCache(
+                                     content: partial,
+                                     bookId: bookId,
+                                     chapterIndex: chapterIndex,
+                                     sourceURL: ref.url,
+                                     tocTitle: ref.title,
+-                                    storeNormalizedHTML: false
++                                    storeNormalizedHTML: false,
++                                    validateGrant: { try writeGeneration.checkCacheWrite(deadline: .distantFuture) }
+                                 )
++                                try await capturedStore?.publishVerifiedChapterCache(bookID: bookId, chapter: actualChapter,
++                                    generation: writeGeneration, cache: BookSourceFetcher.chapterCacheRepository,
++                                    sourceURL: ref.url, filename: filename)
++                                try writeGeneration.check(deadline: .distantFuture)
+                                 await MainActor.run {
+-                                    capturedStore?.updateCachedChapter(
+-                                        bookId: bookId,
+-                                        chapterIndex: chapterIndex,
+-                                        filename: filename
+-                                    )
+                                     NotificationCenter.default.post(
+                                         name: .onlineChapterCacheDidUpdate,
+                                         object: nil,
+@@ -470,20 +603,20 @@
+                     }
+                 )
+             } catch {
+-                bookSourceFetcher.clearChapterCache(
+-                    bookId: book.id,
+-                    chapterIndex: chapterIndex
+-                )
++                // A failed/cancelled browser request grants no deletion authority.
++                // Progressive or newer-generation successful files remain readable;
++                // the validated cache-read path separately removes invalid artifacts.
+                 throw error
+             }
+             if !content.isEmpty {
+-                _ = try bookSourceFetcher.saveToCache(
++                _ = try await bookSourceFetcher.saveToCache(
+                     content: content,
+                     bookId: book.id,
+                     chapterIndex: chapterIndex,
+                     sourceURL: ref.url,
+                     tocTitle: ref.title,
+-                    storeNormalizedHTML: false
++                    storeNormalizedHTML: false,
++                    validateGrant: { try writeGeneration.checkCacheWrite(deadline: .distantFuture) }
+                 )
+                 guard let persistedPackage = bookSourceFetcher.loadChapterPackageSync(
+                     bookId: book.id,
+@@ -520,19 +653,20 @@
+                     // such as paragraph-review badges.
+                     filename = OnlineChapterCacheWritePolicy.contentFilename(chapterIndex: chapterIndex)
+                 } else {
+-                    filename = try bookSourceFetcher.saveToCache(
++                    filename = try await bookSourceFetcher.saveToCache(
+                         content: package.content,
+                         bookId: book.id,
+                         chapterIndex: chapterIndex,
+                         sourceURL: ref.url,
+                         tocTitle: ref.title,
+-                        storeNormalizedHTML: book.bookSourceId != nil
++                        storeNormalizedHTML: book.bookSourceId != nil,
++                        validateGrant: { try writeGeneration.checkCacheWrite(deadline: .distantFuture) }
+                     )
+                 }
+-                await MainActor.run {
+-                    store?.updateCachedChapter(
+-                        bookId: book.id, chapterIndex: chapterIndex, filename: filename)
+-                }
++                try await store?.publishVerifiedChapterCache(bookID: book.id, chapter: actualChapter,
++                    generation: writeGeneration, cache: BookSourceFetcher.chapterCacheRepository,
++                    sourceURL: ref.url, filename: filename)
++                guard generationTokens[taskKey] == myToken else { throw CancellationError() }
+                 states[taskKey] = .cached
+                 // Success: reset failure counter
+                 bookFailureCounts[bookId] = 0
+@@ -686,7 +820,7 @@
+         // `errorDownloadMap`.
+         _ = sourceURL
+         _ = tocTitle
+-        bookSourceFetcher.clearChapterCache(bookId: bookId, chapterIndex: chapterIndex)
++        bookSourceFetcher.clearChapterCache(bookId: bookId, chapterIndex: chapterIndex, onlyIfInvalid: true)
+ 
+         let failCount = (bookFailureCounts[bookId] ?? 0) + 1
+         bookFailureCounts[bookId] = failCount
+@@ -748,6 +882,8 @@
+             directFailure = error
+         }
+ 
++        // A cancelled direct request cannot start a fresh WK lease.
++        try Task.checkCancellation()
+         // Browser-imported pages sometimes require JavaScript rendering. Enter
+         // this fallback only when the primary fetch threw or returned no body.
+         guard let firstURL = URL(string: urlString) else {
+@@ -937,7 +1073,8 @@
+             } else if hasLooseCache {
+                 bsf.clearChapterCache(
+                     bookId: book.id,
+-                    chapterIndex: ref.index
++                    chapterIndex: ref.index,
++                    onlyIfInvalid: true
+                 )
+                 html = Self.placeholderHTML(
+                     title: displayTitle,
+--- baseline/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift
++++ work/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift
+@@ -125,3 +125,17 @@
+ internal struct OriginalExploreContextRequest: Encodable, Sendable {
+     let action: String; let script: String?; let timeoutMs: Int64
+ }
++
++/// Original getContentBatchAwait result: chapters not marked saved, never inferred bodies.
++public struct LegadoOriginalContentBatchResult: Codable, Sendable, Equatable {
++    public let book: LegadoOriginalBook
++    public let missingChapters: [LegadoOriginalChapter]
++    public init(book: LegadoOriginalBook, missingChapters: [LegadoOriginalChapter]) {
++        self.book = book; self.missingChapters = missingChapters
++    }
++}
++internal struct OriginalContentBatchRequest: Encodable, Sendable {
++    let book: LegadoOriginalBook
++    let chapters: [LegadoOriginalChapter]
++    let timeoutMs: Int64
++}
+--- baseline/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift
++++ work/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift
+@@ -249,6 +249,18 @@
+                                 taskID: String = UUID().uuidString) async throws -> LegadoOriginalContentResult {
+         try await executeOriginal(session, "content", OriginalContentRequest(book: book, chapter: chapter, nextChapterUrl: nextChapterURL, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
+     }
++    /// Executes original batch callbacks and returns chapters that remain unsaved.
++    /// The embedding App must first bind its real book and active chapter generations;
++    /// a source-only/preview owner cannot authorize this operation.
++    public func contentBatchOriginal(session: LegadoSourceSession, book: LegadoOriginalBook,
++                                     chapters: [LegadoOriginalChapter], timeoutMilliseconds: Int64 = 30_000,
++                                     taskID: String = UUID().uuidString) async throws -> LegadoOriginalContentBatchResult {
++        guard chapters.count <= 32, Set(chapters.map(\.index)).count == chapters.count else {
++            throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "Original batch requires at most 32 unique chapter indexes")
++        }
++        return try await executeOriginal(session, "contentBatch", OriginalContentBatchRequest(book: book, chapters: chapters,
++            timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
++    }
+     private func executeOriginal<Request: Encodable & Sendable, Response: Decodable & Sendable>(
+         _ session: LegadoSourceSession, _ operation: String, _ request: Request, _ timeoutMilliseconds: Int64, _ taskID: String
+     ) async throws -> Response {
+--- baseline/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift
++++ work/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift
+@@ -29,6 +29,7 @@
+         case "search": result = ["books": [book]]
+         case "details": result = ["book": book]
+         case "toc": result = ["book": book, "chapters": [Self.object(Self.chapter())]]
++        case "contentBatch": result = ["book": book, "missingChapters": Array((input["chapters"] as? [Any] ?? []).suffix(1))]
+         case "content": result = ["book": book, "chapter": input["chapter"] ?? Self.object(Self.chapter()), "content": "owned text"]
+         default: throw LegadoRuntimeError(code: "fixture_operation", message: operation)
+         }
+@@ -78,6 +79,23 @@
+         let options = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(XCTUnwrap(transport.options).utf8)) as? [String: String])
+         XCTAssertEqual(options["sourceMode"], "original-traditional"); XCTAssertEqual(options["stateOwner"], "embedding-owner")
+     }
++    func testTypedBatchReturnsMissingChapterIdentitiesAndDoesNotGrantSaves() async throws {
++        let transport = OriginalAPITransport(); let runtime = runtime(transport); let source = try await session(runtime)
++        let book = OriginalAPITransport.book()
++        let a = OriginalAPITransport.chapter()
++        let b = LegadoOriginalChapter(bookURL: book.bookURL, url: a.url, index: 1, title: "Second same URL", baseURL: a.baseURL)
++        let value = try await runtime.contentBatchOriginal(session: source, book: book, chapters: [a, b], taskID: "typed-batch")
++        XCTAssertEqual(value.missingChapters, [b]); XCTAssertEqual(value.book, book)
++        let call = try XCTUnwrap(transport.calls.first)
++        XCTAssertEqual(call.operation, "contentBatch"); XCTAssertEqual(call.task, "typed-batch"); XCTAssertFalse(call.main)
++        let input = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(call.request.utf8)) as? [String: Any])
++        XCTAssertNil(input["needSave"]); XCTAssertNil(input["owner"]); XCTAssertEqual((input["chapters"] as? [Any])?.count, 2)
++        do { _ = try await runtime.contentBatchOriginal(session: source, book: book, chapters: [a,a]); XCTFail("Duplicate indexes must reject before transport") }
++        catch let error as LegadoRuntimeError { XCTAssertEqual(error.code, "INVALID_ARGUMENT") }
++        transport.respondNext("{\"ok\":false,\"error\":{\"code\":\"INVALID_STATE_OWNER\",\"message\":\"revoked\",\"completedEffects\":[\"chapterContentCommitted\"]}}")
++        do { _ = try await runtime.contentBatchOriginal(session: source, book: book, chapters: [a,b]); XCTFail("Host failure is not missing success") }
++        catch let error as LegadoRuntimeError { XCTAssertEqual(error.code, "INVALID_STATE_OWNER"); XCTAssertEqual(error.completedEffects, ["chapterContentCommitted"]) }
++    }
+     func testTypedBusinessApiDoesNotSelectTheExistingRoute() async throws {
+         let transport = OriginalAPITransport(); let runtime = runtime(transport)
+         do { _ = try await runtime.searchOriginal(session: .init(id: "existing"), key: "owned"); XCTFail("Expected explicit mode gate") }
+--- baseline/Tests/iOS/yuedu appTests/CachedBookTXTExportTests.swift
++++ work/Tests/iOS/yuedu appTests/CachedBookTXTExportTests.swift
+@@ -17,11 +17,11 @@
+             OnlineChapterRef(index: 3, title: "Stale", url: "https://example.test/new"),
+             OnlineChapterRef(index: 9, title: "Missing", url: "https://example.test/9"),
+         ]
+-        try save(repository, bookID: bookID, position: 1, chapter: chapters[1], body: "first body")
+-        try save(repository, bookID: bookID, position: 2, chapter: chapters[2], body: "second body")
++        try await save(repository, bookID: bookID, position: 1, chapter: chapters[1], body: "first body")
++        try await save(repository, bookID: bookID, position: 2, chapter: chapters[2], body: "second body")
+         var stale = chapters[3]
+         stale.url = "https://example.test/old"
+-        try save(repository, bookID: bookID, position: 3, chapter: stale, body: "stale body")
++        try await save(repository, bookID: bookID, position: 3, chapter: stale, body: "stale body")
+ 
+         let result = try await CachedBookTXTExportService.export(
+             CachedBookTXTExportRequest(bookID: bookID, title: "../A:Book", author: "Author", chapters: chapters),
+@@ -44,7 +44,7 @@
+         let bookID = UUID()
+         let chapter = OnlineChapterRef(index: 0, title: "第一章", url: "https://example.test/0")
+         let html = "<p>简体中文正文。</p><p>第二段。<img src=\"https://example.test/cover\"></p>"
+-        try save(repository, bookID: bookID, position: 0, chapter: chapter, body: html, rawHTML: html)
++        try await save(repository, bookID: bookID, position: 0, chapter: chapter, body: html, rawHTML: html)
+         let result = try await CachedBookTXTExportService.export(
+             CachedBookTXTExportRequest(bookID: bookID, title: "测试书", author: "作者", chapters: [chapter]),
+             repository: repository, temporaryDirectory: directory
+@@ -62,7 +62,7 @@
+         let bookID = UUID()
+         let chapter = OnlineChapterRef(index: 0, title: "第一章 <literal> &lt;", url: "https://example.test/plain")
+         let body = "  原样保留 <标签> 与 &lt;code&gt;、&amp;。\r\n\t第二行。\n"
+-        try save(repository, bookID: bookID, position: 0, chapter: chapter, body: body)
++        try await save(repository, bookID: bookID, position: 0, chapter: chapter, body: body)
+         let package = try #require(repository.loadChapterPackageSync(
+             bookId: bookID, chapterIndex: 0, expectedSourceURL: chapter.sanitizedContentURL,
+             expectedTOCTitle: chapter.title
+@@ -99,8 +99,8 @@
+     private func save(
+         _ repository: ChapterCacheRepository, bookID: UUID, position: Int, chapter: OnlineChapterRef,
+         body: String, rawHTML: String? = nil
+-    ) throws {
+-        try repository.saveChapterPackageToCache(ChapterPackage(
++    ) async throws {
++        try await repository.saveChapterPackageToCache(ChapterPackage(
+             bookId: bookID, chapterIndex: position, sourceURL: chapter.sanitizedContentURL,
+             tocTitle: chapter.title, canonicalTitle: chapter.title, content: body,
+             contentChecksum: "", rawHTMLFilename: rawHTML == nil ? nil : "\(position).raw.html", normalizedHTMLFilename: nil,
+--- baseline/Tests/iOS/yuedu appTests/CacheManagementServiceTests.swift
++++ work/Tests/iOS/yuedu appTests/CacheManagementServiceTests.swift
+@@ -32,7 +32,7 @@
+     }
+ 
+     @Test("clearing one category leaves the other cache roots intact")
+-    func clearOneCategory() throws {
++    func clearOneCategory() async throws {
+         let fixture = try makeFixture()
+         defer { try? FileManager.default.removeItem(at: fixture.container) }
+ 
+@@ -41,7 +41,7 @@
+         try Data("chapter".utf8).write(to: chapter)
+         try Data("cover".utf8).write(to: cover)
+ 
+-        try CacheManagementService(roots: fixture.roots, diagnosticLog: nil).clear(.chapters)
++        try await CacheManagementService(roots: fixture.roots, diagnosticLog: nil).clear(.chapters)
+ 
+         #expect(!FileManager.default.fileExists(atPath: chapter.path))
+         #expect(FileManager.default.fileExists(atPath: cover.path))
+@@ -49,7 +49,7 @@
+     }
+ 
+     @Test("clearing all caches removes files but preserves cache roots")
+-    func clearAllCaches() throws {
++    func clearAllCaches() async throws {
+         let fixture = try makeFixture()
+         defer { try? FileManager.default.removeItem(at: fixture.container) }
+ 
+@@ -58,7 +58,7 @@
+             try Data(repeating: UInt8(index), count: index + 1).write(to: file)
+         }
+ 
+-        try CacheManagementService(roots: fixture.roots, diagnosticLog: nil).clearAll()
++        try await CacheManagementService(roots: fixture.roots, diagnosticLog: nil).clearAll()
+         let snapshot = CacheManagementService(roots: fixture.roots, diagnosticLog: nil).snapshot()
+ 
+         #expect(snapshot.total == 0)
+@@ -68,7 +68,7 @@
+     }
+ 
+     @Test("remote cleanup preserves active books, explicit offline files and reading metadata")
+-    func remoteCleanupKeepsActiveReading() throws {
++    func remoteCleanupKeepsActiveReading() async throws {
+         let fixture = try makeFixture()
+         defer { try? FileManager.default.removeItem(at: fixture.container) }
+         let cache = RemoteLibraryCache(root: fixture.roots.remoteBooks)
+@@ -85,14 +85,14 @@
+         cache.retain(activeID)
+         let service = CacheManagementService(roots: fixture.roots, diagnosticLog: nil, remoteLibraryCache: cache)
+         #expect(service.snapshot().remoteBooks == 30)
+-        try service.clear(.remoteBooks)
++        try await service.clear(.remoteBooks)
+         #expect(FileManager.default.fileExists(atPath: active.path))
+         #expect(!FileManager.default.fileExists(atPath: inactive.path))
+         #expect(service.snapshot().remoteBooks == 13)
+         #expect(FileManager.default.fileExists(atPath: offline.path))
+         #expect(FileManager.default.fileExists(atPath: progress.path))
+         cache.release(activeID)
+-        try service.clear(.remoteBooks)
++        try await service.clear(.remoteBooks)
+         #expect(service.snapshot().remoteBooks == 0)
+         #expect(FileManager.default.fileExists(atPath: offline.path))
+         #expect(FileManager.default.fileExists(atPath: progress.path))
+--- baseline/Tests/iOS/yuedu appTests/ChapterCacheMigrationTests.swift
++++ work/Tests/iOS/yuedu appTests/ChapterCacheMigrationTests.swift
+@@ -6,7 +6,7 @@
+ @Suite("Chapter cache migration", .serialized)
+ struct ChapterCacheMigrationTests {
+     @Test("package loader upgrades a downloaded legacy chapter")
+-    func packageLoaderUpgradesDownloadedLegacyChapter() throws {
++    func packageLoaderUpgradesDownloadedLegacyChapter() async throws {
+         let bookId = UUID()
+         let chapterIndex = 3
+         let sourceURL = "https://example.com/book/3"
+@@ -43,6 +43,7 @@
+             expectedTOCTitle: tocTitle
+         )
+ 
++        await BookStore.queuedWritesLanded()
+         #expect(package?.state == .cached)
+         #expect(package?.content == content)
+         #expect(package?.contentChecksum == checksum(content))
+@@ -54,7 +55,7 @@
+     }
+ 
+     @Test("missing package cannot bless a body that differs from its saved checksum", arguments: [false, true])
+-    func corruptLegacyBodyDoesNotRewriteStoredChecksum(hasCachedState: Bool) throws {
++    func corruptLegacyBodyDoesNotRewriteStoredChecksum(hasCachedState: Bool) async throws {
+         let root = temporaryRoot()
+         defer { try? FileManager.default.removeItem(at: root) }
+         let repository = ChapterCacheRepository(rootDirectory: root)
+@@ -91,7 +92,7 @@
+     }
+ 
+     @Test("legacy metadata without a checksum can still migrate", arguments: [false, true])
+-    func legacyBodyWithoutChecksumRemainsUpgradeable(hasCachedState: Bool) throws {
++    func legacyBodyWithoutChecksumRemainsUpgradeable(hasCachedState: Bool) async throws {
+         let root = temporaryRoot()
+         defer { try? FileManager.default.removeItem(at: root) }
+         let repository = ChapterCacheRepository(rootDirectory: root)
+@@ -118,6 +119,7 @@
+             bookId: bookId, chapterIndex: 0,
+             expectedSourceURL: metadata.sourceURL, expectedTOCTitle: metadata.tocTitle
+         )
++        await BookStore.queuedWritesLanded()
+         #expect(reopened == migrated)
+     }
+ 
+--- baseline/Tests/iOS/yuedu appTests/ChapterCacheRepositoryWriteTests.swift
++++ work/Tests/iOS/yuedu appTests/ChapterCacheRepositoryWriteTests.swift
+@@ -5,13 +5,13 @@
+ @Suite("Chapter cache durable writes", .serialized)
+ struct ChapterCacheRepositoryWriteTests {
+     @Test("empty content is rejected")
+-    func emptyContentRejected() throws {
++    func emptyContentRejected() async throws {
+         let root = temporaryRoot()
+         defer { try? FileManager.default.removeItem(at: root) }
+         let repository = ChapterCacheRepository(rootDirectory: root)
+ 
+-        #expect(throws: ChapterCacheWriteError.emptyContent) {
+-            try repository.saveChapterPackageToCache(
++        await #expect(throws: ChapterCacheWriteError.emptyContent) {
++            try await repository.saveChapterPackageToCache(
+                 package(bookId: UUID(), content: ""),
+                 rawHTML: nil,
+                 normalizedHTML: nil
+@@ -20,14 +20,14 @@
+     }
+ 
+     @Test("body write failure propagates")
+-    func bodyFailurePropagates() throws {
++    func bodyFailurePropagates() async throws {
+         let root = temporaryRoot()
+         defer { try? FileManager.default.removeItem(at: root) }
+         try Data("not a directory".utf8).write(to: root)
+         let repository = ChapterCacheRepository(rootDirectory: root)
+ 
+-        #expect(throws: ChapterCacheWriteError.self) {
+-            try repository.saveChapterPackageToCache(
++        await #expect(throws: ChapterCacheWriteError.self) {
++            try await repository.saveChapterPackageToCache(
+                 package(bookId: UUID(), content: "body"),
+                 rawHTML: nil,
+                 normalizedHTML: nil
+@@ -36,13 +36,13 @@
+     }
+ 
+     @Test("successful write is immediately reloadable and verified")
+-    func writeIsReloadable() throws {
++    func writeIsReloadable() async throws {
+         let root = temporaryRoot()
+         defer { try? FileManager.default.removeItem(at: root) }
+         let repository = ChapterCacheRepository(rootDirectory: root)
+         let bookId = UUID()
+ 
+-        let filename = try repository.saveChapterPackageToCache(
++        let filename = try await repository.saveChapterPackageToCache(
+             package(bookId: bookId, content: "durable body"),
+             rawHTML: "<p>durable body</p>",
+             normalizedHTML: "<html><body>durable body</body></html>"
+--- baseline/Tests/iOS/yuedu appTests/ChapterCacheTransactionTests.swift
++++ work/Tests/iOS/yuedu appTests/ChapterCacheTransactionTests.swift
+@@ -0,0 +1,129 @@
++import Foundation
++import Testing
++@testable import yuedu_app
++
++/// Actual owned files and the production writer, with revocation between real renames.
++@Suite("Chapter cache owner transactions", .serialized)
++struct ChapterCacheTransactionTests {
++    private func fixture() throws -> (URL, ChapterCacheRepository, UUID) {
++        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
++        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
++        return (root, ChapterCacheRepository(rootDirectory: root), UUID())
++    }
++    private func package(_ book: UUID, _ body: String, url: String = "https://owned.invalid/one") -> ChapterPackage {
++        .init(bookId: book, chapterIndex: 0, sourceURL: url, tocTitle: "Chapter one", canonicalTitle: nil,
++              content: body, contentChecksum: "", rawHTMLFilename: nil, normalizedHTMLFilename: nil,
++              savedAt: Date(timeIntervalSince1970: 1), state: .cached, failureReason: nil)
++    }
++    private func bytes(_ root: URL, _ book: UUID) throws -> [String: Data] {
++        let dir = root.appendingPathComponent(book.uuidString)
++        return try Dictionary(uniqueKeysWithValues: ["txt", "meta.json", "raw.html", "normalized.xhtml", "package.json"].compactMap { suffix in
++            let file = dir.appendingPathComponent("0." + suffix)
++            guard FileManager.default.fileExists(atPath: file.path) else { return nil }
++            return (suffix, try Data(contentsOf: file))
++        })
++    }
++    private func cleanup(_ root: URL) {
++        do { try FileManager.default.removeItem(at: root) }
++        catch { Issue.record("Owned cache cleanup failed: \(error)") }
++    }
++    @Test("revocation after real first-file install restores every old artifact")
++    func cancellationBetweenRenamesRestoresCompleteOldPackage() async throws {
++        let (root, cache, book) = try fixture(); defer { cleanup(root) }
++        _ = try await cache.saveChapterPackageToCache(package(book, "old complete prose"), rawHTML: "<p>old</p>", normalizedHTML: "<html>old</html>")
++        let before = try bytes(root, book)
++        let body = root.appendingPathComponent(book.uuidString).appendingPathComponent("0.txt")
++        await #expect(throws: CancellationError.self) {
++            _ = try await cache.saveChapterPackageOwned(package(book, "new complete prose"), rawHTML: "<p>new</p>", normalizedHTML: "<html>new</html>", validateGrant: {
++                if try String(contentsOf: body, encoding: .utf8) == "new complete prose" { throw CancellationError() }
++            })
++        }
++        #expect(try bytes(root, book) == before)
++        #expect(ChapterCacheRepository(rootDirectory: root).loadChapterPackageSync(bookId: book, chapterIndex: 0)?.content == "old complete prose")
++    }
++    @Test("failed restoration is explicit and retains actual previous-file artifacts")
++    func restorationFailureNeverAcknowledgesOrDeletesBackup() async throws {
++        let (root, cache, book) = try fixture(); defer { cleanup(root) }
++        _ = try await cache.saveChapterPackageToCache(package(book, "old complete prose"), rawHTML: nil, normalizedHTML: nil)
++        let body = root.appendingPathComponent(book.uuidString).appendingPathComponent("0.txt")
++        do {
++            _ = try await cache.saveChapterPackageOwned(package(book, "new complete prose"), rawHTML: nil, normalizedHTML: nil, validateGrant: {
++                if try String(contentsOf: body, encoding: .utf8) == "new complete prose" {
++                    try FileManager.default.removeItem(at: body)
++                    try FileManager.default.createDirectory(at: body, withIntermediateDirectories: false)
++                    throw CancellationError()
++                }
++            })
++            Issue.record("Restoration failed but returned success")
++        } catch ChapterCacheWriteError.rollbackFailed { }
++        let directory = root.appendingPathComponent(book.uuidString)
++        let pending = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil).filter { $0.lastPathComponent.hasSuffix(".pending") }
++        #expect(pending.count == 1)
++        let previous = try #require(pending.first).appendingPathComponent("0.txt.previous")
++        #expect(try String(contentsOf: previous, encoding: .utf8) == "old complete prose")
++    }
++    @Test("stale CAS and late rejected-cache cleanup retain a newer verified package")
++    func foreignWriteAndLateCleanupPreserveNewestFiles() async throws {
++        let (root, cache, book) = try fixture(); defer { cleanup(root) }
++        _ = try await cache.saveChapterPackageToCache(package(book, "old complete prose"), rawHTML: nil, normalizedHTML: nil)
++        let old = try #require(cache.loadChapterPackageSync(bookId: book, chapterIndex: 0))
++        let proof = try await cache.originalBatchSnapshot(bookID: book, index: 0, sourceURL: "https://owned.invalid/one", tocTitle: "Chapter one", validateGrant: {})
++        _ = try await cache.saveChapterPackageToCache(package(book, "new successful prose"), rawHTML: nil, normalizedHTML: nil)
++        let before = try bytes(root, book)
++        let result = try await cache.compareOriginalBatchSnapshot(proof, package: package(book, "stale failed body"), validateGrant: {}, claimCommit: { true })
++        #expect(result == nil)
++        cache.clearChapterCache(bookId: book, chapterIndex: 0, ifUnchanged: old)
++        cache.clearChapterCache(bookId: book, chapterIndex: 0, onlyIfInvalid: true)
++        await BookStore.queuedWritesLanded()
++        #expect(try bytes(root, book) == before)
++        #expect(ChapterCacheRepository(rootDirectory: root).loadChapterPackageSync(bookId: book, chapterIndex: 0)?.content == "new successful prose")
++    }
++    @Test("unchanged saves and old TOC reconciliation keep current replacement files")
++    func unchangedAndReconcileDoNotRewriteOrDeleteNewIdentity() async throws {
++        let (root, cache, book) = try fixture(); defer { cleanup(root) }
++        let current = package(book, "current complete prose", url: "https://owned.invalid/new")
++        _ = try await cache.saveChapterPackageOwned(current, rawHTML: nil, normalizedHTML: nil)
++        let before = try bytes(root, book)
++        let noop = try await cache.saveChapterPackageOwned(current, rawHTML: nil, normalizedHTML: nil)
++        #expect(!noop.changed); #expect(try bytes(root, book) == before)
++        try await cache.reconcileChapterCache(bookId: book, old: .init(index: 0, title: "Chapter one", url: "https://owned.invalid/old"), new: .init(index: 0, title: "Chapter one", url: "https://owned.invalid/new"))
++        #expect(try bytes(root, book) == before)
++    }
++    @Test("a queued legacy read rechecks files after the current successful writer")
++    func legacyReadCannotInstallItsOlderCandidateAfterNewBody() async throws {
++        let (root, cache, book) = try fixture(); defer { cleanup(root) }
++        _ = try await cache.saveChapterPackageToCache(package(book, "old legacy complete prose"), rawHTML: nil, normalizedHTML: nil)
++        let artifact = root.appendingPathComponent(book.uuidString).appendingPathComponent("0.package.json")
++        try FileManager.default.removeItem(at: artifact)
++        let gate = CacheWriterGate()
++        let write = Task { try await cache.saveChapterPackageOwned(package(book, "new committed complete prose"),
++            rawHTML: nil, normalizedHTML: nil, validateGrant: { try gate.pauseFirst() }) }
++        var events = gate.entered.makeAsyncIterator()
++        #expect(await events.next() == true)
++        // This actual synchronous reader sees the still-valid old files, but its
++        // upgrade only enqueues; it cannot touch the paused writer's candidates.
++        #expect(cache.loadChapterPackageSync(bookId: book, chapterIndex: 0)?.content == "old legacy complete prose")
++        gate.open()
++        _ = try await write.value
++        await BookStore.queuedWritesLanded()
++        #expect(ChapterCacheRepository(rootDirectory: root).loadChapterPackageSync(bookId: book, chapterIndex: 0)?.content == "new committed complete prose")
++    }
++}
++
++private final class CacheWriterGate: @unchecked Sendable {
++    let entered: AsyncStream<Bool>
++    private let event: AsyncStream<Bool>.Continuation
++    private let lock = NSLock()
++    private var visited = false
++    private let release = DispatchSemaphore(value: 0)
++    init() { let pair = AsyncStream<Bool>.makeStream(); entered = pair.stream; event = pair.continuation }
++    func pauseFirst() throws {
++        precondition(!Thread.isMainThread)
++        let first = lock.withLock { if visited { return false }; visited = true; return true }
++        guard first else { return }
++        event.yield(true)
++        guard release.wait(timeout: .now() + 30) == .success else { throw CancellationError() }
++        event.finish()
++    }
++    func open() { release.signal() }
++}
+--- baseline/Tests/iOS/yuedu appTests/ChapterContentValidationTests.swift
++++ work/Tests/iOS/yuedu appTests/ChapterContentValidationTests.swift
+@@ -56,7 +56,7 @@
+         let bookID = UUID()
+         let content = String(repeating: "夕陽照著遠方的山，旅人沿著溪流走回村莊。他想起朋友說過的話，又翻開手中的書。\n", count: 256)
+         let url = "https://example.com/chapter/0"
+-        try repository.saveToCache(content: content, bookId: bookID, chapterIndex: 0, sourceURL: url, tocTitle: "旅程")
++        try await repository.saveToCache(content: content, bookId: bookID, chapterIndex: 0, sourceURL: url, tocTitle: "旅程")
+         let store = OfflineChapterStore(roots: roots)
+         let start = SourcePerfTrace.now
+         var completed = 0
+--- baseline/Tests/iOS/yuedu appTests/ChapterFetchLateFailureTests.swift
++++ work/Tests/iOS/yuedu appTests/ChapterFetchLateFailureTests.swift
+@@ -0,0 +1,79 @@
++import Foundation
++import Testing
++import WebKit
++@testable import yuedu_app
++
++private final class LateBrowserFailureProtocol: URLProtocol, @unchecked Sendable {
++    private static let lock = NSLock()
++    nonisolated(unsafe) private static var first: LateBrowserFailureProtocol?
++    nonisolated(unsafe) private static var entered: AsyncStream<Bool>.Continuation?
++    nonisolated(unsafe) private static var released = false
++    static func prepare() -> AsyncStream<Bool> {
++        let pair = AsyncStream<Bool>.makeStream()
++        lock.lock(); first = nil; entered = pair.continuation; released = false; lock.unlock()
++        return pair.stream
++    }
++    static func fail() {
++        lock.lock(); released = true; let request = first; first = nil; let event = entered; entered = nil; lock.unlock()
++        if let request { request.client?.urlProtocol(request, didFailWithError: URLError(.cannotConnectToHost)) }
++        event?.finish()
++    }
++    override class func canInit(with request: URLRequest) -> Bool { request.url?.port == 0 }
++    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
++    override func startLoading() {
++        Self.lock.lock()
++        if !Self.released, Self.first == nil {
++            Self.first = self; let event = Self.entered; Self.lock.unlock()
++            event?.yield(true)
++        } else {
++            Self.lock.unlock()
++            client?.urlProtocol(self, didFailWithError: URLError(.cannotConnectToHost))
++        }
++    }
++    override func stopLoading() { }
++}
++
++@Suite("Late browser chapter failures", .serialized, .timeLimit(.minutes(1)))
++@MainActor
++struct ChapterFetchLateFailureTests {
++    @Test("a real late browser/import request error cannot remove a newer valid body")
++    func lateBrowserFailureDoesNotDeleteNewSuccessfulPackage() async throws {
++        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
++        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
++        let cookies = CookieStore(fileURL: root.appendingPathComponent("cookies.json"),
++            storage: .sharedCookieStorage(forGroupContainerIdentifier: UUID().uuidString))
++        let config = URLSessionConfiguration.ephemeral
++        config.protocolClasses = [LateBrowserFailureProtocol.self]
++        let session = URLSession(configuration: config)
++        let fetcher = BookSourceFetcher(webFetcher: WebFetcher(session: session, cookies: cookies, webViewCookies: nil))
++        // Native WK fallback uses the same existing fetcher implementation and an owned
++        // nonpersistent fixture store. Port zero fails locally, without external traffic.
++        let web = WebViewFetcher(cookieOwner: cookies, poolSize: 1, websiteDataStore: .nonPersistent())
++        let manager = ChapterFetchManager(bookSourceFetcher: fetcher, webViewFetcher: web)
++        var book = ReadingBook(title: "Owned browser chapter", author: "Fixture", source: "http://127.0.0.1:0/book", contentFilename: "")
++        book.isOnline = true
++        let ref = OnlineChapterRef(index: 0, title: "Chapter one", url: "http://127.0.0.1:0/late")
++        book.onlineChapters = [ref]
++        let directory = StorageLocations.onlineCache.appendingPathComponent(book.id.uuidString)
++        defer {
++            LateBrowserFailureProtocol.fail(); session.invalidateAndCancel()
++            do {
++                if FileManager.default.fileExists(atPath: directory.path) { try FileManager.default.removeItem(at: directory) }
++                try FileManager.default.removeItem(at: root)
++            } catch { Issue.record("Owned late-browser cleanup failed: \(error)") }
++        }
++        let entered = LateBrowserFailureProtocol.prepare()
++        let old = Task { try await manager.fetchChapter(book: book, chapterIndex: 0, priority: .immediate, store: nil) }
++        var events = entered.makeAsyncIterator()
++        #expect(await events.next() == true)
++        _ = try await fetcher.saveToCache(content: "New successfully saved chapter prose from another current writer.",
++            bookId: book.id, chapterIndex: 0, sourceURL: ref.url, tocTitle: ref.title, storeNormalizedHTML: false)
++        LateBrowserFailureProtocol.fail()
++        do { _ = try await old.value; Issue.record("The old browser request must actually fail") }
++        catch { /* A real primary request and WK navigation both failed locally. */ }
++        await BookStore.queuedWritesLanded()
++        let actual = ChapterCacheRepository().loadChapterPackageSync(bookId: book.id, chapterIndex: 0,
++            expectedSourceURL: ref.url, expectedTOCTitle: ref.title)
++        #expect(actual?.content == "New successfully saved chapter prose from another current writer.")
++    }
++}
+--- baseline/Tests/iOS/yuedu appTests/LegadoContentBatchOwnerTests.swift
++++ work/Tests/iOS/yuedu appTests/LegadoContentBatchOwnerTests.swift
+@@ -0,0 +1,260 @@
++import Foundation
++import LegadoRuntime
++import Testing
++@testable import yuedu_app
++
++private struct BatchNoSourceBacking: LegadoOwnedStateBacking {
++    func read(sourceURL: String, domain: LegadoOwnedStateDomain, fields: Set<String>) throws -> LegadoOwnedStateSnapshot {
++        throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY", message: "Unrelated fixture owner")
++    }
++    func commit(sourceURL: String, domain: LegadoOwnedStateDomain, expected: LegadoOwnedStateSnapshot, changes: [String: Data?]) throws -> Bool {
++        throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY", message: "Unrelated fixture owner")
++    }
++}
++
++private enum BatchHostFixture {
++    static func key(_ source: String, _ book: String, index: Int?) throws -> String {
++        var parts = [source, index == nil ? "toc" : "content", book]
++        if let index { parts.append(String(index)) }
++        return String(decoding: try JSONSerialization.data(withJSONObject: parts), as: UTF8.self)
++    }
++    static func call(_ host: LegadoPersistentStateHost, task: String, operation: String, input: [String: Any]) async throws -> [String: Any] {
++        let raw = String(decoding: try JSONSerialization.data(withJSONObject: input), as: UTF8.self)
++        let value = try await host.dispatch(.init(taskID: task, operation: operation, requestJSON: raw))
++        return try #require(try JSONSerialization.jsonObject(with: Data(value.utf8)) as? [String: Any])
++    }
++    static func read(_ host: LegadoPersistentStateHost, owner: String, task: String, source: String, book: String, index: Int) async throws -> (Int64, String, [String: Any]) {
++        let content = try key(source, book, index: index)
++        let toc = try key(source, book, index: nil)
++        let snapshot = try await call(host, task: task, operation: "state.read", input: ["owner": owner, "keys": [content, toc]])
++        let revision = try #require(snapshot["revision"] as? NSNumber)
++        let values = try #require(snapshot["values"] as? [String: String])
++        let bytes = try #require(Data(base64Encoded: #require(values[content])))
++        let row = try #require(try JSONSerialization.jsonObject(with: bytes) as? [String: Any])
++        return (revision.int64Value, content, row)
++    }
++    static func commit(_ host: LegadoPersistentStateHost, owner: String, task: String,
++                       snapshot: (Int64, String, [String: Any]), body: String) async throws -> Bool {
++        var row = snapshot.2; row["body"] = body
++        let encoded = try JSONSerialization.data(withJSONObject: row).base64EncodedString()
++        let response = try await call(host, task: task, operation: "state.commit",
++            input: ["owner": owner, "revision": snapshot.0, "changes": [snapshot.1: encoded]])
++        return try #require(response["committed"] as? Bool)
++    }
++}
++
++/// Controlled callback fixture for the App half only. It uses the actual Host and
++/// real file writer, not fake write receipts. The public JVM half runs separately.
++private struct OwnedBatchCallbackExecutor: LegadoOriginalContentBatchExecuting {
++    let failAfterFirst: Bool
++    func execute(_ request: LegadoContentBatchExecutionRequest) async throws -> LegadoOriginalContentBatchResult {
++        let host = LegadoPersistentStateHost(backing: BatchNoSourceBacking())
++        let owner = try await host.bindContentBatch(sourceURL: request.sourceURL, sourceRevision: request.sourceRevision,
++            taskID: request.taskID, store: request.store, bookID: request.bookID, sourceID: request.sourceID,
++            book: request.book, chapters: request.chapters, deadline: request.deadline, cache: request.cache)
++        do {
++            _ = try await BatchHostFixture.call(host, task: request.taskID, operation: "content.batch.authorize",
++                input: ["owner": owner, "sourceURL": request.sourceURL, "bookURL": request.book.bookURL,
++                    "chapters": request.chapters.map { ["index": $0.chapter.index, "url": $0.chapter.url] as [String: Any] }])
++            for value in request.chapters.prefix(2) {
++                let snapshot = try await BatchHostFixture.read(host, owner: owner, task: request.taskID,
++                    source: request.sourceURL, book: request.book.bookURL, index: value.chapter.index)
++                let saved = try await BatchHostFixture.commit(host, owner: owner, task: request.taskID,
++                    snapshot: snapshot, body: "Actual owned chapter body at index \(value.chapter.index).")
++                #expect(saved)
++                if failAfterFirst { throw LegadoRuntimeError(code: "SCRIPT_ERROR", message: "After first real save", completedEffects: ["chapterContentCommitted"]) }
++            }
++            _ = try await host.finishContentBatchResult(owner: owner, taskID: request.taskID, book: request.book, deadline: request.deadline)
++            await host.revoke(owner: owner)
++            return .init(book: request.book, missingChapters: request.chapters.dropFirst(2).map(\.dto))
++        } catch {
++            await host.revoke(owner: owner); throw error
++        }
++    }
++}
++
++@Suite("Original public batch App owner", .serialized)
++@MainActor
++struct LegadoContentBatchOwnerTests {
++    private struct Fixture {
++        let root: URL
++        let store: BookStore
++        let metadata: URL
++        let source: BookSource
++        let book: ReadingBook
++        let dto: LegadoOriginalBook
++        let chapters: [OnlineChapterRef]
++        let cache: ChapterCacheRepository
++    }
++    private func fixture() async throws -> Fixture {
++        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
++        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
++        let metadata = root.appendingPathComponent("books_meta.json")
++        let store = BookStore(metadataFileURL: metadata)
++        var source = BookSource(bookSourceUrl: "https://batch-owned.invalid/source", bookSourceName: "Owned batch")
++        source.ruleContent.contentBatch = "java.cacheContent(chapters[0],'owned')"
++        var book = ReadingBook(title: "Owned batch", author: "Author", source: "https://batch-owned.invalid/book", contentFilename: "")
++        book.isOnline = true; book.bookSourceId = source.id; book.bookInfoURL = book.source; book.tocURL = book.source + "/toc"
++        let chapters = (0..<3).map { OnlineChapterRef(index: $0, title: "Chapter \($0)", url: "https://batch-owned.invalid/duplicate") }
++        book.onlineChapters = chapters
++        store.replaceBooksFromSync([book])
++        await BookStore.queuedWritesLanded()
++        let dto = LegadoOriginalBook(bookURL: book.source, origin: source.bookSourceUrl, name: book.title, author: book.author, tocURL: book.tocURL!)
++        return .init(root: root, store: store, metadata: metadata, source: source, book: book, dto: dto,
++            chapters: chapters, cache: .init(rootDirectory: root.appendingPathComponent("body")))
++    }
++    private func cleanup(_ root: URL) {
++        do { try FileManager.default.removeItem(at: root) }
++        catch { Issue.record("Owned batch cleanup failed: \(error)") }
++    }
++    private func grants(_ f: Fixture) -> [OriginalRuntimeBatchChapter] {
++        f.chapters.map { ref in
++            let generation = OriginalRuntimeChapterGeneration(bookID: f.book.id, chapter: ref, token: UUID(),
++                validateCacheIdentity: { try f.store.validateOriginalRuntimeCacheChapter(bookID: f.book.id, chapterID: ref.id, index: ref.index, url: ref.url) })
++            return .init(chapter: ref, generation: generation,
++                dto: .init(bookURL: f.dto.bookURL, url: ref.url, index: Int32(ref.index), title: ref.title, baseURL: f.dto.tocURL))
++        }
++    }
++    @Test("actual manager jobs pass bounded grants and publish two real saved indexes once")
++    func managerToHostToChapterFilesAndRestartPreservesDuplicateUrlIndexes() async throws {
++        let f = try await fixture(); defer { cleanup(f.root) }
++        let service = LegadoMainJSSourceService(contentBatchExecutor: OwnedBatchCallbackExecutor(failAfterFirst: false))
++        let manager = ChapterFetchManager(bookSourceFetcher: .init(mainJSService: service), webViewFetcher: .shared, sourceResolver: { _ in f.source })
++        let result = try await manager.fetchOriginalContentBatch(bookID: f.book.id, sourceID: f.source.id,
++            book: f.dto, chapterIndexes: [0,1,2], store: f.store, cache: f.cache)
++        #expect(result.missingChapters.map(\.index) == [2])
++        for index in 0...1 {
++            #expect(f.cache.loadChapterPackageSync(bookId: f.book.id, chapterIndex: index)?.content == "Actual owned chapter body at index \(index).")
++        }
++        #expect(f.cache.loadChapterPackageSync(bookId: f.book.id, chapterIndex: 2) == nil)
++        let restarted = BookStore(metadataFileURL: f.metadata)
++        let actual = try await restarted.originalRuntimeChapters(bookID: f.book.id)
++        #expect(actual.map(\.id) == f.chapters.map(\.id))
++        #expect(actual.map(\.cachedFilename) == ["0.txt", "1.txt", nil])
++        #expect(await manager.originalRuntimeGeneration(bookID: f.book.id, chapter: f.chapters[0]) == nil)
++    }
++    @Test("ordinary failure preserves the real prefix and its metadata receipt")
++    func managerFailureCarriesSavedPrefixWithoutRollingItBack() async throws {
++        let f = try await fixture(); defer { cleanup(f.root) }
++        let service = LegadoMainJSSourceService(contentBatchExecutor: OwnedBatchCallbackExecutor(failAfterFirst: true))
++        let manager = ChapterFetchManager(bookSourceFetcher: .init(mainJSService: service), webViewFetcher: .shared, sourceResolver: { _ in f.source })
++        do {
++            _ = try await manager.fetchOriginalContentBatch(bookID: f.book.id, sourceID: f.source.id,
++                book: f.dto, chapterIndexes: [0,1,2], store: f.store, cache: f.cache)
++            Issue.record("Ordinary callback failure cannot become batch success")
++        } catch let error as OriginalContentBatchFailure {
++            #expect((error.executionError as? LegadoRuntimeError)?.code == "SCRIPT_ERROR")
++            #expect(error.publicationError == nil); #expect(error.verifiedSavedIndexes == [0])
++        }
++        let actual = try await BookStore(metadataFileURL: f.metadata).originalRuntimeChapters(bookID: f.book.id)
++        #expect(actual.map(\.cachedFilename) == ["0.txt", nil, nil])
++        #expect(f.cache.loadChapterPackageSync(bookId: f.book.id, chapterIndex: 0)?.content.contains("index 0") == true)
++    }
++    @Test("foreign file replacement rejects a stale lease and cannot be legitimized by retry")
++    func bodyCasCannotOverwriteOrAdoptAnotherWriter() async throws {
++        let f = try await fixture(); defer { cleanup(f.root) }
++        let host = LegadoPersistentStateHost(backing: BatchNoSourceBacking()); let task = "owned-cas"
++        let owner = try await host.bindContentBatch(sourceURL: f.source.bookSourceUrl, sourceRevision: "r1", taskID: task,
++            store: f.store, bookID: f.book.id, sourceID: f.source.id, book: f.dto, chapters: grants(f),
++            deadline: Date().addingTimeInterval(60), cache: f.cache)
++        let snapshot = try await BatchHostFixture.read(host, owner: owner, task: task, source: f.source.bookSourceUrl, book: f.dto.bookURL, index: 0)
++        _ = try await f.cache.saveToCache(content: "Foreign successful writer prose.", bookId: f.book.id, chapterIndex: 0,
++            sourceURL: f.chapters[0].url, tocTitle: f.chapters[0].title, storeNormalizedHTML: false)
++        #expect(try await !BatchHostFixture.commit(host, owner: owner, task: task, snapshot: snapshot, body: "Stale body"))
++        do {
++            _ = try await BatchHostFixture.read(host, owner: owner, task: task, source: f.source.bookSourceUrl, book: f.dto.bookURL, index: 0)
++            Issue.record("Foreign proof cannot be adopted on CAS retry")
++        } catch let error as LegadoRuntimeError { #expect(error.code == "STATE_CONFLICT") }
++        #expect(f.cache.loadChapterPackageSync(bookId: f.book.id, chapterIndex: 0)?.content == "Foreign successful writer prose.")
++        await host.revoke(owner: owner)
++    }
++    @Test("wrong task, revoked grant and changed TOC refuse any body mutation")
++    func bodyOwnerUsesTaskGenerationAndCurrentActualToc() async throws {
++        let f = try await fixture(); defer { cleanup(f.root) }
++        let host = LegadoPersistentStateHost(backing: BatchNoSourceBacking()); let task = "owned-current"
++        let current = grants(f)
++        let owner = try await host.bindContentBatch(sourceURL: f.source.bookSourceUrl, sourceRevision: "r1", taskID: task,
++            store: f.store, bookID: f.book.id, sourceID: f.source.id, book: f.dto, chapters: current,
++            deadline: Date().addingTimeInterval(60), cache: f.cache)
++        do {
++            _ = try await BatchHostFixture.read(host, owner: owner, task: "wrong", source: f.source.bookSourceUrl, book: f.dto.bookURL, index: 0)
++            Issue.record("Another task cannot borrow this body grant")
++        } catch let error as LegadoRuntimeError { #expect(error.code == "INVALID_STATE_OWNER") }
++        let snapshot = try await BatchHostFixture.read(host, owner: owner, task: task, source: f.source.bookSourceUrl, book: f.dto.bookURL, index: 0)
++        var changed = f.chapters
++        changed[0] = OnlineChapterRef(index: 0, title: "Replacement", url: "https://batch-owned.invalid/new")
++        f.store.updateOnlineChapters(bookId: f.book.id, chapters: changed)
++        await BookStore.queuedWritesLanded()
++        do {
++            _ = try await BatchHostFixture.commit(host, owner: owner, task: task, snapshot: snapshot, body: "Old request body")
++            Issue.record("TOC replacement cannot receive an old body")
++        } catch let error as LegadoRuntimeError { #expect(error.code == "STATE_CONFLICT") }
++        current[1].generation.revoke()
++        await #expect(throws: CancellationError.self) {
++            _ = try await BatchHostFixture.read(host, owner: owner, task: task, source: f.source.bookSourceUrl, book: f.dto.bookURL, index: 1)
++        }
++        #expect(f.cache.loadChapterPackageSync(bookId: f.book.id, chapterIndex: 0) == nil)
++        await host.revoke(owner: owner)
++        #expect(await host.ownershipCounts().leases == 0)
++    }
++    @Test("final direct small-map assignment follows the exact accepted large-variable proof")
++    func finalBookSetterPersistsSmallAndPreservesAcceptedLargeCompanion() async throws {
++        let f = try await fixture(); defer { cleanup(f.root) }
++        let host = LegadoPersistentStateHost(backing: BatchNoSourceBacking()); let task = "owned-finish"
++        let owner = try await host.bindContentBatch(sourceURL: f.source.bookSourceUrl, sourceRevision: "r1", taskID: task,
++            store: f.store, bookID: f.book.id, sourceID: f.source.id, book: f.dto, chapters: grants(f),
++            deadline: Date().addingTimeInterval(60), cache: f.cache)
++        let largeKey = String(decoding: try JSONSerialization.data(withJSONObject:
++            [f.source.bookSourceUrl, "big-variable", "book", f.dto.bookURL, "", "large"]), as: UTF8.self)
++        let snapshot = try await BatchHostFixture.call(host, task: task, operation: "state.read", input: ["owner": owner, "keys": [largeKey]])
++        let revision = try #require(snapshot["revision"] as? NSNumber)
++        let large = String(repeating: "x", count: 10_000)
++        let saved = try await BatchHostFixture.call(host, task: task, operation: "state.commit",
++            input: ["owner": owner, "revision": revision, "changes": [largeKey: Data(large.utf8).base64EncodedString()]])
++        #expect(saved["committed"] as? Bool == true)
++        var result = f.dto; result.variable = "{\"direct\":\"accepted\"}"
++        let changed = try await host.finishContentBatchResult(owner: owner, taskID: task, book: result, deadline: Date().addingTimeInterval(30))
++        #expect(changed)
++        let reopened = BookStore(metadataFileURL: f.metadata)
++        let actual = await reopened.prepareOriginalRuntimeBookSnapshot(id: f.book.id, sourceID: f.source.id, bookURL: f.dto.bookURL)
++        #expect(actual?.variables == ["direct": "accepted", "large": large])
++        let before = try Data(contentsOf: f.metadata)
++        #expect(try await !host.finishContentBatchResult(owner: owner, taskID: task, book: result, deadline: Date().addingTimeInterval(30)))
++        #expect(try Data(contentsOf: f.metadata) == before)
++        await host.revoke(owner: owner)
++    }
++    @Test("App edits or actual final-book write failure retain body prefix and never get success")
++    func finalBookCasRejectsUserEditAndFailedIoWithoutLosingBodyPrefix() async throws {
++        for failsIO in [false, true] {
++            let f = try await fixture()
++            defer {
++                do { try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: f.root.path) }
++                catch { Issue.record("Fixture permissions could not be restored: \(error)") }
++                cleanup(f.root)
++            }
++            let host = LegadoPersistentStateHost(backing: BatchNoSourceBacking()); let task = "owned-finish-conflict"
++            let owner = try await host.bindContentBatch(sourceURL: f.source.bookSourceUrl, sourceRevision: "r1", taskID: task,
++                store: f.store, bookID: f.book.id, sourceID: f.source.id, book: f.dto, chapters: grants(f),
++                deadline: Date().addingTimeInterval(60), cache: f.cache)
++            let snapshot = try await BatchHostFixture.read(host, owner: owner, task: task, source: f.source.bookSourceUrl, book: f.dto.bookURL, index: 0)
++            #expect(try await BatchHostFixture.commit(host, owner: owner, task: task, snapshot: snapshot, body: "Real body saved before final metadata failure."))
++            if failsIO {
++                try FileManager.default.setAttributes([.posixPermissions: 0o555], ofItemAtPath: f.root.path)
++            } else {
++                f.store.updateBookRuntimeVariables(bookId: f.book.id, variables: ["user": "current"])
++                f.store.flushPendingMetadataSave()
++                await BookStore.queuedWritesLanded()
++            }
++            let before = try Data(contentsOf: f.metadata)
++            var result = f.dto; result.variable = "{\"stale\":\"forbidden\"}"
++            do {
++                _ = try await host.finishContentBatchResult(owner: owner, taskID: task, book: result, deadline: Date().addingTimeInterval(30))
++                Issue.record("Final metadata conflict/I/O failure cannot be acknowledged")
++            } catch let error as LegadoRuntimeError where !failsIO { #expect(error.code == "STATE_CONFLICT") }
++            catch { #expect(failsIO) }
++            #expect(try Data(contentsOf: f.metadata) == before)
++            #expect(f.cache.loadChapterPackageSync(bookId: f.book.id, chapterIndex: 0)?.content.contains("saved before") == true)
++            await host.revoke(owner: owner)
++        }
++    }
++}
+--- baseline/Tests/iOS/yuedu appTests/ModernChapterCacheScenarioTests.swift
++++ work/Tests/iOS/yuedu appTests/ModernChapterCacheScenarioTests.swift
+@@ -5,13 +5,13 @@
+ @Suite("Modern chapter cache integrity scenarios", .serialized, .timeLimit(.minutes(1)))
+ struct ModernChapterCacheScenarioTests {
+     @Test("a lightweight hit does not certify the body or rewrite damaged bytes", arguments: [0, 1, 2])
+-    nonisolated func lightweightHitStillRequiresBodyValidation(damageKind: Int) throws {
++    nonisolated func lightweightHitStillRequiresBodyValidation(damageKind: Int) async throws {
+         let root = FileManager.default.temporaryDirectory
+             .appendingPathComponent("ModernChapterCacheScenario-\(UUID().uuidString)")
+         defer { removeOwnedDirectory(root) }
+         let repository = ChapterCacheRepository(rootDirectory: root)
+         let bookID = UUID()
+-        let snapshot = try seedAndDamage(repository: repository, root: root, bookID: bookID,
++        let snapshot = try await seedAndDamage(repository: repository, root: root, bookID: bookID,
+                                          sourceURL: "https://cache-scenario.example/0", damageKind: damageKind)
+ 
+         // Reopening must not turn damaged modern bytes into a newly blessed legacy entry.
+@@ -49,7 +49,7 @@
+         defer { removeOwnedDirectory(directory) }
+         CacheRecoveryURLProtocol.reset()
+         let snapshot = try await Task.detached {
+-            try seedAndDamage(repository: ChapterCacheRepository(), root: root, bookID: bookID,
++            try await seedAndDamage(repository: ChapterCacheRepository(), root: root, bookID: bookID,
+                               sourceURL: sourceURL, damageKind: 0)
+         }.value
+ 
+@@ -90,12 +90,12 @@
+ }
+ 
+ private func seedAndDamage(repository: ChapterCacheRepository, root: URL, bookID: UUID,
+-                                       sourceURL: String, damageKind: Int) throws -> DamagedCacheSnapshot {
++                                       sourceURL: String, damageKind: Int) async throws -> DamagedCacheSnapshot {
+     let package = ChapterPackage(bookId: bookID, chapterIndex: 0, sourceURL: sourceURL,
+         tocTitle: "Chapter 1", canonicalTitle: "Chapter 1", content: "Complete committed fixture prose.",
+         contentChecksum: "", rawHTMLFilename: nil, normalizedHTMLFilename: nil,
+         savedAt: Date(timeIntervalSince1970: 1), state: .cached, failureReason: nil)
+-    try repository.saveChapterPackageToCache(package, rawHTML: nil, normalizedHTML: nil)
++    try await repository.saveChapterPackageToCache(package, rawHTML: nil, normalizedHTML: nil)
+     let directory = root.appendingPathComponent(bookID.uuidString)
+     let metadata = try Data(contentsOf: directory.appendingPathComponent("0.meta.json"))
+     let artifact = try Data(contentsOf: directory.appendingPathComponent("0.package.json"))
+--- baseline/Tests/iOS/yuedu appTests/OfflineChapterStoreTests.swift
++++ work/Tests/iOS/yuedu appTests/OfflineChapterStoreTests.swift
+@@ -145,7 +145,8 @@
+             withIntermediateDirectories: true
+         )
+         try FileManager.default.createDirectory(at: mangaDirectory, withIntermediateDirectories: true)
+-        try Data("text".utf8).write(to: textFile)
++        try await ChapterCacheRepository(rootDirectory: roots.storage.textRoot).saveToCache(
++            content: "text", bookId: bookId, chapterIndex: 0, sourceURL: "https://x/1", tocTitle: "One", storeNormalizedHTML: false)
+         try Data("image".utf8).write(to: mangaDirectory.appendingPathComponent("000.jpg"))
+         let store = OfflineChapterStore(roots: roots.storage, imageDownloader: StubImageDownloader())
+ 
+@@ -166,7 +167,7 @@
+         defer { try? FileManager.default.removeItem(at: roots.container) }
+         let bookId = UUID()
+         let repository = ChapterCacheRepository(rootDirectory: roots.storage.textRoot)
+-        _ = try repository.saveToCache(
++        _ = try await repository.saveToCache(
+             content: "第一章的內文，足夠長到不會被拒絕。",
+             bookId: bookId,
+             chapterIndex: 0,
+--- baseline/Tests/iOS/yuedu appTests/yuedu_appTests.swift
++++ work/Tests/iOS/yuedu appTests/yuedu_appTests.swift
+@@ -289,7 +289,7 @@
+         onlineBook.isOnline = true
+         onlineBook.onlineChapters = refs
+ 
+-        _ = try BookSourceFetcher.shared.saveToCache(
++        _ = try await BookSourceFetcher.shared.saveToCache(
+             content: "已快取內容",
+             bookId: bookId,
+             chapterIndex: 0,

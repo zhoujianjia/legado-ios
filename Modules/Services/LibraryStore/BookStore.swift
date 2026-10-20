@@ -470,6 +470,8 @@ class BookStore: ObservableObject, BookProvider {
                                     variables: [String: String]?,
                                     deadline: Date, cancellation: OriginalRuntimeCommitCancellation,
                                     beforeWrite: @escaping @Sendable () throws -> Void = {},
+                                     claimCommit: @escaping @Sendable () -> Bool = { true },
+                                     accepted didAccept: @escaping @Sendable (OriginalRuntimeBookMetadataOwner.Snapshot) -> Void = { _ in },
                                     validateGrant: @escaping @Sendable () throws -> Void) async throws -> Bool {
         try Task.checkCancellation()
         guard let sourceID = expected.book.sourceID else {
@@ -495,11 +497,14 @@ class BookStore: ObservableObject, BookProvider {
                         }
                         if bytes != location.before {
                             try SourcePerfTrace.span("legado.state.book.commit", "books=\(location.records.count) bytes=\(bytes.count) main=\(Thread.isMainThread)") {
+                                 try cancellation.check(deadline: deadline); try validateGrant()
+                                 guard claimCommit() else { throw CancellationError() }
                                 try bytes.write(to: url, options: .atomic)
                             }
                         }
                         if location.shelf { persistedFiles.shelfData = bytes } else { persistedFiles.readingData = bytes }
                         runtimeBookMetadata.accepted(expected, candidate: candidate)
+                         didAccept(candidate) // Exact accepted proof, before any later owner's queue turn.
                         continuation.resume(returning: (candidate, location, bytes))
                     } catch { continuation.resume(throwing: error) }
                 }
@@ -585,6 +590,7 @@ class BookStore: ObservableObject, BookProvider {
     func compareOriginalRuntimeChapter(expected: BookChapterStore.RuntimeVariablesSnapshot,
                                        variables: [String: String]?, deadline: Date,
                                        cancellation: OriginalRuntimeCommitCancellation = OriginalRuntimeCommitCancellation(),
+                                       claimCommit: @escaping @Sendable () -> Bool = { true },
                                        validateGrant: @escaping @Sendable () throws -> Void = {}) async throws -> Bool {
         try Task.checkCancellation()
         return try await withTaskCancellationHandler {
@@ -593,7 +599,7 @@ class BookStore: ObservableObject, BookProvider {
                     do {
                         try cancellation.check(deadline: deadline)
                         try validateGrant()
-                        let result = try chapterStore.compareRuntimeVariables(expected: expected, variables: variables) {
+                        let result = try chapterStore.compareRuntimeVariables(expected: expected, variables: variables, claimCommit: claimCommit) {
                             try cancellation.check(deadline: deadline)
                             try validateGrant()
                         }
@@ -1921,12 +1927,8 @@ class BookStore: ObservableObject, BookProvider {
             }
             if book.isOnline {
                 // Delete cache directory
-                let cacheDir = StorageLocations.onlineCache.appendingPathComponent(bookId.uuidString)
-                do {
-                    try FileManager.default.removeItem(at: cacheDir)
-                } catch {
-                    AppLogger.cache("Failed to remove cache directory \(cacheDir): \(error)")
-                }
+                // Same writer as pending chapter saves/rollback; no main-thread disk I/O.
+                BookSourceFetcher.chapterCacheRepository.clearAllChapterCache(bookId: bookId)
             } else {
                 do {
                     let fileUrl = documentsURL(for: book.contentFilename)
@@ -4136,4 +4138,96 @@ private final class TaskBox: @unchecked Sendable {
     private var task: Task<Void, Never>?
     func set(_ task: Task<Void, Never>) { lock.lock(); self.task = task; lock.unlock() }
     var value: Task<Void, Never>? { lock.lock(); defer { lock.unlock() }; return task }
+}
+
+// ChapterCacheRepository shares this existing writer with the App's book/chapter
+// owner. No new queue, store or synchronous main-thread barrier is introduced.
+extension BookStore {
+    static func chapterCachePersistence<T: Sendable>(_ operation: @escaping @Sendable () throws -> T) async throws -> T {
+        try Task.checkCancellation()
+        let hold = BackgroundTaskHold(name: "chapter.cache.persist")
+        return try await withCheckedThrowingContinuation { continuation in
+            persistQueue.async {
+                defer { hold.release() }
+                do { continuation.resume(returning: try operation()) }
+                catch { continuation.resume(throwing: error) }
+            }
+        }
+    }
+    static func enqueueChapterCacheMaintenance(_ operation: @escaping @Sendable () -> Void) {
+        let hold = BackgroundTaskHold(name: "chapter.cache.migrate")
+        persistQueue.async { defer { hold.release() }; operation() }
+    }
+    func validateOriginalRuntimeCacheChapter(bookID: UUID, chapterID: UUID, index: Int, url: String) throws {
+        Self.assertChapterCachePersistenceQueue()
+        guard let current = try chapterStore.runtimeVariablesSnapshot(bookID: bookID, index: index, url: url),
+              current.chapterID == chapterID else {
+            throw LegadoRuntimeError(code: "STATE_CONFLICT", message: "The granted App chapter TOC identity changed")
+        }
+    }
+    func validateOriginalRuntimeBookProof(_ expected: OriginalRuntimeBookMetadataOwner.Snapshot,
+                                         deadline: Date, cancellation: OriginalRuntimeCommitCancellation,
+                                         validateGrant: @escaping @Sendable () throws -> Void) async throws -> Bool {
+        try await Self.chapterCachePersistence { [self] in
+            try cancellation.check(deadline: deadline); try validateGrant(); try validateRuntimeMetadataPermission()
+            guard runtimeBookMetadata.matches(expected) else { return false }
+            _ = try runtimeMetadataLocation(for: expected.book)
+            try cancellation.check(deadline: deadline); try validateGrant()
+            return runtimeBookMetadata.matches(expected)
+        }
+    }
+    /// The real cache files are checked again in the same writer turn as the one
+    /// chapter-metadata publication. A returned JVM missing-list is not a disk receipt.
+    func publishOriginalBatchCache(bookID: UUID, sourceID: UUID, bookURL: String,
+                                   chapters: [OriginalRuntimeBatchChapter], cache: ChapterCacheRepository,
+                                   deadline: Date) async throws -> [Int] {
+        let cancellation = OriginalRuntimeCommitCancellation()
+        return try await withTaskCancellationHandler {
+            let saved: [Int] = try await Self.chapterCachePersistence { [self] in
+                try cancellation.check(deadline: deadline)
+                guard originalRuntimeBookSnapshot(id: bookID, sourceID: sourceID, bookURL: bookURL) != nil else {
+                    throw LegadoRuntimeError(code: "STATE_CONFLICT", message: "Batch publication lost its App book/source grant")
+                }
+                var updates: [BookChapterStore.CachedFileUpdate] = []
+                for value in chapters {
+                    try cancellation.check(deadline: deadline); try value.generation.check(deadline: deadline)
+                    try validateOriginalRuntimeCacheChapter(bookID: bookID, chapterID: value.chapter.id, index: value.chapter.index, url: value.chapter.url)
+                    guard let package = cache.loadChapterPackageSync(bookId: bookID, chapterIndex: value.chapter.index,
+                        expectedSourceURL: value.chapter.url, expectedTOCTitle: value.chapter.title, scheduleLegacyMigration: false),
+                        package.sourceURL.map({ $0.utf8.elementsEqual(value.chapter.url.utf8) }) == true,
+                        OnlineChapterCacheWritePolicy.isReusableCachedPackage(package, hasBookSource: true) else { continue }
+                    updates.append(.init(index: value.chapter.index, chapterID: value.chapter.id, url: value.chapter.url,
+                        filename: "\(value.chapter.index).txt"))
+                }
+                guard !updates.isEmpty else { return [] }
+                _ = try chapterStore.publishCachedFiles(bookID: bookID, updates: updates) {
+                    try cancellation.check(deadline: deadline)
+                    for value in chapters { try value.generation.check(deadline: deadline) }
+                }
+                return updates.map(\.index)
+            }
+            if !saved.isEmpty { await MainActor.run { self.objectWillChange.send() } }
+            return saved
+        } onCancel: { cancellation.cancel() }
+    }
+    func publishVerifiedChapterCache(bookID: UUID, chapter: OnlineChapterRef,
+                                     generation: OriginalRuntimeChapterGeneration, cache: ChapterCacheRepository,
+                                     sourceURL: String, filename: String) async throws {
+        let cancellation = OriginalRuntimeCommitCancellation()
+        let changed = try await withTaskCancellationHandler {
+            try await Self.chapterCachePersistence { [chapterStore] in
+                let check = { try cancellation.check(deadline: .distantFuture); try generation.checkCacheWrite(deadline: .distantFuture) }
+                try check()
+                guard let package = cache.loadChapterPackageSync(bookId: bookID, chapterIndex: chapter.index,
+                    expectedSourceURL: sourceURL, expectedTOCTitle: chapter.title, scheduleLegacyMigration: false),
+                    package.state == .cached, !package.content.isEmpty else { throw ChapterCacheWriteError.verificationFailed }
+                return try chapterStore.publishCachedFiles(bookID: bookID,
+                    updates: [.init(index: chapter.index, chapterID: chapter.id, url: chapter.url, filename: filename)], beforeWrite: check)
+            }
+        } onCancel: { cancellation.cancel() }
+        if changed { await MainActor.run { self.objectWillChange.send() } }
+    }
+    static func assertChapterCachePersistenceQueue() {
+        dispatchPrecondition(condition: .onQueue(persistQueue))
+    }
 }

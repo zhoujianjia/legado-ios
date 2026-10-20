@@ -244,7 +244,7 @@ enum FetchError: LocalizedError {
     }
 }
 
-struct CachedChapterMetadata: Codable {
+struct CachedChapterMetadata: Codable, Sendable {
     let sourceURL: String?
     let tocTitle: String?
     let extractedTitle: String?

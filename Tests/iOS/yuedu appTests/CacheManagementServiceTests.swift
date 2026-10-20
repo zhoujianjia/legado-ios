@@ -32,7 +32,7 @@ struct CacheManagementServiceTests {
     }
 
     @Test("clearing one category leaves the other cache roots intact")
-    func clearOneCategory() throws {
+    func clearOneCategory() async throws {
         let fixture = try makeFixture()
         defer { try? FileManager.default.removeItem(at: fixture.container) }
 
@@ -41,7 +41,7 @@ struct CacheManagementServiceTests {
         try Data("chapter".utf8).write(to: chapter)
         try Data("cover".utf8).write(to: cover)
 
-        try CacheManagementService(roots: fixture.roots, diagnosticLog: nil).clear(.chapters)
+        try await CacheManagementService(roots: fixture.roots, diagnosticLog: nil).clear(.chapters)
 
         #expect(!FileManager.default.fileExists(atPath: chapter.path))
         #expect(FileManager.default.fileExists(atPath: cover.path))
@@ -49,7 +49,7 @@ struct CacheManagementServiceTests {
     }
 
     @Test("clearing all caches removes files but preserves cache roots")
-    func clearAllCaches() throws {
+    func clearAllCaches() async throws {
         let fixture = try makeFixture()
         defer { try? FileManager.default.removeItem(at: fixture.container) }
 
@@ -58,7 +58,7 @@ struct CacheManagementServiceTests {
             try Data(repeating: UInt8(index), count: index + 1).write(to: file)
         }
 
-        try CacheManagementService(roots: fixture.roots, diagnosticLog: nil).clearAll()
+        try await CacheManagementService(roots: fixture.roots, diagnosticLog: nil).clearAll()
         let snapshot = CacheManagementService(roots: fixture.roots, diagnosticLog: nil).snapshot()
 
         #expect(snapshot.total == 0)
@@ -68,7 +68,7 @@ struct CacheManagementServiceTests {
     }
 
     @Test("remote cleanup preserves active books, explicit offline files and reading metadata")
-    func remoteCleanupKeepsActiveReading() throws {
+    func remoteCleanupKeepsActiveReading() async throws {
         let fixture = try makeFixture()
         defer { try? FileManager.default.removeItem(at: fixture.container) }
         let cache = RemoteLibraryCache(root: fixture.roots.remoteBooks)
@@ -85,14 +85,14 @@ struct CacheManagementServiceTests {
         cache.retain(activeID)
         let service = CacheManagementService(roots: fixture.roots, diagnosticLog: nil, remoteLibraryCache: cache)
         #expect(service.snapshot().remoteBooks == 30)
-        try service.clear(.remoteBooks)
+        try await service.clear(.remoteBooks)
         #expect(FileManager.default.fileExists(atPath: active.path))
         #expect(!FileManager.default.fileExists(atPath: inactive.path))
         #expect(service.snapshot().remoteBooks == 13)
         #expect(FileManager.default.fileExists(atPath: offline.path))
         #expect(FileManager.default.fileExists(atPath: progress.path))
         cache.release(activeID)
-        try service.clear(.remoteBooks)
+        try await service.clear(.remoteBooks)
         #expect(service.snapshot().remoteBooks == 0)
         #expect(FileManager.default.fileExists(atPath: offline.path))
         #expect(FileManager.default.fileExists(atPath: progress.path))

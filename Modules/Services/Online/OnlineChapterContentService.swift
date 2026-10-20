@@ -63,7 +63,7 @@ final class OnlineChapterContentService {
             )
             let suspiciousContent = ChapterFetchManager.isSuspiciousChapterContent(cached.content)
             if invalidArtifacts || suspiciousContent {
-                BookSourceFetcher.shared.clearChapterCache(bookId: book.id, chapterIndex: index)
+                BookSourceFetcher.shared.clearChapterCache(bookId: book.id, chapterIndex: index, ifUnchanged: cached)
             } else {
                 return makePayload(package: cached, ref: ref, index: index)
             }

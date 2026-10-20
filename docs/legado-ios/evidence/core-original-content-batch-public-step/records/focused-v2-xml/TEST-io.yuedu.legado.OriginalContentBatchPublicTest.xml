@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.yuedu.legado.OriginalContentBatchPublicTest" tests="5" skipped="0" failures="1" errors="0" timestamp="2026-10-20T10:20:09.014Z" hostname="DESKTOP-2E0OC06" time="3.826">
+  <properties/>
+  <testcase name="publicBatchRequiresExplicitHostAuthorizationBeforeStateHttpAndKeepsDefaultRoute" classname="io.yuedu.legado.OriginalContentBatchPublicTest" time="0.271"/>
+  <testcase name="publicBatchReturnsOnlyMissingAndPersistsDuplicateUrlIndexesAcrossNewSessions" classname="io.yuedu.legado.OriginalContentBatchPublicTest" time="0.716"/>
+  <testcase name="revokedSaveCapabilityPreservesTypedCompletedEffectsAndDoesNotCommitNextChapter" classname="io.yuedu.legado.OriginalContentBatchPublicTest" time="0.105">
+    <failure message="org.junit.ComparisonFailure: expected:&lt;[INVALID_STATE_OWNER]&gt; but was:&lt;[STATE_IO]&gt;" type="org.junit.ComparisonFailure">org.junit.ComparisonFailure: expected:&lt;[INVALID_STATE_OWNER]&gt; but was:&lt;[STATE_IO]&gt;
+	at org.junit.Assert.assertEquals(Assert.java:117)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at io.yuedu.legado.OriginalContentBatchPublicTest.revokedSaveCapabilityPreservesTypedCompletedEffectsAndDoesNotCommitNextChapter(OriginalContentBatchPublicTest.kt:75)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="ordinaryScriptErrorKeepsRealSavedPrefixAndDoesNotRetryMissingChapters" classname="io.yuedu.legado.OriginalContentBatchPublicTest" time="0.078"/>
+  <testcase name="cancellationCloseAndDeadlineRejectLateSecondSaveButKeepCommittedPrefix" classname="io.yuedu.legado.OriginalContentBatchPublicTest" time="2.656"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

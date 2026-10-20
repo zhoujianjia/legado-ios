@@ -5,13 +5,13 @@ import Testing
 @Suite("Chapter cache durable writes", .serialized)
 struct ChapterCacheRepositoryWriteTests {
     @Test("empty content is rejected")
-    func emptyContentRejected() throws {
+    func emptyContentRejected() async throws {
         let root = temporaryRoot()
         defer { try? FileManager.default.removeItem(at: root) }
         let repository = ChapterCacheRepository(rootDirectory: root)
 
-        #expect(throws: ChapterCacheWriteError.emptyContent) {
-            try repository.saveChapterPackageToCache(
+        await #expect(throws: ChapterCacheWriteError.emptyContent) {
+            try await repository.saveChapterPackageToCache(
                 package(bookId: UUID(), content: ""),
                 rawHTML: nil,
                 normalizedHTML: nil
@@ -20,14 +20,14 @@ struct ChapterCacheRepositoryWriteTests {
     }
 
     @Test("body write failure propagates")
-    func bodyFailurePropagates() throws {
+    func bodyFailurePropagates() async throws {
         let root = temporaryRoot()
         defer { try? FileManager.default.removeItem(at: root) }
         try Data("not a directory".utf8).write(to: root)
         let repository = ChapterCacheRepository(rootDirectory: root)
 
-        #expect(throws: ChapterCacheWriteError.self) {
-            try repository.saveChapterPackageToCache(
+        await #expect(throws: ChapterCacheWriteError.self) {
+            try await repository.saveChapterPackageToCache(
                 package(bookId: UUID(), content: "body"),
                 rawHTML: nil,
                 normalizedHTML: nil
@@ -36,13 +36,13 @@ struct ChapterCacheRepositoryWriteTests {
     }
 
     @Test("successful write is immediately reloadable and verified")
-    func writeIsReloadable() throws {
+    func writeIsReloadable() async throws {
         let root = temporaryRoot()
         defer { try? FileManager.default.removeItem(at: root) }
         let repository = ChapterCacheRepository(rootDirectory: root)
         let bookId = UUID()
 
-        let filename = try repository.saveChapterPackageToCache(
+        let filename = try await repository.saveChapterPackageToCache(
             package(bookId: bookId, content: "durable body"),
             rawHTML: "<p>durable body</p>",
             normalizedHTML: "<html><body>durable body</body></html>"

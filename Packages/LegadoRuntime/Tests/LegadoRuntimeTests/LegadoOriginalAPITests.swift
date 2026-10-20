@@ -29,6 +29,7 @@ private final class OriginalAPITransport: LegadoRuntimeTransport, @unchecked Sen
         case "search": result = ["books": [book]]
         case "details": result = ["book": book]
         case "toc": result = ["book": book, "chapters": [Self.object(Self.chapter())]]
+        case "contentBatch": result = ["book": book, "missingChapters": Array((input["chapters"] as? [Any] ?? []).suffix(1))]
         case "content": result = ["book": book, "chapter": input["chapter"] ?? Self.object(Self.chapter()), "content": "owned text"]
         default: throw LegadoRuntimeError(code: "fixture_operation", message: operation)
         }
@@ -77,6 +78,23 @@ private final class OriginalAPITransport: LegadoRuntimeTransport, @unchecked Sen
         XCTAssertEqual(request["needSave"] as? Bool, false); XCTAssertEqual(request["nextChapterUrl"] as? String, "/next")
         let options = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(XCTUnwrap(transport.options).utf8)) as? [String: String])
         XCTAssertEqual(options["sourceMode"], "original-traditional"); XCTAssertEqual(options["stateOwner"], "embedding-owner")
+    }
+    func testTypedBatchReturnsMissingChapterIdentitiesAndDoesNotGrantSaves() async throws {
+        let transport = OriginalAPITransport(); let runtime = runtime(transport); let source = try await session(runtime)
+        let book = OriginalAPITransport.book()
+        let a = OriginalAPITransport.chapter()
+        let b = LegadoOriginalChapter(bookURL: book.bookURL, url: a.url, index: 1, title: "Second same URL", baseURL: a.baseURL)
+        let value = try await runtime.contentBatchOriginal(session: source, book: book, chapters: [a, b], taskID: "typed-batch")
+        XCTAssertEqual(value.missingChapters, [b]); XCTAssertEqual(value.book, book)
+        let call = try XCTUnwrap(transport.calls.first)
+        XCTAssertEqual(call.operation, "contentBatch"); XCTAssertEqual(call.task, "typed-batch"); XCTAssertFalse(call.main)
+        let input = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(call.request.utf8)) as? [String: Any])
+        XCTAssertNil(input["needSave"]); XCTAssertNil(input["owner"]); XCTAssertEqual((input["chapters"] as? [Any])?.count, 2)
+        do { _ = try await runtime.contentBatchOriginal(session: source, book: book, chapters: [a,a]); XCTFail("Duplicate indexes must reject before transport") }
+        catch let error as LegadoRuntimeError { XCTAssertEqual(error.code, "INVALID_ARGUMENT") }
+        transport.respondNext("{\"ok\":false,\"error\":{\"code\":\"INVALID_STATE_OWNER\",\"message\":\"revoked\",\"completedEffects\":[\"chapterContentCommitted\"]}}")
+        do { _ = try await runtime.contentBatchOriginal(session: source, book: book, chapters: [a,b]); XCTFail("Host failure is not missing success") }
+        catch let error as LegadoRuntimeError { XCTAssertEqual(error.code, "INVALID_STATE_OWNER"); XCTAssertEqual(error.completedEffects, ["chapterContentCommitted"]) }
     }
     func testTypedBusinessApiDoesNotSelectTheExistingRoute() async throws {
         let transport = OriginalAPITransport(); let runtime = runtime(transport)

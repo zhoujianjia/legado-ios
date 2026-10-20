@@ -215,7 +215,8 @@ protocol LegadoEntityStateBacking: Sendable {
     func readState(keys: [LegadoEntityStateKey], deadline: Date,
                    cancellation: OriginalRuntimeCommitCancellation) async throws -> LegadoEntityBackingSnapshot
     func commitState(snapshot: LegadoEntityBackingSnapshot, keys: [LegadoEntityStateKey], changes: [String: Data?],
-                     deadline: Date, cancellation: OriginalRuntimeCommitCancellation) async throws -> Bool
+                     deadline: Date, cancellation: OriginalRuntimeCommitCancellation,
+                     claimCommit: @escaping @Sendable () -> Bool) async throws -> Bool
 }
 
 extension AppLegadoBookStateOwner: LegadoEntityStateBacking {
@@ -226,11 +227,12 @@ extension AppLegadoBookStateOwner: LegadoEntityStateBacking {
         .app(try await read(keys: keys, deadline: deadline, cancellation: cancellation))
     }
     func commitState(snapshot: LegadoEntityBackingSnapshot, keys: [LegadoEntityStateKey], changes: [String: Data?],
-                     deadline: Date, cancellation: OriginalRuntimeCommitCancellation) async throws -> Bool {
+                     deadline: Date, cancellation: OriginalRuntimeCommitCancellation,
+                     claimCommit: @escaping @Sendable () -> Bool = { true }) async throws -> Bool {
         guard case .app(let value) = snapshot else {
             throw LegadoRuntimeError(code: "INVALID_STATE_OWNER", message: "An App owner cannot consume a preview proof")
         }
-        return try await commit(snapshot: value, keys: keys, changes: changes, deadline: deadline, cancellation: cancellation)
+        return try await commit(snapshot: value, keys: keys, changes: changes, deadline: deadline, cancellation: cancellation, claimCommit: claimCommit)
     }
 }
 
@@ -286,12 +288,13 @@ struct LegadoPreviewStateOwner: LegadoEntityStateBacking {
         .preview(try await grant.service.readPreviewEntity(grant, keys: keys, deadline: deadline, cancellation: cancellation))
     }
     func commitState(snapshot: LegadoEntityBackingSnapshot, keys: [LegadoEntityStateKey], changes: [String: Data?],
-                     deadline: Date, cancellation: OriginalRuntimeCommitCancellation) async throws -> Bool {
+                     deadline: Date, cancellation: OriginalRuntimeCommitCancellation,
+                     claimCommit: @escaping @Sendable () -> Bool = { true }) async throws -> Bool {
         guard case .preview(let value) = snapshot else {
             throw LegadoRuntimeError(code: "INVALID_STATE_OWNER", message: "A preview owner cannot consume an App proof")
         }
         return try await grant.service.commitPreviewEntity(grant, snapshot: value, keys: keys,
-            changes: changes, deadline: deadline, cancellation: cancellation)
+            changes: changes, deadline: deadline, cancellation: cancellation, claimCommit: claimCommit)
     }
     private static func failure(_ message: String) -> LegadoRuntimeError {
         .init(code: "UNSUPPORTED_CAPABILITY", message: message)

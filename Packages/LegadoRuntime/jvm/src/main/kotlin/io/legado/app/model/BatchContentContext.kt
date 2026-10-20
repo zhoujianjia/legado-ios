@@ -136,6 +136,13 @@ class BatchContentContext internal constructor(
         val saved = try {
             book.environment.webBook.saveContent(book, chapter, replaced, token, saveChapterMetadata = false)
         } catch (error: Exception) {
+            // The production state adapter preserves its typed Host failure as the
+            // cause. Revoked grants and known effects cannot become an ordinary
+            // false save; only the original recoverable I/O/conflict path may do so.
+            val hostFailure = (error as? RulePersistenceException)?.cause as? io.yuedu.legado.RuntimeFailure
+            val hostControl = hostFailure != null && (hostFailure.completedEffects.isNotEmpty() ||
+                hostFailure.code !in setOf("STATE_IO", "STATE_CONFLICT"))
+            if (hostControl && hostFailure != null) throw hostFailure
             if (error !is RulePersistenceException || error.completedEffect != null) rethrowRuleControlFailure(error)
             coroutineContext.ensureActive()
             book.environment.ensureOpen()

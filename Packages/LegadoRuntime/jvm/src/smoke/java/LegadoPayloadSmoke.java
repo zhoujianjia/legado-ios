@@ -297,7 +297,7 @@ public class LegadoPayloadSmoke {
         var server=HttpServer.create(new InetSocketAddress(InetAddress.getByAddress(new byte[]{127,0,0,1}),0),0);
         server.createContext("/", exchange -> {
             var n=requests.incrementAndGet();
-            if(n==1)exchange.getResponseHeaders().add("Set-Cookie","batch=owned; Path=/");
+            if(exchange.getRequestURI().getPath().equals("/chapter-0"))exchange.getResponseHeaders().add("Set-Cookie","batch=owned; Path=/");
             else if(!String.valueOf(exchange.getRequestHeaders().getFirst("Cookie")).contains("batch=owned"))throw new AssertionError("Batch lost the same HTTP Cookie jar");
             var bytes=("body-"+exchange.getRequestURI().getPath()).getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(200,bytes.length);
@@ -305,12 +305,18 @@ public class LegadoPayloadSmoke {
         });server.start();
         var origin="http://127.0.0.1:"+server.getAddress().getPort();
         var owner="ordinary-batch-owner";var taskID="ordinary-batch-task";
+        var publicGrant=new java.util.concurrent.atomic.AtomicBoolean(false);
         LegadoRuntime.setHostCallback((task,operation,raw)->{
             var input=JsonParser.parseString(raw).getAsJsonObject();
-            if(!task.equals(taskID) || !input.get("owner").getAsString().equals(owner) || !input.has("deadlineEpochMs"))throw new AssertionError("Batch changed owner/task/deadline");
+            if((!task.equals(taskID) && !task.equals("ordinary-public-batch")) || !input.get("owner").getAsString().equals(owner) || !input.has("deadlineEpochMs"))throw new AssertionError("Batch changed owner/task/deadline");
             var out=new JsonObject();
             synchronized(values){
-                if(operation.equals("explore.owner.scope"))out.addProperty("scope","ordinary-batch-backing-source-revision");
+                if(operation.equals("content.batch.authorize")){
+                    if(!input.get("sourceURL").getAsString().equals(origin) || !input.get("bookURL").getAsString().equals(origin+"/book") || input.getAsJsonArray("chapters").size()!=3)throw new AssertionError("Public batch changed identity");
+                    if(publicGrant.get())out.addProperty("authorized",true);
+                    else {out.addProperty("ok",false);var error=new JsonObject();error.addProperty("code","UNSUPPORTED_CAPABILITY");error.addProperty("message","No App body generation grant");out.add("error",error);}
+                }
+                else if(operation.equals("explore.owner.scope"))out.addProperty("scope","ordinary-batch-backing-source-revision");
                 else if(operation.equals("state.read")){
                     out.addProperty("revision",revision[0]);var selected=new JsonObject();
                     for(var key:input.getAsJsonArray("keys")){var value=values.get(key.getAsString());if(value!=null)selected.addProperty(key.getAsString(),value);}
@@ -322,7 +328,7 @@ public class LegadoPayloadSmoke {
                 }else throw new AssertionError(operation);
             }return out.toString();
         });
-        var sourceJson=new JsonObject();sourceJson.addProperty("bookSourceUrl",origin);sourceJson.addProperty("enabledCookieJar",true);sourceJson.addProperty("concurrentRate","6/60000");
+        var sourceJson=new JsonObject();sourceJson.addProperty("bookSourceUrl",origin);sourceJson.addProperty("enabledCookieJar",true);sourceJson.addProperty("concurrentRate","12/60000");
         var contentRule=new JsonObject();contentRule.addProperty("contentBatch","for(var i=0;i<2;i++){if(!java.cacheContent(result.get(i),java.ajax(result.get(i).getAbsoluteURL())))throw new Error('save failed')}");sourceJson.add("ruleContent",contentRule);
         var options=new io.yuedu.legado.RuntimeSessionOptions("jvm-okhttp",null,owner,"existing","session-jar");
         var session=new io.yuedu.legado.RuntimeSession("ordinary-batch-session",sourceJson,options);
@@ -355,8 +361,15 @@ public class LegadoPayloadSmoke {
             if(record.getFrequency()!=4 || requests.get()!=2 || writes.get()<3)throw new AssertionError("Batch and nested HTTP did not share the original rate window");
             var publicSession=checked(LegadoRuntime.createSession(sourceJson.toString(),"{\"sourceMode\":\"original-traditional\",\"httpTransport\":\"jvm-okhttp\",\"stateOwner\":\""+owner+"\"}")).get("sessionId").getAsString();
             try {
-                var denied=JsonParser.parseString(LegadoRuntime.execute(publicSession,"ordinary-batch-ungranted","contentBatch","{}")).getAsJsonObject();
-                if(denied.get("ok").getAsBoolean() || !denied.getAsJsonObject("error").get("code").getAsString().equals("UNSUPPORTED_OPERATION"))throw new AssertionError("Public App batch must remain ungranted");
+                var input=new JsonObject();input.add("book",bookJson);var inputChapters=new com.google.gson.JsonArray();
+                for(var chapter:chapters)inputChapters.add(io.yuedu.legado.OriginalRuleDto.INSTANCE.chapter(chapter));
+                input.add("chapters",inputChapters);
+                var denied=JsonParser.parseString(LegadoRuntime.execute(publicSession,"ordinary-public-batch","contentBatch",input.toString())).getAsJsonObject();
+                if(denied.get("ok").getAsBoolean() || !denied.getAsJsonObject("error").get("code").getAsString().equals("UNSUPPORTED_CAPABILITY"))throw new AssertionError("Public App batch must remain ungranted");
+                publicGrant.set(true);
+                var actual=checked(LegadoRuntime.execute(publicSession,"ordinary-public-batch","contentBatch",input.toString())).getAsJsonObject("result");
+                if(actual.has("contents") || actual.getAsJsonArray("missingChapters").size()!=1 || actual.getAsJsonArray("missingChapters").get(0).getAsJsonObject().get("index").getAsInt()!=2)throw new AssertionError("Public batch must return original missing chapters");
+                System.out.println("PACKAGED_ORIGINAL_PUBLIC_BATCH_OK publicJson=true saved=2 missing=1 explicitOwner=true appExecuted=false nativeExecuted=false");
             }finally{checked(LegadoRuntime.closeSession(publicSession));}
             System.out.println("PACKAGED_ORIGINAL_BATCH_RATE_OK saved=2 missing=1 sameOwner=true rateAdmissions=4 publicAppSaveEnabled=false nativeExecuted=false");
         }finally{environment.close();job.cancel(null);session.getClosed().set(true);session.getHttp().close();LegadoRuntime.setHostCallback(null);server.stop(0);}

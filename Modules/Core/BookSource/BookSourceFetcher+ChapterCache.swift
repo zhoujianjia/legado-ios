@@ -32,13 +32,19 @@ extension BookSourceFetcher {
         )
     }
 
-    nonisolated func clearChapterCache(bookId: UUID, chapterIndex: Int) {
-        Self.chapterCacheRepository.clearChapterCache(bookId: bookId, chapterIndex: chapterIndex)
+    nonisolated func clearChapterCache(bookId: UUID, chapterIndex: Int, ifUnchanged: ChapterPackage? = nil, onlyIfInvalid: Bool = false) {
+        Self.chapterCacheRepository.clearChapterCache(bookId: bookId, chapterIndex: chapterIndex, ifUnchanged: ifUnchanged, onlyIfInvalid: onlyIfInvalid)
     }
-
-    /// Clear all chapter caches for a book (called when switching sources)
+    nonisolated func clearChapterCacheAwait(bookId: UUID, chapterIndex: Int, ifUnchanged: ChapterPackage? = nil,
+                                           onlyIfInvalid: Bool = false) async throws {
+        try await Self.chapterCacheRepository.clearChapterCacheAwait(bookId: bookId, chapterIndex: chapterIndex,
+            ifUnchanged: ifUnchanged, onlyIfInvalid: onlyIfInvalid)
+    }
     nonisolated func clearAllChapterCache(bookId: UUID) {
         Self.chapterCacheRepository.clearAllChapterCache(bookId: bookId)
+    }
+    nonisolated func clearAllChapterCacheAwait(bookId: UUID) async throws {
+        try await Self.chapterCacheRepository.clearAllChapterCacheAwait(bookId: bookId)
     }
 
     @discardableResult
@@ -50,9 +56,10 @@ extension BookSourceFetcher {
         tocTitle: String? = nil,
         extractedTitle: String? = nil,
         rawHTML: String? = nil,
-        storeNormalizedHTML: Bool = true
-    ) throws -> String {
-        try Self.chapterCacheRepository.saveToCache(
+        storeNormalizedHTML: Bool = true,
+        validateGrant: @escaping @Sendable () throws -> Void = {}
+    ) async throws -> String {
+        try await Self.chapterCacheRepository.saveToCache(
             content: content,
             bookId: bookId,
             chapterIndex: chapterIndex,
@@ -60,7 +67,8 @@ extension BookSourceFetcher {
             tocTitle: tocTitle,
             extractedTitle: extractedTitle,
             rawHTML: rawHTML,
-            storeNormalizedHTML: storeNormalizedHTML
+            storeNormalizedHTML: storeNormalizedHTML,
+            validateGrant: validateGrant
         )
     }
 
@@ -68,12 +76,14 @@ extension BookSourceFetcher {
     nonisolated func saveChapterPackageToCache(
         _ package: ChapterPackage,
         rawHTML: String?,
-        normalizedHTML: String?
-    ) throws -> String {
-        try Self.chapterCacheRepository.saveChapterPackageToCache(
+        normalizedHTML: String?,
+        validateGrant: @escaping @Sendable () throws -> Void = {}
+    ) async throws -> String {
+        try await Self.chapterCacheRepository.saveChapterPackageToCache(
             package,
             rawHTML: rawHTML,
-            normalizedHTML: normalizedHTML
+            normalizedHTML: normalizedHTML,
+            validateGrant: validateGrant
         )
     }
 

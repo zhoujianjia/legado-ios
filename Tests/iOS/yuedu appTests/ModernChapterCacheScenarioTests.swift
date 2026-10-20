@@ -5,13 +5,13 @@ import Testing
 @Suite("Modern chapter cache integrity scenarios", .serialized, .timeLimit(.minutes(1)))
 struct ModernChapterCacheScenarioTests {
     @Test("a lightweight hit does not certify the body or rewrite damaged bytes", arguments: [0, 1, 2])
-    nonisolated func lightweightHitStillRequiresBodyValidation(damageKind: Int) throws {
+    nonisolated func lightweightHitStillRequiresBodyValidation(damageKind: Int) async throws {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("ModernChapterCacheScenario-\(UUID().uuidString)")
         defer { removeOwnedDirectory(root) }
         let repository = ChapterCacheRepository(rootDirectory: root)
         let bookID = UUID()
-        let snapshot = try seedAndDamage(repository: repository, root: root, bookID: bookID,
+        let snapshot = try await seedAndDamage(repository: repository, root: root, bookID: bookID,
                                          sourceURL: "https://cache-scenario.example/0", damageKind: damageKind)
 
         // Reopening must not turn damaged modern bytes into a newly blessed legacy entry.
@@ -49,7 +49,7 @@ struct ModernChapterCacheScenarioTests {
         defer { removeOwnedDirectory(directory) }
         CacheRecoveryURLProtocol.reset()
         let snapshot = try await Task.detached {
-            try seedAndDamage(repository: ChapterCacheRepository(), root: root, bookID: bookID,
+            try await seedAndDamage(repository: ChapterCacheRepository(), root: root, bookID: bookID,
                               sourceURL: sourceURL, damageKind: 0)
         }.value
 
@@ -90,12 +90,12 @@ private struct DamagedCacheSnapshot: Sendable {
 }
 
 private func seedAndDamage(repository: ChapterCacheRepository, root: URL, bookID: UUID,
-                                       sourceURL: String, damageKind: Int) throws -> DamagedCacheSnapshot {
+                                       sourceURL: String, damageKind: Int) async throws -> DamagedCacheSnapshot {
     let package = ChapterPackage(bookId: bookID, chapterIndex: 0, sourceURL: sourceURL,
         tocTitle: "Chapter 1", canonicalTitle: "Chapter 1", content: "Complete committed fixture prose.",
         contentChecksum: "", rawHTMLFilename: nil, normalizedHTMLFilename: nil,
         savedAt: Date(timeIntervalSince1970: 1), state: .cached, failureReason: nil)
-    try repository.saveChapterPackageToCache(package, rawHTML: nil, normalizedHTML: nil)
+    try await repository.saveChapterPackageToCache(package, rawHTML: nil, normalizedHTML: nil)
     let directory = root.appendingPathComponent(bookID.uuidString)
     let metadata = try Data(contentsOf: directory.appendingPathComponent("0.meta.json"))
     let artifact = try Data(contentsOf: directory.appendingPathComponent("0.package.json"))

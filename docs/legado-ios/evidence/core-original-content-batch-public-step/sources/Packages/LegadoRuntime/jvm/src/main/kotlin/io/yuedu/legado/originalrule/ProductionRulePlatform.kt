@@ -1,0 +1,313 @@
+package io.yuedu.legado.originalrule
+
+import com.google.gson.JsonObject
+import com.script.rhino.ScriptExecutionGuard
+import io.legado.app.data.entities.BaseSource
+import io.legado.app.model.analyzeRule.AnalyzeUrl
+import io.legado.app.model.analyzeRule.RuleDataInterface
+import io.yuedu.legado.RuntimeTask
+import io.yuedu.legado.RuntimeHttpRequestExecutor
+import io.yuedu.legado.StrResponse
+import io.yuedu.legado.ensureActiveForRuntime
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.runBlocking
+import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.Protocol
+import okhttp3.Request
+import okhttp3.Response
+import kotlin.coroutines.CoroutineContext
+
+/**
+ * First request boundary for the retained AnalyzeRule: one existing task, source
+ * snapshot, cookie jar, deadline and ProductionHttpTransport. It deliberately
+ * runs retained AnalyzeUrl header, URL and request stages, then reuses the
+ * single HTTP dispatch/response boundary shared with mainJs. Unported options remain
+ * explicit capability failures; this is not the complete AnalyzeUrl port.
+ * No browser, persistent source state or App reader routing is implied here.
+ */
+@OptIn(InternalCoroutinesApi::class)
+internal class ProductionRulePlatform(
+    private val task: RuntimeTask,
+    dispatch: (RuntimeTask, String, JsonObject) -> JsonObject,
+    private val environment: () -> RuleEnvironment,
+) : RulePlatform() {
+    private val hostDispatch = dispatch
+    override val userAgent: String? get() = task.session.options.userAgent
+    private val appCookieOwner = if (task.session.options.usesAppCookieOwner) AppCookieOwnerClient(task, dispatch) else null
+    init { if (appCookieOwner != null) task.appCookieOwner = appCookieOwner }
+    override val cookie: RuleCookieHost = object : RuleCookieHost() {
+        override fun getCookie(url: String): String = readCookie(url)
+        override fun getCookie(url: String, key: String?): String = readCookie(url, key)
+        override fun setCookie(url: String, value: String?): Unit = cookieWrite("set", url, value.orEmpty()) { task.session.cookies.setRuleCookie(url, value.orEmpty()) }
+        override fun replaceCookie(url: String, value: String): Unit = cookieWrite("replace", url, value) { task.session.cookies.replaceRuleCookie(url, value) }
+        override fun removeCookie(url: String): Unit = cookieWrite("remove", url) { task.session.cookies.removeRuleCookie(url) }
+        override fun setWebCookie(url: String, value: String) {
+            ensureOwnerOpen(); task.ensureActiveForRuntime()
+            val owner = appCookieOwner ?: unsupportedRule("original CookieStore.setWebCookie requires the explicit App owner")
+            owner.setWebCookie(url, value)
+        }
+        override fun clear() {
+            ensureOwnerOpen(); task.ensureActiveForRuntime()
+            val owner = appCookieOwner ?: unsupportedRule("original CookieStore.clear requires the explicit App owner")
+            owner.clear()
+        }
+    }
+
+    override fun exploreOwnerScope(source: BaseSource): String {
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        check(source.getRuleEnvironment() === environment()) { "Source belongs to another environment" }
+        val owner = task.session.options.stateOwner ?: unsupportedRule("original explore needs the explicit source owner")
+        val result = hostDispatch(task, "explore.owner.scope", io.yuedu.legado.jsonObject("owner" to owner, "sourceURL" to source.getKey()))
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        val scope = result["scope"]
+        if (scope == null || !scope.isJsonPrimitive || !scope.asJsonPrimitive.isString || scope.asString.isEmpty()
+            || scope.asString.toByteArray(Charsets.UTF_8).size > 32_768) throw RulePersistenceException("Original explore owner omitted its bounded stable scope")
+        return scope.asString
+    }
+
+    override fun originalRateDelayBudgetMillis(source: BaseSource): Long {
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        check(source.getRuleEnvironment() === environment()) { "Rate source belongs to another environment" }
+        return (task.deadlineEpochMs - System.currentTimeMillis()).coerceAtLeast(1L)
+    }
+
+    override fun authorizeOriginalContentBatch(source: BaseSource, bookUrl: String, chapters: List<Pair<Int, String>>) {
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        check(source.getRuleEnvironment() === environment()) { "Batch source belongs to another original owner" }
+        val owner = task.session.options.stateOwner ?: unsupportedRule("original public batch requires its explicit App save owner")
+        val result = hostDispatch(task, "content.batch.authorize", io.yuedu.legado.jsonObject("owner" to owner,
+            "sourceURL" to source.getKey(), "bookURL" to bookUrl,
+            "chapters" to com.google.gson.JsonArray().apply { chapters.forEach { (index, url) -> add(io.yuedu.legado.jsonObject("index" to index, "url" to url)) } }))
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        if(result["authorized"]?.isJsonPrimitive != true || !result["authorized"].asJsonPrimitive.isBoolean || !result["authorized"].asBoolean)
+            unsupportedRule("App owner did not authorize the actual batch chapter generations")
+    }
+
+    private val http = RuntimeHttpRequestExecutor(task) { current, operation, input ->
+        check(current === task && operation == "http.request") { "Unexpected original-rule host operation" }
+        ensureOwnerOpen()
+        // Never fall back to a native/Swift transport after session shutdown.
+        check(!task.session.closed.get()) { "Session is closed" }
+        check(task.session.http != null) { "Original-rule requests require the JVM HTTP transport" }
+        dispatch(current, operation, input)
+    }
+
+    override suspend fun <T> runWebBook(context: CoroutineContext, action: suspend () -> T): T {
+        ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+        val cancellation = context[Job]?.takeUnless { it === task.job }?.invokeOnCompletion(
+            onCancelling = true, invokeImmediately = true,
+        ) { cause -> if (cause != null) task.job.cancel(CancellationException("Original WebBook caller cancelled").apply { initCause(cause) }) }
+        try {
+            val guard = ScriptExecutionGuard { ensureOwnerOpen(); task.ensureActiveForRuntime() }
+            val result = withContext(context.minusKey(Job) + task.job + guard) { action() }
+            ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+            return result
+        } catch (error: Exception) {
+            ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+            rethrowRuleControlFailure(error)
+            throw error
+        } finally { cancellation?.dispose() }
+    }
+
+    override fun executeUrl(analyzed: AnalyzeUrl): StrResponse {
+        check(analyzed.getRuleEnvironment() === environment()) { "AnalyzeUrl belongs to another environment" }
+        val context = analyzed.getRuleCoroutineContext()
+        ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+        return try {
+            val request = analyzed.prepareRequest { target -> requestCookieHeader(target.toHttpUrl().toString()) }
+            checkRequestCookieCapability(request)
+            val result = http.execute(request, recoverIoFailure = false, transform = analyzed::transformResponse)
+            ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+            result
+        } catch (error: Exception) {
+            ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+            rethrowRuleControlFailure(error)
+            throw error
+        }
+    }
+
+    override fun storeLoginHeader(source: BaseSource, value: String?): Boolean {
+        val store = environment().persistence ?: return false
+        check(source.getRuleEnvironment() === environment()) { "Source belongs to another environment" }
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        val cacheKey = "loginHeader_${source.getKey()}"
+        val changes = environment().cache.textChange(cacheKey, value)
+        val headers = GSON.fromJsonObject<Map<String, String>>(value).getOrNull()
+        val cookie = headers?.get("Cookie") ?: headers?.get("cookie")
+        if (appCookieOwner != null && task.session.options.writesAppCookieOwner) {
+            // Locked BaseSource.kt:235-246 has immediate sequential effects,
+            // with different order for put and remove. This is deliberately not
+            // the outward state.commit atomic batch API.
+            if (value == null) {
+                environment().cache.delete(cacheKey)
+                try { appCookieOwner.mutate("remove", source.getKey()) }
+                catch (error: CancellationException) { throw RulePersistenceException.afterCancelledEffect("loginHeaderRemoval", "The login header was removed before Cookie removal was cancelled", error) }
+                catch (error: Exception) { throw RulePersistenceException.afterCommittedEffect("loginHeaderRemoval", "The login header was removed before Cookie removal failed; the original operation is sequential", error) }
+            } else {
+                cookie?.let { appCookieOwner.mutate("replace", source.getKey(), it) }
+                try { environment().cache.put(cacheKey, value) }
+                catch (error: CancellationException) {
+                    if (!cookie.isNullOrEmpty()) throw RulePersistenceException.afterCancelledEffect("cookieText", "Cookie text was committed before the login header write was cancelled", error)
+                    throw error
+                }
+                catch (error: Exception) {
+                    if (!cookie.isNullOrEmpty()) throw RulePersistenceException.afterCommittedEffect("cookieText", "Cookie text was committed before the login header write failed; the original operation is sequential", error)
+                    throw error
+                }
+            }
+            return true
+        }
+        if (appCookieOwner != null && (value == null || !cookie.isNullOrEmpty()))
+            unsupportedRule("source.putLoginHeader/removeLoginHeader cross Cookie/login owner transaction is not connected")
+        if (value != null && cookie.isNullOrEmpty()) {
+            environment().cache.put(cacheKey, value)
+            return true
+        }
+        task.session.cookies.persistent(store, write = true, extraChanges = changes) {
+            if (value == null) task.session.cookies.removeRuleCookie(source.getKey())
+            else cookie?.let { task.session.cookies.replaceRuleCookie(source.getKey(), it) }
+        }
+        environment().cache.publishText(cacheKey, value)
+        return true
+    }
+
+    override fun request(url: String, headers: String?, callTimeout: Long?, context: CoroutineContext): StrResponse =
+        requestOwned(url, headers, callTimeout, context, null)
+
+    override fun request(url: String, headers: String?, callTimeout: Long?, context: CoroutineContext,
+                         requester: RuleJsExtensions): StrResponse {
+        check(requester.getRuleEnvironment() === environment()) { "Original-rule requester belongs to another environment" }
+        return requestOwned(url, headers, callTimeout, context, requester.getSource())
+    }
+
+    override fun ajax(url: String, context: CoroutineContext, requester: RuleJsExtensions,
+                       ruleData: RuleDataInterface?): String? {
+        check(requester.getRuleEnvironment() === environment()) { "Original-rule requester belongs to another environment" }
+        return requestOwned(url, null, null, context, requester.getSource(), ruleData = ruleData).body()
+    }
+
+    override fun requestUrl(url: String, source: BaseSource?, baseUrl: String, context: CoroutineContext,
+                            key: String?, page: Int?): StrResponse {
+        check(source == null || source.getRuleEnvironment() === environment()) { "Original source belongs to another environment" }
+        return requestOwned(url, null, null, context, source, baseUrl, key, page, recoverExecutionErrors = false)
+    }
+
+    private fun requestOwned(url: String, headers: String?, callTimeout: Long?, context: CoroutineContext,
+                             source: BaseSource?, baseUrl: String = "", key: String? = null, page: Int? = null,
+                             ruleData: RuleDataInterface? = null, recoverExecutionErrors: Boolean = true): StrResponse {
+        ensureOwnerOpen()
+        context.ensureActive()
+        task.ensureActiveForRuntime()
+        check(!task.session.closed.get()) { "Session is closed" }
+        // AnalyzeRule may use a child caller context. Its cancellation must abort
+        // the same task-owned OkHttp call, not turn into a successful stack body.
+        // A normally completed context does not cancel the task.
+        val caller = context[Job]
+        val cancellation = caller?.takeUnless { it === task.job }?.invokeOnCompletion(
+            onCancelling = true, invokeImmediately = true,
+        ) { cause ->
+            if (cause != null) task.job.cancel(CancellationException("Original-rule caller cancelled").apply { initCause(cause) })
+        }
+        try {
+            context.ensureActive()
+            task.ensureActiveForRuntime()
+            // Reuse Rhino's existing instruction observer and task Job. The
+            // optional guard checks the same deadline/owner without a new timer,
+            // job, thread or cancellation authority (and without inheriting Job).
+            val guard = ScriptExecutionGuard {
+                ensureOwnerOpen()
+                task.ensureActiveForRuntime()
+            }
+            val scriptContext = context.minusKey(Job) + task.job + guard
+            // JsExtensions default calls have no key/page/book/baseUrl. Only
+            // AnalyzeRule's one-argument ajax override explicitly passes book.
+            val explicitHeaders = GSON.fromJsonObject<Map<String, String>>(headers).getOrNull()
+            val analyzed = AnalyzeUrl(url, key = key, page = page, baseUrl = baseUrl, source = source, ruleData = ruleData, environment = environment(),
+                coroutineContext = scriptContext, headerMapF = explicitHeaders, callTimeout = callTimeout)
+            // As in JsExtensions/AnalyzeRule, construction is outside recovery.
+            // Only getStrResponse-equivalent execution errors become text.
+            val response = try {
+                // Same original AnalyzeUrl execution as WebBook, including its
+                // shared owner-scoped admission. Do not count redirects/retries
+                // separately or install another HTTP/rate/task authority.
+                runBlocking(scriptContext) { analyzed.getStrResponseAwait() }
+            } catch (error: Exception) {
+                ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+                rethrowRuleControlFailure(error)
+                // WebBook owns login/error handling and must receive ordinary
+                // execution errors; only JsExtensions-style calls recover here.
+                if (!recoverExecutionErrors) throw error
+                log("原规则请求执行失败: $error")
+                val errorRequest = try { Request.Builder().url(analyzed.url).build() }
+                    catch (_: Exception) { Request.Builder().url("http://localhost/").build() }
+                val raw = Response.Builder().request(errorRequest).code(200).message("OK").protocol(Protocol.HTTP_1_1).build()
+                StrResponse(raw.request.url.toString(), 200, error.stackTraceToString(), emptyMap(), raw)
+            }
+            // Environment close rejects late publication; it does not abort an
+            // already-running host call or cancel a shared session. That call is
+            // still bounded by this task's existing deadline/transport timeout.
+            ensureOwnerOpen()
+            context.ensureActive()
+            task.ensureActiveForRuntime()
+            return response
+        } catch (error: Exception) {
+            // Library initialization and host callbacks can fail after close or
+            // cancellation too. Preserve those authorities even on exceptional
+            // exits so ajax cannot turn a closed-owner failure into body text.
+            ensureOwnerOpen()
+            context.ensureActive()
+            task.ensureActiveForRuntime()
+            rethrowRuleControlFailure(error)
+            throw error
+        } finally {
+            cancellation?.dispose()
+        }
+    }
+
+    private fun ensureOwnerOpen() {
+        try {
+            environment().ensureOpen()
+            check(!task.session.closed.get()) { "Original-rule session is closed" }
+        } catch (closed: IllegalStateException) {
+            // ajax catches ordinary exceptions as response text; a closed owner
+            // must never publish that text as a late successful result.
+            throw CancellationException("Original-rule environment is closed").apply { initCause(closed) }
+        }
+    }
+
+    private fun readCookie(url: String, key: String? = null): String {
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        return appCookieOwner?.getCookie(url, key) ?: cookieOperation { task.session.cookies.getRuleCookie(url, key) }
+    }
+    private fun requestCookieHeader(url: String): String {
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        return appCookieOwner?.requestHeader(url)
+            ?: task.session.cookies.persistent(environment().persistence) { task.session.cookies.getCookie(url) }
+    }
+    private fun checkRequestCookieCapability(request: JsonObject) {
+        if (appCookieOwner != null && !task.session.options.writesAppCookieOwner && request["enabledCookieJar"]?.asBoolean == true)
+            unsupportedRule("CookieManager.loadRequest/saveResponse enabledCookieJar needs the App owner's response/session text transaction")
+    }
+    private fun cookieWrite(action: String, url: String, value: String? = null, body: () -> Unit) {
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        if (appCookieOwner != null) { appCookieOwner.mutate(action, url, value); return }
+        cookieOperation(true, body)
+    }
+
+    private fun <T> cookieOperation(write: Boolean = false, body: () -> T): T {
+        // The existing jar monitor makes validation + mutation atomic relative
+        // to transport Set-Cookie handling and other rule environments.
+        synchronized(task.session.cookies) {
+            ensureOwnerOpen()
+            task.ensureActiveForRuntime()
+            check(!task.session.closed.get()) { "Session is closed" }
+            return try { task.session.cookies.persistent(environment().persistence, write, action = body) } catch (invalid: IllegalArgumentException) {
+                throw UnsupportedRuleCapability(invalid.message.orEmpty())
+            }
+        }
+    }
+}

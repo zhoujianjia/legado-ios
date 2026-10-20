@@ -430,15 +430,11 @@ actor OfflineChapterStore: OfflineChapterStoring {
     }
 
     func removeBook(bookId: UUID) async throws {
-        for directory in [
-            roots.textBookDirectory(bookId: bookId),
-            roots.mangaBookDirectory(bookId: bookId),
-        ] where fileManager.fileExists(atPath: directory.path) {
-            do {
-                try fileManager.removeItem(at: directory)
-            } catch {
-                throw OfflineChapterStoreError.remove(error.localizedDescription)
-            }
+        try await ChapterCacheRepository(rootDirectory: roots.textRoot).clearAllChapterCacheAwait(bookId: bookId)
+        let directory = roots.mangaBookDirectory(bookId: bookId)
+        if fileManager.fileExists(atPath: directory.path) {
+            do { try fileManager.removeItem(at: directory) }
+            catch { throw OfflineChapterStoreError.remove(error.localizedDescription) }
         }
     }
 
@@ -456,47 +452,25 @@ actor OfflineChapterStore: OfflineChapterStoring {
         let maximumCount = max(oldRefs.count, newRefs.count)
         guard maximumCount > 0 else { return }
 
-        // Two directory listings up front instead of six `fileExists` probes per chapter.
-        // A source switch mismatches nearly every index, so the probe-per-chapter form
-        // issued 6 × chapterCount stat syscalls — thousands for a long novel — almost all
-        // of them just to discover there was nothing cached at that index. Books with no
-        // offline data at all now cost two listings and return immediately.
-        let textDirectory = roots.textBookDirectory(bookId: bookId)
-        let cachedTextFiles = Set(
-            (try? fileManager.contentsOfDirectory(atPath: textDirectory.path)) ?? []
-        )
+        let repository = ChapterCacheRepository(rootDirectory: roots.textRoot)
         let mangaDirectory = roots.mangaBookDirectory(bookId: bookId)
-        let cachedMangaChapters = Set(
-            (try? fileManager.contentsOfDirectory(atPath: mangaDirectory.path)) ?? []
-        )
-        guard !cachedTextFiles.isEmpty || !cachedMangaChapters.isEmpty else { return }
-
+        let cachedMangaChapters: Set<String>
+        do { cachedMangaChapters = Set(try fileManager.contentsOfDirectory(atPath: mangaDirectory.path)) }
+        catch let error as CocoaError where error.code == .fileReadNoSuchFile { cachedMangaChapters = [] }
+        catch { throw OfflineChapterStoreError.remove(error.localizedDescription) }
         for index in 0..<maximumCount {
             let oldRef = oldRefs.indices.contains(index) ? oldRefs[index] : nil
             let newRef = newRefs.indices.contains(index) ? newRefs[index] : nil
-            let matches = oldRef.map { old in
-                newRef.map { new in
-                    normalizedURL(old.url) == normalizedURL(new.url)
-                        && normalizedTitle(old.title) == normalizedTitle(new.title)
-                } ?? false
-            } ?? true
-            guard !matches else { continue }
+            let matches = oldRef.map { old in newRef.map { new in
+                normalizedURL(old.url) == normalizedURL(new.url) && normalizedTitle(old.title) == normalizedTitle(new.title)
+            } ?? false } ?? true
+            guard !matches, let oldRef else { continue }
             do {
-                for suffix in ["txt", "meta.json", "package.json", "raw.html", "normalized.xhtml"] {
-                    let filename = "\(index).\(suffix)"
-                    guard cachedTextFiles.contains(filename) else { continue }
-                    try fileManager.removeItem(
-                        at: textDirectory.appendingPathComponent(filename)
-                    )
-                }
+                try await repository.reconcileChapterCache(bookId: bookId, old: oldRef, new: newRef)
                 if cachedMangaChapters.contains(String(index)) {
-                    try fileManager.removeItem(
-                        at: roots.mangaChapterDirectory(bookId: bookId, chapterIndex: index)
-                    )
+                    try fileManager.removeItem(at: roots.mangaChapterDirectory(bookId: bookId, chapterIndex: index))
                 }
-            } catch {
-                throw OfflineChapterStoreError.remove(error.localizedDescription)
-            }
+            } catch { throw OfflineChapterStoreError.remove(error.localizedDescription) }
         }
     }
 

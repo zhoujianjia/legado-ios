@@ -1,0 +1,120 @@
+
+F:\yuedu-reader>if "Windows_NT" == "Windows_NT" setlocal
+
+F:\yuedu-reader>set DIRNAME=F:\yuedu-reader\.tools\gradle-8.14.3\bin\ 
+
+F:\yuedu-reader>if "F:\yuedu-reader\.tools\gradle-8.14.3\bin\" == "" set DIRNAME=. 
+
+F:\yuedu-reader>set APP_BASE_NAME=gradle 
+
+F:\yuedu-reader>set APP_HOME=F:\yuedu-reader\.tools\gradle-8.14.3\bin\.. 
+
+F:\yuedu-reader>for %i in ("F:\yuedu-reader\.tools\gradle-8.14.3\bin\..") do set APP_HOME=%~fi 
+
+F:\yuedu-reader>set APP_HOME=F:\yuedu-reader\.tools\gradle-8.14.3 
+
+F:\yuedu-reader>set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m" "-javaagent:F:\yuedu-reader\.tools\gradle-8.14.3/lib/agents/gradle-instrumentation-agent-8.14.3.jar" 
+
+F:\yuedu-reader>if defined JAVA_HOME goto findJavaFromJavaHome 
+
+F:\yuedu-reader>set JAVA_HOME=F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1 
+
+F:\yuedu-reader>set JAVA_EXE=F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1/bin/java.exe 
+
+F:\yuedu-reader>if exist "F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1/bin/java.exe" goto execute 
+
+F:\yuedu-reader>set CLASSPATH= 
+
+F:\yuedu-reader>"F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1/bin/java.exe" "-Xmx64m" "-Xms64m" "-javaagent:F:\yuedu-reader\.tools\gradle-8.14.3/lib/agents/gradle-instrumentation-agent-8.14.3.jar"   "-Dorg.gradle.appname=gradle" -classpath "" -jar "F:\yuedu-reader\.tools\gradle-8.14.3\lib\gradle-gradle-cli-main-8.14.3.jar" -p F:\yuedu-reader\.build\original-content-batch-public-delta\jvm-work --offline --no-daemon --console=plain test --rerun --tests io.yuedu.legado.OriginalContentBatchPublicTest 
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+w: Deprecated Gradle Version
+The used Gradle version (Gradle 8.14.3) is deprecated and will not be supported in future Kotlin Gradle Plugin releases.
+The minimum supported Gradle version will become Gradle 8.14.4 in Kotlin 2.5.0.
+
+This warning can be suppressed in 'gradle.properties':
+    kotlin.suppressGradlePluginWarnings=DeprecatedGradleVersionWarning
+Solution: Please update the Gradle version to at least Gradle 8.14.4.
+
+
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :processResources
+> Task :processTestResources
+
+> Task :compileKotlin
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeByJSoup.kt:77:38 Elvis operator (?:) always returns the left operand of non-nullable type 'String'.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt:122:27 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/main/kotlin/io/legado/app/model/webBook/BookChapterList.kt:75:31 Unnecessary safe call on a non-null receiver of type 'String'.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/main/kotlin/io/legado/app/model/webBook/BookChapterList.kt:108:35 Unnecessary non-null assertion (!!) on a non-null receiver of type 'String'.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt:87:27 Unnecessary safe call on a non-null receiver of type 'String'.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt:116:56 Unnecessary non-null assertion (!!) on a non-null receiver of type 'String'.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/main/kotlin/io/yuedu/legado/MainJsResultMarshaller.kt:177:36 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/main/kotlin/io/yuedu/legado/MainJsResultMarshaller.kt:181:30 'constructor(p0: URL!, p1: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/main/kotlin/io/yuedu/legado/TlsCapabilityProbe.kt:143:74 'class ThreadDeath : Error' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/main/kotlin/io/yuedu/legado/TlsCapabilityProbe.kt:151:81 'class ThreadDeath : Error' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/main/kotlin/io/yuedu/legado/TlsCapabilityProbe.kt:165:62 'class ThreadDeath : Error' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:177:36 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:188:37 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:194:24 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:205:24 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:215:25 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:225:22 'constructor(p0: URL!, p1: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt:30:33 This class is not recommended for use in Kotlin. Use 'kotlin.Any' instead.
+
+> Task :compileJava
+> Task :classes
+> Task :jar
+
+> Task :compileTestKotlin
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/test/kotlin/io/yuedu/legado/CpuLoopCapabilityProbe.kt:154:106 'val id: Long' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/test/kotlin/io/yuedu/legado/CpuLoopCapabilityProbe.kt:161:84 'val id: Long' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/test/kotlin/io/yuedu/legado/CpuLoopCapabilityProbe.kt:188:58 'class ThreadDeath : Error' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/test/kotlin/io/yuedu/legado/CpuLoopCapabilityProbe.kt:216:52 'val id: Long' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/test/kotlin/io/yuedu/legado/OkHttpWireCapabilityProbe.kt:118:58 'class ThreadDeath : Error' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/test/kotlin/io/yuedu/legado/OriginalConcurrentRateTest.kt:61:104 Unnecessary non-null assertion (!!) on a non-null receiver of type 'String'.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/test/kotlin/io/yuedu/legado/OriginalConcurrentRateTest.kt:203:138 This class is not recommended for use in Kotlin. Use 'kotlin.collections.Map' instead.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/test/kotlin/io/yuedu/legado/OriginalConcurrentRateTest.kt:205:77 This class is not recommended for use in Kotlin. Use 'kotlin.collections.Map' instead.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/test/kotlin/io/yuedu/legado/OriginalRuleScopesConcurrencyTest.kt:120:45 This class is not recommended for use in Kotlin. Use 'kotlin.Any' instead.
+w: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/src/test/kotlin/io/yuedu/legado/OriginalRuleScopesConcurrencyTest.kt:130:66 This class is not recommended for use in Kotlin. Use 'kotlin.Any' instead.
+
+> Task :compileTestJava
+> Task :testClasses
+
+> Task :test
+
+OriginalContentBatchPublicTest > revokedSaveCapabilityPreservesTypedCompletedEffectsAndDoesNotCommitNextChapter FAILED
+    java.lang.AssertionError at OriginalContentBatchPublicTest.kt:73
+
+5 tests completed, 1 failed
+
+> Task :test FAILED
+
+[Incubating] Problems report is available at: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':test'.
+> There were failing tests. See the report at: file:///F:/yuedu-reader/.build/original-content-batch-public-delta/jvm-work/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights.
+
+BUILD FAILED in 41s
+8 actionable tasks: 8 executed
+
+F:\yuedu-reader>if 1 EQU 0 goto mainEnd 
+
+F:\yuedu-reader>rem Set variable GRADLE_EXIT_CONSOLE if you need the _script_ return code instead of 
+
+F:\yuedu-reader>rem the _cmd.exe /c_ return code! 
+
+F:\yuedu-reader>set EXIT_CODE=1 
+
+F:\yuedu-reader>if 1 EQU 0 set EXIT_CODE=1 
+
+F:\yuedu-reader>if not "" == "" exit 1 
+
+F:\yuedu-reader>exit /b 1 

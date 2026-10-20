@@ -30,7 +30,7 @@ final class CacheManagementViewModel: ObservableObject {
         let service = service
         do {
             try await Task.detached(priority: .utility) {
-                try service.clear(category)
+                try await service.clear(category)
             }.value
             snapshot = await Task.detached(priority: .utility) {
                 service.snapshot()
@@ -48,7 +48,7 @@ final class CacheManagementViewModel: ObservableObject {
         let service = service
         do {
             try await Task.detached(priority: .utility) {
-                try service.clearAll()
+                try await service.clearAll()
             }.value
             snapshot = CacheStorageSnapshot()
         } catch {

@@ -173,7 +173,7 @@ final class CacheManagementService: @unchecked Sendable {
         )
     }
 
-    func clear(_ category: CacheCategory) throws {
+    func clear(_ category: CacheCategory) async throws {
         // The diagnostics directory has a live writer behind it. Deleting the files
         // from under it would race the batched append; `DiagnosticLog.clear()` does
         // the same work on the queue that owns those files.
@@ -182,6 +182,12 @@ final class CacheManagementService: @unchecked Sendable {
             return
         }
         do {
+            if category == .chapters {
+                // All prose artifact mutations, including Settings cleanup, share
+                // the existing library writer with staging/rollback and migrations.
+                try await BookStore.chapterCachePersistence { [self] in try clearDirectory(roots.chapters) }
+                return
+            }
             if category == .remoteBooks {
                 try remoteLibraryCache.clearInactive()
                 return
@@ -206,9 +212,9 @@ final class CacheManagementService: @unchecked Sendable {
         }
     }
 
-    func clearAll() throws {
+    func clearAll() async throws {
         for category in CacheCategory.allCases {
-            try clear(category)
+            try await clear(category)
         }
     }
 

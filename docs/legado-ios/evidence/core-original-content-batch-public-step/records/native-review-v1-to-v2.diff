@@ -1,0 +1,30 @@
+--- v1/Modules/Services/Online/LegadoContentBatchOwner.swift
++++ v2/Modules/Services/Online/LegadoContentBatchOwner.swift
+@@ -336,6 +336,15 @@
+                 result = try await runtime.contentBatchOriginal(session: session, book: request.book,
+                     chapters: request.chapters.map(\.dto),
+                     timeoutMilliseconds: Int64(min(300_000, max(1, request.deadline.timeIntervalSinceNow * 1000))), taskID: request.taskID)
++                guard result.missingChapters.count <= request.chapters.count,
++                      Set(result.missingChapters.map(\.index)).count == result.missingChapters.count,
++                      result.missingChapters.allSatisfy({ missing in
++                          request.chapters.contains { value in value.dto.index == missing.index &&
++                              value.dto.url.utf8.elementsEqual(missing.url.utf8) &&
++                              value.dto.bookURL.utf8.elementsEqual(missing.bookURL.utf8) }
++                      }) else {
++                    throw LegadoRuntimeError(code: "INVALID_RESULT", message: "Original missing chapters changed their granted App index/URL identity")
++                }
+                 finalBookCommitted = try await process.finishContentBatchResult(owner: owner, request: request, book: result.book)
+             } catch {
+                 do { try await runtime.close(session: session) }
+--- v1/Modules/Services/Online/LegadoPersistentStateHost.swift
++++ v2/Modules/Services/Online/LegadoPersistentStateHost.swift
+@@ -647,6 +647,9 @@
+         if cancelled.insert(taskID).inserted { cancellationOrder.append(taskID) }
+         if cancellationOrder.count > 1_024 { cancelled.remove(cancellationOrder.removeFirst()) }
+         if let pending = pendingEntityOperations[taskID] { for ticket in pending.values { ticket.cancel() } }
++        // The final returned Book.variable CAS is an App completion, beyond the
++        // synchronous state callback. It borrows this same task-owned lifetime.
++        for backing in contentOwners.values where backing.taskID == taskID { backing.revoke() }
+         if let pending = pendingWebCookieOperations[taskID] { for operation in pending.values { operation.task.cancel() } }
+         await fallback.cancel(taskID: taskID)
+     }

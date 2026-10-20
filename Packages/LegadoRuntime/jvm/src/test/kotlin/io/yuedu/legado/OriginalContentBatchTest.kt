@@ -198,7 +198,7 @@ class OriginalContentBatchTest {
             val session = created["sessionId"].asString
             try {
                 val reply = parseObject(LegadoRuntime.execute(session,"no-body-grant","contentBatch","{}"))
-                assertEquals("UNSUPPORTED_OPERATION",reply["error"].asJsonObject["code"].asString)
+                assertEquals("INVALID_ARGUMENT",reply["error"].asJsonObject["code"].asString)
             } finally { LegadoRuntime.closeSession(session) }
             assertTrue(peer.requests.isEmpty())
         } } }

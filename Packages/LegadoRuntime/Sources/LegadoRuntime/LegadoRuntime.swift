@@ -249,6 +249,18 @@ public final class LegadoRuntime: @unchecked Sendable {
                                 taskID: String = UUID().uuidString) async throws -> LegadoOriginalContentResult {
         try await executeOriginal(session, "content", OriginalContentRequest(book: book, chapter: chapter, nextChapterUrl: nextChapterURL, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
     }
+    /// Executes original batch callbacks and returns chapters that remain unsaved.
+    /// The embedding App must first bind its real book and active chapter generations;
+    /// a source-only/preview owner cannot authorize this operation.
+    public func contentBatchOriginal(session: LegadoSourceSession, book: LegadoOriginalBook,
+                                     chapters: [LegadoOriginalChapter], timeoutMilliseconds: Int64 = 30_000,
+                                     taskID: String = UUID().uuidString) async throws -> LegadoOriginalContentBatchResult {
+        guard chapters.count <= 32, Set(chapters.map(\.index)).count == chapters.count else {
+            throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "Original batch requires at most 32 unique chapter indexes")
+        }
+        return try await executeOriginal(session, "contentBatch", OriginalContentBatchRequest(book: book, chapters: chapters,
+            timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
+    }
     private func executeOriginal<Request: Encodable & Sendable, Response: Decodable & Sendable>(
         _ session: LegadoSourceSession, _ operation: String, _ request: Request, _ timeoutMilliseconds: Int64, _ taskID: String
     ) async throws -> Response {

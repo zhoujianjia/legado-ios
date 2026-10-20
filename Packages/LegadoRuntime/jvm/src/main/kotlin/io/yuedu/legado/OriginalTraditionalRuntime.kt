@@ -41,6 +41,7 @@ internal object OriginalTraditionalRuntime {
             "details", "getBookInfo" -> setOf("book", "canReName", "timeoutMs")
             "toc", "getChapters" -> setOf("book", "runPreUpdateJs", "isFromBookInfo", "timeoutMs")
             "content", "getContent" -> setOf("book", "chapter", "nextChapterUrl", "needSave", "timeoutMs")
+            "contentBatch", "getContentBatch" -> setOf("book", "chapters", "timeoutMs")
             else -> throw RuntimeFailure("UNSUPPORTED_OPERATION", "Original traditional mode does not support $operation")
         }
         require(input.keySet().all { it in fields }) { "Unknown original traditional request field" }
@@ -99,6 +100,30 @@ internal object OriginalTraditionalRuntime {
                             val book = OriginalRuleDto.book(input.requiredObject("book"), environment, source.bookSourceUrl)
                             val chapters = WebBook.getChapterListAwait(source, book, input.boolean("runPreUpdateJs", false), input.boolean("isFromBookInfo", false)).getOrThrow()
                             jsonObject("book" to OriginalRuleDto.book(book), "chapters" to JsonArray().apply { chapters.forEach { add(OriginalRuleDto.chapter(it)) } })
+                        }
+                        "contentBatch", "getContentBatch" -> {
+                            val rawChapters = input["chapters"]
+                            require(rawChapters != null && rawChapters.isJsonArray && rawChapters.asJsonArray.size() <= 32) { "Original contentBatch requires at most 32 chapter DTOs" }
+                            val rawBook = input.requiredObject("book")
+                            require(rawBook.requiredText("origin") == source.bookSourceUrl) { "Batch book belongs to another source" }
+                            val identities = rawChapters.asJsonArray.map { raw ->
+                                require(raw.isJsonObject) { "Original batch chapter must be an object" }
+                                val chapter = raw.asJsonObject
+                                require(chapter.requiredText("bookUrl") == rawBook.requiredText("bookUrl")) { "Batch chapter belongs to another book" }
+                                chapter.int("index") to chapter.requiredText("url")
+                            }
+                            require(identities.all { it.first >= 0 && it.second.isNotBlank() } && identities.map { it.first }.toSet().size == identities.size) { "Original batch requires unique nonnegative indexes and chapter URLs" }
+                            environment.platform.authorizeOriginalContentBatch(source, rawBook.requiredText("bookUrl"), identities)
+                            val book = OriginalRuleDto.book(rawBook, environment, source.bookSourceUrl)
+                            val chapters = rawChapters.asJsonArray.map { raw ->
+                                require(raw.isJsonObject) { "Original batch chapter must be an object" }
+                                OriginalRuleDto.chapter(raw.asJsonObject, environment, book, restorePersistentVariables = false)
+                            }
+                            require(chapters.map { it.index }.toSet().size == chapters.size) { "Original contentBatch chapter indexes must be unique" }
+                            // Only the embedding App's current real BookStore/chapter generations can
+                            // authorize body saves. DTOs/preview grants never grant this capability.
+                            val missing = WebBook.getContentBatchAwait(source, book, chapters)
+                            jsonObject("book" to OriginalRuleDto.book(book), "missingChapters" to JsonArray().apply { missing.forEach { add(OriginalRuleDto.chapter(it)) } })
                         }
                         else -> {
                             val book = OriginalRuleDto.book(input.requiredObject("book"), environment, source.bookSourceUrl)

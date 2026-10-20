@@ -145,7 +145,8 @@ struct OfflineChapterStoreTests {
             withIntermediateDirectories: true
         )
         try FileManager.default.createDirectory(at: mangaDirectory, withIntermediateDirectories: true)
-        try Data("text".utf8).write(to: textFile)
+        try await ChapterCacheRepository(rootDirectory: roots.storage.textRoot).saveToCache(
+            content: "text", bookId: bookId, chapterIndex: 0, sourceURL: "https://x/1", tocTitle: "One", storeNormalizedHTML: false)
         try Data("image".utf8).write(to: mangaDirectory.appendingPathComponent("000.jpg"))
         let store = OfflineChapterStore(roots: roots.storage, imageDownloader: StubImageDownloader())
 
@@ -166,7 +167,7 @@ struct OfflineChapterStoreTests {
         defer { try? FileManager.default.removeItem(at: roots.container) }
         let bookId = UUID()
         let repository = ChapterCacheRepository(rootDirectory: roots.storage.textRoot)
-        _ = try repository.saveToCache(
+        _ = try await repository.saveToCache(
             content: "第一章的內文，足夠長到不會被拒絕。",
             bookId: bookId,
             chapterIndex: 0,

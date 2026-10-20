@@ -289,7 +289,7 @@ struct yuedu_appTests {
         onlineBook.isOnline = true
         onlineBook.onlineChapters = refs
 
-        _ = try BookSourceFetcher.shared.saveToCache(
+        _ = try await BookSourceFetcher.shared.saveToCache(
             content: "已快取內容",
             bookId: bookId,
             chapterIndex: 0,

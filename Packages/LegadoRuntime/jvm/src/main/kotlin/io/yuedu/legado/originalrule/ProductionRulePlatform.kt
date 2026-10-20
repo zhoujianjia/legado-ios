@@ -75,6 +75,18 @@ internal class ProductionRulePlatform(
         return (task.deadlineEpochMs - System.currentTimeMillis()).coerceAtLeast(1L)
     }
 
+    override fun authorizeOriginalContentBatch(source: BaseSource, bookUrl: String, chapters: List<Pair<Int, String>>) {
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        check(source.getRuleEnvironment() === environment()) { "Batch source belongs to another original owner" }
+        val owner = task.session.options.stateOwner ?: unsupportedRule("original public batch requires its explicit App save owner")
+        val result = hostDispatch(task, "content.batch.authorize", io.yuedu.legado.jsonObject("owner" to owner,
+            "sourceURL" to source.getKey(), "bookURL" to bookUrl,
+            "chapters" to com.google.gson.JsonArray().apply { chapters.forEach { (index, url) -> add(io.yuedu.legado.jsonObject("index" to index, "url" to url)) } }))
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        if(result["authorized"]?.isJsonPrimitive != true || !result["authorized"].asJsonPrimitive.isBoolean || !result["authorized"].asBoolean)
+            unsupportedRule("App owner did not authorize the actual batch chapter generations")
+    }
+
     private val http = RuntimeHttpRequestExecutor(task) { current, operation, input ->
         check(current === task && operation == "http.request") { "Unexpected original-rule host operation" }
         ensureOwnerOpen()

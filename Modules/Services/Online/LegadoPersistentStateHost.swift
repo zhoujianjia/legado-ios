@@ -117,6 +117,12 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
     private var leases: [Int64: Lease] = [:]
     private var bookOwners: [String: any LegadoEntityStateBacking] = [:]
     private var entityLeases: [Int64: EntityLease] = [:]
+    private struct ContentLease {
+        let owner: String; let binding: Binding; let backing: AppLegadoContentBatchOwner
+        let keys: [LegadoContentStateKey]; let snapshot: LegadoContentStateSnapshot
+    }
+    private var contentOwners: [String: AppLegadoContentBatchOwner] = [:]
+    private var contentLeases: [Int64: ContentLease] = [:]
     private var pendingEntityOperations: [String: [UUID: OriginalRuntimeCommitCancellation]] = [:]
     private struct OriginalWebCookieOperation {
         let owner: String
@@ -148,10 +154,12 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
                 binding.cookieCancellation.cancel()
                 cancelWebCookieOperations(owner: owner)
                 bookOwners.removeValue(forKey: owner)?.revoke()
+                contentOwners.removeValue(forKey: owner)
             }
             bindings = bindings.filter { $0.value.sourceURL != sourceURL }
             leases = leases.filter { $0.value.binding.sourceURL != sourceURL }
             entityLeases = entityLeases.filter { $0.value.binding.sourceURL != sourceURL }
+            contentLeases = contentLeases.filter { $0.value.binding.sourceURL != sourceURL }
         }
         guard bindings.count < 256 else { throw failure("STATE_LIMIT", "Too many active source state owners") }
         let owner = UUID().uuidString
@@ -192,6 +200,44 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
         return owner
     }
 
+    func bindContentBatch(sourceURL: String, sourceRevision: String, taskID: String, store: BookStore,
+                          bookID: UUID, sourceID: UUID, book: LegadoOriginalBook,
+                          chapters: [OriginalRuntimeBatchChapter], deadline: Date,
+                          cache: ChapterCacheRepository = BookSourceFetcher.chapterCacheRepository) async throws -> String {
+        let previous = revisions[sourceURL]
+        guard book.origin.utf8.elementsEqual(sourceURL.utf8),
+              await store.prepareOriginalRuntimeBookSnapshot(id: bookID, sourceID: sourceID, bookURL: book.bookURL) != nil else {
+            throw failure("UNSUPPORTED_CAPABILITY", "Batch requires an existing App book/source UUID")
+        }
+        let backing = try AppLegadoContentBatchOwner(taskID: taskID, store: store, bookID: bookID, sourceID: sourceID,
+            book: book, chapters: chapters, deadline: deadline, cache: cache)
+        for value in chapters {
+            guard let current = try await store.originalRuntimeChapterSnapshot(bookID: bookID,
+                index: value.chapter.index, url: value.chapter.url), current.chapterID == value.chapter.id else {
+                throw failure("UNSUPPORTED_CAPABILITY", "Batch chapter TOC identity is no longer current")
+            }
+            try value.generation.check(deadline: deadline)
+        }
+        try await backing.prepareBookCompletion(deadline: deadline)
+        try Task.checkCancellation(); try await backing.validateState(deadline: deadline)
+        guard revisions[sourceURL] == previous else { throw failure("SOURCE_CHANGED", "Source changed while binding the App batch owner") }
+        let owner = try bind(sourceURL: sourceURL, sourceRevision: sourceRevision)
+        bookOwners[owner] = backing; contentOwners[owner] = backing
+        return owner
+    }
+
+    func finishContentBatchResult(owner: String, taskID: String, book: LegadoOriginalBook, deadline: Date) async throws -> Bool {
+        try Task.checkCancellation()
+        guard !cancelled.contains(taskID) else { throw CancellationError() }
+        guard let binding = bindings[owner], revisions[binding.sourceURL] == binding.sourceRevision,
+              let backing = contentOwners[owner], backing.taskID == taskID else {
+            throw failure("INVALID_STATE_OWNER", "Batch completion no longer has its current source/task grant")
+        }
+        return try await backing.finishResultBook(book, deadline: deadline)
+        // A final CAS can already be durable. Do not convert a late revoke/cancel
+        // into false/no-mutation after its actual accepted receipt.
+    }
+
     /// Only the existing context actor can issue this proof. Source JSON/reference text
     /// alone cannot manufacture a preview grant or acquire a library UUID.
     func bindPreview(grant: OriginalRuntimePreviewGrant) async throws -> String {
@@ -213,6 +259,8 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
         removed?.cookieCancellation.cancel()
         cancelWebCookieOperations(owner: owner)
         bookOwners.removeValue(forKey: owner)?.revoke()
+        contentOwners.removeValue(forKey: owner)
+        contentLeases = contentLeases.filter { $0.value.owner != owner }
         leases = leases.filter { $0.value.owner != owner }
         entityLeases = entityLeases.filter { $0.value.owner != owner }
         if let removed, !bindings.values.contains(where: { $0.sourceURL == removed.sourceURL }) {
@@ -222,10 +270,11 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
 
     /// Value-free diagnostics for verifying bounded ownership bookkeeping.
     func ownershipCounts() -> (bindings: Int, sourceRevisions: Int, leases: Int) {
-        (bindings.count, revisions.count, leases.count + entityLeases.count)
+        (bindings.count, revisions.count, leases.count + entityLeases.count + contentLeases.count)
     }
 
     func dispatch(_ request: LegadoHostRequest) async throws -> String {
+        if request.operation == "content.batch.authorize" { return try authorizeContentBatch(request) }
         if request.operation == "explore.owner.scope" { return try explorationOwnerScope(request) }
         if request.operation == "cookie.owner.read" { return try await readCookieOwner(request) }
         if request.operation == "cookie.owner.text" { return try await textCookieOwner(request) }
@@ -236,6 +285,7 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
         do {
           let decoded = try decodeStateRequest(request)
           let input = decoded.input; let owner = decoded.owner; let binding = decoded.binding
+          if let result = try await dispatchContentStateIfNeeded(request, decoded: decoded) { return result }
           if let result = try await dispatchEntityStateIfNeeded(request, decoded: decoded) { return result }
           return try SourcePerfTrace.span("legado.state.host", "bytes=\(request.requestJSON.utf8.count) main=\(Thread.isMainThread)") {
             if request.operation == "state.read" {
@@ -597,6 +647,9 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
         if cancelled.insert(taskID).inserted { cancellationOrder.append(taskID) }
         if cancellationOrder.count > 1_024 { cancelled.remove(cancellationOrder.removeFirst()) }
         if let pending = pendingEntityOperations[taskID] { for ticket in pending.values { ticket.cancel() } }
+        // The final returned Book.variable CAS is an App completion, beyond the
+        // synchronous state callback. It borrows this same task-owned lifetime.
+        for backing in contentOwners.values where backing.taskID == taskID { backing.revoke() }
         if let pending = pendingWebCookieOperations[taskID] { for operation in pending.values { operation.task.cancel() } }
         await fallback.cancel(taskID: taskID)
     }
@@ -648,6 +701,96 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
             let expired = leaseOrder.removeFirst()
             leases.removeValue(forKey: expired)
             entityLeases.removeValue(forKey: expired)
+            contentLeases.removeValue(forKey: expired)
+        }
+    }
+
+    private func authorizeContentBatch(_ request: LegadoHostRequest) throws -> String {
+        try check(request)
+        guard request.requestJSON.utf8.count <= 65_536 else { throw failure("STATE_LIMIT", "Batch grant request is oversized") }
+        let raw: Any
+        do { raw = try JSONSerialization.jsonObject(with: Data(request.requestJSON.utf8)) }
+        catch { throw failure("INVALID_STATE_REQUEST", "Batch grant request is not valid JSON") }
+        guard let input = raw as? [String: Any], Set(input.keys).isSubset(of: ["owner", "sourceURL", "bookURL", "chapters", "deadlineEpochMs", "remainingTimeoutMs"]),
+              let owner = input["owner"] as? String, let binding = bindings[owner],
+              revisions[binding.sourceURL] == binding.sourceRevision,
+              let sourceURL = input["sourceURL"] as? String, sourceURL.utf8.elementsEqual(binding.sourceURL.utf8),
+              let bookURL = input["bookURL"] as? String, let rows = input["chapters"] as? [[String: Any]], rows.count <= 32,
+              let backing = contentOwners[owner] else { throw failure("UNSUPPORTED_CAPABILITY", "No actual App batch save owner is bound") }
+        try backing.validateRequest(request)
+        let chapters: [(Int, String)] = try rows.map { row in
+            guard Set(row.keys) == ["index", "url"], let number = row["index"] as? NSNumber,
+                  CFGetTypeID(number) != CFBooleanGetTypeID(), let index = Int(number.stringValue), index >= 0,
+                  let url = row["url"] as? String, !url.isEmpty, url.utf8.count <= 8_192 else {
+                throw failure("INVALID_STATE_REQUEST", "Batch chapter identity is malformed")
+            }
+            return (index, url)
+        }
+        try backing.authorize(bookURL: bookURL, chapters: chapters, deadline: cookieReadDeadline(input))
+        return try encoded(["authorized": true])
+    }
+
+    private func dispatchContentStateIfNeeded(_ request: LegadoHostRequest, decoded: DecodedStateInput) async throws -> String? {
+        let isRead = request.operation == "state.read" && decoded.parts.values.contains { $0[1] == "content" || $0[1] == "toc" }
+        guard isRead || decoded.revision.flatMap({ contentLeases[$0] }) != nil else { return nil }
+        guard let backing = contentOwners[decoded.owner] else { throw failure("UNSUPPORTED_CAPABILITY", "Body state requires actual App chapter save grants") }
+        try backing.validateRequest(request)
+        let deadline = try cookieReadDeadline(decoded.input)
+        let ticket = OriginalRuntimeCommitCancellation(); let id = UUID()
+        pendingEntityOperations[request.taskID, default: [:]][id] = ticket
+        defer {
+            pendingEntityOperations[request.taskID]?.removeValue(forKey: id)
+            if pendingEntityOperations[request.taskID]?.isEmpty == true { pendingEntityOperations.removeValue(forKey: request.taskID) }
+        }
+        return try await SourcePerfTrace.spanAsync("legado.state.content", "bytes=\(request.requestJSON.utf8.count) main=\(Thread.isMainThread)") {
+            if isRead {
+                let keys = try backing.parseContent(decoded.keys!, sourceURL: decoded.binding.sourceURL, decoded: decoded.parts)
+                let snapshot = try await withTaskCancellationHandler {
+                    try await backing.readContent(keys: keys, deadline: deadline, cancellation: ticket)
+                } onCancel: { ticket.cancel() }
+                try check(request); try currentEntityBinding(owner: decoded.owner, binding: decoded.binding)
+                guard snapshot.state.values.values.reduce(0, { $0 + $1.count }) <= 1_048_576 else { throw failure("STATE_LIMIT", "Content snapshot exceeds its bridge byte budget") }
+                // contentSaveToken performs a value-only read; retaining an
+                // unused CAS lease for all 32 chapters would exhaust the first
+                // actual save. Only content+TOC read sets can enter a save CAS.
+                if keys.count == 1 {
+                    return try encoded(["revision": 0, "values": snapshot.state.values.mapValues { $0.base64EncodedString() }])
+                }
+                guard contentLeases.count < 32 else { throw failure("STATE_LIMIT", "Too many active content save CAS proofs") }
+                guard nextLease < Int64.max else { throw failure("STATE_LIMIT", "State revision space exhausted") }
+                nextLease += 1
+                // Retain only CAS identity/fingerprints, never the returned prose or
+                // whole TOC bytes as another in-memory body cache.
+                let proof = LegadoContentStateSnapshot(index: snapshot.index,
+                    cache: .init(bookID: snapshot.cache.bookID, index: snapshot.cache.index, package: nil,
+                        fingerprints: snapshot.cache.fingerprints),
+                    state: .init(revision: snapshot.state.revision, values: [:]))
+                contentLeases[nextLease] = .init(owner: decoded.owner, binding: decoded.binding, backing: backing, keys: keys, snapshot: proof)
+                leaseOrder.append(nextLease); trimLeases()
+                return try encoded(["revision": nextLease, "values": snapshot.state.values.mapValues { $0.base64EncodedString() }])
+            }
+            guard let revision = decoded.revision, let lease = contentLeases.removeValue(forKey: revision),
+                  lease.owner == decoded.owner, lease.binding.sourceRevision == decoded.binding.sourceRevision else {
+                return try encoded(["committed": false])
+            }
+            guard let rawChanges = decoded.input["changes"] as? [String: Any], rawChanges.count == 1,
+                  rawChanges.keys.allSatisfy({ key in lease.keys.contains(where: { $0.wire == key && $0.index != nil }) }) else {
+                throw failure("UNSUPPORTED_CAPABILITY", "Body commit cannot change another owner or TOC metadata")
+            }
+            var changes: [String: Data?] = [:]
+            for (key, raw) in rawChanges {
+                guard let value = raw as? String, value.utf8.count <= 1_398_104,
+                      let bytes = Data(base64Encoded: value), bytes.count <= 1_048_576 else { throw failure("STATE_LIMIT", "Content commit is malformed or oversized") }
+                changes.updateValue(bytes, forKey: key)
+            }
+            try check(request); try currentEntityBinding(owner: decoded.owner, binding: decoded.binding)
+            let committed = try await withTaskCancellationHandler {
+                try await lease.backing.commitContent(snapshot: lease.snapshot, keys: lease.keys, changes: changes,
+                    deadline: deadline, cancellation: ticket, request: request)
+            } onCancel: { ticket.cancel() }
+            // Commit receipt already crossed actual file IO. Never replace that
+            // fact with a later cancel/revoke "false" response.
+            return try encoded(["committed": committed])
         }
     }
 
@@ -721,10 +864,13 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
                 pendingEntityOperations[request.taskID]?.removeValue(forKey: requestID)
                 if pendingEntityOperations[request.taskID]?.isEmpty == true { pendingEntityOperations.removeValue(forKey: request.taskID) }
             }
+            let effectPrefix = lease.keys.first?.chapterURL == nil ? "bookVariables" : "chapterVariables"
             let committed = try await withTaskCancellationHandler {
                 try await backing.commitState(snapshot: lease.snapshot, keys: lease.keys, changes: changes,
-                    deadline: deadline, cancellation: ticket)
+                    deadline: deadline, cancellation: ticket,
+                    claimCommit: { request.recordPossibleEffect(effectPrefix + "MayCommit") })
             } onCancel: { ticket.cancel() }
+            if committed { request.recordPossibleEffect(effectPrefix + "Committed") }
             // Successful atomic replacement is already the owner transaction boundary.
             // A later cancel/revoke cannot be reported as an uncommitted disk mutation.
             return try encoded(["committed": committed])

@@ -1,0 +1,356 @@
+--- v2-or-canonical/Modules/Services/LibraryStore/BookChapterStore.swift
++++ v3/Modules/Services/LibraryStore/BookChapterStore.swift
+@@ -132,7 +132,8 @@
+     /// this transaction. They cannot mutate this owner's candidate or be overwritten by
+     /// its publication. Success acknowledges this ordered durable mutation, not a promise
+     /// that a later overlapping App edit cannot replace it.
+-    func compareRuntimeVariables(expected: RuntimeVariablesSnapshot, variables: [String: String]?, beforeWrite: () throws -> Void = {}) throws -> Bool {
++    func compareRuntimeVariables(expected: RuntimeVariablesSnapshot, variables: [String: String]?,
++                                 claimCommit: @Sendable () -> Bool = { true }, beforeWrite: () throws -> Void = {}) throws -> Bool {
+         dispatchPrecondition(condition: .onQueue(persistenceQueue))
+         let entry = try ownerEntry(for: expected.bookID)
+         guard entry.revision == expected.revision, var candidate = entry.chapters,
+@@ -143,7 +144,7 @@
+         candidate[expected.index].runtimeVariables = variables
+         committing = true
+         defer { committing = false }
+-        try write(candidate, for: expected.bookID, beforeWrite: beforeWrite)
++        try write(candidate, for: expected.bookID, beforeWrite: beforeWrite, claimCommit: claimCommit)
+         let revision = variables == expected.variables ? entry.revision : state.withLock { state in
+             state.nextRevision &+= 1
+             return state.nextRevision
+@@ -390,11 +391,13 @@
+     }
+ 
+     /// Returns the bytes written.
+-    private func write(_ chapters: [OnlineChapterRef]?, for bookID: UUID, beforeWrite: () throws -> Void = {}) throws -> Int {
++    private func write(_ chapters: [OnlineChapterRef]?, for bookID: UUID, beforeWrite: () throws -> Void = {},
++                       claimCommit: @Sendable () -> Bool = { true }) throws -> Int {
+         try beforeWrite()
+         let url = fileURL(for: bookID)
+         guard let chapters else {
+             if FileManager.default.fileExists(atPath: url.path) {
++                guard claimCommit() else { throw CancellationError() }
+                 try FileManager.default.removeItem(at: url)
+             }
+             return 0
+@@ -402,6 +405,7 @@
+         try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+         let data = try JSONEncoder().encode(chapters)
+         try beforeWrite()
++        guard claimCommit() else { throw CancellationError() }
+         try data.write(to: url, options: .atomic)
+         return data.count
+     }
+--- v2-or-canonical/Modules/Services/LibraryStore/BookStore.swift
++++ v3/Modules/Services/LibraryStore/BookStore.swift
+@@ -470,6 +470,7 @@
+                                     variables: [String: String]?,
+                                     deadline: Date, cancellation: OriginalRuntimeCommitCancellation,
+                                     beforeWrite: @escaping @Sendable () throws -> Void = {},
++                                     claimCommit: @escaping @Sendable () -> Bool = { true },
+                                      accepted didAccept: @escaping @Sendable (OriginalRuntimeBookMetadataOwner.Snapshot) -> Void = { _ in },
+                                     validateGrant: @escaping @Sendable () throws -> Void) async throws -> Bool {
+         try Task.checkCancellation()
+@@ -496,6 +497,8 @@
+                         }
+                         if bytes != location.before {
+                             try SourcePerfTrace.span("legado.state.book.commit", "books=\(location.records.count) bytes=\(bytes.count) main=\(Thread.isMainThread)") {
++                                 try cancellation.check(deadline: deadline); try validateGrant()
++                                 guard claimCommit() else { throw CancellationError() }
+                                 try bytes.write(to: url, options: .atomic)
+                             }
+                         }
+@@ -587,6 +590,7 @@
+     func compareOriginalRuntimeChapter(expected: BookChapterStore.RuntimeVariablesSnapshot,
+                                        variables: [String: String]?, deadline: Date,
+                                        cancellation: OriginalRuntimeCommitCancellation = OriginalRuntimeCommitCancellation(),
++                                       claimCommit: @escaping @Sendable () -> Bool = { true },
+                                        validateGrant: @escaping @Sendable () throws -> Void = {}) async throws -> Bool {
+         try Task.checkCancellation()
+         return try await withTaskCancellationHandler {
+@@ -595,7 +599,7 @@
+                     do {
+                         try cancellation.check(deadline: deadline)
+                         try validateGrant()
+-                        let result = try chapterStore.compareRuntimeVariables(expected: expected, variables: variables) {
++                        let result = try chapterStore.compareRuntimeVariables(expected: expected, variables: variables, claimCommit: claimCommit) {
+                             try cancellation.check(deadline: deadline)
+                             try validateGrant()
+                         }
+--- v2-or-canonical/Modules/Services/Online/ChapterCacheRepository.swift
++++ v3/Modules/Services/Online/ChapterCacheRepository.swift
+@@ -131,9 +131,11 @@
+                                     onlyIfInvalid: Bool, check: @Sendable () throws -> Void) throws {
+         BookStore.assertChapterCachePersistenceQueue(); try check()
+         guard chapterIndex >= 0 else { throw ChapterCacheWriteError.invalidIdentity }
+-        let current = loadChapterPackageSync(bookId: bookId, chapterIndex: chapterIndex)
+-        if let expected, current != expected { return }
+-        if onlyIfInvalid, let current, current.state == .cached, !current.content.isEmpty { return }
++        if let expected, loadChapterPackageSync(bookId: bookId, chapterIndex: chapterIndex) != expected { return }
++        if onlyIfInvalid {
++            let invalid = try knownInvalidChapterFiles(bookId: bookId, index: chapterIndex, check: check)
++            if !invalid { return }
++        }
+         let directory = cacheDir(for: bookId)
+         var status = stat()
+         if lstat(directory.path, &status) != 0 {
+@@ -151,6 +153,43 @@
+                 }
+             }
+         }
++    }
++    /// A compatibility loader's nil is not proof of corruption. Read each artifact
++    /// through this owner's bounded throwing FD reader before classifying bytes;
++    /// permission/I/O/regular-file/size failures never authorize deletion.
++    private func knownInvalidChapterFiles(bookId: UUID, index: Int, check: @Sendable () throws -> Void) throws -> Bool {
++        var required: [String: Data] = [:]
++        var anyFile = false
++        for suffix in [".txt", ".meta.json", ".package.json", ".raw.html", ".normalized.xhtml"] {
++            try check()
++            let path = cacheDir(for: bookId).appendingPathComponent(String(index) + suffix)
++            if let bytes = try cacheFileBytes(path, limit: suffix.hasSuffix("json") ? 1_048_576 : 67_108_864, check: check) {
++                anyFile = true
++                if suffix == ".txt" || suffix.hasSuffix("json") { required[suffix] = bytes }
++            }
++        }
++        guard let bytes = required[".txt"] else { return anyFile }
++        guard let body = String(data: bytes, encoding: .utf8), !body.isEmpty else { return true }
++        // An unidentified legacy body is not a diagnosed invalid download.
++        guard let metadataBytes = required[".meta.json"] else { return false }
++        let metadata: CachedChapterMetadata
++        do { metadata = try JSONDecoder().decode(CachedChapterMetadata.self, from: metadataBytes) }
++        catch let error as DecodingError {
++            AppLogger.error("Chapter cleanup found malformed metadata bytes", error: error)
++            return true
++        }
++        if !metadata.contentChecksum.isEmpty, metadata.contentChecksum != cacheChecksum(for: body) { return true }
++        if let artifactBytes = required[".package.json"] {
++            let artifact: ChapterPackageArtifact
++            do { artifact = try JSONDecoder().decode(ChapterPackageArtifact.self, from: artifactBytes) }
++            catch let error as DecodingError {
++                AppLogger.error("Chapter cleanup found malformed package bytes", error: error)
++                return true
++            }
++            if artifact.contentChecksum != cacheChecksum(for: body) { return true }
++        }
++        if let state = metadata.state, state != .cached { return true }
++        return ChapterFetcher.shared.isRejectedChapterContent(body, title: metadata.extractedTitle ?? metadata.tocTitle ?? "")
+     }
+     func clearAllChapterCacheAwait(bookId: UUID) async throws {
+         try await BookStore.chapterCachePersistence { try clearBookFiles(bookId: bookId) }
+--- v2-or-canonical/Modules/Services/Online/LegadoBookStateOwner.swift
++++ v3/Modules/Services/Online/LegadoBookStateOwner.swift
+@@ -132,7 +132,8 @@
+     }
+ 
+     func commit(snapshot: LegadoEntityStateSnapshot, keys: [LegadoEntityStateKey], changes: [String: Data?],
+-                deadline: Date, cancellation: OriginalRuntimeCommitCancellation) async throws -> Bool {
++                deadline: Date, cancellation: OriginalRuntimeCommitCancellation,
++                claimCommit: @escaping @Sendable () -> Bool = { true }) async throws -> Bool {
+         guard snapshot.chapter != nil || snapshot.bookVariables != nil else { throw Self.failure("Entity snapshot has no App owner proof") }
+         guard try currentBook(deadline: deadline) == snapshot.book else { return false }
+         let priorVariables = snapshot.chapter?.variables ?? snapshot.bookVariables?.book.variables
+@@ -160,7 +161,7 @@
+         let variables: [String: String]? = deletedSmall && large.isEmpty ? nil : small.merging(large) { first, _ in first }
+         if let expected = snapshot.chapter {
+           return try await store.compareOriginalRuntimeChapter(expected: expected, variables: variables,
+-            deadline: deadline, cancellation: cancellation) { [self] in
++            deadline: deadline, cancellation: cancellation, claimCommit: claimCommit) { [self] in
+                 guard try currentBook(deadline: deadline) == snapshot.book else {
+                     throw Self.failure("The granted App book changed before its chapter write")
+                 }
+@@ -168,7 +169,7 @@
+             }
+         }
+         return try await store.compareOriginalRuntimeBook(expected: snapshot.bookVariables!, expectedView: snapshot.book,
+-            variables: variables, deadline: deadline, cancellation: cancellation, accepted: acceptedBookCommit) { [self] in
++            variables: variables, deadline: deadline, cancellation: cancellation, claimCommit: claimCommit, accepted: acceptedBookCommit) { [self] in
+                 guard try currentBook(deadline: deadline) == snapshot.book else {
+                     throw Self.failure("The App book changed before its metadata write")
+                 }
+--- v2-or-canonical/Modules/Services/Online/LegadoContentBatchOwner.swift
++++ v3/Modules/Services/Online/LegadoContentBatchOwner.swift
+@@ -174,10 +174,11 @@
+         return try await owner.readState(keys: keys, deadline: deadline, cancellation: cancellation)
+     }
+     func commitState(snapshot: LegadoEntityBackingSnapshot, keys: [LegadoEntityStateKey], changes: [String: Data?],
+-                     deadline: Date, cancellation: OriginalRuntimeCommitCancellation) async throws -> Bool {
++                     deadline: Date, cancellation: OriginalRuntimeCommitCancellation,
++                     claimCommit: @escaping @Sendable () -> Bool = { true }) async throws -> Bool {
+         try check(deadline: deadline)
+         return try await ownerForKeys(keys).commitState(snapshot: snapshot, keys: keys, changes: changes,
+-            deadline: deadline, cancellation: cancellation)
++            deadline: deadline, cancellation: cancellation, claimCommit: claimCommit)
+     }
+     private func ownerForKeys(_ keys: [LegadoEntityStateKey]) throws -> AppLegadoBookStateOwner {
+         guard let key = keys.first else { throw Self.failure("INVALID_STATE_REQUEST", "Entity keys are empty") }
+--- v2-or-canonical/Modules/Services/Online/LegadoMainJSSourceService.swift
++++ v3/Modules/Services/Online/LegadoMainJSSourceService.swift
+@@ -805,7 +805,8 @@
+ 
+     func commitPreviewEntity(_ grant: OriginalRuntimePreviewGrant, snapshot: LegadoPreviewEntitySnapshot,
+                              keys: [LegadoEntityStateKey], changes: [String: Data?], deadline: Date,
+-                             cancellation: OriginalRuntimeCommitCancellation) throws -> Bool {
++                             cancellation: OriginalRuntimeCommitCancellation,
++                             claimCommit: @Sendable () -> Bool = { true }) throws -> Bool {
+         try cancellation.check(deadline: deadline); try grant.check(deadline: deadline)
+         let reference = grantReference(grant)
+         var read = try readPreview(reference, check: {
+@@ -853,7 +854,10 @@
+         } else { read.record.book.variable = raw; read.record.bookLargeVariables = large }
+         try cancellation.check(deadline: deadline); try grant.check(deadline: deadline)
+         let accepted = try replacePreview(read.record, previous: read, id: grant.recordID, deadline: deadline,
+-            beforeWrite: { try cancellation.check(deadline: deadline); try grant.check(deadline: deadline) })
++            beforeWrite: {
++                try cancellation.check(deadline: deadline); try grant.check(deadline: deadline)
++                guard claimCommit() else { throw CancellationError() }
++            })
+         grant.accepted(revision: accepted.record.revision, sha256: accepted.sha256)
+         return true
+     }
+--- v2-or-canonical/Modules/Services/Online/LegadoPersistentStateHost.swift
++++ v3/Modules/Services/Online/LegadoPersistentStateHost.swift
+@@ -864,10 +864,13 @@
+                 pendingEntityOperations[request.taskID]?.removeValue(forKey: requestID)
+                 if pendingEntityOperations[request.taskID]?.isEmpty == true { pendingEntityOperations.removeValue(forKey: request.taskID) }
+             }
++            let effectPrefix = lease.keys.first?.chapterURL == nil ? "bookVariables" : "chapterVariables"
+             let committed = try await withTaskCancellationHandler {
+                 try await backing.commitState(snapshot: lease.snapshot, keys: lease.keys, changes: changes,
+-                    deadline: deadline, cancellation: ticket)
++                    deadline: deadline, cancellation: ticket,
++                    claimCommit: { request.recordPossibleEffect(effectPrefix + "MayCommit") })
+             } onCancel: { ticket.cancel() }
++            if committed { request.recordPossibleEffect(effectPrefix + "Committed") }
+             // Successful atomic replacement is already the owner transaction boundary.
+             // A later cancel/revoke cannot be reported as an uncommitted disk mutation.
+             return try encoded(["committed": committed])
+--- v2-or-canonical/Modules/Services/Online/LegadoPreviewStateOwner.swift
++++ v3/Modules/Services/Online/LegadoPreviewStateOwner.swift
+@@ -215,7 +215,8 @@
+     func readState(keys: [LegadoEntityStateKey], deadline: Date,
+                    cancellation: OriginalRuntimeCommitCancellation) async throws -> LegadoEntityBackingSnapshot
+     func commitState(snapshot: LegadoEntityBackingSnapshot, keys: [LegadoEntityStateKey], changes: [String: Data?],
+-                     deadline: Date, cancellation: OriginalRuntimeCommitCancellation) async throws -> Bool
++                     deadline: Date, cancellation: OriginalRuntimeCommitCancellation,
++                     claimCommit: @escaping @Sendable () -> Bool) async throws -> Bool
+ }
+ 
+ extension AppLegadoBookStateOwner: LegadoEntityStateBacking {
+@@ -226,11 +227,12 @@
+         .app(try await read(keys: keys, deadline: deadline, cancellation: cancellation))
+     }
+     func commitState(snapshot: LegadoEntityBackingSnapshot, keys: [LegadoEntityStateKey], changes: [String: Data?],
+-                     deadline: Date, cancellation: OriginalRuntimeCommitCancellation) async throws -> Bool {
++                     deadline: Date, cancellation: OriginalRuntimeCommitCancellation,
++                     claimCommit: @escaping @Sendable () -> Bool = { true }) async throws -> Bool {
+         guard case .app(let value) = snapshot else {
+             throw LegadoRuntimeError(code: "INVALID_STATE_OWNER", message: "An App owner cannot consume a preview proof")
+         }
+-        return try await commit(snapshot: value, keys: keys, changes: changes, deadline: deadline, cancellation: cancellation)
++        return try await commit(snapshot: value, keys: keys, changes: changes, deadline: deadline, cancellation: cancellation, claimCommit: claimCommit)
+     }
+ }
+ 
+@@ -286,12 +288,13 @@
+         .preview(try await grant.service.readPreviewEntity(grant, keys: keys, deadline: deadline, cancellation: cancellation))
+     }
+     func commitState(snapshot: LegadoEntityBackingSnapshot, keys: [LegadoEntityStateKey], changes: [String: Data?],
+-                     deadline: Date, cancellation: OriginalRuntimeCommitCancellation) async throws -> Bool {
++                     deadline: Date, cancellation: OriginalRuntimeCommitCancellation,
++                     claimCommit: @escaping @Sendable () -> Bool = { true }) async throws -> Bool {
+         guard case .preview(let value) = snapshot else {
+             throw LegadoRuntimeError(code: "INVALID_STATE_OWNER", message: "A preview owner cannot consume an App proof")
+         }
+         return try await grant.service.commitPreviewEntity(grant, snapshot: value, keys: keys,
+-            changes: changes, deadline: deadline, cancellation: cancellation)
++            changes: changes, deadline: deadline, cancellation: cancellation, claimCommit: claimCommit)
+     }
+     private static func failure(_ message: String) -> LegadoRuntimeError {
+         .init(code: "UNSUPPORTED_CAPABILITY", message: message)
+--- v2-or-canonical/Tests/iOS/yuedu appTests/ChapterCacheTransactionTests.swift
++++ v3/Tests/iOS/yuedu appTests/ChapterCacheTransactionTests.swift
+@@ -77,6 +77,13 @@
+         await BookStore.queuedWritesLanded()
+         #expect(try bytes(root, book) == before)
+         #expect(ChapterCacheRepository(rootDirectory: root).loadChapterPackageSync(bookId: book, chapterIndex: 0)?.content == "new successful prose")
++        let body = root.appendingPathComponent(book.uuidString).appendingPathComponent("0.txt")
++        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: body.path)
++        await #expect(throws: (any Error).self) {
++            try await cache.clearChapterCacheAwait(bookId: book, chapterIndex: 0, onlyIfInvalid: true)
++        }
++        try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: body.path)
++        #expect(try bytes(root, book) == before)
+     }
+     @Test("unchanged saves and old TOC reconciliation keep current replacement files")
+     func unchangedAndReconcileDoNotRewriteOrDeleteNewIdentity() async throws {
+--- v2-or-canonical/Tests/iOS/yuedu appTests/LegadoChapterOwnerPersistenceTests.swift
++++ v3/Tests/iOS/yuedu appTests/LegadoChapterOwnerPersistenceTests.swift
+@@ -64,6 +64,13 @@
+         let chapter = OnlineChapterRef(index: 0, title: "Owned", url: "https://owned.invalid/chapter")
+         owner.setChapters([chapter], for: book); try await onOwner(queue) { try owner.flushReportingFailure(for: book) }
+         let snapshot = try #require(try await onOwner(queue) { try owner.runtimeVariablesSnapshot(bookID: book, index: 0, url: chapter.url) })
++        let beforeGate = try Data(contentsOf: owner.fileURL(for: book))
++        await #expect(throws: CancellationError.self) {
++            _ = try await onOwner(queue) {
++                try owner.compareRuntimeVariables(expected: snapshot, variables: ["sealed": "forbidden"], claimCommit: { false })
++            }
++        }
++        #expect(try Data(contentsOf: owner.fileURL(for: book)) == beforeGate)
+         #expect(try await onOwner(queue) { try owner.compareRuntimeVariables(expected: snapshot, variables: ["large": String(repeating: "x", count: 10000)]) })
+         #expect(owner.chapters(for: book)?.first?.id == chapter.id)
+         #expect(!owner.hasUnwrittenChanges)
+--- v2-or-canonical/Tests/iOS/yuedu appTests/LegadoContentBatchOwnerTests.swift
++++ v3/Tests/iOS/yuedu appTests/LegadoContentBatchOwnerTests.swift
+@@ -29,7 +29,8 @@
+         let snapshot = try await call(host, task: task, operation: "state.read", input: ["owner": owner, "keys": [content, toc]])
+         let revision = try #require(snapshot["revision"] as? NSNumber)
+         let values = try #require(snapshot["values"] as? [String: String])
+-        let bytes = try #require(Data(base64Encoded: #require(values[content])))
++        let encoded = try #require(values[content])
++        let bytes = try #require(Data(base64Encoded: encoded))
+         let row = try #require(try JSONSerialization.jsonObject(with: bytes) as? [String: Any])
+         return (revision.int64Value, content, row)
+     }
+@@ -160,7 +161,8 @@
+         let snapshot = try await BatchHostFixture.read(host, owner: owner, task: task, source: f.source.bookSourceUrl, book: f.dto.bookURL, index: 0)
+         _ = try await f.cache.saveToCache(content: "Foreign successful writer prose.", bookId: f.book.id, chapterIndex: 0,
+             sourceURL: f.chapters[0].url, tocTitle: f.chapters[0].title, storeNormalizedHTML: false)
+-        #expect(try await !BatchHostFixture.commit(host, owner: owner, task: task, snapshot: snapshot, body: "Stale body"))
++        let staleCommitted = try await BatchHostFixture.commit(host, owner: owner, task: task, snapshot: snapshot, body: "Stale body")
++        #expect(!staleCommitted)
+         do {
+             _ = try await BatchHostFixture.read(host, owner: owner, task: task, source: f.source.bookSourceUrl, book: f.dto.bookURL, index: 0)
+             Issue.record("Foreign proof cannot be adopted on CAS retry")
+@@ -204,6 +206,20 @@
+         let owner = try await host.bindContentBatch(sourceURL: f.source.bookSourceUrl, sourceRevision: "r1", taskID: task,
+             store: f.store, bookID: f.book.id, sourceID: f.source.id, book: f.dto, chapters: grants(f),
+             deadline: Date().addingTimeInterval(60), cache: f.cache)
++        let variableOwner = try AppLegadoBookStateOwner(store: f.store, bookID: f.book.id, sourceID: f.source.id,
++            bookURL: f.dto.bookURL, chapter: nil, generation: nil)
++        let smallKey = String(decoding: try JSONSerialization.data(withJSONObject:
++            [f.source.bookSourceUrl, "variables", "book", f.dto.bookURL, ""]), as: UTF8.self)
++        let keys = [LegadoEntityStateKey(wire: smallKey, chapterURL: nil, largeVariable: nil)]
++        let cancellation = OriginalRuntimeCommitCancellation()
++        let beforeGate = try Data(contentsOf: f.metadata)
++        let realProof = try await variableOwner.read(keys: keys, deadline: Date().addingTimeInterval(30), cancellation: cancellation)
++        await #expect(throws: CancellationError.self) {
++            _ = try await variableOwner.commit(snapshot: realProof, keys: keys,
++                changes: [smallKey: Data("{\"sealed\":\"forbidden\"}".utf8)], deadline: Date().addingTimeInterval(30),
++                cancellation: cancellation, claimCommit: { false })
++        }
++        #expect(try Data(contentsOf: f.metadata) == beforeGate)
+         let largeKey = String(decoding: try JSONSerialization.data(withJSONObject:
+             [f.source.bookSourceUrl, "big-variable", "book", f.dto.bookURL, "", "large"]), as: UTF8.self)
+         let snapshot = try await BatchHostFixture.call(host, task: task, operation: "state.read", input: ["owner": owner, "keys": [largeKey]])
+@@ -219,7 +235,8 @@
+         let actual = await reopened.prepareOriginalRuntimeBookSnapshot(id: f.book.id, sourceID: f.source.id, bookURL: f.dto.bookURL)
+         #expect(actual?.variables == ["direct": "accepted", "large": large])
+         let before = try Data(contentsOf: f.metadata)
+-        #expect(try await !host.finishContentBatchResult(owner: owner, taskID: task, book: result, deadline: Date().addingTimeInterval(30)))
++        let repeatedChanged = try await host.finishContentBatchResult(owner: owner, taskID: task, book: result, deadline: Date().addingTimeInterval(30))
++        #expect(!repeatedChanged)
+         #expect(try Data(contentsOf: f.metadata) == before)
+         await host.revoke(owner: owner)
+     }

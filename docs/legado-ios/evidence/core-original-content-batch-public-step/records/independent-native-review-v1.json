@@ -1,0 +1,484 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUTC": "2026-10-20T10:46:53.559741+00:00",
+  "status": "source-review-with-two-confirmed-open-findings-not-an-acceptance",
+  "scope": "Read-only cross-call review of frozen native v1/v2 batch writer, original worker grants, cache transactions/delete/migration, accepted book metadata proof, Host dispatch and finish. Hash binding covers all30 inputs per snapshot; source reading is of relevant production changes/callers and selected owned definitions, not a complete line-by-line audit of unrelated unchanged full BookStore/UI/tests.",
+  "sourceBinding": [
+    {
+      "manifest": {
+        "path": ".build/original-content-batch-public-delta/native-review-v1.json",
+        "bytes": 16855,
+        "sha256": "e7b281aee2f3ce828ef4d494b0363dfcb34cf91d56d02d2d60283a18597c2e53"
+      },
+      "files": [
+        {
+          "intendedPath": "Modules/Core/BookSource/BookSourceFetcher+Chapter.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Modules/Core/BookSource/BookSourceFetcher+Chapter.swift",
+          "bytes": 18662,
+          "sha256": "306528bc0310d893ef41a3efa6c0e019eabad5f789e875fcb62471daebb9d600"
+        },
+        {
+          "intendedPath": "Modules/Core/BookSource/BookSourceFetcher+ChapterCache.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Modules/Core/BookSource/BookSourceFetcher+ChapterCache.swift",
+          "bytes": 3991,
+          "sha256": "5c2c3729ace2344843010ebc284ee98e5a7db4bc0541fae800772552071b190f"
+        },
+        {
+          "intendedPath": "Modules/Core/BookSource/BookSourceFetcher.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Modules/Core/BookSource/BookSourceFetcher.swift",
+          "bytes": 15020,
+          "sha256": "62dc215fb46e00febf99861b6761f039e30635a5189ddb03fbfba6f8f7a92196"
+        },
+        {
+          "intendedPath": "Modules/Features/Settings/CacheManagementView.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Modules/Features/Settings/CacheManagementView.swift",
+          "bytes": 8467,
+          "sha256": "2fdc87371de50f6aec89673a6d13690875b3c8be129a586c3cc070a7a1317862"
+        },
+        {
+          "intendedPath": "Modules/Services/LibraryStore/BookChapterStore.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Modules/Services/LibraryStore/BookChapterStore.swift",
+          "bytes": 21174,
+          "sha256": "d1265217264613816b73e96420a37fa0ef75618114bcd895e67369eecab7a533"
+        },
+        {
+          "intendedPath": "Modules/Services/LibraryStore/BookStore.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Modules/Services/LibraryStore/BookStore.swift",
+          "bytes": 211978,
+          "sha256": "812fc979bf04b8c35f95aeefe72d635ab5eeba883cce645762b801ed1aa93f24"
+        },
+        {
+          "intendedPath": "Modules/Services/LibraryStore/CacheManagementService.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Modules/Services/LibraryStore/CacheManagementService.swift",
+          "bytes": 9256,
+          "sha256": "18f3619d8e960f2ca190da4c1585f6304e16aaa7c1d455d6f8969417d2bba966"
+        },
+        {
+          "intendedPath": "Modules/Services/LibraryStore/Models.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Modules/Services/LibraryStore/Models.swift",
+          "bytes": 48605,
+          "sha256": "05777f54f15b38f629a619b4f8820e75be42b0d706a9768c53e279c3e1f45b43"
+        },
+        {
+          "intendedPath": "Modules/Services/Offline/OfflineChapterStore.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Modules/Services/Offline/OfflineChapterStore.swift",
+          "bytes": 24852,
+          "sha256": "499c4b6c1a6fc6f0e52afa0d29ba77650ccfef721fe113a1863e05bc0f263c84"
+        },
+        {
+          "intendedPath": "Modules/Services/Online/ChapterCacheRepository.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Modules/Services/Online/ChapterCacheRepository.swift",
+          "bytes": 42102,
+          "sha256": "286b903657fdfd2f125a03a3b7ce9d759d46d4afa533063f24b2bc6a57ac62ce"
+        },
+        {
+          "intendedPath": "Modules/Services/Online/LegadoBookStateOwner.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Modules/Services/Online/LegadoBookStateOwner.swift",
+          "bytes": 10751,
+          "sha256": "32b4ee9ab214dc2df257de871c4f3454b99afa9887fe52e74a7deaaf82d07760"
+        },
+        {
+          "intendedPath": "Modules/Services/Online/LegadoContentBatchOwner.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Modules/Services/Online/LegadoContentBatchOwner.swift",
+          "bytes": 22831,
+          "sha256": "3cdcd12b25af612b0c6dede6949a0d85b398093accd11219032dcc28e1b16af1"
+        },
+        {
+          "intendedPath": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Modules/Services/Online/LegadoMainJSSourceService.swift",
+          "bytes": 77716,
+          "sha256": "55c153d1dbc3889f36e6fd28952e5926f139b1508dbbae2285f58ccfd7e55968"
+        },
+        {
+          "intendedPath": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Modules/Services/Online/LegadoPersistentStateHost.swift",
+          "bytes": 58898,
+          "sha256": "6917cc9a3572514706a2aced353d541723fec36eb136a167f43099a24a1919bc"
+        },
+        {
+          "intendedPath": "Modules/Services/Online/OnlineChapterContentService.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Modules/Services/Online/OnlineChapterContentService.swift",
+          "bytes": 5979,
+          "sha256": "26ec82a3d08cb32b015913f010877cc4374a1fb43db728502616b02b24031c16"
+        },
+        {
+          "intendedPath": "Modules/Services/Online/OnlineReadingPipeline.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Modules/Services/Online/OnlineReadingPipeline.swift",
+          "bytes": 61584,
+          "sha256": "5be7448b4435e80f85fce62fa61152165da390ac6b745e06327347f02f412038"
+        },
+        {
+          "intendedPath": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+          "bytes": 6390,
+          "sha256": "4adcd5875ce01e95ec63e2902c321c384b813f3283bce2a8584c15d76b64882d"
+        },
+        {
+          "intendedPath": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+          "bytes": 22366,
+          "sha256": "e7d4cb12c15ae63a910bcdafb1d7f4fe73b8de7509d394df6f4b145d87014e39"
+        },
+        {
+          "intendedPath": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+          "bytes": 11066,
+          "sha256": "5a6958e399c5403a2496a632542eb3bfb59c90ac9bec41b5b277ab77e126a63e"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/CachedBookTXTExportTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Tests/iOS/yuedu appTests/CachedBookTXTExportTests.swift",
+          "bytes": 6876,
+          "sha256": "61bbe0f55d5a4ce52e509c266dc3123776e8974012e8145f926e458f1395d7ff"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/CacheManagementServiceTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Tests/iOS/yuedu appTests/CacheManagementServiceTests.swift",
+          "bytes": 5789,
+          "sha256": "fad5c41dd105e3fc998b69a31f2b23dc28f578b7337b941df41d729ce2e5a080"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/ChapterCacheMigrationTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Tests/iOS/yuedu appTests/ChapterCacheMigrationTests.swift",
+          "bytes": 6527,
+          "sha256": "3c7aaefc64bc9a1db869cb8ead7022bc6d1e5c2eb66966c6f3f2fed534b22f36"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/ChapterCacheRepositoryWriteTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Tests/iOS/yuedu appTests/ChapterCacheRepositoryWriteTests.swift",
+          "bytes": 3047,
+          "sha256": "ace82bc6903006de9df7f7df80e0b65ccbac3b090afc7f112e590bcbbcd23efe"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/ChapterCacheTransactionTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Tests/iOS/yuedu appTests/ChapterCacheTransactionTests.swift",
+          "bytes": 8849,
+          "sha256": "97cf93f645b51a75098c14b9571eed8c7fef754140a0d5c906526d409b37fab4"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/ChapterContentValidationTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Tests/iOS/yuedu appTests/ChapterContentValidationTests.swift",
+          "bytes": 4041,
+          "sha256": "df3f50b6fdca9e832f0375e742259f56b36a9007955ee6885c80a82e3b4369ee"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/ChapterFetchLateFailureTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Tests/iOS/yuedu appTests/ChapterFetchLateFailureTests.swift",
+          "bytes": 4721,
+          "sha256": "4282f107c2b30c9542cf3997b8ae2f8dc9d4f0dba799be50f69e3583048927f6"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/LegadoContentBatchOwnerTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Tests/iOS/yuedu appTests/LegadoContentBatchOwnerTests.swift",
+          "bytes": 18858,
+          "sha256": "8a1700e46e95b95ef4743aaf91e3a1aa26dc4d2feea2d063b7e50c6d8024ea5f"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/ModernChapterCacheScenarioTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Tests/iOS/yuedu appTests/ModernChapterCacheScenarioTests.swift",
+          "bytes": 8278,
+          "sha256": "6b6e3d17846f9ea061894172ce6fd95ee31d3da1af27f3848139d4d24e687171"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/OfflineChapterStoreTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Tests/iOS/yuedu appTests/OfflineChapterStoreTests.swift",
+          "bytes": 13875,
+          "sha256": "ee4911ce9297c8ee3ca50a59d93503473bfaae9620c3d8446df4cb84274ccc28"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/yuedu_appTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v1-sources/Tests/iOS/yuedu appTests/yuedu_appTests.swift",
+          "bytes": 142927,
+          "sha256": "a067588b13f1ee5c65a57902c30ac6ddf2b13cb046f2a3d47c9c2a1eff176176"
+        }
+      ]
+    },
+    {
+      "manifest": {
+        "path": ".build/original-content-batch-public-delta/native-review-v2.json",
+        "bytes": 16883,
+        "sha256": "9246c71b46461f486c8cbdd28b7664733f678713475dd53c7cdebecbf0dd0488"
+      },
+      "files": [
+        {
+          "intendedPath": "Modules/Core/BookSource/BookSourceFetcher+Chapter.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Modules/Core/BookSource/BookSourceFetcher+Chapter.swift",
+          "bytes": 18662,
+          "sha256": "306528bc0310d893ef41a3efa6c0e019eabad5f789e875fcb62471daebb9d600"
+        },
+        {
+          "intendedPath": "Modules/Core/BookSource/BookSourceFetcher+ChapterCache.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Modules/Core/BookSource/BookSourceFetcher+ChapterCache.swift",
+          "bytes": 3991,
+          "sha256": "5c2c3729ace2344843010ebc284ee98e5a7db4bc0541fae800772552071b190f"
+        },
+        {
+          "intendedPath": "Modules/Core/BookSource/BookSourceFetcher.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Modules/Core/BookSource/BookSourceFetcher.swift",
+          "bytes": 15020,
+          "sha256": "62dc215fb46e00febf99861b6761f039e30635a5189ddb03fbfba6f8f7a92196"
+        },
+        {
+          "intendedPath": "Modules/Features/Settings/CacheManagementView.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Modules/Features/Settings/CacheManagementView.swift",
+          "bytes": 8467,
+          "sha256": "2fdc87371de50f6aec89673a6d13690875b3c8be129a586c3cc070a7a1317862"
+        },
+        {
+          "intendedPath": "Modules/Services/LibraryStore/BookChapterStore.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Modules/Services/LibraryStore/BookChapterStore.swift",
+          "bytes": 21174,
+          "sha256": "d1265217264613816b73e96420a37fa0ef75618114bcd895e67369eecab7a533"
+        },
+        {
+          "intendedPath": "Modules/Services/LibraryStore/BookStore.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Modules/Services/LibraryStore/BookStore.swift",
+          "bytes": 211978,
+          "sha256": "812fc979bf04b8c35f95aeefe72d635ab5eeba883cce645762b801ed1aa93f24"
+        },
+        {
+          "intendedPath": "Modules/Services/LibraryStore/CacheManagementService.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Modules/Services/LibraryStore/CacheManagementService.swift",
+          "bytes": 9256,
+          "sha256": "18f3619d8e960f2ca190da4c1585f6304e16aaa7c1d455d6f8969417d2bba966"
+        },
+        {
+          "intendedPath": "Modules/Services/LibraryStore/Models.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Modules/Services/LibraryStore/Models.swift",
+          "bytes": 48605,
+          "sha256": "05777f54f15b38f629a619b4f8820e75be42b0d706a9768c53e279c3e1f45b43"
+        },
+        {
+          "intendedPath": "Modules/Services/Offline/OfflineChapterStore.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Modules/Services/Offline/OfflineChapterStore.swift",
+          "bytes": 24852,
+          "sha256": "499c4b6c1a6fc6f0e52afa0d29ba77650ccfef721fe113a1863e05bc0f263c84"
+        },
+        {
+          "intendedPath": "Modules/Services/Online/ChapterCacheRepository.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Modules/Services/Online/ChapterCacheRepository.swift",
+          "bytes": 42102,
+          "sha256": "286b903657fdfd2f125a03a3b7ce9d759d46d4afa533063f24b2bc6a57ac62ce"
+        },
+        {
+          "intendedPath": "Modules/Services/Online/LegadoBookStateOwner.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Modules/Services/Online/LegadoBookStateOwner.swift",
+          "bytes": 10751,
+          "sha256": "32b4ee9ab214dc2df257de871c4f3454b99afa9887fe52e74a7deaaf82d07760"
+        },
+        {
+          "intendedPath": "Modules/Services/Online/LegadoContentBatchOwner.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Modules/Services/Online/LegadoContentBatchOwner.swift",
+          "bytes": 23556,
+          "sha256": "3a878eb4d5fe7fc2c839ea679c0ba0825f181aef23e7907069b31533a3829ecc"
+        },
+        {
+          "intendedPath": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Modules/Services/Online/LegadoMainJSSourceService.swift",
+          "bytes": 77716,
+          "sha256": "55c153d1dbc3889f36e6fd28952e5926f139b1508dbbae2285f58ccfd7e55968"
+        },
+        {
+          "intendedPath": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Modules/Services/Online/LegadoPersistentStateHost.swift",
+          "bytes": 59156,
+          "sha256": "cf32c2f8856cf46b956806968038992e06f37fa2e9915ff3b36f6ba799d6da1d"
+        },
+        {
+          "intendedPath": "Modules/Services/Online/OnlineChapterContentService.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Modules/Services/Online/OnlineChapterContentService.swift",
+          "bytes": 5979,
+          "sha256": "26ec82a3d08cb32b015913f010877cc4374a1fb43db728502616b02b24031c16"
+        },
+        {
+          "intendedPath": "Modules/Services/Online/OnlineReadingPipeline.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Modules/Services/Online/OnlineReadingPipeline.swift",
+          "bytes": 61584,
+          "sha256": "5be7448b4435e80f85fce62fa61152165da390ac6b745e06327347f02f412038"
+        },
+        {
+          "intendedPath": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+          "bytes": 6390,
+          "sha256": "4adcd5875ce01e95ec63e2902c321c384b813f3283bce2a8584c15d76b64882d"
+        },
+        {
+          "intendedPath": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+          "bytes": 22366,
+          "sha256": "e7d4cb12c15ae63a910bcdafb1d7f4fe73b8de7509d394df6f4b145d87014e39"
+        },
+        {
+          "intendedPath": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+          "bytes": 11066,
+          "sha256": "5a6958e399c5403a2496a632542eb3bfb59c90ac9bec41b5b277ab77e126a63e"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/CachedBookTXTExportTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Tests/iOS/yuedu appTests/CachedBookTXTExportTests.swift",
+          "bytes": 6876,
+          "sha256": "61bbe0f55d5a4ce52e509c266dc3123776e8974012e8145f926e458f1395d7ff"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/CacheManagementServiceTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Tests/iOS/yuedu appTests/CacheManagementServiceTests.swift",
+          "bytes": 5789,
+          "sha256": "fad5c41dd105e3fc998b69a31f2b23dc28f578b7337b941df41d729ce2e5a080"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/ChapterCacheMigrationTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Tests/iOS/yuedu appTests/ChapterCacheMigrationTests.swift",
+          "bytes": 6527,
+          "sha256": "3c7aaefc64bc9a1db869cb8ead7022bc6d1e5c2eb66966c6f3f2fed534b22f36"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/ChapterCacheRepositoryWriteTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Tests/iOS/yuedu appTests/ChapterCacheRepositoryWriteTests.swift",
+          "bytes": 3047,
+          "sha256": "ace82bc6903006de9df7f7df80e0b65ccbac3b090afc7f112e590bcbbcd23efe"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/ChapterCacheTransactionTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Tests/iOS/yuedu appTests/ChapterCacheTransactionTests.swift",
+          "bytes": 8849,
+          "sha256": "97cf93f645b51a75098c14b9571eed8c7fef754140a0d5c906526d409b37fab4"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/ChapterContentValidationTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Tests/iOS/yuedu appTests/ChapterContentValidationTests.swift",
+          "bytes": 4041,
+          "sha256": "df3f50b6fdca9e832f0375e742259f56b36a9007955ee6885c80a82e3b4369ee"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/ChapterFetchLateFailureTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Tests/iOS/yuedu appTests/ChapterFetchLateFailureTests.swift",
+          "bytes": 4721,
+          "sha256": "4282f107c2b30c9542cf3997b8ae2f8dc9d4f0dba799be50f69e3583048927f6"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/LegadoContentBatchOwnerTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Tests/iOS/yuedu appTests/LegadoContentBatchOwnerTests.swift",
+          "bytes": 18858,
+          "sha256": "8a1700e46e95b95ef4743aaf91e3a1aa26dc4d2feea2d063b7e50c6d8024ea5f"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/ModernChapterCacheScenarioTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Tests/iOS/yuedu appTests/ModernChapterCacheScenarioTests.swift",
+          "bytes": 8278,
+          "sha256": "6b6e3d17846f9ea061894172ce6fd95ee31d3da1af27f3848139d4d24e687171"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/OfflineChapterStoreTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Tests/iOS/yuedu appTests/OfflineChapterStoreTests.swift",
+          "bytes": 13875,
+          "sha256": "ee4911ce9297c8ee3ca50a59d93503473bfaae9620c3d8446df4cb84274ccc28"
+        },
+        {
+          "intendedPath": "Tests/iOS/yuedu appTests/yuedu_appTests.swift",
+          "path": ".build/original-content-batch-public-delta/native-review-v2-sources/Tests/iOS/yuedu appTests/yuedu_appTests.swift",
+          "bytes": 142927,
+          "sha256": "a067588b13f1ee5c65a57902c30ac6ddf2b13cb046f2a3d47c9c2a1eff176176"
+        }
+      ]
+    }
+  ],
+  "additionalCurrentDependencies": [
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift",
+      "bytes": 8119,
+      "sha256": "50509734a46ef6a982faaff4aa24e49a9695ec58d8c33971b7f8c193d9aa6091"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/NativeLegadoTransport.swift",
+      "bytes": 7574,
+      "sha256": "c194738ef2154f00806a70027438a52017a21591ad52bf3c848ba9067fcfaff9"
+    },
+    {
+      "path": "Modules/Services/LibraryStore/OriginalRuntimeBookMetadataOwner.swift",
+      "bytes": 10892,
+      "sha256": "cbc9a1066e9df3ca5c61b27fd81fb6cb28c0d7e1c5a0d3656d474fff17d32f93"
+    }
+  ],
+  "confirmedOpenFindings": [
+    {
+      "id": "batch-cleanup-io-is-not-invalidity",
+      "severity": "P1",
+      "source": "Modules/Services/Online/ChapterCacheRepository.swift",
+      "lines": "130-149;472-580;677-722",
+      "caller": "OnlineReadingPipeline.handleFetchFailure:823",
+      "finding": "onlyIfInvalid uses the compatibility loader returning nil to authorize deletion. That loader also returns nil for read/permission/IO failures. A valid regular body with unreadable mode in a still-writable directory can therefore be hard-linked and unlinked together with its four valid companions after a fetch failure, despite no evidence of corrupt content.",
+      "requiredRepair": "Keep the single existing persistence queue, but use its bounded throwing IO to distinguish unreadable/unknown from actually invalid. Actual OS read failure must preserve files and throw, not grant invalidity-based deletion.",
+      "reportedTo": [
+        "root",
+        "original_url_execution"
+      ],
+      "executionClaim": "Source-confirmed path; no chmod/Swift/SDK execution was performed by reviewer."
+    },
+    {
+      "id": "batch-variable-commit-missing-effect-seal",
+      "severity": "P1",
+      "source": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "lines": "833-870",
+      "callChain": "dispatchEntityStateIfNeeded -> backing.commitState -> AppLegadoBookStateOwner.commit -> original BookStore/BookChapterStore atomic writer; NativeLegadoTransport:69-77 seals effects at callback timeout",
+      "finding": "Book/chapter variable writes in the new batch still have no request-local recordPossibleEffect claim at the final irreversible writer boundary. An atomic IO already issued after its last cancellation/deadline check may finish after callback timeout has returned an empty effects set; later ticket cancellation cannot undo it. The body writer correctly uses claimCommit and demonstrates the needed boundary.",
+      "requiredRepair": "Propagate the original request effect claim to the actual metadata/chapter beforeWrite boundary. Refuse a sealed request before issuing IO; retain a conservative book/chapter variable MayCommit fact once issued, including timeout/cancellation and final error paths. No second writer/store/queue.",
+      "reportedTo": [
+        "root",
+        "original_url_execution"
+      ],
+      "executionClaim": "Source-confirmed race/contract omission; reviewer did not execute JNI or Apple SDK."
+    }
+  ],
+  "priorFindingsSourceClosed": [
+    {
+      "id": "browser-failure-deletes-new-cache",
+      "evidence": "v1 OnlineReadingPipeline605-609 now retains files on browser failure; later failure cleanup is conditional (the new IO distinction finding remains open)."
+    },
+    {
+      "id": "prose-delete-bypasses-persistQueue",
+      "evidence": "v1 BookStore.delete enqueues repository clear; Offline remove/reconcile text paths and Settings chapters now await the same BookStore.chapterCachePersistence owner. Manga roots retain their separate owner."
+    },
+    {
+      "id": "ordinary-worker-missing-TOC-grant",
+      "evidence": "v1 normal manager creates a generation with actual store TOC UUID/index/rawURL validation; normal and browser progressive/final save closures call checkCacheWrite, and cachedFilename publication uses the same chapter writer and rechecks generation."
+    }
+  ],
+  "authorV2ClosuresSourceReviewed": [
+    {
+      "finding": "Host.cancel did not revoke final Book.variable CAS lifetime",
+      "closure": "v2 cancel enumerates this exact taskID contentOwners and calls revoke(); actual backing lifetime is the one passed to final BookStore CAS."
+    },
+    {
+      "finding": "Native missing chapter DTO did not require granted identity",
+      "closure": "v2 native result requires bounded unique indexes and exact granted DTO index/rawURL/bookURL before final book completion."
+    }
+  ],
+  "otherSourceObservations": [
+    "The book accepted observer runs on the existing persistQueue immediately after actual metadata bytes/owner acceptance, before any later queue turn; final direct small-map assignment uses only that last accepted proof plus its large companions. It does not read/adopt an unrelated later App edit.",
+    "Body CAS reads and fingerprints all five actual files on the same queue; foreign file changes cannot be legitimized by a later read because the bounded accepted proof table rejects changed fingerprints. TOC UUID/index/rawURL validation runs on the writer before install.",
+    "Candidate and hard-link backups preserve prior artifacts for a reverse rollback; restoration failure and post-commit proof-read failure carry may-commit facts, with rollback backup retained. This is not five-file crash atomicity or fsync durability.",
+    "Legacy sync reads return a validated value and schedule bounded metadata migration only; queued migration rereads actual files before updating, instead of writing its earlier UI-read candidate.",
+    "The batch API is explicit and does not silently select the traditional route for normal reading/download. Body grants distinguish index+UUID despite duplicate URLs; the old URL-keyed variable ABI stays typed unsupported when duplicate chapters are ambiguous.",
+    "No JSX/SwiftUI redesign was reviewed; the CacheManagementView change only propagates awaiting the real service. Windows grammar is not Swift typechecking or Security/JNI execution."
+  ],
+  "unconfirmedTestTypeRisk": {
+    "source": "LegadoContentBatchOwnerTests.swift:32",
+    "fact": "Nested throwing #require inside outer #require/Data initializer is the same macro-shape risk as prior real SDK diagnostics; reviewer suggested splitting encoded string and bytes into two statements. No actual compiler failure was claimed."
+  },
+  "reviewerExecuted": {
+    "SwiftSDK": 0,
+    "nativeTests": 0,
+    "JVMTests": 0,
+    "grammar": 0,
+    "GitCommands": 0,
+    "cloudQueries": 0,
+    "cloudTriggers": 0,
+    "canonicalEdits": 0
+  },
+  "remaining": [
+    "Author must produce a source-bound fix/follow-up review for both confirmed open findings.",
+    "Actual Swift API/macro typechecking, native execution, JNI+App end-to-end and all original-source compatibility remain unverified.",
+    "This is an interim review; root reprioritized actual codesign evidence after these findings, so it is not a final all-source approval."
+  ]
+}
