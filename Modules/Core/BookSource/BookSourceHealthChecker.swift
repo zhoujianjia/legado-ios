@@ -55,7 +55,29 @@ protocol BookSourceHealthCheckFetching: Sendable {
     ) async throws -> ChapterPackage
 }
 
-extension BookSourceFetcher: BookSourceHealthCheckFetching {}
+extension BookSourceFetcher: BookSourceHealthCheckFetching {
+    // Keep the health-check protocol's original four-argument witnesses. The
+    // reader's generation-aware overload remains the single fetch/save path.
+    func fetchChapter(
+        ref: OnlineChapterRef,
+        bookId: UUID,
+        source: BookSource,
+        chapterReferer: String?
+    ) async throws -> String {
+        try await fetchChapter(ref: ref, bookId: bookId, source: source,
+            chapterReferer: chapterReferer, cacheWriteGeneration: nil)
+    }
+
+    func fetchChapterPackage(
+        ref: OnlineChapterRef,
+        bookId: UUID,
+        source: BookSource,
+        chapterReferer: String?
+    ) async throws -> ChapterPackage {
+        try await fetchChapterPackage(ref: ref, bookId: bookId, source: source,
+            chapterReferer: chapterReferer, cacheWriteGeneration: nil)
+    }
+}
 
 extension BookSourceHealthCheckFetching {
     func fetchBookInfoPackage(

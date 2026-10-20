@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T12:03:24.325644+00:00",
+  "sourceCommit": "733120e01f9250ea7509640080148249274a2d74",
+  "runID": 39415600445,
+  "jobID": 118603717942,
+  "status": "completed-failure",
+  "queryTerminalAgain": false,
+  "nativeSourceInputCount": 232,
+  "packageSourceInputCount": 15,
+  "packageControlInputCount": 7,
+  "distinctGitBlobsVerified": 232,
+  "artifactInputs": [
+    {
+      "artifactID": 12261344082,
+      "bytes": 26093,
+      "sha256": "3eb1f88fd6ffdf528adda8b63ba6d69d339cc62190baf547a3fa479396b16c4a",
+      "memberCount": 9
+    },
+    {
+      "artifactID": 12261284623,
+      "bytes": 882800,
+      "sha256": "ccd1504f221dde1b71e16dbe87fbed08425298d431d7e0953285ee6a1991b491",
+      "memberCount": 67
+    }
+  ],
+  "phases": [
+    {
+      "phase": "producer",
+      "state": "failed",
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedSeconds": 37.478223
+    },
+    {
+      "phase": "stage",
+      "state": "blocked",
+      "exitCode": null,
+      "timedOut": null,
+      "elapsedSeconds": 6.195327
+    },
+    {
+      "phase": "before-build",
+      "state": "blocked",
+      "exitCode": null,
+      "timedOut": null,
+      "elapsedSeconds": 6.031653
+    },
+    {
+      "phase": "boot",
+      "state": "succeeded",
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 175.580869
+    },
+    {
+      "phase": "native",
+      "state": "failed",
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedSeconds": 505.816573
+    },
+    {
+      "phase": "export",
+      "state": "failed",
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedSeconds": 10.419805
+    },
+    {
+      "phase": "cases",
+      "state": "failed",
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedSeconds": 5.30083
+    },
+    {
+      "phase": "test-settings",
+      "state": "succeeded",
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 32.319835
+    },
+    {
+      "phase": "after-tests",
+      "state": "blocked",
+      "exitCode": null,
+      "timedOut": null,
+      "elapsedSeconds": 8.043836
+    },
+    {
+      "phase": "build-settings",
+      "state": "succeeded",
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 17.097726
+    }
+  ],
+  "package": {
+    "status": "passed",
+    "qualifiedMethods": [
+      "LegadoRuntimeTests.LegadoCookieTextAPITests/testPartialSequentialEffectMetadataSurvivesPublicExecutionAndOldErrorsDecode",
+      "LegadoRuntimeTests.LegadoCookieTextAPITests/testTextCookieAccessRequiresExplicitEmbeddingOptionsAndPreservesDefaultEncoding",
+      "LegadoRuntimeTests.LegadoExploreAPITests/testExplicitContextLifecycleUsesTypedBusinessDtoAndDoesNotExposeScopeAuthority",
+      "LegadoRuntimeTests.LegadoExploreAPITests/testExploreUsesOriginalPublicActionAndPreservesExplicitNullPage",
+      "LegadoRuntimeTests.LegadoHostEffectsTests/testMalformedHostResponseRetainsIssuedFactsAndEmptyEffectsPreserveOldResponses",
+      "LegadoRuntimeTests.LegadoHostEffectsTests/testRequestCopiesShareBoundedIssuedFactsAndHostErrorCodecKeepsThem",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testBusinessCodingPreservesOriginalNamesWithoutEnvironmentOrAppUuid",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testConfiguredTypedFourStageChainKeepsBusinessIdentitiesAndExplicitNoSave",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testNullPageAndUtf8RequestBudgetAreExplicit",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testOriginalTypedErrorsAndIncompatibleDtosStayErrors",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testTypedBatchReturnsMissingChapterIdentitiesAndDoesNotGrantSaves",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testTypedBusinessApiDoesNotSelectTheExistingRoute",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testCancelReachesRuntimeWhileExecuteWorkerIsBlocked",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testConfiguredSessionCannotSilentlyUseLegacyTransport",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testConfiguredSessionKeepsTransportOptionsOutsideSourceData",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testRuntimeOperationsRunOnSignalableBackgroundThreads",
+      "LegadoRuntimeTests.LegadoRuntimeTests/testSessionAndUnicodeRequestRoundTrip"
+    ],
+    "passed": 17,
+    "XMLAndVerboseOutcomesAgree": true,
+    "evidenceHashesVerified": true,
+    "runtimeSourceOnly": true,
+    "JVMExecuted": false,
+    "AppExecuted": false
+  },
+  "portable": {
+    "smoke": {
+      "executed": 24,
+      "passed": 24
+    },
+    "renewal": {
+      "executed": 59,
+      "passed": 57,
+      "failed": [
+        "test_controlledsigning_source_methods_wrapper_and_workflow_keep_sdk_groups_independent",
+        "test_integrated_leaf_union_matches_source_and_excludes_storage_benchmark"
+      ]
+    },
+    "remainingGuardCommandsAccepted": false,
+    "rawJobLog": {
+      "path": ".build/renewal-discovery/core-sdk-account-selection-step/actual-733120e/portable-job-terminal.log",
+      "bytes": 217758,
+      "sha256": "4834d6ac255e74d7f45a416f374cf03a8006c0a544d36a35a87f7e613c884dd1"
+    }
+  },
+  "native": {
+    "methodsExecuted": 0,
+    "diagnostics": [
+      "/Users/runner/work/legado-ios/legado-ios/Modules/Core/BookSource/BookSourceHealthChecker.swift:58:1: error: type 'BookSourceFetcher' does not conform to protocol 'BookSourceHealthCheckFetching'"
+    ],
+    "XcodebuildExitCode": 65,
+    "wrapperExitCode": 1
+  },
+  "producer": {
+    "status": "failed",
+    "userAuthorizationPreflightPassed": true,
+    "installAcknowledged": false,
+    "timeout": {
+      "codesignSuccessEstablishedByThisFailureRecord": false,
+      "elapsedSeconds": 20.014389166,
+      "exitCode": 124,
+      "failedToolSucceeded": false,
+      "nativeTestsExecuted": 0,
+      "privateCommandPublished": false,
+      "privateStreamsPublished": false,
+      "processCleanup": {
+        "childReaped": true,
+        "drained": true,
+        "hardKillAttempted": true,
+        "issues": [],
+        "pipesClosed": true
+      },
+      "processReturnCode": -9,
+      "processStarted": true,
+      "schemaVersion": 1,
+      "status": "timeout",
+      "timedOut": true,
+      "timeoutSeconds": 20,
+      "tool": "private-owned-tool"
+    },
+    "ownedTrustAbsenceVerified": true,
+    "ownedKeychainCleanupExitCode": 0,
+    "targetCodesignExecuted": false
+  },
+  "healthWitnessCorrection": {
+    "grammar": {
+      "path": ".build/renewal-discovery/core-sdk-account-selection-step/actual-733120e/health-witness-grammar.json",
+      "bytes": 435,
+      "sha256": "fae961b5420bd746ee31dabd09a77870533cf5ddeb9fcfce99be20733aa53409"
+    },
+    "input": {
+      "path": "Modules/Core/BookSource/BookSourceHealthChecker.swift",
+      "bytes": 44146,
+      "sha256": "64a45b3499e57e6df0ef933792d93004bf520398b0cd16fed212e797606c2a81"
+    },
+    "SDKAcceptedAfterFix": false,
+    "reason": "Existing generation-aware five-argument overload with a default does not implement the original four-argument protocol requirement. Two exact witnesses forward nil generation to the same existing fetch/package path; the concrete package witness preserves package metadata."
+  },
+  "sourceScope": "733120e does not include the later render delta, certificate reconciliation or this HealthChecker correction. Package success covers only its actual22 inputs and17 methods."
+}
