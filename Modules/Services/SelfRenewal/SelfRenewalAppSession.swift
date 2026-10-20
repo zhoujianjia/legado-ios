@@ -806,6 +806,7 @@ actor SelfRenewalAppSession {
 
     private static func renewalWasCancelled(_ error: Error) -> Bool {
         if error is CancellationError { return true }
+        if let failure = error as? RenewalExecutionFailure { return renewalWasCancelled(failure.underlying) }
         if let failure = error as? BookMetadataPersistenceFailure, failure.code == .cancelled { return true }
         if let failure = error as? Coordinator.PreparationFailure { return renewalWasCancelled(failure.underlying) }
         if let failure = error as? Coordinator.Interrupted { return renewalWasCancelled(failure.underlying) }
