@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "status": "source-ready-for-independent-review-sdk-pending",
+  "sourceFiles": [
+    {
+      "baseline": {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift",
+        "bytes": 16039,
+        "sha256": "c7af83ecf1e52216c4d9b790bfafec0f4119ae03bf0e105b41d62104c277f3b7"
+      },
+      "candidate": {
+        "path": ".build/s2-authenticated-spd-challenge-step/work/Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift",
+        "bytes": 18074,
+        "sha256": "a4b0857dccf5d13ba72462499b8251a88b613dec65525a58a53d5176d521c2f3"
+      },
+      "grammarPassed": true,
+      "changedFunctions": [
+        "handshake",
+        "signIn"
+      ],
+      "addedFunctions": [
+        "secondaryMode"
+      ],
+      "unchangedFunctionCount": 15,
+      "swiftCompiled": false,
+      "actualTestExecutions": 0
+    },
+    {
+      "baseline": {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+        "bytes": 53471,
+        "sha256": "5737cba5485c3c37dc7a7d4a009b8bffee77259910df275799ec710508202ba0"
+      },
+      "candidate": {
+        "path": ".build/s2-authenticated-spd-challenge-step/work/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+        "bytes": 94894,
+        "sha256": "5a66a0ec9b30099edae1ac7d877c373e967b1feab0127edec6f573f74c70c28f"
+      },
+      "grammarPassed": true,
+      "changedFunctions": [
+        "handle",
+        "matchesIndependentPasswordAndAuthenticatedResponseVectors",
+        "refusesUnverifiedCryptoMissingMetadataAndStorageFailure",
+        "submitsTrustedDeviceCodeAndRestartsAuthenticatedHandshake"
+      ],
+      "addedFunctions": [
+        "configure"
+      ],
+      "unchangedFunctionCount": 36,
+      "swiftCompiled": false,
+      "actualTestExecutions": 0
+    }
+  ],
+  "primary": {
+    "path": ".build/s2-authenticated-spd-challenge-step/primary-binding-v1.json",
+    "bytes": 2981,
+    "sha256": "6656022792c454b34530d85dee5a8125f3d0520a2cbe75590ee5c658ba2d52c5"
+  },
+  "fixtureReference": {
+    "path": ".build/s2-authenticated-spd-challenge-step/owned-spd-fixtures-reference-v1.json",
+    "bytes": 9999,
+    "sha256": "5dd4f381ef54f92179962bcbbe5702795b0a5b378cfd074e14917489893c5eea"
+  },
+  "sourcePreparation": {
+    "publicFixtureGeneratorAttempts": 2,
+    "initialFailure": "Existing public vector was held in static base64 rather than an inline Data initializer; read-only extraction assertion failed before fixture writes.",
+    "successfulAttempts": 1
+  },
+  "authoredRegression": {
+    "unchangedDefinitionCount": 11,
+    "changedDefinitions": 3,
+    "publicSealedVariants": 22,
+    "urlSessionSignedScenarios": 17,
+    "additionalBadProofChallengeCases": 2,
+    "actualExecutions": 0
+  },
+  "limits": [
+    "Tree-sitter is syntax only; no Swift compiler or actual URLSession/Keychain test executed locally.",
+    "Independent Python validates fixture crypto, not the Swift production protocol.",
+    "No real Apple login, SMS flow, installation, expiry extension or automatic-renewal acceptance.",
+    "Rejecting contradictory outer/SPD modes and unknown explicit codes is the local admission policy, not a proven Apple contract."
+  ],
+  "invariants": {
+    "sameAccountOwner": true,
+    "sameURLSessionTransport": true,
+    "outerErrorBeforeProof": true,
+    "proofBeforeSPDInterpretation": true,
+    "noNewEndpoints": true,
+    "challengeSingleUse": true,
+    "pendingSeconds": 300,
+    "allNonDeviceWorkComplete": false,
+    "automaticSelfRenewalImplemented": false,
+    "fullLegadoCompatibilityEstablished": false,
+    "legalRedistributionClearanceEstablished": false
+  },
+  "independentPreReview": {
+    "path": ".build/s2-authenticated-spd-challenge-independent-review/pre-review-v1.json",
+    "bytes": 15576,
+    "sha256": "7506860c875f6a9425092e5152e4755a7b0fbe88e14eeefad0c8c5aa35d414d2"
+  }
+}

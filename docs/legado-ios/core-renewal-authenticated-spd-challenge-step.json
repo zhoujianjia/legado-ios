@@ -1,0 +1,265 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-20T22:58:38.879752+00:00",
+  "status": "reviewed-authenticated-SPD-secondary-authentication-integrated-SDK-pending",
+  "reviewedCanonicalParent": "f3e055b9687445f703c3f23ed4711c36ebbc77b0",
+  "sourceFiles": [
+    {
+      "baseline": {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift",
+        "bytes": 16039,
+        "sha256": "c7af83ecf1e52216c4d9b790bfafec0f4119ae03bf0e105b41d62104c277f3b7"
+      },
+      "candidate": {
+        "path": ".build/s2-authenticated-spd-challenge-step/work/Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift",
+        "bytes": 18074,
+        "sha256": "a4b0857dccf5d13ba72462499b8251a88b613dec65525a58a53d5176d521c2f3"
+      },
+      "grammarPassed": true,
+      "changedFunctions": [
+        "handshake",
+        "signIn"
+      ],
+      "addedFunctions": [
+        "secondaryMode"
+      ],
+      "unchangedFunctionCount": 15,
+      "swiftCompiled": false,
+      "actualTestExecutions": 0
+    },
+    {
+      "baseline": {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+        "bytes": 53471,
+        "sha256": "5737cba5485c3c37dc7a7d4a009b8bffee77259910df275799ec710508202ba0"
+      },
+      "candidate": {
+        "path": ".build/s2-authenticated-spd-challenge-step/work/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+        "bytes": 94894,
+        "sha256": "5a66a0ec9b30099edae1ac7d877c373e967b1feab0127edec6f573f74c70c28f"
+      },
+      "grammarPassed": true,
+      "changedFunctions": [
+        "handle",
+        "matchesIndependentPasswordAndAuthenticatedResponseVectors",
+        "refusesUnverifiedCryptoMissingMetadataAndStorageFailure",
+        "submitsTrustedDeviceCodeAndRestartsAuthenticatedHandshake"
+      ],
+      "addedFunctions": [
+        "configure"
+      ],
+      "unchangedFunctionCount": 36,
+      "swiftCompiled": false,
+      "actualTestExecutions": 0
+    }
+  ],
+  "scope": "Same GSA authentication actor and actual URLSession/account/Vault path; no new endpoints or credential owner.",
+  "behavior": "After outer error, M2 and negotiation MAC validation and SPD decryption, authenticated status-code409 selects an existing single-use five-minute challenge before app-token work. Absent mode with no conflicting outer marker does not request another push. Explicit trusted-device mode uses only the existing fixed endpoint. Legacy SPD without status/url preserves the existing outer trusted-device marker.",
+  "localAdmissionPolicy": "Explicit unknown, mistyped and conflicting status/mode signals reject. SPD200 requires no mode/outer secondary marker. These strict conflict rules are local policy; the pinned upstream does not define conflict precedence.",
+  "authoredRegression": {
+    "unchangedDefinitionCount": 11,
+    "changedDefinitions": 3,
+    "publicSealedVariants": 22,
+    "urlSessionSignedScenarios": 17,
+    "additionalBadProofChallengeCases": 2,
+    "actualExecutions": 0
+  },
+  "authoredScenarioProtocol": "The17 synthetic URLSession scenarios use only Vectors.first(s2k); the22 crypto-loop variants cover both protocols. No actual runtime execution is claimed.",
+  "validation": {
+    "independentPythonPublicFixtureVariants": 22,
+    "syntaxRoots": 2,
+    "actualSwiftSDK": 0,
+    "actualURLSessionCases": 0,
+    "actualApple": 0
+  },
+  "primaryFacts": {
+    "repo": "xtool-org/xtool",
+    "commit": "aa6ba75e7df759a84560885a86822dd119da8c55",
+    "tree": "b4c625111b85bd797b86beea20a6ae07ca50a20c",
+    "date": "2026-10-20T05:00:51Z",
+    "allGitBlobsMatched": true,
+    "files": [
+      {
+        "path": ".build/s2-authenticated-spd-challenge-step/primary/GrandSlamAuthenticateOperation.swift",
+        "sourcePath": "Sources/XKit/GrandSlam/Operations/GrandSlamAuthenticateOperation.swift",
+        "bytes": 4117,
+        "sha256": "995464b576a44956cdf443c04072216acd6b32c4ab20ada132fef590e34704f7",
+        "gitBlobOID": "41405e5ae68c668791033e34b6c07566d585c866",
+        "url": "https://raw.githubusercontent.com/xtool-org/xtool/aa6ba75e7df759a84560885a86822dd119da8c55/Sources/XKit/GrandSlam/Operations/GrandSlamAuthenticateOperation.swift"
+      },
+      {
+        "path": ".build/s2-authenticated-spd-challenge-step/primary/GrandSlamTwoFactorAuthenticateOperation.swift",
+        "sourcePath": "Sources/XKit/GrandSlam/Operations/GrandSlamTwoFactorAuthenticateOperation.swift",
+        "bytes": 2820,
+        "sha256": "247dfeb440d4686db1e52b01c5e477ab73ea2372141d0c1131a530056d3d6a70",
+        "gitBlobOID": "64f362b6328f085555e71a2e81c69ec437f9268d",
+        "url": "https://raw.githubusercontent.com/xtool-org/xtool/aa6ba75e7df759a84560885a86822dd119da8c55/Sources/XKit/GrandSlam/Operations/GrandSlamTwoFactorAuthenticateOperation.swift"
+      },
+      {
+        "path": ".build/s2-authenticated-spd-challenge-step/primary/GrandSlamAuthCompleteRequest.swift",
+        "sourcePath": "Sources/XKit/GrandSlam/Requests/Concrete/GrandSlamAuthCompleteRequest.swift",
+        "bytes": 857,
+        "sha256": "8c4ab15485f630e3aa31e0812ab82cd5627c3cec17808f09acde0dc0598dfe13",
+        "gitBlobOID": "1dcd2b1218dac02d6586d2c333eaa10a435192d8",
+        "url": "https://raw.githubusercontent.com/xtool-org/xtool/aa6ba75e7df759a84560885a86822dd119da8c55/Sources/XKit/GrandSlam/Requests/Concrete/GrandSlamAuthCompleteRequest.swift"
+      },
+      {
+        "path": ".build/s2-authenticated-spd-challenge-step/primary/GrandSlamOperationRequest.swift",
+        "sourcePath": "Sources/XKit/GrandSlam/Requests/GrandSlamOperationRequest.swift",
+        "bytes": 2796,
+        "sha256": "f9b3b9b926fd8e9a28c7f9b41ffe34fa8bd26aac62d42b62c6760772ff7482af",
+        "gitBlobOID": "13f94bf1f5cd6de21a1ac2db7684c3765fc314c0",
+        "url": "https://raw.githubusercontent.com/xtool-org/xtool/aa6ba75e7df759a84560885a86822dd119da8c55/Sources/XKit/GrandSlam/Requests/GrandSlamOperationRequest.swift"
+      },
+      {
+        "path": ".build/s2-authenticated-spd-challenge-step/primary/GrandSlamLoginData.swift",
+        "sourcePath": "Sources/XKit/GrandSlam/Model/GrandSlamLoginData.swift",
+        "bytes": 552,
+        "sha256": "6c7ae22effe469adb08d141399db40ab7528d752151c7b9bc587d5a83c62668b",
+        "gitBlobOID": "627b1e0f55c9c0398d3c6f2da38a62a7452d0170",
+        "url": "https://raw.githubusercontent.com/xtool-org/xtool/aa6ba75e7df759a84560885a86822dd119da8c55/Sources/XKit/GrandSlam/Model/GrandSlamLoginData.swift"
+      }
+    ]
+  },
+  "independentReview": {
+    "path": ".build/s2-authenticated-spd-challenge-independent-review/review-v1.json",
+    "bytes": 41680,
+    "sha256": "10911455a8ebb6c00c614f3820b9e2d808d83b788fffe7dc5dc58e79289cad3d"
+  },
+  "preservedEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/renewal-authenticated-spd-challenge-step/preparation.json",
+      "bytes": 3887,
+      "sha256": "b9c1b3bf8fe49ef180c458be2d541da1d9fa71eea80daf77e514c6741ce8dd4b",
+      "original": {
+        "path": ".build/s2-authenticated-spd-challenge-step/final-v1.json",
+        "bytes": 3887,
+        "sha256": "b9c1b3bf8fe49ef180c458be2d541da1d9fa71eea80daf77e514c6741ce8dd4b"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; original byte facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-authenticated-spd-challenge-step/independent-review.json",
+      "bytes": 41680,
+      "sha256": "10911455a8ebb6c00c614f3820b9e2d808d83b788fffe7dc5dc58e79289cad3d",
+      "original": {
+        "path": ".build/s2-authenticated-spd-challenge-independent-review/review-v1.json",
+        "bytes": 41680,
+        "sha256": "10911455a8ebb6c00c614f3820b9e2d808d83b788fffe7dc5dc58e79289cad3d"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; original byte facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-authenticated-spd-challenge-step/independent-pre-review.json",
+      "bytes": 15576,
+      "sha256": "7506860c875f6a9425092e5152e4755a7b0fbe88e14eeefad0c8c5aa35d414d2",
+      "original": {
+        "path": ".build/s2-authenticated-spd-challenge-independent-review/pre-review-v1.json",
+        "bytes": 15576,
+        "sha256": "7506860c875f6a9425092e5152e4755a7b0fbe88e14eeefad0c8c5aa35d414d2"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; original byte facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-authenticated-spd-challenge-step/primary-binding.json",
+      "bytes": 2981,
+      "sha256": "6656022792c454b34530d85dee5a8125f3d0520a2cbe75590ee5c658ba2d52c5",
+      "original": {
+        "path": ".build/s2-authenticated-spd-challenge-step/primary-binding-v1.json",
+        "bytes": 2981,
+        "sha256": "6656022792c454b34530d85dee5a8125f3d0520a2cbe75590ee5c658ba2d52c5"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; original byte facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-authenticated-spd-challenge-step/owned-fixtures-reference.json",
+      "bytes": 9999,
+      "sha256": "5dd4f381ef54f92179962bcbbe5702795b0a5b378cfd074e14917489893c5eea",
+      "original": {
+        "path": ".build/s2-authenticated-spd-challenge-step/owned-spd-fixtures-reference-v1.json",
+        "bytes": 9999,
+        "sha256": "5dd4f381ef54f92179962bcbbe5702795b0a5b378cfd074e14917489893c5eea"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; original byte facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-authenticated-spd-challenge-step/independent-fixture-math.json",
+      "bytes": 11305,
+      "sha256": "a3c6f49f875fbb827b6425fe3edf2e89b3e608f6ee7625dc43ce8b81a72d7b44",
+      "original": {
+        "path": ".build/s2-authenticated-spd-challenge-independent-review/fixture-math-v1.json",
+        "bytes": 11305,
+        "sha256": "a3c6f49f875fbb827b6425fe3edf2e89b3e608f6ee7625dc43ce8b81a72d7b44"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; original byte facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-authenticated-spd-challenge-step/scripts/prepare-owned-fixtures.py",
+      "bytes": 4298,
+      "sha256": "2cfbef5be26d9ac9953702660d9633e55bf734177320ee613425a9332f74bd12",
+      "original": {
+        "path": ".build/s2-authenticated-spd-challenge-step/prepare-owned-fixtures.py",
+        "bytes": 4298,
+        "sha256": "2cfbef5be26d9ac9953702660d9633e55bf734177320ee613425a9332f74bd12"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; original byte facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-authenticated-spd-challenge-step/scripts/verify-and-freeze.py",
+      "bytes": 5323,
+      "sha256": "46281393011d674b4e58b42f4ac953b6c9ca019693d0b099dc33bec1ed9bb4cc",
+      "original": {
+        "path": ".build/s2-authenticated-spd-challenge-step/verify-and-freeze.py",
+        "bytes": 5323,
+        "sha256": "46281393011d674b4e58b42f4ac953b6c9ca019693d0b099dc33bec1ed9bb4cc"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; original byte facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-authenticated-spd-challenge-step/scripts/integrate-reviewed-source.py",
+      "bytes": 7597,
+      "sha256": "60d1248242e9111382bda9d310004a6733097d2972812b3fa5cc2aa082a61414",
+      "original": {
+        "path": ".build/integrate-reviewed-s2-spd-challenge.py",
+        "bytes": 7597,
+        "sha256": "60d1248242e9111382bda9d310004a6733097d2972812b3fa5cc2aa082a61414"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; original byte facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-authenticated-spd-challenge-step/diffs/Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift.diff",
+      "bytes": 5071,
+      "sha256": "5ba43575a29b700a668fd8da7194ae74de66938a24adb845a6f713ff1469848f",
+      "original": {
+        "path": ".build/s2-authenticated-spd-challenge-step/diffs/Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift.diff",
+        "bytes": 5071,
+        "sha256": "5ba43575a29b700a668fd8da7194ae74de66938a24adb845a6f713ff1469848f"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; original byte facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-authenticated-spd-challenge-step/diffs/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift.diff",
+      "bytes": 45028,
+      "sha256": "dbed5c8f53d11298b1ba4dc6fa2d440d1bd21ff99698aa81b82cb18c995cdb9c",
+      "original": {
+        "path": ".build/s2-authenticated-spd-challenge-step/diffs/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift.diff",
+        "bytes": 45029,
+        "sha256": "a822f9d873c42dd99e366ebb7deed46fa3af44062a68fcff12bfe4bd349bb5ba"
+      },
+      "normalization": "Strict UTF8/LF and trailing horizontal/EOF whitespace; original byte facts retained."
+    }
+  ],
+  "limits": [
+    "Tree-sitter is syntax only; no Swift compiler or actual URLSession/Keychain test executed locally.",
+    "Independent Python validates fixture crypto, not the Swift production protocol.",
+    "No real Apple login, SMS flow, installation, expiry extension or automatic-renewal acceptance.",
+    "Rejecting contradictory outer/SPD modes and unknown explicit codes is the local admission policy, not a proven Apple contract.",
+    "Current immutable fc3 SDK/Native runs do not contain this later change. Future unified SDK must execute the existing11 definitions with the new scenarios."
+  ],
+  "liveImmutableSourceUnchanged": "fc3b01ce980f6bdcdc8a3b7559dac5b1d57fc64a",
+  "newCloudTagCreated": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

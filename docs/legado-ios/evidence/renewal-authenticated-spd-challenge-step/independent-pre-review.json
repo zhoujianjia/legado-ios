@@ -1,0 +1,321 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-20T22:50:35.302540+00:00",
+  "reviewer": "/root/login_info_v2_review",
+  "status": "read-only-primary-and-current-fixture-pre-review; not final production approval",
+  "primaryBinding": {
+    "path": ".build/s2-authenticated-spd-challenge-step/primary-binding-v1.json",
+    "bytes": 2981,
+    "sha256": "6656022792c454b34530d85dee5a8125f3d0520a2cbe75590ee5c658ba2d52c5"
+  },
+  "repo": "xtool-org/xtool",
+  "commit": "aa6ba75e7df759a84560885a86822dd119da8c55",
+  "tree": "b4c625111b85bd797b86beea20a6ae07ca50a20c",
+  "primaryDate": "2026-10-20T05:00:51Z",
+  "primarySources": [
+    {
+      "path": ".build/s2-authenticated-spd-challenge-step/primary/GrandSlamAuthenticateOperation.swift",
+      "bytes": 4117,
+      "sha256": "995464b576a44956cdf443c04072216acd6b32c4ab20ada132fef590e34704f7",
+      "upstreamPath": "Sources/XKit/GrandSlam/Operations/GrandSlamAuthenticateOperation.swift",
+      "gitBlobOID": "41405e5ae68c668791033e34b6c07566d585c866",
+      "url": "https://raw.githubusercontent.com/xtool-org/xtool/aa6ba75e7df759a84560885a86822dd119da8c55/Sources/XKit/GrandSlam/Operations/GrandSlamAuthenticateOperation.swift"
+    },
+    {
+      "path": ".build/s2-authenticated-spd-challenge-step/primary/GrandSlamTwoFactorAuthenticateOperation.swift",
+      "bytes": 2820,
+      "sha256": "247dfeb440d4686db1e52b01c5e477ab73ea2372141d0c1131a530056d3d6a70",
+      "upstreamPath": "Sources/XKit/GrandSlam/Operations/GrandSlamTwoFactorAuthenticateOperation.swift",
+      "gitBlobOID": "64f362b6328f085555e71a2e81c69ec437f9268d",
+      "url": "https://raw.githubusercontent.com/xtool-org/xtool/aa6ba75e7df759a84560885a86822dd119da8c55/Sources/XKit/GrandSlam/Operations/GrandSlamTwoFactorAuthenticateOperation.swift"
+    },
+    {
+      "path": ".build/s2-authenticated-spd-challenge-step/primary/GrandSlamAuthCompleteRequest.swift",
+      "bytes": 857,
+      "sha256": "8c4ab15485f630e3aa31e0812ab82cd5627c3cec17808f09acde0dc0598dfe13",
+      "upstreamPath": "Sources/XKit/GrandSlam/Requests/Concrete/GrandSlamAuthCompleteRequest.swift",
+      "gitBlobOID": "1dcd2b1218dac02d6586d2c333eaa10a435192d8",
+      "url": "https://raw.githubusercontent.com/xtool-org/xtool/aa6ba75e7df759a84560885a86822dd119da8c55/Sources/XKit/GrandSlam/Requests/Concrete/GrandSlamAuthCompleteRequest.swift"
+    },
+    {
+      "path": ".build/s2-authenticated-spd-challenge-step/primary/GrandSlamOperationRequest.swift",
+      "bytes": 2796,
+      "sha256": "f9b3b9b926fd8e9a28c7f9b41ffe34fa8bd26aac62d42b62c6760772ff7482af",
+      "upstreamPath": "Sources/XKit/GrandSlam/Requests/GrandSlamOperationRequest.swift",
+      "gitBlobOID": "13f94bf1f5cd6de21a1ac2db7684c3765fc314c0",
+      "url": "https://raw.githubusercontent.com/xtool-org/xtool/aa6ba75e7df759a84560885a86822dd119da8c55/Sources/XKit/GrandSlam/Requests/GrandSlamOperationRequest.swift"
+    },
+    {
+      "path": ".build/s2-authenticated-spd-challenge-step/primary/GrandSlamLoginData.swift",
+      "bytes": 552,
+      "sha256": "6c7ae22effe469adb08d141399db40ab7528d752151c7b9bc587d5a83c62668b",
+      "upstreamPath": "Sources/XKit/GrandSlam/Model/GrandSlamLoginData.swift",
+      "gitBlobOID": "627b1e0f55c9c0398d3c6f2da38a62a7452d0170",
+      "url": "https://raw.githubusercontent.com/xtool-org/xtool/aa6ba75e7df759a84560885a86822dd119da8c55/Sources/XKit/GrandSlam/Model/GrandSlamLoginData.swift"
+    }
+  ],
+  "currentObservedSources": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift",
+      "bytes": 16039,
+      "sha256": "c7af83ecf1e52216c4d9b790bfafec0f4119ae03bf0e105b41d62104c277f3b7"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalGSASRP.swift",
+      "bytes": 9284,
+      "sha256": "12274c4d876de84025f419f2f8a47d8bc4942ca2072d6ffe7915fccf88ae0c28"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+      "bytes": 53471,
+      "sha256": "5737cba5485c3c37dc7a7d4a009b8bffee77259910df275799ec710508202ba0"
+    }
+  ],
+  "checkCount": 19,
+  "mismatches": [],
+  "confirmedGap": {
+    "source": "SelfRenewalDeveloperAuthentication.swift100-129",
+    "fact": "Current handshake correctly validates outer ec, M2/np, decrypts bounded SPD and checks adsid/idms; it only recognizes outer complete.Status.au secondary state. An authenticated decrypted SPD409/url with no outer au currently goes toward sk/c and app-token requests instead of surfacing the supported 2FA challenge."
+  },
+  "primaryContract": [
+    {
+      "file": "GrandSlamOperationRequest.swift",
+      "lines": [
+        53,
+        62
+      ],
+      "fact": "The common operation decoder rejects outer Status.ec!=0 before decoding the authenticated complete body."
+    },
+    {
+      "file": "GrandSlamAuthenticateOperation.swift",
+      "lines": [
+        94,
+        119
+      ],
+      "fact": "After M2 and negotiation verification, decrypt SPD, decode required integer status-code plus optional String url and LoginData, then409 triggers one secondary-auth cycle; a repeated409 on retry fails."
+    },
+    {
+      "file": "GrandSlamTwoFactorAuthenticateOperation.swift",
+      "lines": [
+        73,
+        81
+      ],
+      "fact": "nil mode means auto-requested and only validateCode; trustedDevice mode makes its explicit request then validates. secondaryAuth uses SMS in upstream, including an unbound phone-ID assumption; this narrow app slice must keep SMS unsupported."
+    },
+    {
+      "file": "GrandSlamAuthenticateOperation.swift",
+      "lines": [
+        109,
+        116
+      ],
+      "fact": "url is an auth-mode raw token, not a network destination. Upstream flatMap maps an unknown token to nil; root deliberately proposes a stricter bounded unsupported policy rather than copying that fallback."
+    },
+    {
+      "file": "GrandSlamLoginData.swift",
+      "lines": [
+        11,
+        29
+      ],
+      "fact": "Upstream decodes adsid/GsIdmsToken/sk/c before its409 branch. Current app secondary flow uses only authenticated bounded dsid/idms; no claim of complete upstream SPD schema parity is made by this pre-review."
+    }
+  ],
+  "recommendedOrdering": [
+    "Keep the current HTTP/outer Status.ec failures authoritative before processing complete payload.",
+    "Keep bounded SPD/sc/M2/np parsing, M2 verification, negotiation MAC verification, decryption and strict plist parsing ahead of every new challenge classification or secondary HTTP side effect.",
+    "Parse only verified decrypted status-code as a strict integer when present. Distinguish absent status-code legacy compatibility from malformed String/Bool/Data values; do not confuse it with HTTP409 or outer ec.",
+    "On supported SPD409 classify explicit secondary mode before app-token exchange. nil/absent url returns pending challenge without another trusted-device request; supported trustedDevice token requests exactly once, then returns pending. Unknown/secondaryAuth/absolute URL/empty/nonString mode must stay typed unsupported or malformed and must never select host/path.",
+    "Carry the secondary mode explicitly through Handshake into signIn, preserving busy, in-memory expiry, cancellation checks, single-use pending consumption and existing fixed validate route.",
+    "After submitting a code repeat the complete authenticated SRP handshake; another secondary challenge fails through existing no-recursion behavior. Account connect/storage/team/signing authority are still reached only by a verified nonsecondary candidate and normal account validation."
+  ],
+  "signalConflictPolicyNotDefinedByPrimary": {
+    "fact": "The bound upstream five sources do not use outer au and do not define how it conflicts with SPD409/url. A conflict policy is therefore an app decision, not a proven Apple protocol fact.",
+    "recommendation": "Fail closed on contradictory or unknown simultaneous signals before requesting/validating a code. Keep outer trustedDevice legacy behavior when new SPD fields are absent; accept simultaneous SPD409 trustedDevice plus the same supported outer intent only when explicitly treated as consistent. Do not convert invalid mode to manual nil.",
+    "exampleTable": [
+      {
+        "verifiedSPD": "status-code absent, url absent",
+        "outerAU": "absent",
+        "result": "existing candidate path"
+      },
+      {
+        "verifiedSPD": "status-code absent, url absent",
+        "outerAU": "trustedDeviceSecondaryAuth",
+        "result": "existing explicit trusted-device request path"
+      },
+      {
+        "verifiedSPD": "409, url absent",
+        "outerAU": "absent",
+        "result": "manual/already-requested pending challenge; no request GET"
+      },
+      {
+        "verifiedSPD": "409, trustedDeviceSecondaryAuth",
+        "outerAU": "absent or same supported intent",
+        "result": "one explicit trusted-device GET then pending"
+      },
+      {
+        "verifiedSPD": "409, unknown/secondaryAuth/empty/nonString url",
+        "outerAU": "any",
+        "result": "typed unsupported/malformed; no secondary HTTP or token request"
+      },
+      {
+        "verifiedSPD": "409, url absent",
+        "outerAU": "contradictory request/unknown",
+        "result": "conservative conflict rejection; do not guess"
+      },
+      {
+        "verifiedSPD": "malformed type for status-code",
+        "outerAU": "any",
+        "result": "malformed before fallback"
+      },
+      {
+        "verifiedSPD": "explicit non409 status plus conflicting au",
+        "outerAU": "secondary",
+        "result": "policy must be explicit and tested; bound source does not define a compatibility fallback"
+      }
+    ]
+  },
+  "existingPublicFixtureInspection": {
+    "source": "SelfRenewalDeveloperAuthenticationTests.swift460-476 existing frozen public base64 vectors",
+    "performed": "One read-only Python inspection decoded public vector JSON and AES-CBC SPD with its public K using the existing derivation; this did not execute Swift, old test suites, HTTP, Apple or authentication operations. Initial regex expected private modifier and matched no data; corrected static-let selector succeeded without source changes.",
+    "vectors": [
+      {
+        "protocol": "s2k",
+        "decryptedKeys": [
+          "GsIdmsToken",
+          "adsid",
+          "c",
+          "sk"
+        ],
+        "statusCodePresent": false,
+        "urlPresent": false
+      },
+      {
+        "protocol": "s2k_fo",
+        "decryptedKeys": [
+          "GsIdmsToken",
+          "adsid",
+          "c",
+          "sk"
+        ],
+        "statusCodePresent": false,
+        "urlPresent": false
+      }
+    ],
+    "consequence": "Do not require new SPD fields on existing legacy vectors. To cover409, generate actual re-encrypted SPD and matching np from independent public reference values; attaching fields outside authenticated ciphertext is not equivalent."
+  },
+  "fixtureAttachmentPoints": [
+    {
+      "source": "SelfRenewalDeveloperAuthenticationTests.swift255-305",
+      "fact": "Existing serialized Mode/Peer.complete has exact init/M1 checks and bound M2/spd/sc/np. Add modes selecting sealed challenge vectors, then choose the original successful payload after validated=true."
+    },
+    {
+      "source": "SelfRenewalDeveloperAuthenticationTests.swift87-97,281-287",
+      "fact": "Current trustedDevice method already verifies GET routes, security-code, identity-token, SRP restart, secure storage absent before completion and consumed challenge rejection. Add manual vector asserting exact path sequence omits trusteddevice, preserving old sequence."
+    },
+    {
+      "source": "SelfRenewalDeveloperAuthenticationTests.swift51-63,117-129",
+      "fact": "Tampered M2 or np on a409 vector must fail before request, pending challenge, app-token or storage publication. Existing bad-proof modes and storage checks are real fixture seams."
+    },
+    {
+      "source": "SelfRenewalDeveloperAuthenticationTests.swift325-376",
+      "fact": "Transport is the actual app URLSession implementation with synthetic URLProtocol peer and real Keychain storage/vault/account client. This is not actual Apple network/TLS or live account acceptance."
+    },
+    {
+      "source": "SelfRenewalDeveloperAuthenticationTests.swift99-115,236-253",
+      "fact": "Keep actual cancellation, pending-clear and AppSession owner cleanup paths; do not silently catch failures or retry secondary requests in background."
+    }
+  ],
+  "limits": [
+    "No repaired production candidate has been reviewed or approved. Root owns the forthcoming narrow implementation and cryptographic fixture generation.",
+    "Five primary files are byte/OID-bound to the supplied commit; GrandSlamAuthMode enum and SMS request details are not in this binding, and no full Apple/S2 compatibility follows.",
+    "No old suites, Swift SDK, live URLSession test fixture, Apple request, real account, installation/signing/renewal or cloud checks were executed by reviewer.",
+    "The proposed manual path means the client waits for an already-requested code; it is not evidence that a real Apple code arrived or was accepted."
+  ],
+  "operations": {
+    "canonicalMutation": false,
+    "peerStageMutation": false,
+    "GitMutation": false,
+    "cloudCalls": 0,
+    "testsRerun": 0,
+    "SDK": 0,
+    "AppleRequests": 0,
+    "ownedIgnoredReportOnly": true
+  },
+  "checks": [
+    {
+      "name": "primary metadata exact",
+      "passed": true
+    },
+    {
+      "name": "primary bytes Sources/XKit/GrandSlam/Operations/GrandSlamAuthenticateOperation.swift",
+      "passed": true
+    },
+    {
+      "name": "Git blob OID Sources/XKit/GrandSlam/Operations/GrandSlamAuthenticateOperation.swift",
+      "passed": true
+    },
+    {
+      "name": "primary bytes Sources/XKit/GrandSlam/Operations/GrandSlamTwoFactorAuthenticateOperation.swift",
+      "passed": true
+    },
+    {
+      "name": "Git blob OID Sources/XKit/GrandSlam/Operations/GrandSlamTwoFactorAuthenticateOperation.swift",
+      "passed": true
+    },
+    {
+      "name": "primary bytes Sources/XKit/GrandSlam/Requests/Concrete/GrandSlamAuthCompleteRequest.swift",
+      "passed": true
+    },
+    {
+      "name": "Git blob OID Sources/XKit/GrandSlam/Requests/Concrete/GrandSlamAuthCompleteRequest.swift",
+      "passed": true
+    },
+    {
+      "name": "primary bytes Sources/XKit/GrandSlam/Requests/GrandSlamOperationRequest.swift",
+      "passed": true
+    },
+    {
+      "name": "Git blob OID Sources/XKit/GrandSlam/Requests/GrandSlamOperationRequest.swift",
+      "passed": true
+    },
+    {
+      "name": "primary bytes Sources/XKit/GrandSlam/Model/GrandSlamLoginData.swift",
+      "passed": true
+    },
+    {
+      "name": "Git blob OID Sources/XKit/GrandSlam/Model/GrandSlamLoginData.swift",
+      "passed": true
+    },
+    {
+      "name": "primary M2 and np before decrypt before SPD409",
+      "passed": true
+    },
+    {
+      "name": "primary nil mode validates without requesting code",
+      "passed": true
+    },
+    {
+      "name": "primary trustedDevice mode explicitly requests",
+      "passed": true
+    },
+    {
+      "name": "primary outer nonzero ec rejected before value decode",
+      "passed": true
+    },
+    {
+      "name": "current production verifies M2 np before reading au",
+      "passed": true
+    },
+    {
+      "name": "current production gap authenticated SPD status-code missing",
+      "passed": true
+    },
+    {
+      "name": "current secondary pending single-use before validation request",
+      "passed": true
+    },
+    {
+      "name": "current retry secondary cannot recurse",
+      "passed": true
+    }
+  ]
+}

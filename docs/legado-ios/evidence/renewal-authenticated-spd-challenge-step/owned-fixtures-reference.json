@@ -1,0 +1,240 @@
+{
+  "schema": 1,
+  "fixtureOnly": true,
+  "actualSwiftExecutions": 0,
+  "description": "Owned/public existing SRP session vectors, independently AES-CBC sealed and HMAC negotiation recomputed; no real credentials, no network.",
+  "input": {
+    "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+    "bytes": 53471,
+    "sha256": "5737cba5485c3c37dc7a7d4a009b8bffee77259910df275799ec710508202ba0"
+  },
+  "fixture": {
+    "path": ".build\\s2-authenticated-spd-challenge-step\\owned-spd-fixtures.json",
+    "bytes": 25392,
+    "sha256": "6ec981786a107eb24054b0b9c663bff0c04cc75f675699b792ad31fb43e86359"
+  },
+  "protocols": 2,
+  "variantsPerProtocol": 11,
+  "checks": [
+    {
+      "protocol": "s2k",
+      "name": "manual",
+      "spdBytes": 496,
+      "plainSHA256": "dbb598d1cefbf822080f3bf7a22828d7eb745aa62a1a258b58e60d3d832daa46",
+      "spdSHA256": "d8ea9c533d91824de461d8504acd9c973704ccce15c1efba7ede0ec0425e033b",
+      "negotiationSHA256": "26ba9b33e02e220cca67b05614ac08393ea945caa01c9bf68f94f9870a523525",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k",
+      "name": "trusted",
+      "spdBytes": 560,
+      "plainSHA256": "46ec0e44063ee4cc8bb39ce61ea6597cfac76a7fead18bb4990c5bf31da8024b",
+      "spdSHA256": "5d4a1b5d47217d4976c582cf7398c3aa96729cc8a2fa4554c443f4aae2589d02",
+      "negotiationSHA256": "a85cb14d2e8e7aaf84e8f8a1ab384c84fbc5ee7fac1b6d9dd5367779303c8b2e",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k",
+      "name": "normal",
+      "spdBytes": 496,
+      "plainSHA256": "6cee0e732f6d8ff0b0cfb009caf49784fed49a4e652a48975e24a7964fa4977c",
+      "spdSHA256": "f007b47dcdd63ddb3513f439850293a1e54d5dc9e5a1906de14e4a9a282e1116",
+      "negotiationSHA256": "b85ebc2086beccef18c233857bd23ce415f565ea40e03adae05f3df97adb465c",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k",
+      "name": "sms",
+      "spdBytes": 544,
+      "plainSHA256": "f84b65182fe464f5f283eae2290999079369a3b8b628dd9483e87d175cfc82f1",
+      "spdSHA256": "30dd4d53992b19e189c79244726fed01fb191cb0808e8b0657cfe8d53c6c6c1d",
+      "negotiationSHA256": "30973e922d956042ed594bcf82ae9842702767ba871142deec17a9f09bc5c155",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k",
+      "name": "absolute",
+      "spdBytes": 560,
+      "plainSHA256": "9f159ea4faa5a973815812224dabaf2ef1cb06b1e888815c4138ca9c24147dea",
+      "spdSHA256": "a103348f5a8d117eeaaf13ad99da523bbc64ad15e21128a79811bb6e84691102",
+      "negotiationSHA256": "72bdff86cc8c850104f204d1ff69cf7c480bfe5992f33eb08098282b86a2662d",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k",
+      "name": "empty",
+      "spdBytes": 528,
+      "plainSHA256": "fdb77574fed6f444323cddfbd86fc68f2a9b7b6cd501e759b4f05ccf258a83ac",
+      "spdSHA256": "4c99ec0b2809e918d20ad36540035006ecf9f03fb99dd3462c6b08a6964255c0",
+      "negotiationSHA256": "d37f5580884b897cbef1527533594aba1269d4a4ad15dbfa86bca12351744601",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k",
+      "name": "typedURL",
+      "spdBytes": 528,
+      "plainSHA256": "1aceb3c8e82f200e6da8a624a02e6335ae558ac8018db20a356a03d057f1d9f2",
+      "spdSHA256": "0014ed9b2880649a0e8b7f373aac28b7e2b32b6391cce9751041880800e4f79a",
+      "negotiationSHA256": "69279b942b94bf8dca01849d8d85fd25b1766e1ebb48397a737b00e84cd20055",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k",
+      "name": "textCode",
+      "spdBytes": 496,
+      "plainSHA256": "47f63660e0da4589fbdb853e39ee19296cd85580072e052ba6c3e234e08a9f3a",
+      "spdSHA256": "f11420dffd73644152e7a7da2a4cfc109cf88907509567ac6a1f21c2eaec41d9",
+      "negotiationSHA256": "f14c7afe677a25ff6d60fb82d479b3197a51df3c0c92381bf547c1bda41e0bbc",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k",
+      "name": "boolCode",
+      "spdBytes": 480,
+      "plainSHA256": "0cc37e7ecf5a31f11e8a9539d8e97853ab1a10b6c9b014129e9f9a5664e2b036",
+      "spdSHA256": "2429ad80e99ad5a78097622c93ca52abb9482901a25fba4fa4dff25a34573699",
+      "negotiationSHA256": "d4bf651b41c9a00167fdd5928591ceb45bb5e8083467bf7d0dd4b516e91580f8",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k",
+      "name": "unexpected",
+      "spdBytes": 496,
+      "plainSHA256": "5eb1fd06e363ca287969d028ecfaec1c9d9ea32a1ad189a8523ca79345c05a9f",
+      "spdSHA256": "69a8b6412a853a6fb2d6fc14a4c7aa4dc2b3bed2b5853200689c299574aed514",
+      "negotiationSHA256": "09a4e9dde0f977fa2a25fce11febf231b86429d87bf47dac7d1c513ae6bbef4f",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k",
+      "name": "dangling",
+      "spdBytes": 512,
+      "plainSHA256": "66f8ce74fc3185a98e194dcaf7c742c0b00d7a270ef340d9ddc736a1dc85383f",
+      "spdSHA256": "a2e33c4e3f464de280b249f45af4e5942ef48eaf3ee905623ce2a867e59877b8",
+      "negotiationSHA256": "4c32e19f91560e334732e5464c46116a2e53f89ae140290dadfdf54a1ad2018b",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k_fo",
+      "name": "manual",
+      "spdBytes": 496,
+      "plainSHA256": "dbb598d1cefbf822080f3bf7a22828d7eb745aa62a1a258b58e60d3d832daa46",
+      "spdSHA256": "777574f25fd2aed6beb300094c4a6d0344c54f8c1f783d11a4cf1e8ea63e14fe",
+      "negotiationSHA256": "8ddbd64474b5cbf59cc5f403b0e29dbda22d4bf71edf19834e7b75de406f2c48",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k_fo",
+      "name": "trusted",
+      "spdBytes": 560,
+      "plainSHA256": "46ec0e44063ee4cc8bb39ce61ea6597cfac76a7fead18bb4990c5bf31da8024b",
+      "spdSHA256": "4f75e4718c6e5b5305abd0c35fd345aaf6269098b0368482e058c6965ef09793",
+      "negotiationSHA256": "6d5ff219e9412e97f224b451de331cf6f1c019ece7657b3b68b47af847382f03",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k_fo",
+      "name": "normal",
+      "spdBytes": 496,
+      "plainSHA256": "6cee0e732f6d8ff0b0cfb009caf49784fed49a4e652a48975e24a7964fa4977c",
+      "spdSHA256": "7e35d6f7afcae147ec95f79aeb8f16eab523d3eebfd35c9375fce9c446c3f79d",
+      "negotiationSHA256": "109b84acd7b1f9e799d10d5795b7ca5f4bc962c88d34f62ce626677566b95b4b",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k_fo",
+      "name": "sms",
+      "spdBytes": 544,
+      "plainSHA256": "f84b65182fe464f5f283eae2290999079369a3b8b628dd9483e87d175cfc82f1",
+      "spdSHA256": "b75746cf8980678f9e2d97532d7d2cd67399696f7c19a168fd919ef746fe7811",
+      "negotiationSHA256": "fc0232dbae43a4a4fa697e5ed88877ffe3292da6a4b059d80edd39e6f861e933",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k_fo",
+      "name": "absolute",
+      "spdBytes": 560,
+      "plainSHA256": "9f159ea4faa5a973815812224dabaf2ef1cb06b1e888815c4138ca9c24147dea",
+      "spdSHA256": "33c0ad2e9eb7392b99872015582e1689cee6c5c7b03b539e84bd7fc0c40496c9",
+      "negotiationSHA256": "352aa24ee07df617eb7b58e691803b61c729e620788691818119f662cf94cf57",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k_fo",
+      "name": "empty",
+      "spdBytes": 528,
+      "plainSHA256": "fdb77574fed6f444323cddfbd86fc68f2a9b7b6cd501e759b4f05ccf258a83ac",
+      "spdSHA256": "79df84064f559e944f8aa9918663f18f716d8f8d96dc95c22fa486a2b9dea438",
+      "negotiationSHA256": "51bb8db61f3802479efb95b3d2afd61f2d51740f0a8228ca93847067cb12f225",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k_fo",
+      "name": "typedURL",
+      "spdBytes": 528,
+      "plainSHA256": "1aceb3c8e82f200e6da8a624a02e6335ae558ac8018db20a356a03d057f1d9f2",
+      "spdSHA256": "eb80a86500ea21fab6d9a4dfe745caabbf50b9d26a38e88fd6968ce2a15d2b66",
+      "negotiationSHA256": "0c6285c90c6131ef892a9fc75cfc8e82c2f6fd47526c22c5f21d19a18d90c88b",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k_fo",
+      "name": "textCode",
+      "spdBytes": 496,
+      "plainSHA256": "47f63660e0da4589fbdb853e39ee19296cd85580072e052ba6c3e234e08a9f3a",
+      "spdSHA256": "f5dbce7934d298f2eb3dd8cb9fd1ad2425c5443c373154476abb051134a1c661",
+      "negotiationSHA256": "ebd8c3ee74120512e67ebe620b5009d227bef1f9e60a44a81b0e9a37dc28a1db",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k_fo",
+      "name": "boolCode",
+      "spdBytes": 480,
+      "plainSHA256": "0cc37e7ecf5a31f11e8a9539d8e97853ab1a10b6c9b014129e9f9a5664e2b036",
+      "spdSHA256": "72c601a8fc3823e91502badb31f792a315507229a970e1802d70787817ac512e",
+      "negotiationSHA256": "b2444c7e3c2d2c5552dee3c7b6f8119223db3b1cbcb42f2012bb126422a4a9e8",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k_fo",
+      "name": "unexpected",
+      "spdBytes": 496,
+      "plainSHA256": "5eb1fd06e363ca287969d028ecfaec1c9d9ea32a1ad189a8523ca79345c05a9f",
+      "spdSHA256": "2e7b996070c21fcfb43ec1fcdf6ed103beadb6a364e2cea6381e8c76db2c8861",
+      "negotiationSHA256": "c9314a8b1e1bbac7d1ddee7378d6aec13dd74ec5a298fa5e3e1ea263f1b74e8d",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    },
+    {
+      "protocol": "s2k_fo",
+      "name": "dangling",
+      "spdBytes": 512,
+      "plainSHA256": "66f8ce74fc3185a98e194dcaf7c742c0b00d7a270ef340d9ddc736a1dc85383f",
+      "spdSHA256": "1abe5247bb5b9508c437661fd67321c5d626bde0ed66a1e0903d3aff270f7809",
+      "negotiationSHA256": "ac339acec859d91fc392cd1f9f14f83813d42f3e8920bb36ce44efff12506006",
+      "roundTrip": true,
+      "staleNegotiationRejected": true
+    }
+  ]
+}

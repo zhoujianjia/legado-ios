@@ -1,0 +1,1615 @@
+{
+  "version": 1,
+  "frozenUTC": "2026-10-20T22:58:03.350242+00:00",
+  "reviewer": "/root/login_info_v2_review",
+  "scope": "Frozen S2 authenticated-SPD challenge 2-source independent review, same account and transport; Swift SDK runtime pending.",
+  "candidate": {
+    "path": ".build/s2-authenticated-spd-challenge-step/final-v1.json",
+    "bytes": 3887,
+    "sha256": "b9c1b3bf8fe49ef180c458be2d541da1d9fa71eea80daf77e514c6741ce8dd4b"
+  },
+  "verdict": "approved-source-and-independent-public-fixture-math-pending-SwiftSDK",
+  "checkCount": 356,
+  "mismatches": [],
+  "sourceBindings": [
+    {
+      "baseline": {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift",
+        "bytes": 16039,
+        "sha256": "c7af83ecf1e52216c4d9b790bfafec0f4119ae03bf0e105b41d62104c277f3b7"
+      },
+      "candidate": {
+        "path": ".build/s2-authenticated-spd-challenge-step/work/Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift",
+        "bytes": 18074,
+        "sha256": "a4b0857dccf5d13ba72462499b8251a88b613dec65525a58a53d5176d521c2f3"
+      }
+    },
+    {
+      "baseline": {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+        "bytes": 53471,
+        "sha256": "5737cba5485c3c37dc7a7d4a009b8bffee77259910df275799ec710508202ba0"
+      },
+      "candidate": {
+        "path": ".build/s2-authenticated-spd-challenge-step/work/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+        "bytes": 94894,
+        "sha256": "5a66a0ec9b30099edae1ac7d877c373e967b1feab0127edec6f573f74c70c28f"
+      }
+    }
+  ],
+  "sourceMethodReview": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift",
+      "oldFunctionNames": 17,
+      "newFunctionNames": 18,
+      "oldFunctionNodes": 17,
+      "newFunctionNodes": 18,
+      "unchangedOldFunctionNames": [
+        "authenticationRequest",
+        "clearPending",
+        "clearPendingAuthentication",
+        "data",
+        "dictionary",
+        "expire",
+        "integer",
+        "secondaryRequest",
+        "send",
+        "status",
+        "string",
+        "submitVerificationCode",
+        "text",
+        "timestamp",
+        "validate"
+      ],
+      "changedFunctionNames": [
+        "handshake",
+        "signIn"
+      ],
+      "newQualifiedFunctionKeys": [
+        "SelfRenewalDeveloperAuthentication.secondaryMode"
+      ]
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+      "oldFunctionNames": 40,
+      "newFunctionNames": 41,
+      "oldFunctionNodes": 41,
+      "newFunctionNodes": 43,
+      "unchangedOldFunctionNames": [
+        "all",
+        "anisette",
+        "appInputs",
+        "appOwnerDrainsHeldLoginBeforeLogoutAndRejectsLateResult",
+        "appSession",
+        "appSessionAuthenticatesThroughSameVaultAndReopensStoredSession",
+        "appSessionCancelsSecondaryChallengeAndRejectsOldTicket",
+        "authentication",
+        "body",
+        "bytes",
+        "canInit",
+        "cancellationTerminatesActualLoginAndClearsPendingState",
+        "canonicalRequest",
+        "cleanup",
+        "connectsOnlyThroughActualMaterialAccountValidation",
+        "current",
+        "envelope",
+        "finished",
+        "first",
+        "firstEvent",
+        "fixture",
+        "install",
+        "load",
+        "make",
+        "observe",
+        "offMain",
+        "paths",
+        "plist",
+        "refusesInvalidServerKeysAndWorkBudgets",
+        "rejectsTamperedProofNegotiationAndTokenEnvelope",
+        "rejectsWrongTeamAfterValidGSACryptoWithoutPersistingCredentials",
+        "save",
+        "set",
+        "startLoading",
+        "stopLoading",
+        "withAppSession"
+      ],
+      "changedFunctionNames": [
+        "handle",
+        "matchesIndependentPasswordAndAuthenticatedResponseVectors",
+        "refusesUnverifiedCryptoMissingMetadataAndStorageFailure",
+        "submitsTrustedDeviceCodeAndRestartsAuthenticatedHandshake"
+      ],
+      "newQualifiedFunctionKeys": [
+        "SelfRenewalDeveloperAuthenticationTests.Peer.configure",
+        "SelfRenewalDeveloperAuthenticationTests.SignedVectors.all"
+      ]
+    }
+  ],
+  "fixtureReference": {
+    "path": ".build/s2-authenticated-spd-challenge-step/owned-spd-fixtures-reference-v1.json",
+    "bytes": 9999,
+    "sha256": "5dd4f381ef54f92179962bcbbe5702795b0a5b378cfd074e14917489893c5eea"
+  },
+  "independentMath": {
+    "path": ".build/s2-authenticated-spd-challenge-independent-review/fixture-math-v1.json",
+    "bytes": 11305,
+    "sha256": "a3c6f49f875fbb827b6425fe3edf2e89b3e608f6ee7625dc43ce8b81a72d7b44",
+    "publicSRPProtocolsRecomputed": 2,
+    "signedSPDVariants": 22,
+    "newNPRecomputed": 22,
+    "oldNPRejected": 22,
+    "note": "Read-only builtin pow/PBKDF2/HMAC plus independent AES-CBC decryption; author generator and old suites not run."
+  },
+  "primary": {
+    "repo": "xtool-org/xtool",
+    "commit": "aa6ba75e7df759a84560885a86822dd119da8c55",
+    "files": 5,
+    "allSHA256AndGitBlobOIDMatch": true
+  },
+  "actualVersusAuthored": {
+    "testDefinitions": 11,
+    "testDefinitionsAdded": 0,
+    "definitionsChanged": 3,
+    "peerFunctionsChanged": 1,
+    "publicSealedVariants": 22,
+    "authoredURLSessionScenarios": 17,
+    "authoredBadProofManualScenarios": 2,
+    "actualSwiftURLSessionTests": 0,
+    "SwiftSDKCompile": 0,
+    "liveAppleRequests": 0,
+    "note": "The17 synthetic URLSession scenarios use Vectors.first() (s2k). Both protocols are covered by22 authored crypto-loop vectors and this independent math; do not claim17runtime scenarios for both protocols or any actual runtime pass."
+  },
+  "findings": [],
+  "confirmedBehavior": [
+    "authenticationRequest/status remain AST-exact, so HTTP/outer ec rejects before a complete body is considered. M2 and negotiation verification, bounded decrypt and plist parsing still precede409 routing; app-token exchange is reached only after helper returns no challenge.",
+    "409 without url and outer au yields alreadyRequested and no trusted-device GET; trustedDevice label with absent/consistent outer marker requests the same fixed trusted-device endpoint once. Unknown modes, SMS, absolute URL, empty mode, nonString mode and signal conflicts fail without code request/token exchange/storage.",
+    "Absent SPD status/url keeps the old trustedDevice outer-au path. Explicit200 is admitted only without url/outer au. Unknown explicit codes are rejected as this app local admission policy; this is not an asserted universal Apple response contract.",
+    "Existing pending challenge remains300seconds, consumed once before validation. Successful code validation starts a complete SRP handshake again; repeated secondary cannot recursively request another code. Account validation/storage/team pin/authority behavior and all15 unchanged production function names remain exact.",
+    "22 sealed payloads preserve authenticated baseline adsid/idms/sk/c, independently derive identical SRP keys/proofs and compute the correct fresh negotiation MAC; none accepts the original stale np. Swift embeds exact generated bytes, with the old original vectors unchanged.",
+    "No new endpoint, source/credential owner, transport, raw URL following, fallback SMS, background retry, actor boundary or public API introduced. New private enum/helper access is contained in the existing actor; Value is Equatable, strict status integer and typed null/Boolean handling remain available."
+  ],
+  "limits": [
+    "No Swift compiler/typecheck, actual URLSession/Keychain fixture or Apple network was run. Tree-sitter AST inspection and independent Python math do not prove Swift execution.",
+    "The17 +2 scenarios are authored inside existing methods, not observed test leaves. Current selector count11 remains unchanged. A future SDK run must execute the changed existing methods.",
+    "Pinned upstream code proves409/manual-versus-trusted flow; conflicting outer/SPD signals, explicit200 and unknown-code rejection are deliberately stricter local policy. Five primary sources do not establish full SMS or all Apple authentication protocol behavior.",
+    "A challenge is not an authenticated account session, signer authority, installed renewal, expiry extension or fully complete S2/self-renewal. All four top-level completion flags remainfalse.",
+    "Author generator initial extraction assertion and corrected successful generation are recorded in final metadata. Its extraction range was later narrowed for future replay only; no regeneration or output/source byte mutation was needed for review."
+  ],
+  "reviewOperations": {
+    "ownIgnoredOutputsOnly": true,
+    "canonicalMutation": false,
+    "peerSourcesModified": false,
+    "GitMutation": false,
+    "cloudCalls": 0,
+    "oldSuitesRerun": 0,
+    "independentPublicFixtureMath": true,
+    "SwiftSDK": 0,
+    "actualURLSessionTestExecutions": 0
+  },
+  "checks": [
+    {
+      "name": "exact frozen final",
+      "passed": true
+    },
+    {
+      "name": "bound primary metadata",
+      "passed": true
+    },
+    {
+      "name": "bound fixture reference",
+      "passed": true
+    },
+    {
+      "name": "primary Sources/XKit/GrandSlam/Operations/GrandSlamAuthenticateOperation.swift",
+      "passed": true
+    },
+    {
+      "name": "primary Gitblob Sources/XKit/GrandSlam/Operations/GrandSlamAuthenticateOperation.swift",
+      "passed": true
+    },
+    {
+      "name": "primary Sources/XKit/GrandSlam/Operations/GrandSlamTwoFactorAuthenticateOperation.swift",
+      "passed": true
+    },
+    {
+      "name": "primary Gitblob Sources/XKit/GrandSlam/Operations/GrandSlamTwoFactorAuthenticateOperation.swift",
+      "passed": true
+    },
+    {
+      "name": "primary Sources/XKit/GrandSlam/Requests/Concrete/GrandSlamAuthCompleteRequest.swift",
+      "passed": true
+    },
+    {
+      "name": "primary Gitblob Sources/XKit/GrandSlam/Requests/Concrete/GrandSlamAuthCompleteRequest.swift",
+      "passed": true
+    },
+    {
+      "name": "primary Sources/XKit/GrandSlam/Requests/GrandSlamOperationRequest.swift",
+      "passed": true
+    },
+    {
+      "name": "primary Gitblob Sources/XKit/GrandSlam/Requests/GrandSlamOperationRequest.swift",
+      "passed": true
+    },
+    {
+      "name": "primary Sources/XKit/GrandSlam/Model/GrandSlamLoginData.swift",
+      "passed": true
+    },
+    {
+      "name": "primary Gitblob Sources/XKit/GrandSlam/Model/GrandSlamLoginData.swift",
+      "passed": true
+    },
+    {
+      "name": "baseline 0",
+      "passed": true
+    },
+    {
+      "name": "candidate 0",
+      "passed": true
+    },
+    {
+      "name": "AST static input parses 0",
+      "passed": true
+    },
+    {
+      "name": "changed function names 0",
+      "passed": true
+    },
+    {
+      "name": "added function names 0",
+      "passed": true
+    },
+    {
+      "name": "unchanged function names count 0",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 0 authenticationRequest",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 0 clearPending",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 0 clearPendingAuthentication",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 0 data",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 0 dictionary",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 0 expire",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 0 integer",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 0 secondaryRequest",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 0 send",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 0 status",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 0 string",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 0 submitVerificationCode",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 0 text",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 0 timestamp",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 0 validate",
+      "passed": true
+    },
+    {
+      "name": "baseline 1",
+      "passed": true
+    },
+    {
+      "name": "candidate 1",
+      "passed": true
+    },
+    {
+      "name": "AST static input parses 1",
+      "passed": true
+    },
+    {
+      "name": "changed function names 1",
+      "passed": true
+    },
+    {
+      "name": "added function names 1",
+      "passed": true
+    },
+    {
+      "name": "unchanged function names count 1",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 all",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 anisette",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 appInputs",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 appOwnerDrainsHeldLoginBeforeLogoutAndRejectsLateResult",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 appSession",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 appSessionAuthenticatesThroughSameVaultAndReopensStoredSession",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 appSessionCancelsSecondaryChallengeAndRejectsOldTicket",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 authentication",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 body",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 bytes",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 canInit",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 cancellationTerminatesActualLoginAndClearsPendingState",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 canonicalRequest",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 cleanup",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 connectsOnlyThroughActualMaterialAccountValidation",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 current",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 envelope",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 finished",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 first",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 firstEvent",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 fixture",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 install",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 load",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 make",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 observe",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 offMain",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 paths",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 plist",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 refusesInvalidServerKeysAndWorkBudgets",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 rejectsTamperedProofNegotiationAndTokenEnvelope",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 rejectsWrongTeamAfterValidGSACryptoWithoutPersistingCredentials",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 save",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 set",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 startLoading",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 stopLoading",
+      "passed": true
+    },
+    {
+      "name": "unchanged old function bodies 1 withAppSession",
+      "passed": true
+    },
+    {
+      "name": "Test definitions stay 11",
+      "passed": true
+    },
+    {
+      "name": "Test annotation identities unchanged",
+      "passed": true
+    },
+    {
+      "name": "all test method signatures unchanged",
+      "passed": true
+    },
+    {
+      "name": "fixed production literal URL identities unchanged",
+      "passed": true
+    },
+    {
+      "name": "strict proofs before decrypted routing before tokens",
+      "passed": true
+    },
+    {
+      "name": "manual skips explicit request",
+      "passed": true
+    },
+    {
+      "name": "pending expiry stays 300",
+      "passed": true
+    },
+    {
+      "name": "no secondary recursion",
+      "passed": true
+    },
+    {
+      "name": "status-code strict integer",
+      "passed": true
+    },
+    {
+      "name": "mode is fixed equality not URL destination",
+      "passed": true
+    },
+    {
+      "name": "helper absent-code legacy and present200 policy",
+      "passed": true
+    },
+    {
+      "name": "DER typed value supports optional equality",
+      "passed": true
+    },
+    {
+      "name": "old protocol fixture count",
+      "passed": true
+    },
+    {
+      "name": "old public vectors base64 byte exact",
+      "passed": true
+    },
+    {
+      "name": "sealed fixture file",
+      "passed": true
+    },
+    {
+      "name": "Swift payload is exact independently generated JSON",
+      "passed": true
+    },
+    {
+      "name": "standalone base64 exact payload",
+      "passed": true
+    },
+    {
+      "name": "22 distinct signed pairs",
+      "passed": true
+    },
+    {
+      "name": "reference rows22",
+      "passed": true
+    },
+    {
+      "name": "public SRP A s2k",
+      "passed": true
+    },
+    {
+      "name": "public SRP passwordKey s2k",
+      "passed": true
+    },
+    {
+      "name": "public SRP K s2k",
+      "passed": true
+    },
+    {
+      "name": "public SRP M1 s2k",
+      "passed": true
+    },
+    {
+      "name": "public SRP M2 s2k",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k/manual",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k/manual",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/manual GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/manual adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/manual c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/manual sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k/manual",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k/manual",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k/manual",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k/trusted",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k/trusted",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/trusted GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/trusted adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/trusted c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/trusted sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k/trusted",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k/trusted",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k/trusted",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k/normal",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k/normal",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/normal GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/normal adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/normal c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/normal sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k/normal",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k/normal",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k/normal",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k/sms",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k/sms",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/sms GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/sms adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/sms c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/sms sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k/sms",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k/sms",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k/sms",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k/absolute",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k/absolute",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/absolute GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/absolute adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/absolute c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/absolute sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k/absolute",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k/absolute",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k/absolute",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k/empty",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k/empty",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/empty GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/empty adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/empty c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/empty sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k/empty",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k/empty",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k/empty",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k/typedURL",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k/typedURL",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/typedURL GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/typedURL adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/typedURL c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/typedURL sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k/typedURL",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k/typedURL",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k/typedURL",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k/textCode",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k/textCode",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/textCode GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/textCode adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/textCode c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/textCode sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k/textCode",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k/textCode",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k/textCode",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k/boolCode",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k/boolCode",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/boolCode GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/boolCode adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/boolCode c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/boolCode sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k/boolCode",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k/boolCode",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k/boolCode",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k/unexpected",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k/unexpected",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/unexpected GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/unexpected adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/unexpected c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/unexpected sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k/unexpected",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k/unexpected",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k/unexpected",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k/dangling",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k/dangling",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/dangling GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/dangling adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/dangling c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k/dangling sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k/dangling",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k/dangling",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k/dangling",
+      "passed": true
+    },
+    {
+      "name": "public SRP A s2k_fo",
+      "passed": true
+    },
+    {
+      "name": "public SRP passwordKey s2k_fo",
+      "passed": true
+    },
+    {
+      "name": "public SRP K s2k_fo",
+      "passed": true
+    },
+    {
+      "name": "public SRP M1 s2k_fo",
+      "passed": true
+    },
+    {
+      "name": "public SRP M2 s2k_fo",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k_fo/manual",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k_fo/manual",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/manual GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/manual adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/manual c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/manual sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k_fo/manual",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k_fo/manual",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k_fo/manual",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k_fo/trusted",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k_fo/trusted",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/trusted GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/trusted adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/trusted c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/trusted sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k_fo/trusted",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k_fo/trusted",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k_fo/trusted",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k_fo/normal",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k_fo/normal",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/normal GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/normal adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/normal c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/normal sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k_fo/normal",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k_fo/normal",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k_fo/normal",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k_fo/sms",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k_fo/sms",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/sms GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/sms adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/sms c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/sms sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k_fo/sms",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k_fo/sms",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k_fo/sms",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k_fo/absolute",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k_fo/absolute",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/absolute GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/absolute adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/absolute c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/absolute sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k_fo/absolute",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k_fo/absolute",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k_fo/absolute",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k_fo/empty",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k_fo/empty",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/empty GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/empty adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/empty c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/empty sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k_fo/empty",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k_fo/empty",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k_fo/empty",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k_fo/typedURL",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k_fo/typedURL",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/typedURL GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/typedURL adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/typedURL c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/typedURL sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k_fo/typedURL",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k_fo/typedURL",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k_fo/typedURL",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k_fo/textCode",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k_fo/textCode",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/textCode GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/textCode adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/textCode c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/textCode sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k_fo/textCode",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k_fo/textCode",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k_fo/textCode",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k_fo/boolCode",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k_fo/boolCode",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/boolCode GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/boolCode adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/boolCode c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/boolCode sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k_fo/boolCode",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k_fo/boolCode",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k_fo/boolCode",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k_fo/unexpected",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k_fo/unexpected",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/unexpected GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/unexpected adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/unexpected c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/unexpected sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k_fo/unexpected",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k_fo/unexpected",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k_fo/unexpected",
+      "passed": true
+    },
+    {
+      "name": "new NP independent s2k_fo/dangling",
+      "passed": true
+    },
+    {
+      "name": "new NP rejects stale baseline s2k_fo/dangling",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/dangling GsIdmsToken",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/dangling adsid",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/dangling c",
+      "passed": true
+    },
+    {
+      "name": "baseline field remains s2k_fo/dangling sk",
+      "passed": true
+    },
+    {
+      "name": "reference plaintext hash s2k_fo/dangling",
+      "passed": true
+    },
+    {
+      "name": "reference ciphertext hash s2k_fo/dangling",
+      "passed": true
+    },
+    {
+      "name": "reference NP hash s2k_fo/dangling",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k/manual",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k/manual",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k/trusted",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k/trusted",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k/normal",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k/normal",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k/sms",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k/sms",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k/absolute",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k/absolute",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k/empty",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k/empty",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k/typedURL",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k/typedURL",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k/textCode",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k/textCode",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k/boolCode",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k/boolCode",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k/unexpected",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k/unexpected",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k/dangling",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k/dangling",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k_fo/manual",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k_fo/manual",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k_fo/trusted",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k_fo/trusted",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k_fo/normal",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k_fo/normal",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k_fo/sms",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k_fo/sms",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k_fo/absolute",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k_fo/absolute",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k_fo/empty",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k_fo/empty",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k_fo/typedURL",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k_fo/typedURL",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k_fo/textCode",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k_fo/textCode",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k_fo/boolCode",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k_fo/boolCode",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k_fo/unexpected",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k_fo/unexpected",
+      "passed": true
+    },
+    {
+      "name": "expected status type/value s2k_fo/dangling",
+      "passed": true
+    },
+    {
+      "name": "expected mode type/value s2k_fo/dangling",
+      "passed": true
+    },
+    {
+      "name": "authored URLSession scenario count17",
+      "passed": true
+    },
+    {
+      "name": "actual fixture scenarios use first original protocol",
+      "passed": true
+    },
+    {
+      "name": "manual expected zero push route",
+      "passed": true
+    },
+    {
+      "name": "repeat manual no token or recursion",
+      "passed": true
+    },
+    {
+      "name": "unsupported scenarios no secondary HTTP or persistence",
+      "passed": true
+    },
+    {
+      "name": "two challenge bad proof cases",
+      "passed": true
+    },
+    {
+      "name": "only new controller invalid outer code before proof",
+      "passed": true
+    },
+    {
+      "name": "source diff .build/s2-authenticated-spd-challenge-step/diffs/Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift.diff",
+      "passed": true
+    },
+    {
+      "name": "source diff .build/s2-authenticated-spd-challenge-step/diffs/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift.diff",
+      "passed": true
+    }
+  ]
+}
