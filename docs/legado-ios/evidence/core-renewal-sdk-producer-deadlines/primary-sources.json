@@ -1,0 +1,72 @@
+[
+  {
+    "url": "https://developer.apple.com/documentation/technotes/tn3161-inside-code-signing-certificates",
+    "rawPath": "primary/tn3161.json",
+    "meaning": "Current Apple overview says identity search checks chain trust, date and code-signing EKU; it does not expose the exact failing current codesign implementation call.",
+    "rawBinding": {
+      "path": ".build/renewal-discovery/sdk-owned-identity-trust-step/primary/tn3161.json",
+      "bytes": 65750,
+      "sha256": "6e5a6a1e753afda17856fd99dbd296fa67d4d25366e9c8e91c1ef12c23063dfa"
+    }
+  },
+  {
+    "url": "https://developer.apple.com/library/archive/technotes/tn2206/_index.html",
+    "rawPath": "primary/tn2206-index.html",
+    "meaning": "Historical official macOS guidance describes self-signed OpenSSL code signing with a named Keychain and distinguishes designated requirements from anchor trusted; it explicitly is not iOS deployment guidance.",
+    "rawBinding": {
+      "path": ".build/renewal-discovery/sdk-owned-identity-trust-step/primary/tn2206-index.html",
+      "bytes": 107662,
+      "sha256": "5b6dd8f97a0f1e15f98e4fd07b8b0401dcece8f90c2cd156c0fefe657519cfa5"
+    }
+  },
+  {
+    "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_keychain/lib/IdentityCursor.cpp#L154-L214",
+    "rawPath": "primary/IdentityCursor.cpp",
+    "meaning": "Policy-lite filtering and full-trust filtering are separate. Full trust is required only by returnOnlyValidIdentities=true.",
+    "rawBinding": {
+      "path": ".build/renewal-discovery/sdk-owned-identity-trust-step/primary/IdentityCursor.cpp",
+      "bytes": 11965,
+      "sha256": "4120f4c67b5a4005e4f9b6733ad5d8b08068fdad853795797ba174663e5f1f6c"
+    }
+  },
+  {
+    "url": "https://github.com/apple-oss-distributions/security_systemkeychain/blob/2b4c65b1074521e9c1dd2c8dc7fbf45dd775ec70/src/cs_utils.cpp#L199-L251",
+    "rawPath": "primary/cs_utils.cpp",
+    "meaning": "Published tool identity helper uses policy search with returnOnlyValidIdentities=false, resolves exact certificate SHA-1, and has no ordinary global-anchor install operation.",
+    "rawBinding": {
+      "path": ".build/renewal-discovery/sdk-owned-identity-trust-step/primary/cs_utils.cpp",
+      "bytes": 21388,
+      "sha256": "a0ebc6f31fda06331fa336384d97c811c7af8390da47f7181c293d843bba0ebb"
+    }
+  },
+  {
+    "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/signerutils.cpp#L367-L398",
+    "rawPath": "primary/signerutils.cpp",
+    "meaning": "Published framework pre-sign context logs SecTrust evaluation failure as not fatal and still copies the certificate chain. This code cannot prove a strict-trust-only cause for the observed current CLI item-not-found.",
+    "rawBinding": {
+      "path": ".build/renewal-discovery/sdk-owned-identity-trust-step/primary/signerutils.cpp",
+      "bytes": 14378,
+      "sha256": "2f352abf90941bca654b31bee3a44a75499abc22da4362601920c0ff6301c699"
+    }
+  },
+  {
+    "url": "https://github.com/apple-oss-distributions/SecurityTool/blob/ebd4c26c71bc4508b5394a44628796ce32b367d3/identity_find.c#L345-L376",
+    "rawPath": "primary/identity_find.c",
+    "meaning": "find-identity prints separate matching(false) and valid(true) searches; its trust annotation comes from a distinct SecTrust/CSSM result evaluation.",
+    "rawBinding": {
+      "path": ".build/renewal-discovery/sdk-owned-identity-trust-step/primary/identity_find.c",
+      "bytes": 17651,
+      "sha256": "49f915e5bb310b82bff7e5ff0a799467d0372e0df5a94072774974a7632edbda"
+    }
+  },
+  {
+    "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/SecurityTool/macOS/security.1",
+    "rawPath": "primary/security.1",
+    "meaning": "verify-cert documents -c certificate chain, -r explicit root, -p codeSign, -L local-only and -N no Keychain search; these are evaluation options, not persistent trust-settings writes.",
+    "rawBinding": {
+      "path": ".build/renewal-discovery/sdk-owned-identity-trust-step/primary/security.1",
+      "bytes": 48660,
+      "sha256": "989fb8951c7155c55b6de03ffe54a1dcfe94f6fb241f9c69b1edbe35f32a68c5"
+    }
+  }
+]

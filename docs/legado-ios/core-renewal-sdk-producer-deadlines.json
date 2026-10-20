@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T05:51:54.211300+00:00",
+  "status": "actual-tool-deadline-fix-and-native-diagnostics-connected; codesign-acceptance-unresolved",
+  "sourceBinding": {
+    "files": [
+      {
+        "workPath": ".build/renewal-discovery/sdk-owned-identity-trust-step/work/generate-sdk-owned-package.py",
+        "snapshotPath": ".build/renewal-discovery/sdk-owned-identity-trust-step/sources/generate-sdk-owned-package.py",
+        "intendedPath": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "bytes": 27394,
+        "sha256": "79f2d0f8769988f5a87b597d5d01e434137edcd3e15438e13e4e624669f5e58f"
+      },
+      {
+        "workPath": ".build/renewal-discovery/sdk-owned-identity-trust-step/work/test-producer-timeouts.py",
+        "snapshotPath": ".build/renewal-discovery/sdk-owned-identity-trust-step/sources/test-producer-timeouts.py",
+        "intendedPath": "scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py",
+        "bytes": 6123,
+        "sha256": "2d74492cffcdff0f1df585c3a1d7a20a9c99bc51fc799f39485220658abf156f"
+      }
+    ],
+    "actualPortableExecutionInputs": [
+      {
+        "path": ".build/renewal-discovery/sdk-owned-identity-trust-step/work/generate-sdk-owned-package.py",
+        "bytes": 27394,
+        "sha256": "79f2d0f8769988f5a87b597d5d01e434137edcd3e15438e13e4e624669f5e58f",
+        "executionSnapshot": ".build/renewal-discovery/sdk-owned-identity-trust-step/portable-v4-sources/generate-sdk-owned-package.py"
+      },
+      {
+        "path": ".build/renewal-discovery/sdk-owned-identity-trust-step/work/test-producer-diagnostics.py",
+        "bytes": 6262,
+        "sha256": "e8accbbb0f8931a2756c74ffd58bb36dc2de93da71c7961e4fd8434d61ee90bc",
+        "executionSnapshot": ".build/renewal-discovery/sdk-owned-identity-trust-step/portable-v4-sources/test-producer-diagnostics.py"
+      },
+      {
+        "path": ".build/renewal-discovery/sdk-owned-identity-trust-step/work/test-producer-timeouts.py",
+        "bytes": 6123,
+        "sha256": "2d74492cffcdff0f1df585c3a1d7a20a9c99bc51fc799f39485220658abf156f",
+        "executionSnapshot": ".build/renewal-discovery/sdk-owned-identity-trust-step/portable-v4-sources/test-producer-timeouts.py"
+      },
+      {
+        "path": ".build/renewal-discovery/sdk-owned-identity-trust-step/run-portable.py",
+        "bytes": 608,
+        "sha256": "0cfd8fe9076a2caf46ffe7f625b0fd008702576716c02f51c346b0f0dbf0830a",
+        "executionSnapshot": ".build/renewal-discovery/sdk-owned-identity-trust-step/portable-v4-sources/run-portable.py"
+      }
+    ],
+    "baselineUneditedInputs": [
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "bytes": 21071,
+        "sha256": "a48f2e1f9d137585ef47de0d94d4b7fa5994d476e2d23154cadcea9ea7d71f08"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+        "bytes": 9258,
+        "sha256": "17ecc9cd83eadc5ae1ebbc37762636bbc90664f71106f89f1e011d50c516d6ba"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/main.c",
+        "bytes": 180,
+        "sha256": "0f1f097060993b3b25b4da50f31a4ef5a1d8077084d64ca561dbfc3a743a86f7"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/extension.c",
+        "bytes": 186,
+        "sha256": "79636265b4cdbf74aff701991aa425a6454fe6cd9049a9652c094b767eba7609"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/framework.c",
+        "bytes": 156,
+        "sha256": "4d6d77e995c1740eeb510f39830683aa31e050e0ebd97881f3e68643970b79ef"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-diagnostics.py",
+        "bytes": 6262,
+        "sha256": "e8accbbb0f8931a2756c74ffd58bb36dc2de93da71c7961e4fd8434d61ee90bc"
+      }
+    ],
+    "allWorkMatchesSnapshots": true,
+    "producerFiveFileClosure": "gen changed; ImportOwnedIdentity.swift + main.c + extension.c + framework.c unchanged. New timeout test is a portable source, not a new generated-fixture production input."
+  },
+  "actualChanges": [
+    "Every owned tool has a finite hard cap; requested timeout cannot increase its named tool cap. A distinct 300s producer deadline further bounds starts, not the native/job allocation. Version candidate probes have separate 5s limits.",
+    "On macOS each tool starts its own session/process group; timeout sends TERM+KILL before reaping leader then performs bounded drain. Only its own group is signalled. Windows portable execution proves actual direct-child termination, not macOS group behavior.",
+    "Cleanup calls get a separate 10s budget even after producer expiry. Existing finally logic preserves original primary failure if cleanup also fails. SIGTERM raises through finally; SIGKILL remains uncatchable.",
+    "OWNED_TOOL_TIMEOUT distinguishes wrapper code124, actual process returncode, started vs not started and timeout budget. Private-input tools never forward partial stdout/stderr/argv as public proof.",
+    "Add actual security verify-cert with explicit owned public root and codeSign/local-only/no-Keychain policy flags, plus codesign --verbose=4. Neither installs a trusted anchor or establishes platform signing success by itself."
+  ],
+  "bounds": {
+    "independentProducerToolDeadlineSeconds": 300,
+    "perToolSeconds": {
+      "openssl": 30,
+      "xcodebuild": 20,
+      "xcrun": 120,
+      "security": 15,
+      "codesign": 45,
+      "import-owned-identity": 20
+    },
+    "cleanupSeconds": 10,
+    "postKillDrainSeconds": 1,
+    "postDrainWaitSeconds": 0.5,
+    "compatibleOuterWrapperSeconds": 600
+  },
+  "preserved": {
+    "certificateGenerationExactOriginalBytes": true,
+    "certificateGenerationBlockSHA256": "07ed240e481023972f1b480e720041d1da20b9c8095c8c0d1b6795aaedd4cb63",
+    "realPlatformCodesignStillRequired": true,
+    "adHocFallbackAdded": false,
+    "customHelperSignerAdded": false,
+    "globalTrustOrSearchListChanges": false,
+    "originalDetachedCMSVerificationUnchanged": true,
+    "SwiftImporterChanged": false
+  },
+  "verification": {
+    "actualPortableMethodsPassed": 12,
+    "newTimeoutMethods": 6,
+    "existingDiagnosticMethods": 6,
+    "failed": 0,
+    "skipped": 0,
+    "uniqueActualMethods": [
+      "test_actual_private_child_failure_publishes_no_stream_or_command",
+      "test_actual_public_child_failure_reaches_existing_uploaded_stdout",
+      "test_malformed_private_import_status_is_suppressed_not_echoed",
+      "test_private_public_log_request_is_rejected_before_child_executes",
+      "test_public_capture_is_bounded_and_redacts_secrets_before_truncation",
+      "test_typed_public_import_facts_keep_other_process_acl_unverified",
+      "test_actual_private_timeout_never_forwards_partial_status_or_secret",
+      "test_actual_public_timeout_terminates_child_and_retains_failure_log",
+      "test_actual_remaining_producer_budget_caps_a_longer_tool_budget",
+      "test_cleanup_has_a_separate_real_child_budget_after_producer_expiry",
+      "test_each_producer_tool_has_an_explicit_budget_and_invalid_values_never_spawn",
+      "test_exhausted_producer_deadline_does_not_start_another_tool"
+    ],
+    "SDKExecuted": 0,
+    "codesignExecuted": 0,
+    "actualMacProcessGroupTerminationExecuted": 0,
+    "windowsDirectChildTerminationExecuted": true,
+    "intermediateRunsNotCumulativelyAccepted": [
+      {
+        "path": ".build/renewal-discovery/sdk-owned-identity-trust-step/portable-v1.json",
+        "meaning": "Discovery runner selected0 because hyphenated filenames; not test failure."
+      },
+      {
+        "path": ".build/renewal-discovery/sdk-owned-identity-trust-step/portable-v2.json",
+        "meaning": "11/12 passed; one test compared absolute monotonic subtraction without two-ULP representation allowance. Production timeout was bounded."
+      },
+      {
+        "path": ".build/renewal-discovery/sdk-owned-identity-trust-step/portable-v3.json",
+        "meaning": "12/12 passed but superseded by named-tool override hard cap change. Not cumulatively accepted."
+      }
+    ]
+  },
+  "rootReview": [
+    "Checked named-tool hard caps, remaining producer budget, owned new-session process groups and bounded terminate/kill/drain. Cleanup receives a separate allowance and preserves the primary failure.",
+    "Checked timeout records distinguish wrapper124 from actual child returncode and never forward private-input command or partial streams. Captured subprocess output is not a streaming memory bound.",
+    "Checked explicit-root codeSign policy evaluation uses local/no-Keychain-search flags. It does not mutate global/user trust or search lists and cannot establish real codesign success.",
+    "Existing certificate creation, Swift importer, real codesign gate and detached original-CMS verification are preserved. No speculative identity or certificate-shape replacement was accepted."
+  ],
+  "remaining": [
+    "This is a real tool-deadline fix and a bounded native diagnostic delta, not a proven fix for current codesign identity acceptance.",
+    "No macOS/Xcode execution, actual new certificate-policy result, platform CMS signature or native test result was fabricated.",
+    "Captured child stdout/stderr is held in memory by subprocess before public truncation; fixed public output bounds are not a streaming memory bound claim.",
+    "No canonical source/docs/CI/Git edits, cloud run queries/dispatches, real Apple accounts, private P12 files or private keys were used or published.",
+    "The a835 actual diagnostic contains a matching identity, zero default-policy valid identities and a codesign item-not-found failure. The published source has alternate selector/trust behavior; default untrusted status is not a unique cause proof.",
+    "The next consolidated native gate must still perform real platform producer execution. Producer failure will remain a full-gate failure while the native compilation/test phase gets an independent allocation."
+  ],
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-renewal-sdk-producer-deadlines",
+    "manifest": "manifest.json",
+    "rawFiles": 15
+  },
+  "newCloudBuildRequested": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

@@ -1,0 +1,41 @@
+{
+  "actualSourcePrefix": "a835f8b",
+  "actualRunID": 39374412189,
+  "rawLog": {
+    "path": ".build/renewal-discovery/sdk-owned-identity-trust-step/actual-diagnostic/sdk-producer.log",
+    "bytes": 1810,
+    "sha256": "7d924348631d28cae9b427d1a0c232091ed31109bf40244e192a8c57504aa077"
+  },
+  "confirmed": {
+    "importerCompletedWithOSStatus0": true,
+    "importerActuallyVerifiedPrivateKeySignature": true,
+    "importerCrossProcessCodesignACLProof": false,
+    "requestedSHA1EqualsMatchingIdentitySHA1": true,
+    "matchingIdentities": 1,
+    "validIdentities": 0,
+    "matchingPolicyTrustAnnotation": "CSSMERR_TP_NOT_TRUSTED",
+    "firstFrameworkCodesignExit": 1,
+    "firstFrameworkCodesignStderr": "error: The specified item could not be found in the keychain.\n",
+    "ownedKeychainCleanupExit": 0,
+    "nativeTestsExecuted": 0
+  },
+  "classification": "Actual platform producer failure before fixture generation/native tests. Identity material exists and is usable by importer; default code-sign trust rejected it; the current codesign process did not complete signing.",
+  "unproven": [
+    "The log does not identify which current codesign private API returned the item-not-found message. It does not uniquely prove default trust alone caused that error.",
+    "The published Apple open-source tool/framework code is not the exact current macOS codesign binary, and parts explicitly allow untrusted candidates/nonfatal trust failure.",
+    "A self-signed leaf may be a legitimate controlled test according to historical Apple macOS documentation, but this does not prove it fixes the current binary under the same no-global-trust constraints."
+  ],
+  "decision": "No speculative certificate-shape, system/user trust-settings/search-list or signing-backend change. Preserve real codesign and exact original CMS verification; add bounded tool execution plus explicit-owned-anchor native policy evidence and verbose current codesign diagnostics.",
+  "nextActualSDKDiscriminators": [
+    "Explicit public owned leaf+root codeSign policy evaluation must run with -r/-L/-N; default-system trust is not established by this result.",
+    "If explicit-anchor policy fails, inspect its actual native diagnostic before treating the certificate purpose/constraints as valid.",
+    "If local policy passes but codesign still returns item-not-found, the remaining cross-process identity/key access/filtering boundary remains unresolved; do not claim CMS/native execution success.",
+    "Only actual codesign exit0 followed by detached primary-CD CMS verification against the explicit owned root can establish the existing producer gate."
+  ],
+  "stillRequired": "A real macOS/Xcode run with the unchanged Keychain/certificate shape and bounded diagnostics, or exact current platform identity-selection evidence. No safe no-global-trust success fix has been established by this Windows/source audit.",
+  "primarySourcesIndex": {
+    "path": ".build/renewal-discovery/sdk-owned-identity-trust-step/primary-sources.json",
+    "bytes": 4328,
+    "sha256": "8e3d5372a64b22e69a78a35a2951f9822169df31c484aeb9249901095f874f29"
+  }
+}

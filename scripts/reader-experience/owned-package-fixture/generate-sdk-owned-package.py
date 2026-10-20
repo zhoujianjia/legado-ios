@@ -5,16 +5,79 @@ The JSON output is an XCTest resource, not a source file mutation.
 """
 from pathlib import Path
 from datetime import datetime,timezone,timedelta
-import argparse, base64, hashlib, io, json, os, plistlib, re, secrets, shutil, struct, subprocess, sys, tempfile, zipfile
+import argparse, base64, hashlib, io, json, os, plistlib, re, secrets, shutil, struct, subprocess, sys, tempfile, zipfile, math, signal, time
 HERE=Path(__file__).resolve().parent
 RECORDS=[]
 OPENSSL='openssl'
 PUBLIC_DIAGNOSTIC_BYTES=65_536
 PRIVATE_LITERALS=[]
+# Independent of the native xcodebuild/job timeout. Cleanup always gets its own
+# short allowance even if this producer's deadline was exhausted.
+PRODUCER_TIMEOUT_SECONDS=300
+PRODUCER_DEADLINE=None
+TOOL_TIMEOUT_SECONDS={'openssl':30,'xcodebuild':20,'xcrun':120,'security':15,
+                      'codesign':45,'import-owned-identity':20}
+CLEANUP_TIMEOUT_SECONDS=10
+KILL_DRAIN_SECONDS=1
+
 class ToolFailure(RuntimeError):
     def __init__(self, tool, code):
         self.tool=tool;self.code=code
         super().__init__(tool+' failed: '+str(code))
+class ToolTimeout(ToolFailure):
+    def __init__(self, tool, seconds, returncode, started):
+        super().__init__(tool,124)
+        self.seconds=seconds;self.returncode=returncode;self.started=started
+
+def tool_timeout(args, override=None, cleanup=False):
+    name=Path(str(args[0])).name
+    seconds=TOOL_TIMEOUT_SECONDS.get(name,30) if override is None else override
+    if isinstance(seconds,bool) or not isinstance(seconds,(int,float)) or not math.isfinite(seconds) or seconds<=0:
+        raise ValueError('Positive finite owned-tool timeout required')
+    seconds=min(seconds,TOOL_TIMEOUT_SECONDS.get(name,30))
+    if not cleanup and PRODUCER_DEADLINE is not None:
+        seconds=min(seconds,max(0,PRODUCER_DEADLINE-time.monotonic()))
+    return seconds
+
+def terminate_owned_group(process, force):
+    # A fresh group belongs to this one started tool. Never signal a global
+    # securityd/trustd, a login session, or a process group supplied by a caller.
+    try:
+        if os.name=='posix':os.killpg(process.pid,signal.SIGKILL if force else signal.SIGTERM)
+        elif force:process.kill()
+        else:process.terminate()
+    except ProcessLookupError:pass
+
+def bounded_child(args, input, env, seconds):
+    if seconds<=0:raise ToolTimeout(Path(str(args[0])).name,0,None,False)
+    options={'start_new_session':True} if os.name=='posix' else {}
+    process=subprocess.Popen(list(map(str,args)),stdin=subprocess.PIPE if input is not None else subprocess.DEVNULL,
+        stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=env,**options)
+    try:
+        stdout,stderr=process.communicate(input=input,timeout=seconds)
+        return subprocess.CompletedProcess(args,process.returncode,stdout,stderr),False
+    except subprocess.TimeoutExpired as first:
+        # Kill before reaping the leader so the owned process-group identity cannot
+        # be reused between the timeout and signalling its descendants. No child is
+        # allowed a fresh unbounded grace period after the tool's allocation ended.
+        terminate_owned_group(process,False)
+        terminate_owned_group(process,True)
+        try:stdout,stderr=process.communicate(timeout=KILL_DRAIN_SECONDS)
+        except subprocess.TimeoutExpired as final:
+            stdout,stderr=final.output or first.output or b'',final.stderr or first.stderr or b''
+            for stream in (process.stdin,process.stdout,process.stderr):
+                if stream is not None:
+                    try:stream.close()
+                    except OSError:pass
+            try:process.wait(timeout=0.5)
+            except subprocess.TimeoutExpired:pass
+        return subprocess.CompletedProcess(args,process.returncode,stdout,stderr),True
+    except BaseException:
+        terminate_owned_group(process,True)
+        try:process.communicate(timeout=KILL_DRAIN_SECONDS)
+        except (subprocess.TimeoutExpired,OSError):pass
+        raise
+
 def public_text(raw):
     for literal in PRIVATE_LITERALS:
         raw=raw.replace(literal.encode(),b'<redacted-owned-password>')
@@ -54,7 +117,7 @@ def identity_status(raw):
     elif set(value)!={'schemaVersion','stage','status','osStatus'} or value['osStatus']==0:
         raise ValueError('Invalid owned importer failure facts')
     return value
-def run(args,*,input=None,env=None,private=False,public_log=None,public_status=False,public_output_label=None):
+def run(args,*,input=None,env=None,private=False,public_log=None,public_status=False,public_output_label=None,timeout_seconds=None,cleanup=False):
     if private and (public_log is not None or public_output_label is not None):
         raise ValueError('Private tool streams cannot become public logs')
     if public_status and not private:raise ValueError('Typed importer status is a separate private-input boundary')
@@ -63,8 +126,29 @@ def run(args,*,input=None,env=None,private=False,public_log=None,public_status=F
     redacted=[public_text(value.encode()) for value in redacted]
     if redacted[0]=='security' and 'set-key-partition-list' in redacted:
         redacted[redacted.index('-k')+1]='<random-owned-password>'
-    result=subprocess.run(list(map(str,args)),input=input,capture_output=True,env=env)
-    RECORDS.append({'argv':redacted,'exitCode':result.returncode,'privateInputBytesRetained':False})
+    seconds=tool_timeout(args,timeout_seconds,cleanup)
+    started=time.monotonic()
+    try:result,timed_out=bounded_child(args,input,env,seconds)
+    except ToolTimeout:
+        result=subprocess.CompletedProcess(args,None,b'',b'');timed_out=True
+    elapsed=time.monotonic()-started
+    RECORDS.append({'argv':redacted,'exitCode':result.returncode,'privateInputBytesRetained':False,
+                    'timeoutSeconds':seconds,'timedOut':timed_out,'elapsedSeconds':elapsed})
+    if timed_out:
+        # Private stdin tools never forward argv or arbitrary stdout/stderr, even
+        # when their partial stdout happens to resemble an importer success object.
+        value={'schemaVersion':1,'status':'timeout','exitCode':124,'processReturnCode':result.returncode,
+               'timeoutSeconds':seconds,'elapsedSeconds':elapsed,'processStarted':seconds>0,
+               'failedToolSucceeded':False,'codesignSuccessEstablishedByThisFailureRecord':False,'nativeTestsExecuted':0}
+        if private:
+            value.update({'tool':'private-owned-tool','privateCommandPublished':False,'privateStreamsPublished':False})
+        else:
+            value.update({'argv':redacted,'publicLog':Path(public_log).name if public_log else None,
+                          'stdout':public_text(result.stdout),'stderr':public_text(result.stderr),
+                          'truncated':len(result.stdout)>PUBLIC_DIAGNOSTIC_BYTES or len(result.stderr)>PUBLIC_DIAGNOSTIC_BYTES})
+            if public_log:Path(public_log).write_text(public_text(result.stdout+result.stderr),encoding='utf-8')
+        public_record('OWNED_TOOL_TIMEOUT',value)
+        raise ToolTimeout('private tool' if private else redacted[0],seconds,result.returncode,seconds>0)
     if public_log:Path(public_log).write_text(public_text(result.stdout+result.stderr),encoding='utf-8')
     if public_status:
         # A malformed/private stdout must remain suppressed even on failure.
@@ -109,11 +193,19 @@ def fingerprint(raw):return hashlib.sha256(raw).hexdigest()
 def main():
     a=argparse.ArgumentParser();a.add_argument('--output',type=Path,required=True);args=a.parse_args()
     if sys.platform!='darwin':raise SystemExit('Requires macOS/Xcode; no SDK execution was attempted.')
-    global OPENSSL
+    # An outer producer deadline may request graceful termination. Let finally
+    # clean only this producer's own Keychain; SIGKILL remains uncatchable.
+    def terminate_producer(signum, frame):raise SystemExit(128+signum)
+    signal.signal(signal.SIGTERM,terminate_producer)
+    global OPENSSL,PRODUCER_DEADLINE
+    PRODUCER_DEADLINE=time.monotonic()+PRODUCER_TIMEOUT_SECONDS
     candidates=[os.environ.get('YUEDU_FIXTURE_OPENSSL'),'/opt/homebrew/opt/openssl@3/bin/openssl','/usr/local/opt/openssl@3/bin/openssl',shutil.which('openssl')]
     for candidate in candidates:
         if candidate and Path(candidate).is_file():
-            version=subprocess.run([candidate,'version'],capture_output=True).stdout
+            # Selection probes are also bounded; a stalled candidate cannot consume
+            # the native stage's allocation before the generator has even started.
+            try:version=subprocess.run([candidate,'version'],capture_output=True,timeout=min(5,max(0.01,PRODUCER_DEADLINE-time.monotonic()))).stdout
+            except subprocess.TimeoutExpired:continue
             if version.startswith(b'OpenSSL 3.'):
                 OPENSSL=candidate;break
     else:raise RuntimeError('Existing OpenSSL 3 required; no package installation attempted')
@@ -159,6 +251,12 @@ def main():
             run([importer],input=json.dumps(request).encode(),private=True,public_status=True)
             run(['security','set-key-partition-list','-S','apple-tool:,apple:,codesign:','-s','-k',keychain_password,keychain],private=True)
             run(['security','find-identity','-p','codesigning',keychain],public_output_label='OWNED_CODESIGN_IDENTITY_SEARCH')
+            # Scoped diagnostics only: explicit public owned anchor, no Keychain
+            # search, no network and no trust-settings installation. This proves
+            # this certificate's actual code-sign policy, not codesign's later
+            # cross-process identity lookup or system/global trust.
+            run(['security','verify-cert','-c',out/'leaf.cert.der','-c',root_der,'-r',root_der,
+                 '-p','codeSign','-L','-N','-q'],public_output_label='OWNED_EXPLICIT_ANCHOR_CODE_SIGN_POLICY')
             del request,p12,leaf_key
             root_key_memory=root_key
             app=owned/'Payload/Owned.app';app.mkdir(parents=True)
@@ -174,7 +272,7 @@ def main():
                 return result
             identity=hashlib.sha1(leaf).hexdigest().upper()
             def codesign(bundle,identifier,entitlements=None):
-                cmd=['codesign','--force','--sign',identity,'--keychain',keychain,'--timestamp=none','--identifier',identifier,'--requirements','=designated => identifier "'+identifier+'"']
+                cmd=['codesign','--verbose=4','--force','--sign',identity,'--keychain',keychain,'--timestamp=none','--identifier',identifier,'--requirements','=designated => identifier "'+identifier+'"']
                 if entitlements:cmd+=['--generate-entitlement-der','--entitlements',entitlements]
                 cmd += [bundle]
                 run(cmd,public_log=out/(identifier+'.codesign.log'))
@@ -231,9 +329,9 @@ def main():
             (out/'owned-sdk-package.ipa').write_bytes(raw)
             resource={'schema':1,'archive':base64.b64encode(raw).decode(),'anchor':base64.b64encode(root).decode(),'verificationEpochSeconds':int(at.timestamp()),'archiveSHA256':fingerprint(raw),'actualSDKProducedMachOs':parsed}
             (out/'owned-sdk-package.json').write_text(json.dumps(resource,separators=(',',':'))+'\n')
-            run(['security','delete-keychain',keychain],private=True)
+            run(['security','delete-keychain',keychain],private=True,timeout_seconds=CLEANUP_TIMEOUT_SECONDS,cleanup=True)
             keychain=None
-            record={'schema':1,'sourceInputs':records,'commands':RECORDS,'actualSDKProducedMachOs':parsed,'generatedAt':at.isoformat(),'archiveSHA256':fingerprint(raw),'archiveBytes':len(raw),'privateKeyFilesOutsideKeychain':0,'temporaryOwnedKeychainDeleted':True,'privateMaterialArtifacts':0,'realAppleAccountUsed':False,'SwiftPackageCoordinatorExecuted':False}
+            record={'schema':1,'sourceInputs':records,'commands':RECORDS,'actualSDKProducedMachOs':parsed,'generatedAt':at.isoformat(),'archiveSHA256':fingerprint(raw),'archiveBytes':len(raw),'privateKeyFilesOutsideKeychain':0,'temporaryOwnedKeychainDeleted':True,'privateMaterialArtifacts':0,'realAppleAccountUsed':False,'SwiftPackageCoordinatorExecuted':False,'producerToolBudgetSeconds':PRODUCER_TIMEOUT_SECONDS,'ownedToolBudgetsSeconds':TOOL_TIMEOUT_SECONDS,'cleanupToolBudgetSeconds':CLEANUP_TIMEOUT_SECONDS}
             record['publicOutputs']=[{'path':p.name,'bytes':p.stat().st_size,'sha256':fingerprint(p.read_bytes())} for p in sorted(out.iterdir()) if p.is_file()]
             (out/'sdk-produced-fixture-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
         except BaseException as error:
@@ -242,7 +340,7 @@ def main():
         finally:
             if keychain is not None and keychain.exists():
                 try:
-                    run(['security','delete-keychain',keychain],private=True)
+                    run(['security','delete-keychain',keychain],private=True,timeout_seconds=CLEANUP_TIMEOUT_SECONDS,cleanup=True)
                     public_record('OWNED_KEYCHAIN_CLEANUP',{'status':'passed','exitCode':0,'privateCommandPublished':False})
                 except Exception as cleanup_error:
                     public_record('OWNED_KEYCHAIN_CLEANUP',{'status':'failed','exitCode':cleanup_error.code if isinstance(cleanup_error,ToolFailure) else None,
