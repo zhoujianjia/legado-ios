@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "preparedAtUTC": "2026-10-20T10:24:18.515310+00:00",
+  "scope": "Paused certificate reconciliation: source-compatible erase-only logout and internal shared owned account fixture. No list endpoint or CSR behavior changes.",
+  "files": [
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "work": {
+        "path": ".build/renewal-discovery/account-certificate-reconciliation-step/work/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+        "bytes": 34314,
+        "sha256": "66e50b4f8a18ea3c0bb5db0759d271ed22fb675ecc9748b04b439d83663881fc"
+      },
+      "snapshot": {
+        "path": ".build/renewal-discovery/account-certificate-reconciliation-step/shared-logout-sources/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+        "bytes": 34314,
+        "sha256": "66e50b4f8a18ea3c0bb5db0759d271ed22fb675ecc9748b04b439d83663881fc"
+      },
+      "baseline": {
+        "path": ".build/renewal-discovery/account-certificate-reconciliation-step/baseline/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+        "bytes": 31414,
+        "sha256": "d160d6fad6903183a0691673ce7af8f8bde885a86b9b6bfb9aec4ecebb4245ae"
+      },
+      "diff": {
+        "path": ".build/renewal-discovery/account-certificate-reconciliation-step/shared-logout-diffs/SelfRenewalDeveloperAccountClient.swift.diff",
+        "bytes": 5324,
+        "sha256": "1d49be2a63888e0e9522fefe1d8d20ccebe62ccd005986262c5aae254486422f"
+      }
+    },
+    {
+      "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "work": {
+        "path": ".build/renewal-discovery/account-certificate-reconciliation-step/work/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+        "bytes": 33502,
+        "sha256": "4c43040f3c5e4e16c4032228964d7af60922da1d5e5ad23d4e503ed29d0290b0"
+      },
+      "snapshot": {
+        "path": ".build/renewal-discovery/account-certificate-reconciliation-step/shared-logout-sources/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+        "bytes": 33502,
+        "sha256": "4c43040f3c5e4e16c4032228964d7af60922da1d5e5ad23d4e503ed29d0290b0"
+      },
+      "baseline": {
+        "path": ".build/renewal-discovery/account-certificate-reconciliation-step/baseline/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+        "bytes": 30597,
+        "sha256": "95319e354bf170a56511524e42ad60705d610b013762a06f0fdb37149d6035f1"
+      },
+      "diff": {
+        "path": ".build/renewal-discovery/account-certificate-reconciliation-step/shared-logout-diffs/SelfRenewalDeveloperAccountClientTests.swift.diff",
+        "bytes": 7756,
+        "sha256": "61d70cd5c70972b12325b33250375916e2d0057c35d9e156a4c41eef114e94b1"
+      }
+    }
+  ],
+  "grammar": {
+    "path": ".build/renewal-discovery/account-certificate-reconciliation-step/shared-logout-grammar.json",
+    "bytes": 745,
+    "sha256": "358ad721f6b7b39f5637173af6ea8fb8c1cffb7cf7fd6425784a5e048170fadf"
+  },
+  "nativeDefinitions": {
+    "existing": 8,
+    "new": 1,
+    "newMethod": "SelfRenewalDeveloperAccountClientTests.erasesStoredCredentialsWithoutMaterialAuthorityAndPreservesIntent()",
+    "executed": 0
+  },
+  "api": "static signOutStoredCredentials(namespaceID: UUID, storage: any SelfRenewalDeveloperSessionStorage = SelfRenewalDeveloperKeychainSessionStorage()) throws",
+  "semantics": [
+    "Shared single bounded Record decoder and observed-byte compare/save core. Expired credential is structurally accepted for erasure, namespace/schema/hash/pin/pending are strictly validated.",
+    "Erasure retains exact logical pin/identity/pending; no remote request, signing context, lease or proof. Cancellation/storage/stale errors remain typed; observed equality is not cross-process CAS.",
+    "Shared test Peer consumes the sole Vault.KeyMaterial DTO, allowing actual published keys. Existing Fixture.pending is unchanged.",
+    "No canonical/Git/cloud or real credential operation; JSON/Keychain API must run off main.",
+    "Certificate-list recovery remains unimplemented and paused for the priority actual Mac partition ACL defect."
+  ],
+  "sdk": {
+    "SwiftExecutions": 0,
+    "KeychainExecutions": 0,
+    "realAppleRequests": 0,
+    "grammarDiagnostics": 0
+  }
+}

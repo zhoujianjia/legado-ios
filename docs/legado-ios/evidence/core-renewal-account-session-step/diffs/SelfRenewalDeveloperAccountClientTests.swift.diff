@@ -1,0 +1,180 @@
+--- canonical-baseline/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift
++++ prepared-v3/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift
+@@ -6,9 +6,9 @@
+ 
+ @Suite("Controlled developer-services peer through the actual account URLSession and Vault", .serialized)
+ struct SelfRenewalDeveloperAccountClientTests {
+-    private typealias Client = SelfRenewalDeveloperAccountClient
+-    private typealias Vault = SelfRenewalSigningMaterialVault
+-    private typealias PKI = SelfRenewalSigningOwnedPKIFixture
++    typealias Client = SelfRenewalDeveloperAccountClient
++    typealias Vault = SelfRenewalSigningMaterialVault
++    typealias PKI = SelfRenewalSigningOwnedPKIFixture
+ 
+     @Test("real CSR signature exact portal fields and all three signed profiles publish through the same Vault")
+     func submitsRealVaultCSRAndPublishesOnlyVerifiedOriginalIdentity() async throws {
+@@ -214,14 +214,58 @@
+         }
+     }
+ 
+-    private enum Mode: Sendable {
++    @Test("erase-only stored logout preserves an unresolved CSR and refuses corrupt storage without needing a lease")
++    func erasesStoredCredentialsWithoutMaterialAuthorityAndPreservesIntent() async throws {
++        try await Self.fixture { f in
++            let client = try await f.client(); _ = try await client.connect(f.credentials)
++            await f.peer.set(.wrongCertificate)
++            do {
++                _ = try await client.refreshMaterials(keyID: f.pending.id,
++                    expectedGeneration: f.pending.generation, machineName: "Owned")
++                Issue.record("Wrong certificate was accepted")
++            } catch let error as Client.EnrollmentFailure {
++                #expect(error.underlying as? Client.Failure == .keyMismatch)
++            }
++            let before = try #require(try f.storage.load(namespace: f.namespace.id))
++            let original = try #require(try JSONSerialization.jsonObject(with: Data(before.utf8)) as? [String: Any])
++            let facts = await f.peer.facts()
++            f.storage.failSave(afterSuccessfulSaves: 0)
++            do {
++                try Client.signOutStoredCredentials(namespaceID: f.namespace.id, storage: f.storage)
++                Issue.record("Credential erasure acknowledged a failed real Keychain write")
++            } catch let failure as Client.Failure { #expect(failure == .storage) }
++            let afterFailure = try f.storage.load(namespace: f.namespace.id)
++            #expect(afterFailure == before)
++            try Client.signOutStoredCredentials(namespaceID: f.namespace.id, storage: f.storage)
++            let erased = try #require(try f.storage.load(namespace: f.namespace.id))
++            let decoded = try #require(try JSONSerialization.jsonObject(with: Data(erased.utf8)) as? [String: Any])
++            #expect(decoded["credentials"] == nil)
++            for key in ["namespaceID", "identitySHA256", "pin", "pending"] {
++                let oldValue = try #require(original[key]); let newValue = try #require(decoded[key])
++                let old = try JSONSerialization.data(withJSONObject: [key: oldValue], options: [.sortedKeys])
++                let new = try JSONSerialization.data(withJSONObject: [key: newValue], options: [.sortedKeys])
++                #expect(old == new)
++            }
++            let after = await f.peer.facts()
++            #expect(after.paths == facts.paths && after.validCSRs == 1)
++            try f.storage.save(namespace: f.namespace.id, value: "{corrupt}")
++            do {
++                try Client.signOutStoredCredentials(namespaceID: f.namespace.id, storage: f.storage)
++                Issue.record("Corrupt storage was silently replaced")
++            } catch let failure as Client.Failure { #expect(failure == .storage) }
++            let corrupt = try f.storage.load(namespace: f.namespace.id)
++            #expect(corrupt == "{corrupt}")
++        }
++    }
++
++    enum Mode: Sendable {
+         case normal, wrongCertificate, tamperedProfile, expired, changedAccount, changedTeam, holdCSR, missingApp
+         case redirect, oversized, unauthorized, malformedSuccess
+     }
+-    private actor Peer {
++    actor Peer {
+         let material: SelfRenewalApplicationMaterialVerifier.Materials
+         let issuer: Vault.KeyMaterial
+-        let key: Vault.PendingKey
++        let key: Vault.KeyMaterial
+         let date: Date
+         var mode: Mode = .normal
+         var paths: [String] = []
+@@ -230,7 +274,7 @@
+         enum EnrollmentEvent: Sendable, Equatable { case csrArrived, refreshFinished }
+         private var firstEnrollmentEvent: EnrollmentEvent?
+         private var enrollmentWaiters: [CheckedContinuation<EnrollmentEvent, Never>] = []
+-        init(material: SelfRenewalApplicationMaterialVerifier.Materials, issuer: Vault.KeyMaterial, key: Vault.PendingKey, date: Date) {
++        init(material: SelfRenewalApplicationMaterialVerifier.Materials, issuer: Vault.KeyMaterial, key: Vault.KeyMaterial, date: Date) {
+             self.material = material; self.issuer = issuer; self.key = key; self.date = date
+         }
+         func set(_ mode: Mode) { self.mode = mode }
+@@ -342,7 +386,7 @@
+         }
+     }
+ 
+-    private final class PeerProtocol: URLProtocol, @unchecked Sendable {
++    final class PeerProtocol: URLProtocol, @unchecked Sendable {
+         private static let lock = NSLock()
+         nonisolated(unsafe) private static var peer: Peer?
+         private let operationLock = NSLock()
+@@ -374,7 +418,7 @@
+             current?.cancel()
+         }
+     }
+-    private final class FaultStorage: @unchecked Sendable, SelfRenewalDeveloperSessionStorage {
++    final class FaultStorage: @unchecked Sendable, SelfRenewalDeveloperSessionStorage {
+         let base = SelfRenewalDeveloperKeychainSessionStorage()
+         private let lock = NSLock(); private var remaining: Int?
+         func failSave(afterSuccessfulSaves count: Int) { lock.lock(); defer { lock.unlock() }; remaining = count }
+@@ -388,7 +432,7 @@
+             guard KeychainHelper.delete(account: namespace.uuidString, service: "com.yuedu.selfRenewal.developerSession.v1", synchronizable: false) else { throw Client.Failure.storage }
+         }
+     }
+-    private final class Fixture: @unchecked Sendable {
++    final class Fixture: @unchecked Sendable {
+         let directory: URL; let material: SelfRenewalApplicationMaterialVerifier.Materials
+         let date: Date; let vault: Vault; let namespace: Vault.Namespace; let pending: Vault.PendingKey
+         let oldKeyID: UUID; let issuer: Vault.KeyMaterial; let storage = FaultStorage(); let peer: Peer
+@@ -397,7 +441,8 @@
+             vault: Vault, namespace: Vault.Namespace, pending: Vault.PendingKey, oldKeyID: UUID, issuer: Vault.KeyMaterial) {
+             self.directory = directory; self.material = material; self.date = date; self.vault = vault; self.namespace = namespace
+             self.pending = pending; self.oldKeyID = oldKeyID; self.issuer = issuer
+-            peer = Peer(material: material, issuer: issuer, key: pending, date: date)
++            peer = Peer(material: material, issuer: issuer,
++                key: Vault.KeyMaterial(privateKey: pending.privateKey, certificateChainDER: []), date: date)
+         }
+         func client() async throws -> Client {
+             let date = date
+@@ -407,11 +452,18 @@
+                     routingInfo: 1, deviceID: "owned-device-id", clientInfo: "Owned controlled peer", issuedAt: date, locale: "en_US", timeZone: "UTC") }, clock: { date })
+         }
+         func cleanup() async throws {
+-            PeerProtocol.install(nil)
+-            let generation = try await vault.generation(in: namespace)
+-            try await vault.destroy(namespace, expectedGeneration: generation)
+-            try storage.cleanup(namespace: namespace.id)
+-            try FileManager.default.removeItem(at: directory)
++            // Cleanup owns only this fixture's exact resources. Await it even
++            // when the real test worker was cancelled; do not cancel cleanup.
++            try await Task.detached {
++                PeerProtocol.install(nil)
++                // AppSession may have published through its own Vault actor.
++                // Reopen the actual manifest before destroying these owned keys.
++                let current = try await self.vault.resume(namespaceID: self.namespace.id, identity: self.material)
++                let generation = try await self.vault.generation(in: current)
++                try await self.vault.destroy(current, expectedGeneration: generation)
++                try self.storage.cleanup(namespace: current.id)
++                try FileManager.default.removeItem(at: self.directory)
++            }.value
+         }
+         static func make() async throws -> Fixture {
+             let directory = FileManager.default.temporaryDirectory.appendingPathComponent("owned-developer-account-" + UUID().uuidString)
+@@ -451,20 +503,24 @@
+                 PeerProtocol.install(fixture.peer)
+                 return fixture
+             } catch {
+-                if let vault = cleanupVault, let namespace = cleanupNamespace {
+-                    do { let generation = try await vault.generation(in: namespace); try await vault.destroy(namespace, expectedGeneration: generation) }
+-                    catch { Issue.record(error) }
+-                }
+-                do { try FileManager.default.removeItem(at: directory) } catch { Issue.record(error) }
++                let vault = cleanupVault, namespace = cleanupNamespace
++                await Task.detached {
++                    if let vault, let namespace {
++                        do { let generation = try await vault.generation(in: namespace); try await vault.destroy(namespace, expectedGeneration: generation) }
++                        catch { Issue.record(error) }
++                    }
++                    do { try FileManager.default.removeItem(at: directory) } catch { Issue.record(error) }
++                }.value
+                 throw error
+             }
+         }
+     }
+-    nonisolated private static func fixture(_ action: @escaping @Sendable (Fixture) async throws -> Void) async throws {
+-        try await Task.detached {
++    nonisolated static func fixture(_ action: @escaping @Sendable (Fixture) async throws -> Void) async throws {
++        let worker = Task.detached {
+             let value = try await Fixture.make()
+             do { try await action(value); try await value.cleanup() }
+             catch { do { try await value.cleanup() } catch { Issue.record(error) }; throw error }
+-        }.value
++        }
++        try await withTaskCancellationHandler { try await worker.value } onCancel: { worker.cancel() }
+     }
+ }

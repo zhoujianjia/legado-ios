@@ -1,0 +1,13 @@
+--- preserved-v1/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift
++++ prepared-v2/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift
+@@ -185,10 +185,8 @@
+                 try await action(AccountAppContext(fixture: f, peer: peer, root: root, session: session,
+                     services: services, originalLease: original, handoff: handoff))
+                 try await session.close()
+-                _ = try await f.vault.resume(namespaceID: f.namespace.id, identity: f.material)
+             } catch {
+                 do { try await session.close() } catch { Issue.record(error) }
+-                do { _ = try await f.vault.resume(namespaceID: f.namespace.id, identity: f.material) } catch { Issue.record(error) }
+                 throw error
+             }
+         }

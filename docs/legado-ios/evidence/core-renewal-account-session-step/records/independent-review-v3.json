@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUTC": "2026-10-20T10:42:08.005914+00:00",
+  "reviewer": "owned_signer_shape_review",
+  "independentReview": true,
+  "reviewKind": "Independent narrow v1-v2-v3 correction review; original full v1 review retained",
+  "preparation": {
+    "path": ".build/renewal-discovery/account-session-step/preparation-v3.json",
+    "bytes": 14608,
+    "sha256": "205abcc0213f980372a32336d01d56b19762285ad7588c57ea09bb24a7a5d4a8"
+  },
+  "preservedPreparations": [
+    {
+      "path": ".build/renewal-discovery/account-session-step/preparation.json",
+      "bytes": 11116,
+      "sha256": "8d5fa4c5ed9e62da5fff983a41d8c030de23a084cc12ed83ede25c6db9bcbbe6"
+    },
+    {
+      "path": ".build/renewal-discovery/account-session-step/preparation-v2.json",
+      "bytes": 13465,
+      "sha256": "5b1e0fa194fa7a0ec68a40420e178fca155247e0b1499b5f626a92eae7770105"
+    }
+  ],
+  "previousReview": {
+    "path": ".build/renewal-discovery/account-session-step/independent-review-v1.json",
+    "bytes": 12211,
+    "sha256": "0d54aaa2503915ec3c7b43b96309e84430c829b1e6e30f254adcafb058e3a115"
+  },
+  "sources": [
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "path": ".build/renewal-discovery/account-session-step/final-sources-v3/Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "bytes": 11454,
+      "sha256": "30464ff0e74f2c8580628907d455d8b369f1491b3376f9a00e2ed7e91a84c284"
+    },
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "path": ".build/renewal-discovery/account-session-step/final-sources-v3/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 54908,
+      "sha256": "1998e8c636bbefdfb8ad0e5063de5d53ae8ff6ace2bc06d727c25e14ccc86f82"
+    },
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+      "path": ".build/renewal-discovery/account-session-step/final-sources-v3/Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+      "bytes": 27289,
+      "sha256": "1d4c8ea112aacc8f7bc5c547125136da300198491e1f4aab93c9fecfecd8437f"
+    },
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "path": ".build/renewal-discovery/account-session-step/final-sources-v3/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "bytes": 34314,
+      "sha256": "66e50b4f8a18ea3c0bb5db0759d271ed22fb675ecc9748b04b439d83663881fc"
+    },
+    {
+      "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "path": ".build/renewal-discovery/account-session-step/final-sources-v3/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "bytes": 11609,
+      "sha256": "53215d2755e3b214f979fc9c6c7b84e0f3559fa81658e5b75b67c76254d6f2f1"
+    },
+    {
+      "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "path": ".build/renewal-discovery/account-session-step/final-sources-v3/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "bytes": 34246,
+      "sha256": "a1970a50892bec06cc45823e1cac3b54822a3bfa58b48b6b107a351dc37d6e1c"
+    }
+  ],
+  "bindingAudit": {
+    "artifactsChecked": 32,
+    "mismatches": []
+  },
+  "verdict": "no-confirmed-remaining-source-blocker",
+  "confirmedRemainingBlockers": [],
+  "correctedFindings": [
+    {
+      "id": "SESSION-COORDINATOR-RETIRE-ENTRY",
+      "status": "source corrected",
+      "sourceLines": [
+        "SelfRenewalControlledRenewalCoordinator.swift:148-153"
+      ],
+      "facts": [
+        "The new retirement API now requires real signing Vault and Namespace; a recovery-only instance rejects before mutation.",
+        "It checks and holds busy across the awaited original shared helper, matching existing prepare/submit/recover barriers.",
+        "Private helper is unchanged; no broadened journal retirement authorization or unknown-remote retry."
+      ]
+    },
+    {
+      "id": "SESSION-CANCELLED-FIXTURE-CLEANUP",
+      "status": "source corrected",
+      "sourceLines": [
+        "SelfRenewalDeveloperAccountClientTests.swift:454-519",
+        "SelfRenewalAccountSessionTests.swift:184-193"
+      ],
+      "facts": [
+        "Outer cancellation still reaches and is awaited on the actual worker/refresh task.",
+        "Only exact owned fixture cleanup runs inside a separately awaited task whose cancellation is not forwarded; Vault Task.checkCancellation no longer rejects cleanup solely because the test worker was cancelled.",
+        "Final cleanup resumes the real namespace manifest before reading generation and destroying keys, accounting for publication by the actual AppSession Vault actor.",
+        "Nested Session fixture does not do a second cancelled-context Vault resume. Initialization-failure Vault/directory cleanup uses the same independent awaited boundary.",
+        "Journal.close itself has no Task.checkCancellation; Session close remains callable for cancelled cleanup after actual remote task completion. No new HTTP/store/queue owner."
+      ]
+    },
+    {
+      "id": "SESSION-RETIRED-GENERATION-FOREGROUND",
+      "foundBy": "Root cross-call trace after original review",
+      "status": "source corrected",
+      "sourceLines": [
+        "SelfRenewalAppSession.swift:466-477",
+        "SelfRenewalControlledRenewalCoordinator.swift:320-332",
+        "SelfRenewalAccountSessionTests.swift:43-64"
+      ],
+      "facts": [
+        "Confirmed v1/v2 defect: connect permitted historical retired generation, but subsequent real bootstrap/foreground revalidateSigningMaterials/observeCurrentProcess called validatedObservationContext and unconditionally rejected the older retired record generation after material refresh.",
+        "V3 adds only the same .retired actual journal.resumeRetirement check at this downstream context. It rechecks current durable record, candidate absence and directory fsync before admitting current material observation.",
+        "All active records still require exact materialGeneration==lease.generation. Namespace pin and actual current Vault lease/key/chain/profile validation stay required.",
+        "CurrentLease path remains exact and is only reached for actual candidate-ready submission/verification, which rejects .retired earlier. observeUserDataAfterNormalLoad has no retired capability since retirement excludes its checkpoints.",
+        "Existing retired method now explicitly calls live-session bootstrap after refresh before separately testing restart and unexpected candidate refusal. Native execution remains zero."
+      ]
+    }
+  ],
+  "preservedInvariants": [
+    "Same actual AppSession Vault/Namespace, one retained account instance, one injected transport/storage/provider; no default provider or fake authorization.",
+    "Unknown account CSR intent rejects before transaction retirement; actual current permanent key reused; no new orphan key.",
+    "Publication-finalization failure preserves public actual commit observation and original error.",
+    "Expired/unopened logout still erases through the existing bounded record owner, preserves pin/intent, and refuses reuse locally if erase fails.",
+    "Original reader route, active transaction generation CAS, remote uncertainty and recovery-only restrictions are retained.",
+    "All changed tests remain within the original serialized Suite and one original peer registry."
+  ],
+  "grammarEvidence": {
+    "currentChangedOnly": {
+      "path": ".build/renewal-discovery/account-session-step/grammar-v3-changed-only.json",
+      "bytes": 978,
+      "sha256": "ef98f5954108fbc619437e80306ba75c18caab3063b0913087258533edb55972"
+    },
+    "earlierSixAndChangedThree": "Preserved exact v1/v2 records; no review rerun",
+    "newReviewGrammarExecutions": 0,
+    "meaning": "Syntax only; not Swift SDK/typecheck or behavior."
+  },
+  "validation": {
+    "newPortableExecutions": 0,
+    "newSwiftSDKExecutions": 0,
+    "nativeAcceptedMethods": 0,
+    "realKeychainHTTPExecutions": 0,
+    "realAppleRequests": 0,
+    "realDeviceRuns": 0,
+    "cloudQueriedOrTriggered": false
+  },
+  "remainingLimits": [
+    "Final six-source native typechecking and behavior tests are pending.",
+    "Actual GSA/Auth/provider/AppSession integration remains a separate unfinished source step.",
+    "True free-team authority, anisette provisioning, issuer rotation/post-expiry enrollment, CSR lost-ACK reconciliation and installation/self-renewal are not established."
+  ],
+  "acceptance": {
+    "sourceReviewComplete": true,
+    "SwiftSDKAccepted": false,
+    "AppleAuthorityEstablished": false,
+    "deviceSelfRenewalVerified": false
+  },
+  "mutations": "Only this ignored independent review. No frozen sources, canonical, Git or CI changes."
+}

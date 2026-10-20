@@ -1,0 +1,12 @@
+--- preserved-v1/Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift
++++ prepared-v2/Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift
+@@ -146,6 +146,9 @@
+     /// Account material publication must not invalidate an active transaction's
+     /// generation. Reuse the same durable retirement rules and candidate owner.
+     func retireBeforeMaterialRefresh() async throws {
++        guard vault != nil, namespace != nil else { throw Failure.signingMaterialsUnavailable }
++        guard !busy else { throw Failure.busy }
++        busy = true; defer { busy = false }
+         try await retirePreviousPreparationBeforeCreate()
+     }
+ 

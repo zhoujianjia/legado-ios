@@ -1,0 +1,46 @@
+--- preserved-v1/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift
++++ prepared-v2/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift
+@@ -452,11 +452,18 @@
+                     routingInfo: 1, deviceID: "owned-device-id", clientInfo: "Owned controlled peer", issuedAt: date, locale: "en_US", timeZone: "UTC") }, clock: { date })
+         }
+         func cleanup() async throws {
+-            PeerProtocol.install(nil)
+-            let generation = try await vault.generation(in: namespace)
+-            try await vault.destroy(namespace, expectedGeneration: generation)
+-            try storage.cleanup(namespace: namespace.id)
+-            try FileManager.default.removeItem(at: directory)
++            // Cleanup owns only this fixture's exact resources. Await it even
++            // when the real test worker was cancelled; do not cancel cleanup.
++            try await Task.detached {
++                PeerProtocol.install(nil)
++                // AppSession may have published through its own Vault actor.
++                // Reopen the actual manifest before destroying these owned keys.
++                let current = try await self.vault.resume(namespaceID: self.namespace.id, identity: self.material)
++                let generation = try await self.vault.generation(in: current)
++                try await self.vault.destroy(current, expectedGeneration: generation)
++                try self.storage.cleanup(namespace: current.id)
++                try FileManager.default.removeItem(at: self.directory)
++            }.value
+         }
+         static func make() async throws -> Fixture {
+             let directory = FileManager.default.temporaryDirectory.appendingPathComponent("owned-developer-account-" + UUID().uuidString)
+@@ -496,11 +503,14 @@
+                 PeerProtocol.install(fixture.peer)
+                 return fixture
+             } catch {
+-                if let vault = cleanupVault, let namespace = cleanupNamespace {
+-                    do { let generation = try await vault.generation(in: namespace); try await vault.destroy(namespace, expectedGeneration: generation) }
+-                    catch { Issue.record(error) }
+-                }
+-                do { try FileManager.default.removeItem(at: directory) } catch { Issue.record(error) }
++                let vault = cleanupVault, namespace = cleanupNamespace
++                await Task.detached {
++                    if let vault, let namespace {
++                        do { let generation = try await vault.generation(in: namespace); try await vault.destroy(namespace, expectedGeneration: generation) }
++                        catch { Issue.record(error) }
++                    }
++                    do { try FileManager.default.removeItem(at: directory) } catch { Issue.record(error) }
++                }.value
+                 throw error
+             }
+         }

@@ -1,0 +1,12 @@
+--- preserved-v2/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift
++++ prepared-v3/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift
+@@ -47,6 +47,9 @@
+             #expect(retired?.phase == .retired)
+             let refreshed = try await c.session.refreshDeveloperMaterials(machineName: "Owned Retired Session")
+             #expect(refreshed.generation > c.originalLease.generation)
++            let live = try await c.session.bootstrap(handoff: c.handoff)
++            #expect(live.access == .signing)
++            #expect(live.phase == .retired)
+             try await c.session.close()
+             let reopened = c.newSession()
+             let first = try await reopened.bootstrap(handoff: c.handoff)

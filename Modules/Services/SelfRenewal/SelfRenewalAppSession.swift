@@ -16,6 +16,35 @@ actor SelfRenewalAppSession {
         case commitDurabilityUnknown
         case ownedApplicationIsNotCurrentProcess
     }
+    enum DeveloperServicesFailure: Error, Sendable, Equatable { case unavailable }
+    /// One injected account HTTP owner and credential service, shared with the
+    /// GSA login path. Constructing the App session performs no account I/O.
+    struct DeveloperServices: Sendable {
+        let transport: any SelfRenewalDeveloperAccountTransport
+        let storage: any SelfRenewalDeveloperSessionStorage
+        let freshAnisette: @Sendable () async throws -> SelfRenewalDeveloperAccountClient.Anisette
+    }
+    /// Public acknowledgement facts only. The private signing handle remains
+    /// in the Vault; a refreshed material set is not an installed application.
+    struct DeveloperMaterialObservation: Sendable, Equatable {
+        let namespaceID: UUID
+        let keyID: UUID
+        let generation: UInt64
+        let leafSHA256: Data?
+        let profileExpiresAt: Date?
+        let verifiedAt: Date
+        var appleAuthorizationEstablished: Bool { false }
+        var installedApplicationRenewed: Bool { false }
+        fileprivate init(_ lease: Vault.Lease) {
+            namespaceID = lease.namespace.id; keyID = lease.keyID; generation = lease.generation
+            leafSHA256 = lease.keyMaterial.certificateChainDER.first.map { Data(SHA256.hash(data: $0)) }
+            profileExpiresAt = lease.profiles.map(\.summary.expiresAt).min(); verifiedAt = lease.verifiedAt
+        }
+    }
+    struct DeveloperMaterialFinalizationFailure: Error, @unchecked Sendable {
+        let published: DeveloperMaterialObservation
+        let underlying: Error
+    }
     enum State: String, Sendable, Codable {
         case unconfigured, ready, candidateReady, recoveryRequired, attentionRequired
         case retiredUnsubmitted, authenticatedRecoveryObserved, unavailable
@@ -60,6 +89,7 @@ actor SelfRenewalAppSession {
     }
     private struct Connection {
         let vault: Vault?
+        let namespace: Vault.Namespace?
         let coordinator: Coordinator
         let access: Access
         let materialFailure: SigningMaterialUnavailable?
@@ -110,9 +140,14 @@ actor SelfRenewalAppSession {
     private let requestedRoot: URL?
     private let ownedApplicationRoot: URL?
     private let clock: @Sendable () -> Date
+    private let developerServices: DeveloperServices?
     private var root: URL?
     private var journal: Journal?
     private var vault: Vault?
+    private var namespace: Vault.Namespace?
+    private var developerAccount: SelfRenewalDeveloperAccountClient?
+    private var developerMaterial: DeveloperMaterialObservation?
+    private var developerLocallySignedOut = false
     private var coordinator: Coordinator?
     private var access: Access?
     private var materialFailure: SigningMaterialUnavailable?
@@ -128,20 +163,26 @@ actor SelfRenewalAppSession {
         case loseNextAuthenticatedRecoveryDirectorySyncAcknowledgement
     }
     private var publicationFault: PublicationFault?
-    init(root: URL, publicationFault: PublicationFault, clock: @escaping @Sendable () -> Date = { Date() }) {
+    init(root: URL, publicationFault: PublicationFault, developerServices: DeveloperServices? = nil,
+        clock: @escaping @Sendable () -> Date = { Date() }) {
         requestedRoot = root; ownedApplicationRoot = nil; self.clock = clock; self.publicationFault = publicationFault
+        self.developerServices = developerServices
     }
     /// An owned test root still goes through the real complete verifier and
     /// Vault. It can never produce a current-process file observation.
-    init(root: URL, currentApplicationRoot: URL, clock: @escaping @Sendable () -> Date = { Date() }) {
+    init(root: URL, currentApplicationRoot: URL, developerServices: DeveloperServices? = nil,
+        clock: @escaping @Sendable () -> Date = { Date() }) {
         requestedRoot = root; ownedApplicationRoot = currentApplicationRoot; self.clock = clock
+        self.developerServices = developerServices
     }
     #endif
     static let maximumConfigurationBytes = 524_288
 
     /// No file, Bundle, Keychain or network work happens during App.init.
-    init(root: URL? = nil, clock: @escaping @Sendable () -> Date = { Date() }) {
+    init(root: URL? = nil, developerServices: DeveloperServices? = nil,
+        clock: @escaping @Sendable () -> Date = { Date() }) {
         requestedRoot = root; ownedApplicationRoot = nil; self.clock = clock
+        self.developerServices = developerServices
     }
 
     func bootstrap(handoff: SelfRenewalUserDataHandoff) async throws -> Status {
@@ -218,7 +259,8 @@ actor SelfRenewalAppSession {
             configuration = priorConfiguration
             // A rename followed by a failed directory sync may have changed
             // disk. Never keep using an older in-memory authorization binding.
-            coordinator = nil; vault = nil; access = nil; profileValidity = nil; configurationNeedsReload = true
+            coordinator = nil; vault = nil; namespace = nil; developerAccount = nil; developerMaterial = nil
+            access = nil; profileValidity = nil; configurationNeedsReload = true
             throw error
         }
         if candidate.access == .recoveryOnly { return try await observeRecoveryOnly(candidate.coordinator, handoff: handoff) }
@@ -228,8 +270,8 @@ actor SelfRenewalAppSession {
         return try await observe(candidate.coordinator, handoff: handoff)
     }
 
-    /// This is the only network entry in the App owner. It recovers the existing
-    /// journal via the unique installer; it never uploads or submits Upgrade.
+    /// Recover the existing journal through its unique authenticated installer.
+    /// Account enrollment uses the separate fixed developer-services protocol.
     func recoverExplicitly(handoff: SelfRenewalUserDataHandoff) async throws -> Status {
         guard !busy else { throw Failure.busy }
         busy = true; defer { busy = false }
@@ -262,6 +304,100 @@ actor SelfRenewalAppSession {
         }
     }
 
+    /// Transitional token input from the real GSA flow. The account client
+    /// must still check the live remote session and original Personal Team.
+    func connectDeveloperAccount(_ candidate: SelfRenewalDeveloperAccountClient.Credentials) async throws
+        -> SelfRenewalDeveloperAccountClient.SessionObservation {
+        guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
+        let account = try await developerAccountOwner()
+        let observed = try await account.connect(candidate)
+        developerLocallySignedOut = false
+        return observed
+    }
+
+    func observeDeveloperAccount() async throws -> SelfRenewalDeveloperAccountClient.SessionObservation {
+        guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
+        guard !developerLocallySignedOut else { throw SelfRenewalDeveloperAccountClient.Failure.signedOut }
+        return try await developerAccountOwner().observeSession()
+    }
+
+    /// The current real persisted signing key is reused for renewal. This
+    /// avoids creating orphan keys on a failed request or after App restart.
+    /// Prior candidates retire through the existing transaction owner first;
+    /// a possible upload/submission blocks every remote enrollment mutation.
+    func refreshDeveloperMaterials(machineName: String) async throws -> DeveloperMaterialObservation {
+        guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
+        let started = SourcePerfTrace.now
+        defer { trace("developer-material-refresh", since: started) }
+        guard !developerLocallySignedOut else { throw SelfRenewalDeveloperAccountClient.Failure.signedOut }
+        let account = try await developerAccountOwner()
+        guard try await account.pendingEnrollment() == nil else {
+            throw SelfRenewalDeveloperAccountClient.Failure.reconciliationRequired
+        }
+        guard let coordinator, let vault, let namespace else { throw Failure.notConfigured }
+        try await coordinator.retireBeforeMaterialRefresh()
+        let lease = try await vault.lease(in: namespace)
+        do {
+            let published = try await account.refreshMaterials(keyID: lease.keyID,
+                expectedGeneration: lease.generation, machineName: machineName)
+            let observation = DeveloperMaterialObservation(published)
+            developerMaterial = observation
+            return observation
+        } catch let failure as SelfRenewalDeveloperAccountClient.PublicationFinalizationFailure {
+            let observation = DeveloperMaterialObservation(failure.publishedLease)
+            developerMaterial = observation
+            throw DeveloperMaterialFinalizationFailure(published: observation, underlying: failure.underlying)
+        }
+    }
+
+    func finalizeDeveloperMaterialPublication() async throws -> DeveloperMaterialObservation {
+        guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
+        let account = try await developerAccountOwner()
+        do {
+            let observed = DeveloperMaterialObservation(try await account.finalizeObservedPublication())
+            developerMaterial = observed; return observed
+        } catch let failure as SelfRenewalDeveloperAccountClient.PublicationFinalizationFailure {
+            let observed = DeveloperMaterialObservation(failure.publishedLease)
+            developerMaterial = observed
+            throw DeveloperMaterialFinalizationFailure(published: observed, underlying: failure.underlying)
+        }
+    }
+
+    func signOutDeveloperAccount() async throws {
+        guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
+        developerLocallySignedOut = true
+        if let developerAccount { try await developerAccount.signOut(); return }
+        guard let developerServices else { throw DeveloperServicesFailure.unavailable }
+        try await openLocalOwner()
+        guard let configuration else { throw Failure.notConfigured }
+        // Erase-only operation uses the existing account record owner. Expired
+        // signing materials must not prevent removal of stored credentials.
+        try SelfRenewalDeveloperAccountClient.signOutStoredCredentials(namespaceID: configuration.namespaceID,
+            storage: developerServices.storage)
+    }
+
+    func developerMaterialObservation() -> DeveloperMaterialObservation? { developerMaterial }
+
+    private func developerAccountOwner() async throws -> SelfRenewalDeveloperAccountClient {
+        guard let developerServices else { throw DeveloperServicesFailure.unavailable }
+        guard access == .signing, let vault, let namespace, let configuration, let profileValidity else { throw Failure.notConfigured }
+        try Task.checkCancellation()
+        try profileValidity.validate(at: clock())
+        let material = try await SelfRenewalApplicationMaterialVerifier.read(
+            unpackedApplication: ownedApplicationRoot ?? Bundle.main.bundleURL,
+            codeAnchors: configuration.codeAnchors, profileAnchors: configuration.profileAnchors, at: clock())
+        let lease = try await vault.lease(in: namespace)
+        try await vault.validate(lease, for: material)
+        if let developerAccount { return developerAccount }
+        let account = try await SelfRenewalDeveloperAccountClient.open(vault: vault, namespace: namespace,
+            identity: material, issuerChainDER: Array(lease.keyMaterial.certificateChainDER.dropFirst()),
+            transport: developerServices.transport, storage: developerServices.storage,
+            freshAnisette: developerServices.freshAnisette, clock: clock)
+        try Task.checkCancellation()
+        developerAccount = account
+        return account
+    }
+
     func status() -> Status? {
         guard let lastStatus else { return nil }
         // A failed status write may leave an older on-disk observation. Never
@@ -283,7 +419,8 @@ actor SelfRenewalAppSession {
         guard !busy else { throw Failure.busy }
         busy = true; defer { busy = false }
         if let journal { try await journal.close() }
-        journal = nil; vault = nil; coordinator = nil; access = nil; materialFailure = nil; profileValidity = nil; root = nil
+        journal = nil; vault = nil; namespace = nil; developerAccount = nil; developerMaterial = nil
+        coordinator = nil; access = nil; materialFailure = nil; profileValidity = nil; root = nil
         configuration = nil; persistedConfiguration = nil; lastStatus = nil; configurationNeedsReload = false
     }
 
@@ -317,7 +454,7 @@ actor SelfRenewalAppSession {
         }
     }
 
-    private func connect(_ configuration: Configuration) async throws -> (vault: Vault, coordinator: Coordinator, profileValidity: ConnectedProfileValidity) {
+    private func connect(_ configuration: Configuration) async throws -> (vault: Vault, namespace: Vault.Namespace, coordinator: Coordinator, profileValidity: ConnectedProfileValidity) {
         guard let journal else { throw Failure.notConfigured }
         let material = try await SelfRenewalApplicationMaterialVerifier.read(unpackedApplication: ownedApplicationRoot ?? Bundle.main.bundleURL,
             codeAnchors: configuration.codeAnchors, profileAnchors: configuration.profileAnchors, at: clock())
@@ -330,16 +467,24 @@ actor SelfRenewalAppSession {
             guard snapshot.record.materialNamespace == namespace.id else { throw Coordinator.Failure.leaseChanged }
             // A generation change remains a real failure, not an automatic
             // rewrite of the persisted transaction's signing materials.
-            guard snapshot.record.materialGeneration == lease.generation else { throw Vault.Failure.staleGeneration }
+            if snapshot.record.phase == .retired {
+                // Historical retired metadata owns no signing capability. Its
+                // durable candidate-absence receipt is checked before allowing
+                // newer material generation; active records retain exact CAS.
+                _ = try await journal.resumeRetirement(snapshot, at: clock())
+            } else {
+                guard snapshot.record.materialGeneration == lease.generation else { throw Vault.Failure.staleGeneration }
+            }
             if let submission = snapshot.record.submission, let device = configuration.device {
                 guard submission.deviceCertificateSHA256 == Data(SHA256.hash(data: device.deviceCertificateDER)) else { throw Coordinator.Failure.wrongPeer }
             }
         }
-        return (vault, Coordinator(journal: journal, vault: vault, namespace: namespace, clock: clock), try ConnectedProfileValidity(material))
+        return (vault, namespace, Coordinator(journal: journal, vault: vault, namespace: namespace, clock: clock), try ConnectedProfileValidity(material))
     }
 
     private func activate(_ connection: Connection) {
-        vault = connection.vault; coordinator = connection.coordinator
+        vault = connection.vault; namespace = connection.namespace; coordinator = connection.coordinator
+        developerAccount = nil; developerMaterial = nil
         access = connection.access; materialFailure = connection.materialFailure
         profileValidity = connection.profileValidity
     }
@@ -347,7 +492,7 @@ actor SelfRenewalAppSession {
     private func resolve(_ configuration: Configuration) async throws -> Connection {
         do {
             let full = try await connect(configuration)
-            return Connection(vault: full.vault, coordinator: full.coordinator, access: .signing, materialFailure: nil,
+            return Connection(vault: full.vault, namespace: full.namespace, coordinator: full.coordinator, access: .signing, materialFailure: nil,
                 profileValidity: full.profileValidity)
         } catch is CancellationError { throw CancellationError() }
         catch {
@@ -376,7 +521,7 @@ actor SelfRenewalAppSession {
         }
         do {
             let recovery = try await Coordinator.recoveryOnly(journal: journal, clock: clock)
-            return Connection(vault: nil, coordinator: recovery, access: .recoveryOnly,
+            return Connection(vault: nil, namespace: nil, coordinator: recovery, access: .recoveryOnly,
                 materialFailure: SigningMaterialUnavailable(underlying: materialError, recoveryContextError: nil), profileValidity: nil)
         } catch is CancellationError { throw CancellationError() }
         catch {
@@ -535,7 +680,8 @@ actor SelfRenewalAppSession {
             // Stop retaining failed signing access before another awaited
             // observation can be cancelled. Its separate failure must not
             // restore access already disproved by the live-material read.
-            vault = nil; self.coordinator = nil; access = nil; profileValidity = nil
+            vault = nil; namespace = nil; developerAccount = nil; developerMaterial = nil
+            self.coordinator = nil; access = nil; profileValidity = nil
             materialFailure = SigningMaterialUnavailable(underlying: error, recoveryContextError: nil)
         }
         // These are independent observations. An installed-material mismatch
@@ -621,7 +767,8 @@ actor SelfRenewalAppSession {
                 // Every publication uses this boundary, including bootstrap
                 // status, observations and error status. A lost durable ACK
                 // can never leave a prior coordinator binding usable.
-                coordinator = nil; vault = nil; access = nil; profileValidity = nil; configurationNeedsReload = true
+                coordinator = nil; vault = nil; namespace = nil; developerAccount = nil; developerMaterial = nil
+                access = nil; profileValidity = nil; configurationNeedsReload = true
             }
             throw error
         }

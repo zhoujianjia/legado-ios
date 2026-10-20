@@ -1,0 +1,17 @@
+--- preserved-v2/Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift
++++ prepared-v3/Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift
+@@ -319,7 +319,13 @@
+         bytes = lease.profileInputs.reduce(0) { $0 + $1.bytes.count }
+         if let snapshot {
+             guard snapshot.record.materialNamespace == namespace.id else { throw Failure.leaseChanged }
+-            guard snapshot.record.materialGeneration == lease.generation else { throw Vault.Failure.staleGeneration }
++            if snapshot.record.phase == .retired {
++                // An actually retired record owns no live candidate. Recheck
++                // its durable absence before observing a newer material set.
++                _ = try await journal.resumeRetirement(snapshot, at: clock())
++            } else {
++                guard snapshot.record.materialGeneration == lease.generation else { throw Vault.Failure.staleGeneration }
++            }
+         }
+         try Task.checkCancellation()
+         return (snapshot, lease)

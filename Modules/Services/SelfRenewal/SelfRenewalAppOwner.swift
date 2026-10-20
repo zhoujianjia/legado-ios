@@ -17,18 +17,23 @@ final class SelfRenewalAppOwner {
     private(set) var signingMaterialProblem: Problem?
     private(set) var isWorking = false
     private(set) var recoveryAvailable = false
+    private(set) var developerSession: SelfRenewalDeveloperAccountClient.SessionObservation?
+    private(set) var developerMaterial: SelfRenewalAppSession.DeveloperMaterialObservation?
     private var bootstrapped = false
 
-    init(root: URL? = nil, clock: @escaping @Sendable () -> Date = { Date() }) {
+    init(root: URL? = nil, developerServices: SelfRenewalAppSession.DeveloperServices? = nil,
+        clock: @escaping @Sendable () -> Date = { Date() }) {
         handoff = SelfRenewalUserDataHandoff()
-        session = SelfRenewalAppSession(root: root, clock: clock)
+        session = SelfRenewalAppSession(root: root, developerServices: developerServices, clock: clock)
     }
     #if DEBUG
     /// Only owned tests choose another verified application directory. This
     /// parameter is absent from configuration and production initialization.
-    init(root: URL, currentApplicationRoot: URL, clock: @escaping @Sendable () -> Date = { Date() }) {
+    init(root: URL, currentApplicationRoot: URL, developerServices: SelfRenewalAppSession.DeveloperServices? = nil,
+        clock: @escaping @Sendable () -> Date = { Date() }) {
         handoff = SelfRenewalUserDataHandoff()
-        session = SelfRenewalAppSession(root: root, currentApplicationRoot: currentApplicationRoot, clock: clock)
+        session = SelfRenewalAppSession(root: root, currentApplicationRoot: currentApplicationRoot,
+            developerServices: developerServices, clock: clock)
     }
     #endif
 
@@ -99,15 +104,94 @@ final class SelfRenewalAppOwner {
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
     }
 
+    /// The GSA login flow supplies candidate credentials here. The existing
+    /// App session retains the sole material client and validates the actual
+    /// server session/team before acknowledging this connection.
+    func acceptDeveloperCredentials(_ candidate: SelfRenewalDeveloperAccountClient.Credentials) async {
+        guard !isWorking else { return }
+        isWorking = true; defer { isWorking = false }
+        problem = nil; developerSession = nil
+        do { developerSession = try await session.connectDeveloperAccount(candidate) }
+        catch {
+            problem = Self.classify(error)
+            AppLogger.parse("Renewal account connection unavailable type=\(String(reflecting: type(of: error)))")
+        }
+    }
+
+    func observeDeveloperAccount() async {
+        guard !isWorking else { return }
+        isWorking = true; defer { isWorking = false }
+        problem = nil; developerSession = nil
+        do { developerSession = try await session.observeDeveloperAccount() }
+        catch {
+            problem = Self.classify(error)
+            AppLogger.parse("Renewal account observation unavailable type=\(String(reflecting: type(of: error)))")
+        }
+    }
+
+    func refreshDeveloperMaterials(machineName: String) async {
+        guard !isWorking else { return }
+        isWorking = true; defer { isWorking = false }
+        problem = nil
+        do { developerMaterial = try await session.refreshDeveloperMaterials(machineName: machineName) }
+        catch let failure as SelfRenewalAppSession.DeveloperMaterialFinalizationFailure {
+            developerMaterial = failure.published
+            problem = Self.classify(failure.underlying)
+        } catch {
+            problem = Self.classify(error)
+            AppLogger.parse("Renewal account material refresh unavailable type=\(String(reflecting: type(of: error)))")
+        }
+        status = await session.status()
+        recoveryAvailable = await session.recoveryIsAvailable()
+    }
+
+    func finalizeDeveloperMaterialPublication() async {
+        guard !isWorking else { return }
+        isWorking = true; defer { isWorking = false }
+        problem = nil
+        do { developerMaterial = try await session.finalizeDeveloperMaterialPublication() }
+        catch let failure as SelfRenewalAppSession.DeveloperMaterialFinalizationFailure {
+            developerMaterial = failure.published
+            problem = Self.classify(failure.underlying)
+        } catch {
+            problem = Self.classify(error)
+            AppLogger.parse("Renewal account publication observation unavailable type=\(String(reflecting: type(of: error)))")
+        }
+    }
+
+    func signOutDeveloperAccount() async {
+        guard !isWorking else { return }
+        isWorking = true; defer { isWorking = false }
+        problem = nil; developerSession = nil
+        do { try await session.signOutDeveloperAccount() }
+        catch {
+            problem = Self.classify(error)
+            AppLogger.parse("Renewal account sign-out unavailable type=\(String(reflecting: type(of: error)))")
+        }
+    }
+
     func close() async throws {
         guard !isWorking else { throw SelfRenewalAppSession.Failure.busy }
         isWorking = true; defer { isWorking = false }
         try await session.close()
         status = nil; problem = nil; signingMaterialProblem = nil; recoveryAvailable = false; bootstrapped = false
+        developerSession = nil; developerMaterial = nil
     }
 
     private static func classify(_ error: Error) -> Problem {
         if error is CancellationError { return .cancelled }
+        if error is SelfRenewalAppSession.DeveloperServicesFailure { return .authenticationNotConfigured }
+        if let failure = error as? SelfRenewalAppSession.DeveloperMaterialFinalizationFailure { return classify(failure.underlying) }
+        if let failure = error as? SelfRenewalDeveloperAccountClient.EnrollmentFailure { return classify(failure.underlying) }
+        if let failure = error as? SelfRenewalDeveloperAccountClient.SessionInvalidationFailure { return classify(failure.storageError) }
+        if let failure = error as? SelfRenewalDeveloperAccountClient.Failure {
+            switch failure {
+            case .storage: return .localStorage
+            case .invalidInput, .limit: return .invalidConfiguration
+            case .busy, .staleOperation, .reconciliationRequired: return .operationFailed
+            default: return .authenticationUnavailable
+            }
+        }
         if let failure = error as? SelfRenewalAuthenticatedDeviceTransport.Failure, failure == .cancelled { return .cancelled }
         if let failure = error as? SelfRenewalAppSession.RecoveryFailed {
             if let error = failure.recoveryError { return classify(error) }

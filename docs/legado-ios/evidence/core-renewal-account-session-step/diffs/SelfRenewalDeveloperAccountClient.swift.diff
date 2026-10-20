@@ -1,0 +1,86 @@
+--- canonical-baseline/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift
++++ prepared-v3/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift
+@@ -308,6 +308,22 @@
+         }
+     }
+ 
++    /// Erase-only access for an already configured namespace whose signing
++    /// materials can no longer open a client. This does not authenticate a
++    /// namespace, alter its pin/pending intent, or grant signing authority.
++    /// Call off main and only after the owning Session has released its client.
++    static func signOutStoredCredentials(namespaceID: UUID,
++        storage: any SelfRenewalDeveloperSessionStorage = SelfRenewalDeveloperKeychainSessionStorage()) throws {
++        let started = SourcePerfTrace.now
++        defer { SourcePerfTrace.record("renewal.account.eraseCredentials",
++            "main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
++        try Task.checkCancellation()
++        guard var loaded = try loadStored(namespaceID: namespaceID, storage: storage) else { return }
++        guard loaded.record.credentials != nil else { return }
++        loaded.record.credentials = nil
++        _ = try saveStored(loaded.record, replacing: loaded.encoded, namespaceID: namespaceID, storage: storage)
++    }
++
+     private func validateRemote(_ credentials: Credentials, expected: AccountPin?, epoch: UInt64) async throws -> RemoteAccount {
+         try validateCredentials(credentials)
+         let developerResponse = try await request(.developer, credentials: credentials, epoch: epoch)
+@@ -421,24 +437,54 @@
+     }
+ 
+     private func load() throws -> Loaded? {
+-        guard let encoded = try storage.load(namespace: namespace.id) else { return nil }
++        guard let loaded = try Self.loadStored(namespaceID: namespace.id, storage: storage) else { return nil }
++        guard loaded.record.identitySHA256 == identitySHA256, Self.same(loaded.record.pin.teamID, teamID) else {
++            throw Failure.accountChanged
++        }
++        return loaded
++    }
++    private static func loadStored(namespaceID: UUID, storage: any SelfRenewalDeveloperSessionStorage) throws -> Loaded? {
++        try Task.checkCancellation()
++        guard let encoded = try storage.load(namespace: namespaceID) else { return nil }
+         let bytes = Data(encoded.utf8)
+         guard bytes.count <= 65_536 else { throw Failure.limit }
+         let record: Record
+         do { record = try JSONDecoder().decode(Record.self, from: bytes) }
+         catch { throw Failure.storage }
+-        guard record.schema == 1, record.namespaceID == namespace.id,
+-              record.identitySHA256 == identitySHA256, Self.same(record.pin.teamID, teamID) else { throw Failure.accountChanged }
++        guard record.schema == 1, record.namespaceID == namespaceID, record.identitySHA256.count == 32,
++              headerValue(record.pin.dsid, limit: 128), headerValue(record.pin.personID, limit: 128),
++              headerValue(record.pin.email, limit: 254), headerValue(record.pin.teamID, limit: 128) else { throw Failure.storage }
++        if let credentials = record.credentials {
++            guard headerValue(credentials.dsid, limit: 128), headerValue(credentials.xcodeToken, limit: 8192),
++                  credentials.expiresAt.timeIntervalSince1970.isFinite,
++                  same(credentials.dsid, record.pin.dsid) else { throw Failure.storage }
++        }
++        if let pending = record.pending {
++            guard pending.requestPublicKeySHA256.count == 32, pending.startedAt.timeIntervalSince1970.isFinite,
++                  pending.materialGeneration < UInt64.max else { throw Failure.storage }
++            switch pending.phase {
++            case .certificateRequestIntent:
++                guard pending.certificateSHA256 == nil else { throw Failure.storage }
++            case .certificateObserved:
++                guard pending.certificateSHA256?.count == 32 else { throw Failure.storage }
++            }
++        }
++        try Task.checkCancellation()
+         return Loaded(record: record, encoded: encoded)
+     }
+     @discardableResult private func save(_ record: Record, replacing old: String?) throws -> String {
+-        try Task.checkCancellation()
+-        let current = try storage.load(namespace: namespace.id)
++        try Self.saveStored(record, replacing: old, namespaceID: namespace.id, storage: storage)
++    }
++    @discardableResult private static func saveStored(_ record: Record, replacing old: String?, namespaceID: UUID,
++        storage: any SelfRenewalDeveloperSessionStorage) throws -> String {
++        try Task.checkCancellation()
++        let current = try storage.load(namespace: namespaceID)
+         guard current.map({ Data($0.utf8) }) == old.map({ Data($0.utf8) }) else { throw Failure.staleOperation }
+         let bytes = try JSONEncoder().encode(record)
+         guard bytes.count <= 65_536, let encoded = String(data: bytes, encoding: .utf8) else { throw Failure.limit }
++        try Task.checkCancellation()
+         // One injected actor and observed equality, not a cross-process CAS.
+-        try storage.save(namespace: namespace.id, value: encoded)
++        try storage.save(namespace: namespaceID, value: encoded)
+         return encoded
+     }
+     private func invalidateIfNecessary(_ error: Error, loaded: Loaded) throws {

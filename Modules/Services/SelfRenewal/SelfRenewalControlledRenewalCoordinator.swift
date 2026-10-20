@@ -143,6 +143,15 @@ actor SelfRenewalControlledRenewalCoordinator {
         }
     }
 
+    /// Account material publication must not invalidate an active transaction's
+    /// generation. Reuse the same durable retirement rules and candidate owner.
+    func retireBeforeMaterialRefresh() async throws {
+        guard vault != nil, namespace != nil else { throw Failure.signingMaterialsUnavailable }
+        guard !busy else { throw Failure.busy }
+        busy = true; defer { busy = false }
+        try await retirePreviousPreparationBeforeCreate()
+    }
+
     private func retirePreviousPreparationBeforeCreate() async throws {
         guard let previous = try await journal.load() else { return }
         switch previous.record.phase {
@@ -310,7 +319,13 @@ actor SelfRenewalControlledRenewalCoordinator {
         bytes = lease.profileInputs.reduce(0) { $0 + $1.bytes.count }
         if let snapshot {
             guard snapshot.record.materialNamespace == namespace.id else { throw Failure.leaseChanged }
-            guard snapshot.record.materialGeneration == lease.generation else { throw Vault.Failure.staleGeneration }
+            if snapshot.record.phase == .retired {
+                // An actually retired record owns no live candidate. Recheck
+                // its durable absence before observing a newer material set.
+                _ = try await journal.resumeRetirement(snapshot, at: clock())
+            } else {
+                guard snapshot.record.materialGeneration == lease.generation else { throw Vault.Failure.staleGeneration }
+            }
         }
         try Task.checkCancellation()
         return (snapshot, lease)

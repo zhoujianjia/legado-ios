@@ -581,14 +581,16 @@
           "implementationEvidence": [
             "docs/legado-ios/core-renewal-controlled-signing-step.json",
             "docs/legado-ios/core-renewal-certificate-request-step.json",
-            "docs/legado-ios/core-renewal-account-client-step.json"
+            "docs/legado-ios/core-renewal-account-client-step.json",
+            "docs/legado-ios/core-renewal-account-session-step.json"
           ],
           "implementedSubtasksZh": [
             "已接入单一actor签名材料库，使用既有KeychainHelper保存公开材料与代际日志；真实软件SecKey的生成、重开、profile双CMS及身份一致性验证、撤销和故障恢复已实现。7项原生方法待SDK；尚无Apple账号授权、二次认证、证书/profile远程申请或跨进程事务。",
             "同一材料 Vault 已实现真实永久密钥重开的 PKCS#10 CSR 生成、签名与公钥自验，按 namespace/keyID/generation 校验当前记录，保持原材料错误分类；3 个原生回归定义、2 文件语法检查和修正后的源码独审已完成，SDK/Security 执行仍为 0。账号授权、证书/profile 远程申请刷新和跨进程事务仍未完成。",
-            "开发者服务客户端已实现会话/免费团队实查、同一 Vault 真实 CSR 提交、原 App ID/profile 获取和唯一材料发布；远程请求 intent 持久化，丢 ACK 禁止自动重发，发布后凭据保存失败保留真实 lease。3 源已审查、8 个原生回归仅定义，SDK/受控对端/真实 Apple 执行为 0；GSA 登录、二次认证、anisette、AppSession 单一实例接线及未知请求核对仍未完成。"
+            "开发者服务客户端已实现会话/免费团队实查、同一 Vault 真实 CSR 提交、原 App ID/profile 获取和唯一材料发布；远程请求 intent 持久化，丢 ACK 禁止自动重发，发布后凭据保存失败保留真实 lease。3 源已审查、8 个原生回归仅定义，SDK/受控对端/真实 Apple 执行为 0；GSA 登录、二次认证、anisette、AppSession 单一实例接线及未知请求核对仍未完成。",
+            "账号材料客户端已接入现有 AppSession/AppOwner，复用同一 Vault、namespace、传输与凭据存储，刷新使用当前真实永久密钥；旧候选仅按原事务规则退役，新代际仅在已退役且实际候选缺失和目录同步通过时可被前台及重启接受。未决 CSR 禁止重发，材料发布后的凭据写失败保留真实发布事实，过期或未打开状态可仅擦除凭据。修正入口权限、并发保护及取消后测试清理；4 个 App 接线加 1 个凭据擦除回归仍仅定义，SDK 执行 0。"
           ],
-          "nextActionZh": "继续实现 GSA/SRP 登录与二次认证、可取消 anisette 提供端，再接到现有 AppSession/Vault 唯一生命周期；补远程未知结果核对和 issuer/撤销策略。当前客户端与 CSR 的 SDK 回归待集中执行，不能升级为已完成自动续签。"
+          "nextActionZh": "继续接入 GSA/SRP 登录、二次认证和真实可取消 anisette 提供端到同一 AppSession，补未知证书请求结果核对、过期重新登记及官方 issuer/撤销策略；完成这一组源码后集中执行必要 SDK 回归。当前不是可用的自动续签。"
         },
         {
           "id": "S3",
@@ -831,7 +833,8 @@
       "ownedKeyAccessImplementation": "docs/legado-ios/core-owned-key-access-step.json",
       "ownedKeyAccessFiniteSDKRequest": "docs/legado-ios/core-owned-sdk-584ed6e-request.json",
       "ownedKeyAccessFiniteSDKTerminal": "docs/legado-ios/core-owned-sdk-producer-584ed6e-result.json",
-      "ownedPartitionCreationImplementation": "docs/legado-ios/core-owned-partition-create-step.json"
+      "ownedPartitionCreationImplementation": "docs/legado-ios/core-owned-partition-create-step.json",
+      "developerAccountAppSessionImplementation": "docs/legado-ios/core-renewal-account-session-step.json"
     }
   },
   "stages": [
@@ -4994,6 +4997,10 @@
     "owned-partition-creation-implementation": {
       "path": "docs/legado-ios/core-owned-partition-create-step.json",
       "scope": "Actual public CSSM ADD fixes the observed absent-partition no-op on the exact owned private key, retaining current importer actual cdhash and existing ACL. Five reviewed sources; six real portable passes; new native/Mac zero. Prior codesign root cause remains unknown."
+    },
+    "developer-account-AppSession-integration": {
+      "path": "docs/legado-ios/core-renewal-account-session-step.json",
+      "scope": "Six source files connect the actual account material client to the existing AppSession/AppOwner, same Vault/key/transport and durable transaction retirement. Independent review corrections and final grammar binding; four App-session and one erase-only new definitions, SDK/runtime zero. Real auth/provider/UI/Apple/installation unfinished."
     }
   },
   "retainedExistingWork": [
