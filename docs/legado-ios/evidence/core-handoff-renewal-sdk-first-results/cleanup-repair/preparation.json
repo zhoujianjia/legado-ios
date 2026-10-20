@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "preparedAtUTC": "2026-10-20T06:10:55.898851+00:00",
+  "status": "prepared-for-concentrated-macOS-reverification",
+  "scope": "Fix the actual fd0215d Mac producer timeout cleanup failure without changing codesign identity/trust/fixture gates. Two future source files only; no canonical or CI changes.",
+  "sourceBinding": {
+    "files": [
+      {
+        "intendedPath": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "work": {
+          "path": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/work/generate-sdk-owned-package.py",
+          "bytes": 30463,
+          "sha256": "6577d43ba2c04bc267b5c74632dbe4cdea0322883abefb15e18de89c46936520"
+        },
+        "snapshot": {
+          "path": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/final-sources/generate-sdk-owned-package.py",
+          "bytes": 30463,
+          "sha256": "6577d43ba2c04bc267b5c74632dbe4cdea0322883abefb15e18de89c46936520"
+        },
+        "canonicalBefore": {
+          "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+          "bytes": 27394,
+          "sha256": "79f2d0f8769988f5a87b597d5d01e434137edcd3e15438e13e4e624669f5e58f"
+        }
+      },
+      {
+        "intendedPath": "scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py",
+        "work": {
+          "path": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/work/test-producer-timeouts.py",
+          "bytes": 11655,
+          "sha256": "30af8da39c75cac6b8a0c6819be41c1b9b34cc8975a88635438e72ab6eb77cfa"
+        },
+        "snapshot": {
+          "path": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/final-sources/test-producer-timeouts.py",
+          "bytes": 11655,
+          "sha256": "30af8da39c75cac6b8a0c6819be41c1b9b34cc8975a88635438e72ab6eb77cfa"
+        },
+        "canonicalBefore": {
+          "path": "scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py",
+          "bytes": 6123,
+          "sha256": "2d74492cffcdff0f1df585c3a1d7a20a9c99bc51fc799f39485220658abf156f"
+        }
+      }
+    ],
+    "sourceInputsForActualPortableRun": [
+      {
+        "path": "generate-sdk-owned-package.py",
+        "bytes": 30463,
+        "sha256": "6577d43ba2c04bc267b5c74632dbe4cdea0322883abefb15e18de89c46936520",
+        "snapshot": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/portable-v1-sources/generate-sdk-owned-package.py"
+      },
+      {
+        "path": "test-producer-timeouts.py",
+        "bytes": 11655,
+        "sha256": "30af8da39c75cac6b8a0c6819be41c1b9b34cc8975a88635438e72ab6eb77cfa",
+        "snapshot": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/portable-v1-sources/test-producer-timeouts.py"
+      },
+      {
+        "path": "test-producer-diagnostics.py",
+        "bytes": 6262,
+        "sha256": "e8accbbb0f8931a2756c74ffd58bb36dc2de93da71c7961e4fd8434d61ee90bc",
+        "snapshot": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/portable-v1-sources/test-producer-diagnostics.py"
+      },
+      {
+        "path": "run_suite.py",
+        "bytes": 981,
+        "sha256": "8d9d34458e880c01f9ad0cb3776aec60f5a26fb50cc3411f285e9c98aeed8f2b",
+        "snapshot": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/portable-v1-sources/run_suite.py"
+      }
+    ],
+    "canonicalUnchanged": true
+  },
+  "actualFailure": {
+    "sourceTag": "reader-renewal-fd0215d",
+    "runID": 39378096389,
+    "stage": "portable guards before toolchain/native",
+    "rawLog": {
+      "path": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/actual-diagnostic/reader-renewal-producer-timeout-guards.log",
+      "bytes": 4656,
+      "sha256": "943cbeb3ec0b6c18bbe7495870b72863674d904d2ccab55b01429f0cc0ba800c"
+    },
+    "actualMethods": 6,
+    "passed": 5,
+    "errors": 1,
+    "failedMethod": "ProducerToolTimeoutTests.test_actual_private_timeout_never_forwards_partial_status_or_secret",
+    "rootCause": "After communicate TimeoutExpired the immediate TERM then group KILL sequence raised PermissionError EPERM at the second signal, bypassing drain/reap and surfacing the raw TimeoutExpired command chain. ResourceWarnings record unreaped Popen/open pipes.",
+    "nativeMethodsExecuted": 0,
+    "codesignRepairExecuted": false
+  },
+  "primarySources": {
+    "index": {
+      "path": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/primary-sources.json",
+      "bytes": 1033,
+      "sha256": "a07089781bb5eb7b85fe504119980bff7ca3fc6bb29d45f9e3693aacefa3f7fc"
+    },
+    "facts": [
+      {
+        "url": "https://docs.python.org/3.12/library/subprocess.html#subprocess.Popen.communicate",
+        "meaning": "communicate timeout does not terminate the child; cleanup must signal and finish communication. TimeoutExpired retains the original command."
+      },
+      {
+        "url": "https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/killpg.2.html",
+        "meaning": "EPERM is an actual permission error, distinct from ESRCH; it cannot simply count as successful termination."
+      },
+      {
+        "url": "https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/bsd/kern/kern_sig.c",
+        "raw": {
+          "path": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/primary/xnu-kern_sig.c",
+          "bytes": 94169,
+          "sha256": "343742eb42c5b584c529d348f9772ce03ffedd3be9d986badd60692459b6acdf"
+        },
+        "lines": [
+          1713,
+          1718
+        ],
+        "meaning": "This public XNU source excludes SZOMB in process-group iteration and returns POSIX EPERM when no signalable member is counted. TERM-to-zombie before immediate KILL is a source-supported explanation, not a measured runtime kernel/process-state diagnosis."
+      }
+    ]
+  },
+  "implementation": [
+    "At hard deadline, issue one SIGKILL to this tool-owned process group before reaping; no preliminary TERM or repeated group signal. The group originates solely from Popen(start_new_session=True).",
+    "Always perform bounded communication (1 second), close owned pipes, and bounded wait/reap (0.5 seconds), keeping independent drain/reap/pipe and safe issue facts. No wait searches other processes.",
+    "A genuine group signaling error remains a typed ToolProcessFailure with sanitized stage/type/errno and non-success status. A direct KILL only to the same unreaped leader attempts to prevent its leak; it does not claim group termination.",
+    "Raw TimeoutExpired/OSError cmd/message/filename are never formatted or chained into published private diagnostics. Private stdout/stderr/importer partial status remain suppressed; new safe failures are raised from None outside raw handlers.",
+    "Original global300/per-tool/cleanup10-second budgets, independent cleanup deadline, actual codesign/CMS requirements, owned Keychain/trust/searchlist boundaries remain unchanged."
+  ],
+  "portable": {
+    "record": {
+      "path": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/portable-v1.json",
+      "bytes": 3866,
+      "sha256": "613ae2df2112c3a2eeb678c403f0dd39b2f1995f1960f0739ee40f04ac125c27"
+    },
+    "log": {
+      "path": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/portable-v1.log",
+      "bytes": 4856,
+      "sha256": "fafdf62efc269aab857245112ae6192fd87d5efd693101f768d42379788965d2"
+    },
+    "actualPlatform": "win32 Python3.12",
+    "methodCount": 15,
+    "passed": 15,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "originalTimeoutMethodsRawUnchanged": [
+      "test_actual_private_timeout_never_forwards_partial_status_or_secret",
+      "test_actual_public_timeout_terminates_child_and_retains_failure_log",
+      "test_actual_remaining_producer_budget_caps_a_longer_tool_budget",
+      "test_cleanup_has_a_separate_real_child_budget_after_producer_expiry",
+      "test_each_producer_tool_has_an_explicit_budget_and_invalid_values_never_spawn",
+      "test_exhausted_producer_deadline_does_not_start_another_tool"
+    ],
+    "originalDiagnosticMethods": 6,
+    "newMethods": [
+      "test_actual_signal_and_drain_errors_remain_failed_and_close_owned_pipes",
+      "test_actual_timeout_uses_one_hard_kill_and_reaps_owned_child",
+      "test_private_spawn_failure_has_no_argv_or_raw_exception_chain"
+    ],
+    "newFaultScenarios": [
+      "actual single hard-kill/reap/closed pipes",
+      "injected group EPERM around a real owned child",
+      "injected drain TimeoutExpired around a real owned child",
+      "injected communicate OSError around a real owned child",
+      "spawn FileNotFoundError without a child"
+    ],
+    "privateCanaryAndRawChainRejected": true,
+    "resourceWarningsObserved": false,
+    "priorMacFiveNotAddedToThisCount": true
+  },
+  "independentStaticReview": {
+    "reviewer": "/root/renewal_macho_materials",
+    "confirmedBlockers": 0,
+    "scope": "bounded_child/run current two-source draft; no edit or execution",
+    "notes": "Confirmed single pre-reap hard signal; genuine group/drain/reap errors stay failed, safe issue schema excludes command/message/filename, private streams stay unpublished and raw timeout cause is suppressed."
+  },
+  "limits": [
+    "Local execution proves Windows owned-child/error/privacy regressions only. The new macOS process-group behavior and codesign producer remain unexecuted until the next concentrated source-bound job.",
+    "If the OS genuinely denies all permitted termination, no broader kill or privilege change is attempted. Unreaped/undrained facts remain explicit failure; group EPERM is never treated as ESRCH or success.",
+    "communicate still buffers child output in memory; this change does not claim a streaming memory bound. Windows does not receive a POSIX process-group guarantee.",
+    "The public XNU source is preserved by raw SHA; it is not asserted to be the exact kernel revision of the historical runner.",
+    "No account/Keychain secret, real IPA or private source was read; no trust settings/searchlist or user/system process was changed."
+  ],
+  "changes": {
+    "canonicalFilesModified": 0,
+    "CIQueries": 0,
+    "CITriggered": false,
+    "macOSExecuted": false,
+    "nativeSDKExecutedMethods": 0,
+    "productionFilesChanged": 1,
+    "testFilesChanged": 1
+  },
+  "diff": {
+    "path": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/review.diff",
+    "bytes": 16100,
+    "sha256": "f74f8747db7cadd812b96ce921a403ae718829ee3b7da64d804d46653e29773d"
+  }
+}

@@ -1,0 +1,527 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T06:12:24.835676+00:00",
+  "status": "terminal-platform-guard-failure-audited-and-production-cleanup-repair-integrated",
+  "sourceObservation": {
+    "sourceCommit": "fd0215dfba9a06741ca599299663844590d6bcbc",
+    "sourceTag": "reader-renewal-fd0215d",
+    "runID": 39378096389,
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39378096389",
+    "status": "completed",
+    "conclusion": "failure",
+    "observedAtUTC": "2026-10-20T06:03:43.067549+00:00",
+    "jobsObservedAtUTC": "2026-10-20T06:03:44.133881+00:00",
+    "jobs": [
+      {
+        "id": 118480677044,
+        "status": "completed",
+        "conclusion": "failure",
+        "steps": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "number": 3,
+            "name": "Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "number": 4,
+            "name": "Verify the exact source tag and portable evidence guards",
+            "status": "completed",
+            "conclusion": "failure"
+          },
+          {
+            "number": 5,
+            "name": "Select the installed toolchain and Simulator",
+            "status": "completed",
+            "conclusion": "skipped"
+          },
+          {
+            "number": 6,
+            "name": "Execute 251 handoff definitions with 253 exact native argument leaves",
+            "status": "completed",
+            "conclusion": "skipped"
+          },
+          {
+            "number": 7,
+            "name": "Execute ten independent source-only macOS package XCTest cases",
+            "status": "completed",
+            "conclusion": "skipped"
+          },
+          {
+            "number": 8,
+            "name": "Preserve independent package XCTest evidence without build products",
+            "status": "completed",
+            "conclusion": "skipped"
+          },
+          {
+            "number": 9,
+            "name": "Preserve native evidence and allowlisted public SDK fixture outputs",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "number": 10,
+            "name": "State the limited acceptance boundary",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "number": 19,
+            "name": "Post Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+            "status": "completed",
+            "conclusion": "skipped"
+          },
+          {
+            "number": 20,
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "number": 21,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      }
+    ],
+    "actualNativeMethodsAccepted": 0,
+    "actualPackageMethodsAccepted": 0,
+    "APIRequests": 2,
+    "CITriggered": false,
+    "polling": false
+  },
+  "artifact": {
+    "runID": 39378096389,
+    "sourceCommit": "fd0215dfba9a06741ca599299663844590d6bcbc",
+    "artifactID": 12244137468,
+    "name": "reader-renewal-probe-evidence",
+    "bytes": 7092,
+    "sha256": "2dcc178d89c98ac83025b04cb6f5e7736fe2e543e2fa6ccc077e033abc18f08d",
+    "githubSizeAndDigestMatched": true,
+    "extractedRoot": ".build/sdk-evidence/fd0215d/native",
+    "members": [
+      {
+        "member": "ci-logs/reader-renewal-existing-guards.log",
+        "bytes": 4221,
+        "sha256": "d29159a5b097c2ccfe58a6765b2719e4ee134d2fe8cdc6ba220cb93b2b0b2a7b"
+      },
+      {
+        "member": "ci-logs/reader-renewal-original-api-guards.log",
+        "bytes": 2503,
+        "sha256": "fdd634042ebfbb7dc594bb7351adf97b7ba0f086bb27223898432ee102a471f9"
+      },
+      {
+        "member": "ci-logs/reader-renewal-producer-guards.log",
+        "bytes": 1142,
+        "sha256": "b1a87ff7c13be81bbe2a759f32ddba0c8575f0ca17b596ce17953525dfa44b3e"
+      },
+      {
+        "member": "ci-logs/reader-renewal-guards.log",
+        "bytes": 10546,
+        "sha256": "d5af68d530b3ed57a68dc5518ee846d82f54ae5c7039891944ea758ae9ff0529"
+      },
+      {
+        "member": "ci-logs/reader-renewal-producer-timeout-guards.log",
+        "bytes": 4656,
+        "sha256": "943cbeb3ec0b6c18bbe7495870b72863674d904d2ccab55b01429f0cc0ba800c"
+      },
+      {
+        "member": "ci-logs/reader-renewal-report-inspector-guards.log",
+        "bytes": 5787,
+        "sha256": "cea3d23da09b5fdcdc81cd7827bde65fd5c4aa386f5d478a84548b1c406cc3b4"
+      }
+    ],
+    "artifactListRequests": 1,
+    "downloads": 1,
+    "CITriggered": false,
+    "polling": false
+  },
+  "actualPlatformPortableGuards": {
+    "attempted": 133,
+    "passed": 132,
+    "errors": 1,
+    "details": [
+      {
+        "rawLog": {
+          "member": "ci-logs/reader-renewal-existing-guards.log",
+          "bytes": 4221,
+          "sha256": "d29159a5b097c2ccfe58a6765b2719e4ee134d2fe8cdc6ba220cb93b2b0b2a7b"
+        },
+        "ran": 24,
+        "passed": [
+          "__main__.SmokeEvidenceTests.test_argument_walker_replays_the_actual_frozen_xcresult_schema",
+          "__main__.SmokeEvidenceTests.test_exact_nonzero_test_counts_and_zero_skips_are_required",
+          "__main__.SmokeEvidenceTests.test_execution_gate_rejects_missing_extra_skipped_or_failed_device_runs",
+          "__main__.SmokeEvidenceTests.test_explicit_source_stamp_binds_full_and_short_sha_in_info_and_record",
+          "__main__.SmokeEvidenceTests.test_independent_source_ids_require_no_project_mutation_and_no_fake_overlay",
+          "__main__.SmokeEvidenceTests.test_invalid_source_stamp_is_rejected_before_info_or_record_mutation",
+          "__main__.SmokeEvidenceTests.test_local_info_rejects_string_flag_or_configured_gateway",
+          "__main__.SmokeEvidenceTests.test_local_product_cli_requires_the_test_tree_and_emits_source_identities",
+          "__main__.SmokeEvidenceTests.test_local_product_rejects_green_wrong_duplicate_or_missing_method_cases",
+          "__main__.SmokeEvidenceTests.test_local_product_rejects_malformed_test_trees",
+          "__main__.SmokeEvidenceTests.test_local_product_rejects_missing_extra_duplicate_skipped_or_failed_argument_leaves",
+          "__main__.SmokeEvidenceTests.test_local_product_requires_exact_source_method_identities_and_argument_counts",
+          "__main__.SmokeEvidenceTests.test_local_product_source_inventory_binds_the_single_serialized_font_suite",
+          "__main__.SmokeEvidenceTests.test_local_product_summary_cannot_substitute_old_counts_or_hide_execution_failures",
+          "__main__.SmokeEvidenceTests.test_overlay_review_rejects_tampered_source_or_additional_changes",
+          "__main__.SmokeEvidenceTests.test_parameterized_summary_separates_method_and_execution_counts",
+          "__main__.SmokeEvidenceTests.test_result_cli_requires_local_product_method_evidence",
+          "__main__.SmokeEvidenceTests.test_result_cli_requires_the_independent_paging_summary",
+          "__main__.SmokeEvidenceTests.test_result_requires_built_simulator_local_mode_and_keeps_device_pending",
+          "__main__.SmokeEvidenceTests.test_smoke_tag_must_match_current_sha7",
+          "__main__.SmokeEvidenceTests.test_source_info_overlay_is_boolean_and_replaces_only_cloud_configuration",
+          "__main__.SmokeEvidenceTests.test_source_inventory_rejects_method_ownership_serialization_and_argument_drift",
+          "__main__.SmokeEvidenceTests.test_source_overlay_refuses_overwriting_audit_before_mutation",
+          "__main__.SmokeEvidenceTests.test_stamped_review_rejects_record_and_info_source_mismatches"
+        ],
+        "errors": [],
+        "resourceWarningsObserved": false
+      },
+      {
+        "rawLog": {
+          "member": "ci-logs/reader-renewal-original-api-guards.log",
+          "bytes": 2503,
+          "sha256": "fdd634042ebfbb7dc594bb7351adf97b7ba0f086bb27223898432ee102a471f9"
+        },
+        "ran": 12,
+        "passed": [
+          "__main__.OriginalAPIPackageEvidenceTests.test_actual_toolchain_version_help_and_evidence_files_cannot_be_missing_or_replaced",
+          "__main__.OriginalAPIPackageEvidenceTests.test_exact_filter_matches_reviewed_methods_and_rejects_every_broadened_identity",
+          "__main__.OriginalAPIPackageEvidenceTests.test_exact_qualified_xml_rejects_missing_extra_duplicates_and_false_outcomes",
+          "__main__.OriginalAPIPackageEvidenceTests.test_new_unbound_compiled_files_missing_files_and_links_cannot_enter_the_closure",
+          "__main__.OriginalAPIPackageEvidenceTests.test_package_and_guard_sources_are_head_matched_and_immutable_after_prepare",
+          "__main__.OriginalAPIPackageEvidenceTests.test_prepare_result_identity_filter_manifest_and_json_types_cannot_change",
+          "__main__.OriginalAPIPackageEvidenceTests.test_real_command_status_and_serial_xctest_configuration_are_required",
+          "__main__.OriginalAPIPackageEvidenceTests.test_runtime_mode_tag_developer_directory_and_skip_overrides_fail_before_preparing",
+          "__main__.OriginalAPIPackageEvidenceTests.test_summary_only_log_and_skipped_failed_duplicate_or_unqualified_cases_fail",
+          "__main__.OriginalAPIPackageEvidenceTests.test_valid_xml_and_each_verbose_xctest_leaf_are_both_required",
+          "__main__.OriginalAPIPackageEvidenceTests.test_workflow_keeps_package_evidence_separate_and_has_no_binary_upload",
+          "__main__.OriginalAPIPackageEvidenceTests.test_xml_log_byte_budgets_and_non_darwin_execution_remain_explicit"
+        ],
+        "errors": [],
+        "resourceWarningsObserved": false
+      },
+      {
+        "rawLog": {
+          "member": "ci-logs/reader-renewal-producer-guards.log",
+          "bytes": 1142,
+          "sha256": "b1a87ff7c13be81bbe2a759f32ddba0c8575f0ca17b596ce17953525dfa44b3e"
+        },
+        "ran": 6,
+        "passed": [
+          "__main__.ProducerDiagnosticsTests.test_actual_private_child_failure_publishes_no_stream_or_command",
+          "__main__.ProducerDiagnosticsTests.test_actual_public_child_failure_reaches_existing_uploaded_stdout",
+          "__main__.ProducerDiagnosticsTests.test_malformed_private_import_status_is_suppressed_not_echoed",
+          "__main__.ProducerDiagnosticsTests.test_private_public_log_request_is_rejected_before_child_executes",
+          "__main__.ProducerDiagnosticsTests.test_public_capture_is_bounded_and_redacts_secrets_before_truncation",
+          "__main__.ProducerDiagnosticsTests.test_typed_public_import_facts_keep_other_process_acl_unverified"
+        ],
+        "errors": [],
+        "resourceWarningsObserved": false
+      },
+      {
+        "rawLog": {
+          "member": "ci-logs/reader-renewal-guards.log",
+          "bytes": 10546,
+          "sha256": "d5af68d530b3ed57a68dc5518ee846d82f54ae5c7039891944ea758ae9ff0529"
+        },
+        "ran": 53,
+        "passed": [
+          "__main__.RenewalProbeEvidenceTests.test_actual_case_identities_not_just_summary_count_are_required",
+          "__main__.RenewalProbeEvidenceTests.test_all_five_built_privacy_localizations_are_required_and_source_matched",
+          "__main__.RenewalProbeEvidenceTests.test_bounded_export_runs_real_owned_child_and_retains_nonzero_timeout_and_size_outcomes",
+          "__main__.RenewalProbeEvidenceTests.test_boundmaterials_accepts_only_exact_affected_leaves_and_rejects_cross_mode_or_incomplete_evidence",
+          "__main__.RenewalProbeEvidenceTests.test_boundmaterials_leaf_set_matches_all_actual_selected_swift_declarations",
+          "__main__.RenewalProbeEvidenceTests.test_boundmaterials_new_inputs_are_required_and_hash_bound_before_and_after_tests",
+          "__main__.RenewalProbeEvidenceTests.test_boundmaterials_wrapper_and_workflow_keep_one_cold_result_and_legacy_modes",
+          "__main__.RenewalProbeEvidenceTests.test_built_metadata_rejects_missing_duplicate_or_broadened_bonjour_services",
+          "__main__.RenewalProbeEvidenceTests.test_built_privacy_fallback_must_match_both_actual_project_configurations",
+          "__main__.RenewalProbeEvidenceTests.test_cli_verification_rejects_groups_outside_each_exact_mode",
+          "__main__.RenewalProbeEvidenceTests.test_controlledsigning_new_sources_and_existing_keychain_dependency_are_hash_bound",
+          "__main__.RenewalProbeEvidenceTests.test_controlledsigning_requires_only_its_twenty_three_exact_native_leaves",
+          "__main__.RenewalProbeEvidenceTests.test_controlledsigning_source_methods_wrapper_and_workflow_keep_sdk_groups_independent",
+          "__main__.RenewalProbeEvidenceTests.test_cryptography_inputs_cannot_be_mutated_or_removed_from_the_source_binding",
+          "__main__.RenewalProbeEvidenceTests.test_cryptography_selection_requires_exact_twenty_five_cases_and_keeps_artifacts_separate",
+          "__main__.RenewalProbeEvidenceTests.test_discovery_summary_and_exact_method_identity_evidence_cannot_be_omitted",
+          "__main__.RenewalProbeEvidenceTests.test_handoff_commands_wrapper_workflow_bind_one_complete_native_and_separate_history",
+          "__main__.RenewalProbeEvidenceTests.test_handoff_exact_union_preserves_all_prior_methods_and_both_bool_leaves",
+          "__main__.RenewalProbeEvidenceTests.test_handoff_phase_records_real_timeout_and_integrity_failure_without_success",
+          "__main__.RenewalProbeEvidenceTests.test_handoff_pipeline_preserves_real_first_failure_and_still_runs_full_native_once",
+          "__main__.RenewalProbeEvidenceTests.test_handoff_preparation_binding_and_historical_comparisons_cannot_imply_new_tag_pass",
+          "__main__.RenewalProbeEvidenceTests.test_handoff_result_rejects_failed_missing_changed_phase_and_required_sdk_fixture",
+          "__main__.RenewalProbeEvidenceTests.test_implementation_selection_accepts_only_eleven_exact_policy_and_material_cases",
+          "__main__.RenewalProbeEvidenceTests.test_integrated_dependencies_remain_exactly_source_bound_after_staging",
+          "__main__.RenewalProbeEvidenceTests.test_integrated_leaf_union_matches_source_and_excludes_storage_benchmark",
+          "__main__.RenewalProbeEvidenceTests.test_integrated_producer_metadata_cannot_bypass_real_raw_output_checks_or_leak_private_data",
+          "__main__.RenewalProbeEvidenceTests.test_integrated_resource_and_generated_public_bytes_cannot_change_before_or_after_execution",
+          "__main__.RenewalProbeEvidenceTests.test_integrated_result_requires_actual_resource_chain_and_preserves_unverified_boundaries",
+          "__main__.RenewalProbeEvidenceTests.test_integrated_runtime_rejects_missing_stale_malformed_or_excess_loader_markers",
+          "__main__.RenewalProbeEvidenceTests.test_material_module_and_tests_are_required_exact_source_bound_inputs",
+          "__main__.RenewalProbeEvidenceTests.test_metadata_inputs_cannot_use_an_unreviewed_overlay_to_hide_source_changes",
+          "__main__.RenewalProbeEvidenceTests.test_new_tag_is_explicit_and_does_not_widen_default_smoke",
+          "__main__.RenewalProbeEvidenceTests.test_prepare_rejects_changed_probe_inputs_and_prior_evidence",
+          "__main__.RenewalProbeEvidenceTests.test_prepare_rejects_runtime_payload_mode_before_mutation",
+          "__main__.RenewalProbeEvidenceTests.test_prepare_stamps_source_and_preserves_zero_owned_id_overlay",
+          "__main__.RenewalProbeEvidenceTests.test_privacy_strings_decode_unicode_escapes_without_changing_literal_backslashes",
+          "__main__.RenewalProbeEvidenceTests.test_replacement_selection_requires_only_its_five_exact_cases_and_never_accepts_unselected_groups",
+          "__main__.RenewalProbeEvidenceTests.test_result_rejects_changed_source_audit_and_working_source",
+          "__main__.RenewalProbeEvidenceTests.test_result_rejects_device_host_real_cloud_config_and_jvm_payload",
+          "__main__.RenewalProbeEvidenceTests.test_result_rejects_missing_source_stamp_in_audit_or_built_info",
+          "__main__.RenewalProbeEvidenceTests.test_result_rejects_skips_missing_counts_and_incorrect_group_counts",
+          "__main__.RenewalProbeEvidenceTests.test_sealedmaterials_accepts_only_the_exact_forty_eight_affected_methods",
+          "__main__.RenewalProbeEvidenceTests.test_sealedmaterials_expected_identities_match_real_swift_test_declarations",
+          "__main__.RenewalProbeEvidenceTests.test_sealedmaterials_new_inputs_are_required_and_cannot_hide_source_changes",
+          "__main__.RenewalProbeEvidenceTests.test_selection_rejects_invalid_values_before_prepare_and_prepare_result_mode_changes",
+          "__main__.RenewalProbeEvidenceTests.test_signature_module_and_tests_are_required_exact_source_bound_inputs",
+          "__main__.RenewalProbeEvidenceTests.test_signature_selection_accepts_only_nine_exact_structural_cases",
+          "__main__.RenewalProbeEvidenceTests.test_transaction_collector_preserves_actual_failure_and_partial_raw_exports",
+          "__main__.RenewalProbeEvidenceTests.test_transaction_rejects_duplicate_missing_renamed_or_skipped_argument_executions",
+          "__main__.RenewalProbeEvidenceTests.test_transaction_result_binds_native_exit_arguments_details_and_sdk_resource",
+          "__main__.RenewalProbeEvidenceTests.test_transaction_union_has_178_definitions_and_180_exact_bool_leaves",
+          "__main__.RenewalProbeEvidenceTests.test_transaction_wrapper_is_one_cold_run_retains_failure_exit_and_rechecks_independent_spm",
+          "__main__.RenewalProbeEvidenceTests.test_valid_result_keeps_real_device_and_renewal_unverified"
+        ],
+        "errors": [],
+        "resourceWarningsObserved": false
+      },
+      {
+        "rawLog": {
+          "member": "ci-logs/reader-renewal-producer-timeout-guards.log",
+          "bytes": 4656,
+          "sha256": "943cbeb3ec0b6c18bbe7495870b72863674d904d2ccab55b01429f0cc0ba800c"
+        },
+        "ran": 6,
+        "passed": [
+          "__main__.ProducerToolTimeoutTests.test_actual_public_timeout_terminates_child_and_retains_failure_log",
+          "__main__.ProducerToolTimeoutTests.test_actual_remaining_producer_budget_caps_a_longer_tool_budget",
+          "__main__.ProducerToolTimeoutTests.test_cleanup_has_a_separate_real_child_budget_after_producer_expiry",
+          "__main__.ProducerToolTimeoutTests.test_each_producer_tool_has_an_explicit_budget_and_invalid_values_never_spawn",
+          "__main__.ProducerToolTimeoutTests.test_exhausted_producer_deadline_does_not_start_another_tool"
+        ],
+        "errors": [
+          "__main__.ProducerToolTimeoutTests.test_actual_private_timeout_never_forwards_partial_status_or_secret"
+        ],
+        "resourceWarningsObserved": true
+      },
+      {
+        "rawLog": {
+          "member": "ci-logs/reader-renewal-report-inspector-guards.log",
+          "bytes": 5787,
+          "sha256": "cea3d23da09b5fdcdc81cd7827bde65fd5c4aa386f5d478a84548b1c406cc3b4"
+        },
+        "ran": 32,
+        "passed": [
+          "__main__.SyntheticInspectorTests.test_bounded_selection_keeps_skipped_count_independent_of_tcp_early_success",
+          "__main__.SyntheticInspectorTests.test_cli_reads_only_explicit_inputs_and_does_not_echo_rejected_private_values",
+          "__main__.SyntheticInspectorTests.test_duplicate_nonfinite_invalid_utf8_and_oversized_inputs_are_rejected",
+          "__main__.SyntheticInspectorTests.test_early_discovery_failures_changes_and_limits_need_no_error_guess",
+          "__main__.SyntheticInspectorTests.test_elapsed_accepts_late_scheduling_without_claiming_deadline_accuracy",
+          "__main__.SyntheticInspectorTests.test_envelope_version_environment_start_and_cancel_match_the_report",
+          "__main__.SyntheticInspectorTests.test_explicit_manifest_without_external_digest_is_only_schema_checked",
+          "__main__.SyntheticInspectorTests.test_external_manifest_digest_binds_a_future_source_without_hardcoding_build_twelve",
+          "__main__.SyntheticInspectorTests.test_false_flags_context_and_tcp_payload_use_strict_json_types",
+          "__main__.SyntheticInspectorTests.test_full_four_endpoint_budget_preserves_serial_terminal_attempts",
+          "__main__.SyntheticInspectorTests.test_legacy_schema_two_reports_keep_their_original_absent_selection_fields",
+          "__main__.SyntheticInspectorTests.test_mismatched_valid_manifest_build_source_or_version_is_rejected",
+          "__main__.SyntheticInspectorTests.test_missing_optional_source_metadata_can_only_produce_schema_only",
+          "__main__.SyntheticInspectorTests.test_overall_deadline_or_cancel_can_interrupt_exactly_one_tcp_attempt",
+          "__main__.SyntheticInspectorTests.test_overflow_counts_include_the_observation_that_crossed_the_guard",
+          "__main__.SyntheticInspectorTests.test_ownership_failure_can_follow_completed_unsuccessful_attempts",
+          "__main__.SyntheticInspectorTests.test_removed_expired_and_budget_limited_candidates_have_valid_counts",
+          "__main__.SyntheticInspectorTests.test_resolution_errors_waiting_and_empty_windows_are_distinct",
+          "__main__.SyntheticInspectorTests.test_schema_one_contract_retains_the_frozen_original_bytes",
+          "__main__.SyntheticInspectorTests.test_schema_one_does_not_accept_schema_two_or_private_additions",
+          "__main__.SyntheticInspectorTests.test_schema_one_known_builds_remain_compatible_and_unattested",
+          "__main__.SyntheticInspectorTests.test_schema_two_empty_and_tcp_ready_are_never_renewal_evidence",
+          "__main__.SyntheticInspectorTests.test_selection_accepts_empty_four_and_thirty_two_endpoint_boundaries",
+          "__main__.SyntheticInspectorTests.test_selection_counts_cannot_precede_a_normal_closed_window",
+          "__main__.SyntheticInspectorTests.test_selection_counts_survive_later_snapshot_ttl_cancel_and_deadline_failures",
+          "__main__.SyntheticInspectorTests.test_selection_rejects_wrong_arithmetic_limits_and_resolved_caps",
+          "__main__.SyntheticInspectorTests.test_selection_triplet_requires_all_fields_and_strict_integer_values",
+          "__main__.SyntheticInspectorTests.test_snapshot_prestart_outcomes_remain_consistent",
+          "__main__.SyntheticInspectorTests.test_tcp_errors_are_normalized_and_cannot_claim_unattempted_stages",
+          "__main__.SyntheticInspectorTests.test_tcp_ready_cancelled_and_failure_terminate_in_the_right_order",
+          "__main__.SyntheticInspectorTests.test_unknown_and_private_fields_are_rejected_at_every_report_level",
+          "__main__.SyntheticInspectorTests.test_unverifiable_or_wrong_digest_manifests_never_establish_provenance"
+        ],
+        "errors": [],
+        "resourceWarningsObserved": false
+      }
+    ],
+    "theseArePythonGuardsNotNativeMethods": true
+  },
+  "actualNativeSDKMethodsExecuted": 0,
+  "actualPackageMethodsExecuted": 0,
+  "actualCodesignProducerExecuted": false,
+  "toolchainSelectionExecuted": false,
+  "actualFailure": {
+    "sourceTag": "reader-renewal-fd0215d",
+    "runID": 39378096389,
+    "stage": "portable guards before toolchain/native",
+    "rawLog": {
+      "path": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/actual-diagnostic/reader-renewal-producer-timeout-guards.log",
+      "bytes": 4656,
+      "sha256": "943cbeb3ec0b6c18bbe7495870b72863674d904d2ccab55b01429f0cc0ba800c"
+    },
+    "actualMethods": 6,
+    "passed": 5,
+    "errors": 1,
+    "failedMethod": "ProducerToolTimeoutTests.test_actual_private_timeout_never_forwards_partial_status_or_secret",
+    "rootCause": "After communicate TimeoutExpired the immediate TERM then group KILL sequence raised PermissionError EPERM at the second signal, bypassing drain/reap and surfacing the raw TimeoutExpired command chain. ResourceWarnings record unreaped Popen/open pipes.",
+    "nativeMethodsExecuted": 0,
+    "codesignRepairExecuted": false
+  },
+  "repair": {
+    "sourceBinding": {
+      "files": [
+        {
+          "intendedPath": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+          "work": {
+            "path": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/work/generate-sdk-owned-package.py",
+            "bytes": 30463,
+            "sha256": "6577d43ba2c04bc267b5c74632dbe4cdea0322883abefb15e18de89c46936520"
+          },
+          "snapshot": {
+            "path": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/final-sources/generate-sdk-owned-package.py",
+            "bytes": 30463,
+            "sha256": "6577d43ba2c04bc267b5c74632dbe4cdea0322883abefb15e18de89c46936520"
+          },
+          "canonicalBefore": {
+            "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+            "bytes": 27394,
+            "sha256": "79f2d0f8769988f5a87b597d5d01e434137edcd3e15438e13e4e624669f5e58f"
+          }
+        },
+        {
+          "intendedPath": "scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py",
+          "work": {
+            "path": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/work/test-producer-timeouts.py",
+            "bytes": 11655,
+            "sha256": "30af8da39c75cac6b8a0c6819be41c1b9b34cc8975a88635438e72ab6eb77cfa"
+          },
+          "snapshot": {
+            "path": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/final-sources/test-producer-timeouts.py",
+            "bytes": 11655,
+            "sha256": "30af8da39c75cac6b8a0c6819be41c1b9b34cc8975a88635438e72ab6eb77cfa"
+          },
+          "canonicalBefore": {
+            "path": "scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py",
+            "bytes": 6123,
+            "sha256": "2d74492cffcdff0f1df585c3a1d7a20a9c99bc51fc799f39485220658abf156f"
+          }
+        }
+      ],
+      "sourceInputsForActualPortableRun": [
+        {
+          "path": "generate-sdk-owned-package.py",
+          "bytes": 30463,
+          "sha256": "6577d43ba2c04bc267b5c74632dbe4cdea0322883abefb15e18de89c46936520",
+          "snapshot": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/portable-v1-sources/generate-sdk-owned-package.py"
+        },
+        {
+          "path": "test-producer-timeouts.py",
+          "bytes": 11655,
+          "sha256": "30af8da39c75cac6b8a0c6819be41c1b9b34cc8975a88635438e72ab6eb77cfa",
+          "snapshot": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/portable-v1-sources/test-producer-timeouts.py"
+        },
+        {
+          "path": "test-producer-diagnostics.py",
+          "bytes": 6262,
+          "sha256": "e8accbbb0f8931a2756c74ffd58bb36dc2de93da71c7961e4fd8434d61ee90bc",
+          "snapshot": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/portable-v1-sources/test-producer-diagnostics.py"
+        },
+        {
+          "path": "run_suite.py",
+          "bytes": 981,
+          "sha256": "8d9d34458e880c01f9ad0cb3776aec60f5a26fb50cc3411f285e9c98aeed8f2b",
+          "snapshot": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/portable-v1-sources/run_suite.py"
+        }
+      ],
+      "canonicalUnchanged": true
+    },
+    "implementation": [
+      "At hard deadline, issue one SIGKILL to this tool-owned process group before reaping; no preliminary TERM or repeated group signal. The group originates solely from Popen(start_new_session=True).",
+      "Always perform bounded communication (1 second), close owned pipes, and bounded wait/reap (0.5 seconds), keeping independent drain/reap/pipe and safe issue facts. No wait searches other processes.",
+      "A genuine group signaling error remains a typed ToolProcessFailure with sanitized stage/type/errno and non-success status. A direct KILL only to the same unreaped leader attempts to prevent its leak; it does not claim group termination.",
+      "Raw TimeoutExpired/OSError cmd/message/filename are never formatted or chained into published private diagnostics. Private stdout/stderr/importer partial status remain suppressed; new safe failures are raised from None outside raw handlers.",
+      "Original global300/per-tool/cleanup10-second budgets, independent cleanup deadline, actual codesign/CMS requirements, owned Keychain/trust/searchlist boundaries remain unchanged."
+    ],
+    "actualPortableWindowsMethodsPassed": 15,
+    "newMethods": [
+      "test_actual_signal_and_drain_errors_remain_failed_and_close_owned_pipes",
+      "test_actual_timeout_uses_one_hard_kill_and_reaps_owned_child",
+      "test_private_spawn_failure_has_no_argv_or_raw_exception_chain"
+    ],
+    "resourceWarningsObserved": false,
+    "MacRepairExecuted": 0,
+    "codesignAcceptanceResolved": false,
+    "primarySources": {
+      "index": {
+        "path": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/primary-sources.json",
+        "bytes": 1033,
+        "sha256": "a07089781bb5eb7b85fe504119980bff7ca3fc6bb29d45f9e3693aacefa3f7fc"
+      },
+      "facts": [
+        {
+          "url": "https://docs.python.org/3.12/library/subprocess.html#subprocess.Popen.communicate",
+          "meaning": "communicate timeout does not terminate the child; cleanup must signal and finish communication. TimeoutExpired retains the original command."
+        },
+        {
+          "url": "https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/killpg.2.html",
+          "meaning": "EPERM is an actual permission error, distinct from ESRCH; it cannot simply count as successful termination."
+        },
+        {
+          "url": "https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/bsd/kern/kern_sig.c",
+          "raw": {
+            "path": ".build/renewal-discovery/sdk-producer-timeout-cleanup-step/primary/xnu-kern_sig.c",
+            "bytes": 94169,
+            "sha256": "343742eb42c5b584c529d348f9772ce03ffedd3be9d986badd60692459b6acdf"
+          },
+          "lines": [
+            1713,
+            1718
+          ],
+          "meaning": "This public XNU source excludes SZOMB in process-group iteration and returns POSIX EPERM when no signalable member is counted. TERM-to-zombie before immediate KILL is a source-supported explanation, not a measured runtime kernel/process-state diagnosis."
+        }
+      ]
+    },
+    "limits": [
+      "Local execution proves Windows owned-child/error/privacy regressions only. The new macOS process-group behavior and codesign producer remain unexecuted until the next concentrated source-bound job.",
+      "If the OS genuinely denies all permitted termination, no broader kill or privilege change is attempted. Unreaped/undrained facts remain explicit failure; group EPERM is never treated as ESRCH or success.",
+      "communicate still buffers child output in memory; this change does not claim a streaming memory bound. Windows does not receive a POSIX process-group guarantee.",
+      "The public XNU source is preserved by raw SHA; it is not asserted to be the exact kernel revision of the historical runner.",
+      "No account/Keychain secret, real IPA or private source was read; no trust settings/searchlist or user/system process was changed."
+    ]
+  },
+  "rootReview": [
+    "Checked actual six artifact raw logs and133 distinct guard attempts; one public timeout result interleaves ResourceWarnings from the failed previous private case and is parsed by its original standalone ok verdict.",
+    "Checked all174 planned source bytes against immutable fd0215d. No source-inputs/xcresult/toolchain/SDK fixture was produced by the skipped native phase.",
+    "Checked one pre-reap hard group signal, bounded drain/close/wait and safe typed process failures. A genuine EPERM never becomes success, and fallback only targets that same unreaped child.",
+    "The public XNU zombie-exclusion source supports the TERM/KILL race explanation as an inference; this run did not capture the actual process state. New Mac behavior still requires real verification."
+  ],
+  "nextAction": "Consolidate the real producer repair with the newly integrated Cookie-read Swift callbacks, then perform one complete native255 plus independent changed-Package10 SDK stage. Portable failure must preserve the full-gate failure while allowing source-valid native diagnostics.",
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-handoff-renewal-sdk-first-results",
+    "manifest": "manifest.json",
+    "rawFiles": 26
+  },
+  "newCloudBuildRequested": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

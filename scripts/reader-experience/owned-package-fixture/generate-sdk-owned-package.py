@@ -28,6 +28,20 @@ class ToolTimeout(ToolFailure):
     def __init__(self, tool, seconds, returncode, started):
         super().__init__(tool,124)
         self.seconds=seconds;self.returncode=returncode;self.started=started
+class ToolProcessFailure(ToolFailure):
+    def __init__(self, tool, timed_out, returncode, started, issues):
+        super().__init__(tool,125)
+        self.timed_out=timed_out;self.returncode=returncode;self.started=started;self.issues=issues
+
+def process_issue(stage, error):
+    # Never format an OS/subprocess exception: TimeoutExpired.cmd and an OSError
+    # message/filename may contain a private command or input-derived data.
+    name=type(error).__name__
+    if name not in ('PermissionError','ProcessLookupError','TimeoutExpired','OSError',
+                    'FileNotFoundError','BrokenPipeError','ValueError'):
+        name='Exception'
+    number=getattr(error,'errno',None)
+    return {'stage':stage,'errorType':name,'errno':number if type(number) is int else None}
 
 def tool_timeout(args, override=None, cleanup=False):
     name=Path(str(args[0])).name
@@ -39,44 +53,68 @@ def tool_timeout(args, override=None, cleanup=False):
         seconds=min(seconds,max(0,PRODUCER_DEADLINE-time.monotonic()))
     return seconds
 
-def terminate_owned_group(process, force):
+def terminate_owned_group(process):
     # A fresh group belongs to this one started tool. Never signal a global
     # securityd/trustd, a login session, or a process group supplied by a caller.
     try:
-        if os.name=='posix':os.killpg(process.pid,signal.SIGKILL if force else signal.SIGTERM)
-        elif force:process.kill()
-        else:process.terminate()
+        if os.name=='posix':os.killpg(process.pid,signal.SIGKILL)
+        else:process.kill()
     except ProcessLookupError:pass
 
 def bounded_child(args, input, env, seconds):
     if seconds<=0:raise ToolTimeout(Path(str(args[0])).name,0,None,False)
     options={'start_new_session':True} if os.name=='posix' else {}
-    process=subprocess.Popen(list(map(str,args)),stdin=subprocess.PIPE if input is not None else subprocess.DEVNULL,
-        stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=env,**options)
+    process=None;stdout=b'';stderr=b'';timed_out=False;interrupt=None;issues=[]
+    cleanup={'hardKillAttempted':False,'drained':False,'childReaped':False,'pipesClosed':True,'issues':issues}
     try:
-        stdout,stderr=process.communicate(input=input,timeout=seconds)
-        return subprocess.CompletedProcess(args,process.returncode,stdout,stderr),False
-    except subprocess.TimeoutExpired as first:
-        # Kill before reaping the leader so the owned process-group identity cannot
-        # be reused between the timeout and signalling its descendants. No child is
-        # allowed a fresh unbounded grace period after the tool's allocation ended.
-        terminate_owned_group(process,False)
-        terminate_owned_group(process,True)
-        try:stdout,stderr=process.communicate(timeout=KILL_DRAIN_SECONDS)
-        except subprocess.TimeoutExpired as final:
-            stdout,stderr=final.output or first.output or b'',final.stderr or first.stderr or b''
+        try:
+            process=subprocess.Popen(list(map(str,args)),stdin=subprocess.PIPE if input is not None else subprocess.DEVNULL,
+                stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=env,bufsize=0,**options)
+            stdout,stderr=process.communicate(input=input,timeout=seconds)
+            cleanup['drained']=True
+        except subprocess.TimeoutExpired as error:
+            timed_out=True;stdout=error.output or b'';stderr=error.stderr or b''
+        except Exception as error:
+            issues.append(process_issue('communicate' if process is not None else 'spawn',error))
+        except BaseException as error:
+            interrupt=error
+        if process is not None and (timed_out or issues or interrupt is not None):
+            # One hard signal at the already-expired deadline, before reaping.
+            # TERM followed immediately by KILL races Darwin's zombie exclusion.
+            # Never signal a possibly reused group after its leader was reaped.
+            if process.returncode is None:
+                cleanup['hardKillAttempted']=True
+                try:terminate_owned_group(process)
+                except Exception as error:
+                    issues.append(process_issue('groupKill',error))
+                    # A group permission failure remains failure. Killing only
+                    # this same unreaped leader does not prove group termination.
+                    try:
+                        if os.name=='posix':os.kill(process.pid,signal.SIGKILL)
+                        else:process.kill()
+                    except ProcessLookupError:pass
+                    except Exception as fallback:issues.append(process_issue('leaderKill',fallback))
+            try:
+                stdout,stderr=process.communicate(timeout=KILL_DRAIN_SECONDS)
+                cleanup['drained']=True
+            except subprocess.TimeoutExpired as error:
+                stdout=error.output or stdout;stderr=error.stderr or stderr
+                issues.append(process_issue('drain',error))
+            except Exception as error:issues.append(process_issue('drain',error))
+    finally:
+        if process is not None:
             for stream in (process.stdin,process.stdout,process.stderr):
                 if stream is not None:
                     try:stream.close()
-                    except OSError:pass
+                    except OSError as error:issues.append(process_issue('closePipe',error))
             try:process.wait(timeout=0.5)
-            except subprocess.TimeoutExpired:pass
-        return subprocess.CompletedProcess(args,process.returncode,stdout,stderr),True
-    except BaseException:
-        terminate_owned_group(process,True)
-        try:process.communicate(timeout=KILL_DRAIN_SECONDS)
-        except (subprocess.TimeoutExpired,OSError):pass
-        raise
+            except Exception as error:issues.append(process_issue('reap',error))
+            cleanup['childReaped']=process.returncode is not None
+            cleanup['pipesClosed']=all(stream is None or stream.closed for stream in (process.stdin,process.stdout,process.stderr))
+    if interrupt is not None:raise interrupt from None
+    result=subprocess.CompletedProcess(args,process.returncode if process is not None else None,stdout,stderr)
+    result.processStarted=process is not None;result.processCleanup=cleanup
+    return result,timed_out
 
 def public_text(raw):
     for literal in PRIVATE_LITERALS:
@@ -131,14 +169,19 @@ def run(args,*,input=None,env=None,private=False,public_log=None,public_status=F
     try:result,timed_out=bounded_child(args,input,env,seconds)
     except ToolTimeout:
         result=subprocess.CompletedProcess(args,None,b'',b'');timed_out=True
+        result.processStarted=False
+        result.processCleanup={'hardKillAttempted':False,'drained':False,'childReaped':False,'pipesClosed':True,'issues':[]}
     elapsed=time.monotonic()-started
     RECORDS.append({'argv':redacted,'exitCode':result.returncode,'privateInputBytesRetained':False,
-                    'timeoutSeconds':seconds,'timedOut':timed_out,'elapsedSeconds':elapsed})
-    if timed_out:
+                    'timeoutSeconds':seconds,'timedOut':timed_out,'elapsedSeconds':elapsed,
+                    'processCleanup':result.processCleanup})
+    if timed_out or result.processCleanup['issues']:
         # Private stdin tools never forward argv or arbitrary stdout/stderr, even
         # when their partial stdout happens to resemble an importer success object.
-        value={'schemaVersion':1,'status':'timeout','exitCode':124,'processReturnCode':result.returncode,
-               'timeoutSeconds':seconds,'elapsedSeconds':elapsed,'processStarted':seconds>0,
+        value={'schemaVersion':1,'status':'timeout' if timed_out else 'processFailure','timedOut':timed_out,
+               'exitCode':124 if timed_out else 125,'processReturnCode':result.returncode,
+               'processCleanup':result.processCleanup,
+               'timeoutSeconds':seconds,'elapsedSeconds':elapsed,'processStarted':result.processStarted,
                'failedToolSucceeded':False,'codesignSuccessEstablishedByThisFailureRecord':False,'nativeTestsExecuted':0}
         if private:
             value.update({'tool':'private-owned-tool','privateCommandPublished':False,'privateStreamsPublished':False})
@@ -147,8 +190,10 @@ def run(args,*,input=None,env=None,private=False,public_log=None,public_status=F
                           'stdout':public_text(result.stdout),'stderr':public_text(result.stderr),
                           'truncated':len(result.stdout)>PUBLIC_DIAGNOSTIC_BYTES or len(result.stderr)>PUBLIC_DIAGNOSTIC_BYTES})
             if public_log:Path(public_log).write_text(public_text(result.stdout+result.stderr),encoding='utf-8')
-        public_record('OWNED_TOOL_TIMEOUT',value)
-        raise ToolTimeout('private tool' if private else redacted[0],seconds,result.returncode,seconds>0)
+        public_record('OWNED_TOOL_TIMEOUT' if timed_out else 'OWNED_TOOL_PROCESS_FAILURE',value)
+        if result.processCleanup['issues']:
+            raise ToolProcessFailure('private tool' if private else redacted[0],timed_out,result.returncode,result.processStarted,result.processCleanup['issues']) from None
+        raise ToolTimeout('private tool' if private else redacted[0],seconds,result.returncode,result.processStarted) from None
     if public_log:Path(public_log).write_text(public_text(result.stdout+result.stderr),encoding='utf-8')
     if public_status:
         # A malformed/private stdout must remain suppressed even on failure.

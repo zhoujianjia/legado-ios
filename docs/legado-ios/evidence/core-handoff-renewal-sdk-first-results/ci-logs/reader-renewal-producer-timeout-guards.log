@@ -1,0 +1,49 @@
+test_actual_private_timeout_never_forwards_partial_status_or_secret (__main__.ProducerToolTimeoutTests.test_actual_private_timeout_never_forwards_partial_status_or_secret) ... ERROR
+test_actual_public_timeout_terminates_child_and_retains_failure_log (__main__.ProducerToolTimeoutTests.test_actual_public_timeout_terminates_child_and_retains_failure_log) ... /Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py:1127: ResourceWarning: subprocess 3039 is still running
+  _warn("subprocess %s is still running" % self.pid,
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+<frozen abc>:117: ResourceWarning: unclosed file <_io.FileIO name=5 mode='rb' closefd=True>
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+<frozen abc>:117: ResourceWarning: unclosed file <_io.FileIO name=7 mode='rb' closefd=True>
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_actual_remaining_producer_budget_caps_a_longer_tool_budget (__main__.ProducerToolTimeoutTests.test_actual_remaining_producer_budget_caps_a_longer_tool_budget) ... ok
+test_cleanup_has_a_separate_real_child_budget_after_producer_expiry (__main__.ProducerToolTimeoutTests.test_cleanup_has_a_separate_real_child_budget_after_producer_expiry) ... ok
+test_each_producer_tool_has_an_explicit_budget_and_invalid_values_never_spawn (__main__.ProducerToolTimeoutTests.test_each_producer_tool_has_an_explicit_budget_and_invalid_values_never_spawn) ... ok
+test_exhausted_producer_deadline_does_not_start_another_tool (__main__.ProducerToolTimeoutTests.test_exhausted_producer_deadline_does_not_start_another_tool) ... ok
+
+======================================================================
+ERROR: test_actual_private_timeout_never_forwards_partial_status_or_secret (__main__.ProducerToolTimeoutTests.test_actual_private_timeout_never_forwards_partial_status_or_secret)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py", line 57, in bounded_child
+    stdout,stderr=process.communicate(input=input,timeout=seconds)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py", line 1209, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py", line 2116, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py", line 1253, in _check_timeout
+    raise TimeoutExpired(
+subprocess.TimeoutExpired: Command '['/Library/Frameworks/Python.framework/Versions/3.12/bin/python', '-c', 'import sys,time;b=sys.stdin.buffer.read();sys.stdout.buffer.write(b);sys.stdout.flush();sys.stderr.buffer.write(b);sys.stderr.flush();time.sleep(30)']' timed out after 0.8 seconds
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py", line 50, in test_actual_private_timeout_never_forwards_partial_status_or_secret
+    producer.run([sys.executable, '-c', 'import sys,time;b=sys.stdin.buffer.read();sys.stdout.buffer.write(b);sys.stdout.flush();sys.stderr.buffer.write(b);sys.stderr.flush();time.sleep(30)'],
+  File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py", line 131, in run
+    try:result,timed_out=bounded_child(args,input,env,seconds)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py", line 64, in bounded_child
+    terminate_owned_group(process,True)
+  File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py", line 46, in terminate_owned_group
+    if os.name=='posix':os.killpg(process.pid,signal.SIGKILL if force else signal.SIGTERM)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 1] Operation not permitted
+
+----------------------------------------------------------------------
+Ran 6 tests in 3.303s
+
+FAILED (errors=1)
