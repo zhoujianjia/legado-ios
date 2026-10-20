@@ -737,7 +737,8 @@ extension SelfRenewalDeveloperAccountClientTests {
             } catch let failure as SelfRenewalAppSession.InitialNamespaceBindingFailure {
                 #expect(failure.namespaceID == namespaceID && failure.underlying as? KeychainHelper.ReadFailure == .invalidUTF8)
             }
-            #expect(storage.facts().insertedAccounts.isEmpty && (try Data(contentsOf: documentURL)) == intent)
+            let intentAfterUnreadableRead = try Data(contentsOf: documentURL)
+            #expect(storage.facts().insertedAccounts.isEmpty && intentAfterUnreadableRead == intent)
             try await unreadable.close()
             storage.failNextRead(.lookup(errSecInteractionNotAllowed))
             let date = c.fixture.date
@@ -748,7 +749,8 @@ extension SelfRenewalDeveloperAccountClientTests {
             await owner.initializeConfiguration(from: c.input)
             let ownerProblem = await owner.problem
             #expect(ownerProblem == .localStorage)
-            #expect(storage.facts().insertedAccounts.isEmpty && (try Data(contentsOf: documentURL)) == intent)
+            let intentAfterOwnerRead = try Data(contentsOf: documentURL)
+            #expect(storage.facts().insertedAccounts.isEmpty && intentAfterOwnerRead == intent)
             try await owner.close()
             let recovered = c.newSession(initialNamespaceStorage: storage)
             do {

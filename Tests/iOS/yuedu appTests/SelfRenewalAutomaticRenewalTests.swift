@@ -15,7 +15,7 @@ struct SelfRenewalAutomaticRenewalTests {
     @Test("actual current Bundle becomes a reverified bounded IPA and changed signed bytes cannot enter callback")
     func capturesActualCurrentBundleAndRejectsChangedSignedResources() async throws {
         try await Package.fixture { f in
-            let application = try await currentApplication(f)
+            let application = try await Self.currentApplication(f)
             let anchors = [f.oldAnchor] + f.issuer.certificateChainDER
             let actual = try await SelfRenewalApplicationMaterialVerifier.read(unpackedApplication: application,
                 codeAnchors: anchors, profileAnchors: anchors, at: f.date)
@@ -45,7 +45,7 @@ struct SelfRenewalAutomaticRenewalTests {
     @Test("opt-in and clock/throttle survive the same Document reopen without creating a transaction")
     func persistsOptInThrottleAndClockRollbackWithoutRemoteWork() async throws {
         try await Package.fixture { f in
-            let application = try await currentApplication(f)
+            let application = try await Self.currentApplication(f)
             let root = f.directory.appendingPathComponent("SelfRenewalApp")
             let owners = try await App.library(in: f.directory, at: f.date)
             let handoff = await owners.handoff
@@ -86,8 +86,8 @@ struct SelfRenewalAutomaticRenewalTests {
     @Test("one due trigger captures current Bundle, really signs, persists and sends exact candidate with all three owners")
     func performsFullActualAutomaticRenewalAndNeverRepostsAReceipt() async throws {
         try await Package.fixture { f in
-            let application = try await currentApplication(f)
-            try await extendPublishedProfiles(f)
+            let application = try await Self.currentApplication(f)
+            try await Self.extendPublishedProfiles(f)
             let root = f.directory.appendingPathComponent("SelfRenewalApp")
             let owner = await MainActor.run { SelfRenewalAppOwner(root: root, currentApplicationRoot: application, clock: { f.date }) }
             let owners = try await App.library(in: f.directory, at: f.date, handoff: owner.handoff)
@@ -131,8 +131,8 @@ struct SelfRenewalAutomaticRenewalTests {
     @Test("caller expiration cancels the actual automatic TLS task and awaits durable candidate recovery")
     func cancellationDrainsActualAutomaticTransportAndPersistsInterruption() async throws {
         try await Package.fixture { f in
-            let application = try await currentApplication(f)
-            try await extendPublishedProfiles(f)
+            let application = try await Self.currentApplication(f)
+            try await Self.extendPublishedProfiles(f)
             let root = f.directory.appendingPathComponent("SelfRenewalApp")
             let owners = try await App.library(in: f.directory, at: f.date)
             let handoff = await owners.handoff

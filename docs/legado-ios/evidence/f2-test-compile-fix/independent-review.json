@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "status": "independent-source-review-approved-no-remaining-definite-P1-P2",
+  "author": "/root/consolidated_core_sdk_delta",
+  "candidateManifest": {
+    "path": ".build/native-f2-test-compilation-fix-step/final-v1.json",
+    "bytes": 5377,
+    "sha256": "496a1ef474d21c94e68dde808377204aa952af377f396be26beb3c4d70b0b713"
+  },
+  "files": [
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "baseline": {
+        "bytes": 68061,
+        "sha256": "c61ed5265a4b4ccd79e8985b768fb63f2e7e5857a03b3112d9aeb20834c48428"
+      },
+      "candidate": {
+        "bytes": 68187,
+        "sha256": "27ab345e48c2bc52cbb12f35d952d3e5899d6da01d864baa2b1d27d073966c28"
+      },
+      "testDefinitionsUnchanged": 19,
+      "diff": {
+        "path": "diffs/SelfRenewalAccountSessionTests.swift.diff",
+        "bytes": 1440,
+        "sha256": "5330670cd9cde43958310897f36c4ca206732b1cfe6ca3fb21b0eda8b271476e"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+      "baseline": {
+        "bytes": 53418,
+        "sha256": "8b51ee95dc01f018d46393a8684bdc0b04d2f8b92a87571d3cb5f93350eff0ab"
+      },
+      "candidate": {
+        "bytes": 53471,
+        "sha256": "5737cba5485c3c37dc7a7d4a009b8bffee77259910df275799ec710508202ba0"
+      },
+      "testDefinitionsUnchanged": 11,
+      "diff": {
+        "path": "diffs/SelfRenewalDeveloperAuthenticationTests.swift.diff",
+        "bytes": 1224,
+        "sha256": "e9ec88562f261bd362fc72af3f14d537d76930114ee60a30d7183ed61d934002"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift",
+      "baseline": {
+        "bytes": 13723,
+        "sha256": "fef5457c8f4be3d4995a93c0417d2ea81589a5238bba82ff94a7539a40d4bdbb"
+      },
+      "candidate": {
+        "bytes": 13753,
+        "sha256": "675cdffcbe0c1d8033f58ed257599dc2b313d5092f7eed0ebc0882650ec81e1a"
+      },
+      "testDefinitionsUnchanged": 4,
+      "diff": {
+        "path": "diffs/SelfRenewalAutomaticRenewalTests.swift.diff",
+        "bytes": 2898,
+        "sha256": "aea30c74819e452f1548f5a189bfa437acd7e944d3410804c2abbba1b30465cc"
+      }
+    }
+  ],
+  "actualErrorBindings": {
+    "path": ".build/native-f2-test-compilation-fix-step/actual-error-bindings.json",
+    "bytes": 3516,
+    "sha256": "f2d9dcc25894439c41d16236eb974677c93b364b217c90f7ef2c3007b03640f4",
+    "uniqueDiagnostics": 11,
+    "changedSourceLocations": 10,
+    "actualSelectedJNIExecutions": 0
+  },
+  "findings": [],
+  "assessment": [
+    "Both AccountSession throwing file reads move outside Swift Testing #expect short-circuit autoclosures. Each checkpoint still reads that same configuration.json, requires the original intent bytes and empty insertedAccounts, and ordinary read failures still throw.",
+    "DeveloperAuthentication loads the same storage under ordinary try before #require. The offMain wrapper creates explicit Task<Void,Error>.detached { try await action() }; existing cancellation forwarding and awaiting worker.value remain unchanged. This addresses the two type/inference diagnostics at the same source location without removing the worker.",
+    "AutomaticRenewal qualifies exactly four currentApplication and two extendPublishedProfiles static call sites with Self. Helper bodies, request/sign/install behavior and assertions are unchanged.",
+    "All three rawbaselines/candidates and regenerated raw diffs match the frozen manifest. Actual source extraction independently retains34 method/empty-or-parameter declarations. No assertion or isolation/production/gate setting was removed.",
+    "The eleven diagnostics are compiler output at ten edited source locations; two belong to the same detached call. Repeated compiler batch output is not extra failures. Existing archive references and hashes are retained; this review does not query cloud or reclassify the failed f2 run as passed."
+  ],
+  "sourceGrammarEvidence": [
+    {
+      "path": "grammar.json",
+      "bytes": 1028,
+      "sha256": "1e6e10eb101e01f5067e88c1ea9b04db2b1464889631002b7d06271334082c39"
+    },
+    {
+      "path": "test-declarations.json",
+      "bytes": 4625,
+      "sha256": "d7058e370fd803083cd462e5f6e77c7e1ec2816dc6543cb7ce99cd36218af59c"
+    }
+  ],
+  "grammarBoundary": "Author grammar3 reused by exact candidate hash; reviewer ran no Swift compiler, macro expansion, JVM/JNI or suite.",
+  "futureHarness": "core318 already binds all three sources. Native future103 needs DeveloperAuthenticationTests and AutomaticRenewalTests explicitly added (105 before any later action slice additions). Existing AccountSession is already Native-bound. Methods/leaves stay459/462 and16 original+1 mainJs until the independent action slice adds its actual selectors.",
+  "flags": {
+    "sdkAccepted": false,
+    "jniAccepted": false,
+    "deviceAccepted": false,
+    "selfRenewalAccepted": false
+  },
+  "operations": {
+    "canonicalModified": false,
+    "gitModified": false,
+    "cloudQueried": false,
+    "testsExecuted": 0,
+    "privateCredentialsRead": false
+  }
+}

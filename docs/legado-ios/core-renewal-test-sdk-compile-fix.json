@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-21",
+  "status": "bounded-actual-Native-test-build-repairs-integrated-awaiting-SDK",
+  "actualFailure": "docs/legado-ios/core-native-f2d7160-terminal-result.json",
+  "sourcePreparation": {
+    "bytes": 5377,
+    "sha256": "496a1ef474d21c94e68dde808377204aa952af377f396be26beb3c4d70b0b713"
+  },
+  "sourceFiles": [
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "baseline": {
+        "bytes": 68061,
+        "sha256": "c61ed5265a4b4ccd79e8985b768fb63f2e7e5857a03b3112d9aeb20834c48428"
+      },
+      "candidate": {
+        "bytes": 68187,
+        "sha256": "27ab345e48c2bc52cbb12f35d952d3e5899d6da01d864baa2b1d27d073966c28"
+      },
+      "diff": {
+        "path": "diffs/SelfRenewalAccountSessionTests.swift.diff",
+        "bytes": 1440,
+        "sha256": "5330670cd9cde43958310897f36c4ca206732b1cfe6ca3fb21b0eda8b271476e"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+      "baseline": {
+        "bytes": 53418,
+        "sha256": "8b51ee95dc01f018d46393a8684bdc0b04d2f8b92a87571d3cb5f93350eff0ab"
+      },
+      "candidate": {
+        "bytes": 53471,
+        "sha256": "5737cba5485c3c37dc7a7d4a009b8bffee77259910df275799ec710508202ba0"
+      },
+      "diff": {
+        "path": "diffs/SelfRenewalDeveloperAuthenticationTests.swift.diff",
+        "bytes": 1224,
+        "sha256": "e9ec88562f261bd362fc72af3f14d537d76930114ee60a30d7183ed61d934002"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift",
+      "baseline": {
+        "bytes": 13723,
+        "sha256": "fef5457c8f4be3d4995a93c0417d2ea81589a5238bba82ff94a7539a40d4bdbb"
+      },
+      "candidate": {
+        "bytes": 13753,
+        "sha256": "675cdffcbe0c1d8033f58ed257599dc2b313d5092f7eed0ebc0882650ec81e1a"
+      },
+      "diff": {
+        "path": "diffs/SelfRenewalAutomaticRenewalTests.swift.diff",
+        "bytes": 2898,
+        "sha256": "aea30c74819e452f1548f5a189bfa437acd7e944d3410804c2abbba1b30465cc"
+      }
+    }
+  ],
+  "changes": [
+    {
+      "file": "SelfRenewalAccountSessionTests.swift",
+      "actualBaselineLines": [
+        740,
+        751
+      ],
+      "change": "Read the same configuration.json once per existing checkpoint before #expect; assert the same empty inserted-accounts fact and byte equality to the original intent. Both throwing reads retain ordinary propagation; no try? or new retry."
+    },
+    {
+      "file": "SelfRenewalDeveloperAuthenticationTests.swift",
+      "actualBaselineLines": [
+        143,
+        452
+      ],
+      "change": "Load the same storage once with try before optional #require; wrap the existing Sendable async-throwing action in explicit Task<Void, Error>.detached closure. Existing cancellation handler, cancel forwarding and worker.value await are unchanged."
+    },
+    {
+      "file": "SelfRenewalAutomaticRenewalTests.swift",
+      "actualBaselineLines": [
+        18,
+        48,
+        89,
+        90,
+        134,
+        135
+      ],
+      "change": "Qualify all four currentApplication and both extendPublishedProfiles static-helper calls with Self.; helper definitions and behavior unchanged."
+    }
+  ],
+  "samePatternInspection": {
+    "searchedFiles": [
+      "SelfRenewalAccountSessionTests.swift",
+      "SelfRenewalDeveloperAuthenticationTests.swift",
+      "SelfRenewalAutomaticRenewalTests.swift"
+    ],
+    "remainingDirectLoadRequireMissingInnerTry": 0,
+    "remainingDetachedOperationAction": 0,
+    "remainingUnqualifiedTwoStaticHelpers": 0,
+    "automaticRenewalLine32": "Inspected but unchanged: top-level #require argument is an optional as? cast around PropertyListSerialization.propertyList/Data, unlike the diagnosed direct load-call macro expansion. No line32 diagnostic exists in the actual complete log; no speculative extra fix is claimed."
+  },
+  "sourceValidation": [
+    {
+      "path": "grammar.json",
+      "bytes": 1028,
+      "sha256": "1e6e10eb101e01f5067e88c1ea9b04db2b1464889631002b7d06271334082c39"
+    },
+    {
+      "path": "test-declarations.json",
+      "bytes": 4625,
+      "sha256": "d7058e370fd803083cd462e5f6e77c7e1ec2816dc6543cb7ce99cd36218af59c"
+    }
+  ],
+  "testExecution": {
+    "SwiftGrammarFiles": 3,
+    "SwiftSDKCompiles": 0,
+    "selectedXCTestMethodsExecuted": 0,
+    "NativeJNIExecutions": 0,
+    "portableSuitesRerun": 0
+  },
+  "scope": {
+    "changedFiles": 3,
+    "productionFilesChanged": 0,
+    "gateFilesChanged": 0,
+    "assertionDefinitionsAddedOrRemoved": 0,
+    "testIsolationSettingsChanged": false,
+    "newStoresOrOwners": false,
+    "nativeFutureSourceClosureRequired": 105,
+    "currentcoreSourceClosure": 318
+  },
+  "preservedEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/f2-test-compile-fix/preparation.json",
+      "bytes": 5377,
+      "sha256": "496a1ef474d21c94e68dde808377204aa952af377f396be26beb3c4d70b0b713",
+      "originalEvidence": {
+        "bytes": 5377,
+        "sha256": "496a1ef474d21c94e68dde808377204aa952af377f396be26beb3c4d70b0b713"
+      },
+      "normalization": "CRLF to LF only where present"
+    },
+    {
+      "path": "docs/legado-ios/evidence/f2-test-compile-fix/independent-review.json",
+      "bytes": 5094,
+      "sha256": "160ffa4083971e82dbf2831e82c18e97df752f7cb82bb2ec41225d5933cd1ebf",
+      "originalEvidence": {
+        "bytes": 5200,
+        "sha256": "b4a22c01fd6a1823db82de213190e2fbd61215fe0930f4444317266eefd62807"
+      },
+      "normalization": "CRLF to LF only where present"
+    },
+    {
+      "path": "docs/legado-ios/evidence/f2-test-compile-fix/actual-error-bindings.json",
+      "bytes": 3516,
+      "sha256": "f2d9dcc25894439c41d16236eb974677c93b364b217c90f7ef2c3007b03640f4",
+      "originalEvidence": {
+        "bytes": 3516,
+        "sha256": "f2d9dcc25894439c41d16236eb974677c93b364b217c90f7ef2c3007b03640f4"
+      },
+      "normalization": "CRLF to LF only where present"
+    },
+    {
+      "path": "docs/legado-ios/evidence/f2-test-compile-fix/swift-grammar.json",
+      "bytes": 1028,
+      "sha256": "1e6e10eb101e01f5067e88c1ea9b04db2b1464889631002b7d06271334082c39",
+      "originalEvidence": {
+        "bytes": 1028,
+        "sha256": "1e6e10eb101e01f5067e88c1ea9b04db2b1464889631002b7d06271334082c39"
+      },
+      "normalization": "CRLF to LF only where present"
+    },
+    {
+      "path": "docs/legado-ios/evidence/f2-test-compile-fix/test-declarations.json",
+      "bytes": 4625,
+      "sha256": "d7058e370fd803083cd462e5f6e77c7e1ec2816dc6543cb7ce99cd36218af59c",
+      "originalEvidence": {
+        "bytes": 4625,
+        "sha256": "d7058e370fd803083cd462e5f6e77c7e1ec2816dc6543cb7ce99cd36218af59c"
+      },
+      "normalization": "CRLF to LF only where present"
+    }
+  ],
+  "rootReview": "Read all three diffs against the complete actual11 diagnostic contexts: two throwing Data reads move outside #expect &&, throwing storage load moves outside #require, explicit detached Void/Error wrapper retains the same cancellation handler and worker.value drain, and six static calls acquire Self. Qualification. No production logic, test isolation, assertion condition or method/parameter identity changes. Verified exact three canonical baselines/candidates/diff bytes, independently compared @Test declarations and the source-only grammar records, and read the separate exact-source review. The inspected optional-cast expression at Automatic line32 had no actual diagnostic and stays unchanged. Source/grammar review does not prove Swift macro/type execution; actual new SDK/JNI tests are still required.",
+  "futureCheckpoint": {
+    "coreSourceInputsAlreadyBound": 318,
+    "minimumNativeSourceInputsAfterBindingTwoAdditionalFailureFiles": 105,
+    "additionalNativeInputs": [
+      "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+      "Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift"
+    ],
+    "note": "The next original action slice may add more selectors/inputs. Final combined counts must be derived after its review. Do not submit an intermediate per-item retry."
+  },
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

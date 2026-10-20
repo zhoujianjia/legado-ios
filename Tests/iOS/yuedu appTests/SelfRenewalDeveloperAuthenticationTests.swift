@@ -140,7 +140,8 @@ struct SelfRenewalDeveloperAuthenticationTests {
             }
             #expect(observed.personalTeamMatched)
             #expect(!observed.appleSigningAuthorityEstablished && !observed.replacementAuthorized)
-            let stored = try #require(f.storage.load(namespace: f.namespace.id))
+            let loaded = try f.storage.load(namespace: f.namespace.id)
+            let stored = try #require(loaded)
             #expect(stored.contains(f.vector.token))
             #expect(!stored.contains(f.vector.password) && !stored.contains(f.vector.idms))
             let after = try await f.vault.lease(in: f.namespace)
@@ -449,7 +450,7 @@ struct SelfRenewalDeveloperAuthenticationTests {
         }
     }
     nonisolated private static func offMain(_ action: @escaping @Sendable () async throws -> Void) async throws {
-        let worker = Task.detached(operation: action)
+        let worker = Task<Void, Error>.detached { try await action() }
         try await withTaskCancellationHandler { try await worker.value } onCancel: { worker.cancel() }
     }
     nonisolated private static func fixture(seedPublishedLease: Bool = false,
