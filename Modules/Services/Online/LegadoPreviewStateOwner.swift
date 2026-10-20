@@ -1,4 +1,5 @@
 import Foundation
+import os
 import LegadoRuntime
 
 enum LegadoPreviewIdentity {
@@ -333,6 +334,8 @@ struct NativeLegadoOriginalPreviewExecutor: LegadoOriginalPreviewExecuting {
         let owner: String
         if let grant { owner = try await process.bindPersistentPreview(grant: grant) }
         else { owner = try await process.bindPersistentSource(sourceURL: sourceURL, sourceRevision: sourceRevision) }
+        let reportedEffects = OSAllocatedUnfairLock(initialState: [String]())
+        let observeEffects: @Sendable ([String]) -> Void = { effects in reportedEffects.withLock { $0 = effects } }
         do {
             let runtime = try await process.executor()
             try check(deadline)
@@ -344,18 +347,18 @@ struct NativeLegadoOriginalPreviewExecutor: LegadoOriginalPreviewExecuting {
                 let remaining = Int64(min(300_000, max(1, deadline.timeIntervalSinceNow * 1000)))
                 switch operation {
                 case .search(let key, let page):
-                    result = .search(try await runtime.searchOriginal(session: session, key: key, page: page, timeoutMilliseconds: remaining, taskID: taskID).books)
+                    result = .search(try await runtime.searchOriginal(session: session, key: key, page: page, timeoutMilliseconds: remaining, taskID: taskID, onReportedEffects: observeEffects).books)
                 case .details(let book):
-                    result = .details(try await runtime.detailsOriginal(session: session, book: book, timeoutMilliseconds: remaining, taskID: taskID).book)
+                    result = .details(try await runtime.detailsOriginal(session: session, book: book, timeoutMilliseconds: remaining, taskID: taskID, onReportedEffects: observeEffects).book)
                 case .toc(let book, let runPreUpdate):
                     let value = try await runtime.chaptersOriginal(session: session, book: book,
-                        runPreUpdateJs: runPreUpdate, timeoutMilliseconds: remaining, taskID: taskID)
+                        runPreUpdateJs: runPreUpdate, timeoutMilliseconds: remaining, taskID: taskID, onReportedEffects: observeEffects)
                     result = .toc(value.book, value.chapters)
                 case .content(let book, let chapter, let next):
                     // The public runtime encodes needSave=false; a preview cannot grant a
                     // ChapterCacheRepository write or create a BookStore download token.
                     let value = try await runtime.contentOriginal(session: session, book: book, chapter: chapter,
-                        nextChapterURL: next, timeoutMilliseconds: remaining, taskID: taskID)
+                        nextChapterURL: next, timeoutMilliseconds: remaining, taskID: taskID, onReportedEffects: observeEffects)
                     result = .content(value.book, value.chapter, value.content)
                 }
             } catch {
@@ -364,6 +367,7 @@ struct NativeLegadoOriginalPreviewExecutor: LegadoOriginalPreviewExecuting {
                 throw error
             }
             try await runtime.close(session: session)
+            try check(deadline)
             try grant?.sealExecution(deadline: deadline)
             await process.revokePersistentSource(owner: owner)
             grant?.revoke()
@@ -371,6 +375,12 @@ struct NativeLegadoOriginalPreviewExecutor: LegadoOriginalPreviewExecuting {
         } catch {
             await process.revokePersistentSource(owner: owner)
             grant?.revoke()
+            let failure = error as? LegadoRuntimeError
+            let effects = Array(Set(reportedEffects.withLock { $0 } + (failure?.completedEffects ?? []))).sorted()
+            if !effects.isEmpty {
+                throw LegadoRuntimeError(code: failure?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO"),
+                    message: error.localizedDescription, completedEffects: effects)
+            }
             throw error
         }
     }

@@ -1,0 +1,55 @@
+--- a/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoRuntimeTests.swift
++++ b/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoRuntimeTests.swift
+@@ -63,6 +63,8 @@
+     }
+ }
+ private final class BlockingTransport: LegadoRuntimeTransport, @unchecked Sendable {
++    private let response: String
++    init(response: String = "{\"ok\":true}") { self.response = response }
+     let entered = DispatchSemaphore(value: 0)
+     let cancelReturned = DispatchSemaphore(value: 0)
+     private let finished = DispatchSemaphore(value: 0)
+@@ -77,7 +79,7 @@
+         guard finished.wait(timeout: .now() + 5) == .success else {
+             throw LegadoRuntimeError(code: "test_timeout", message: "Cancel was not delivered on another worker")
+         }
+-        return "{\"ok\":true}"
++        return response
+     }
+     func cancel(_ task: String) throws -> String {
+         defer { cancelReturned.signal() }
+@@ -257,6 +259,34 @@
+         XCTAssertEqual(workers.map(\.operation), ["start", "create", "execute", "cancel", "close"])
+         assertSignalableBackgroundWorkers(workers)
+     }
++    func testCancelledExecutePreservesReportedEffectsFromSuccessAndErrorEnvelopes() async throws {
++        let effects = ["chapterContentMayCommit", "chapterContentCommitted"]
++        let responses = [
++            #"{"ok":true,"result":{},"completedEffects":["chapterContentMayCommit","chapterContentCommitted"]}"#,
++            #"{"ok":false,"error":{"code":"CANCELLED","message":"Stopped","completedEffects":["chapterContentMayCommit","chapterContentCommitted"]}}"#
++        ]
++        for response in responses {
++            let transport = BlockingTransport(response: response)
++            let runtime = LegadoRuntime(configuration: .init(javaHome: URL(fileURLWithPath: "/unused"), classPath: []),
++                host: UnsupportedLegadoHost(), transport: transport)
++            let session = try await runtime.createSession(sourceJSON: "{}")
++            let task = Task { try await runtime.execute(session: session, operation: "blocking", taskID: "effect-cancel") }
++            let started = await waitForSignal(transport.entered)
++            XCTAssertTrue(started)
++            task.cancel()
++            let terminal = await task.result
++            switch terminal {
++            case .success: XCTFail("A cancelled task cannot report success after platform effects")
++            case .failure(let error):
++                let typed = try XCTUnwrap(error as? LegadoRuntimeError)
++                XCTAssertEqual(typed.code, "CANCELLED")
++                XCTAssertEqual(typed.completedEffects, effects)
++            }
++            let drained = await waitForSignal(transport.cancelReturned)
++            XCTAssertTrue(drained)
++            try await runtime.close(session: session)
++        }
++    }
+     func testCancelReachesRuntimeWhileExecuteWorkerIsBlocked() async throws {
+         let transport = BlockingTransport()
+         let runtime = LegadoRuntime(configuration: .init(javaHome: URL(fileURLWithPath: "/unused"), classPath: []), host: UnsupportedLegadoHost(), transport: transport)

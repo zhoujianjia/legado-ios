@@ -1,0 +1,379 @@
+{
+  "schemaVersion": 1,
+  "preparedAtUTC": "2026-10-20T11:48:27.699289+00:00",
+  "task": "C4 actual ordinary-JAR and source-built Zero native payload preparation for the existing main App JNI build",
+  "status": "actual dual-platform payloads materialized and staged; Apple link/JNI/product execution pending",
+  "baseCanonical": {
+    "parentReportedCommit": "3b39c951",
+    "GitCommandsExecutedByWorker": false,
+    "exactCurrentBuildInputBytesUnchanged": true
+  },
+  "productionSourceChanges": [],
+  "actualWork": [
+    "Built this canonical JVM/vendor source ordinary JAR once with offline JDK21 Gradle runtimeJar/runtimeSmoke; eight established packaged markers actually passed. No JUnit rerun or native JVM claim.",
+    "Current 128552-byte eb3a6808 original-rule manifest actually embedded in this new JAR; previous immutable public/render JAR kept unchanged. Existing reader packaging inspector, 396 fresh production classes, 195 prior compiled test class exclusions and old21 notices checked.",
+    "All seven original native build inputs exactly match pinned producer Git-blob identities computed directly from current raw bytes, without Git commands or normalized equivalence.",
+    "Exact pinned Probe12 ZIP completely extracted through the existing production inventory/duplicate/case/no-link/budget/path validator; all streams consumed with ZIP CRC checks. Original native build not recompiled.",
+    "Three original native roots were absent, audited and then same-volume moved into the standard ignored build locations. No existing payload replaced.",
+    "Actual existing production stage-runtime and notice verifier executed for separate device and simulator JavaHomes. Full source-vs-staged home file/byte aggregates match; complete13 modules in each, current JAR major65 within native Object.class major72.",
+    "Real new JAR javap matches the JNI facade/NativeHost descriptors, and javap of each explicit pinned native NativeThread.class confirms threadToSignal()Ljava/lang/Thread;. No classfile parser or new ABI gate added."
+  ],
+  "nativeProducer": {
+    "path": ".build/cloud-evidence/run-39083752761/native.zip",
+    "bytes": 89898489,
+    "sha256": "6d91463d6e28a1bcc6c1d5ba79ad88f5a8d1ba79d0e2e11e78b5fbd5520346ac",
+    "runID": 39083752761,
+    "sourceCommit": "ce792982a30942e605fc935b733c5b41bef2736a",
+    "nativeRecompiled": false,
+    "extractionStartedAtUTC": "2026-10-20T11:41:01.227147+00:00",
+    "extractionFinishedAtUTC": "2026-10-20T11:45:35.156199+00:00"
+  },
+  "nativeFramework": {
+    "path": "Packages/LegadoRuntime/Artifacts/OpenJDK.xcframework",
+    "infoPlist": {
+      "path": "Packages/LegadoRuntime/Artifacts/OpenJDK.xcframework/Info.plist",
+      "bytes": 1221,
+      "sha256": "ef18b6ae7906fac6316c477fd2572ae1ab397d0022550352a609193d5a76f466"
+    },
+    "slices": [
+      {
+        "identifier": "ios-arm64",
+        "variant": "device",
+        "library": {
+          "path": "Packages/LegadoRuntime/Artifacts/OpenJDK.xcframework/ios-arm64/libOpenJDK.a",
+          "bytes": 28252360,
+          "sha256": "b053547e8f0ac1672c692dda5b5cbe1cd02d708f219350b781903c3afb170fad"
+        },
+        "jniHeader": {
+          "path": "Packages/LegadoRuntime/Artifacts/OpenJDK.xcframework/ios-arm64/Headers/jni.h",
+          "bytes": 76300,
+          "sha256": "1e03bd83d1662ac00647f7a06c11d32333767ee537803ec1d153e89888414520"
+        }
+      },
+      {
+        "identifier": "ios-arm64-simulator",
+        "variant": "simulator",
+        "library": {
+          "path": "Packages/LegadoRuntime/Artifacts/OpenJDK.xcframework/ios-arm64-simulator/libOpenJDK.a",
+          "bytes": 28169632,
+          "sha256": "10a7468b04cb9805226680a3f0bbcfc1c155b74db822e6c71c2dccc4256e5d4b"
+        },
+        "jniHeader": {
+          "path": "Packages/LegadoRuntime/Artifacts/OpenJDK.xcframework/ios-arm64-simulator/Headers/jni.h",
+          "bytes": 76300,
+          "sha256": "1e03bd83d1662ac00647f7a06c11d32333767ee537803ec1d153e89888414520"
+        }
+      }
+    ]
+  },
+  "ordinaryJar": {
+    "path": ".build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar",
+    "bytes": 10749215,
+    "sha256": "f4300f156fe903111dc9b4033e3b8e8f6aef60566097f04fa4ffb15fe212e362",
+    "markers": {
+      "PACKAGED_PAYLOAD_OK": true,
+      "PACKAGED_ORIGINAL_TRADITIONAL_OK": true,
+      "PACKAGED_APP_COOKIE_OWNER_READ_OK": true,
+      "PACKAGED_APP_COOKIE_OWNER_TEXT_OK": true,
+      "PACKAGED_APP_COOKIE_OWNER_BROWSER_PROTOCOL_OK": true,
+      "PACKAGED_ORIGINAL_EXPLORE_INFOMAP_OK": true,
+      "PACKAGED_ORIGINAL_BATCH_RATE_OK": true,
+      "PACKAGED_ORIGINAL_PUBLIC_BATCH_OK": true
+    },
+    "originalManifest": {
+      "bytes": 128552,
+      "sha256": "eb3a6808d260d40da3b7018830c154e166f0939587361fae88e41a69b56cafc0",
+      "byteEqualToCurrentCanonical": true
+    },
+    "actualExecution": "Windows host JDK21 only"
+  },
+  "platforms": {
+    "device": {
+      "javaHome": ".build/legado-ios/device-static/java-home",
+      "stagedResources": ".build/original-runtime-ios-core-delta/staged/device/Resources/LegadoRuntime",
+      "completeSourceAndStagedHomeByteEqual": {
+        "files": 17241,
+        "bytes": 73995276,
+        "orderedPathSizeSHA256Aggregate": "10f6849a5eaa5bcd413fa1a69924450e16f744cf9786d4529f2d8f6058ea9da1"
+      },
+      "manifest": {
+        "path": ".build/original-runtime-ios-core-delta/staged/device/Resources/LegadoRuntime/runtime-manifest.json",
+        "bytes": 3886,
+        "sha256": "b1a0e3f9e8edb74383363384c6effadba6fd3cc918772f956bb7a6bf8c9f07e1"
+      },
+      "stagedJar": {
+        "path": ".build/original-runtime-ios-core-delta/staged/device/Resources/LegadoRuntime/legado-runtime.jar",
+        "bytes": 10749215,
+        "sha256": "f4300f156fe903111dc9b4033e3b8e8f6aef60566097f04fa4ffb15fe212e362"
+      }
+    },
+    "simulator": {
+      "javaHome": ".build/legado-ios/simulator-static/java-home",
+      "stagedResources": ".build/original-runtime-ios-core-delta/staged/simulator/Resources/LegadoRuntime",
+      "completeSourceAndStagedHomeByteEqual": {
+        "files": 17241,
+        "bytes": 74002794,
+        "orderedPathSizeSHA256Aggregate": "f85652d49adc02e798981e7c3cb5ca48d5565209e9ba826f0fdee8ed2f066e67"
+      },
+      "manifest": {
+        "path": ".build/original-runtime-ios-core-delta/staged/simulator/Resources/LegadoRuntime/runtime-manifest.json",
+        "bytes": 3886,
+        "sha256": "b1a0e3f9e8edb74383363384c6effadba6fd3cc918772f956bb7a6bf8c9f07e1"
+      },
+      "stagedJar": {
+        "path": ".build/original-runtime-ios-core-delta/staged/simulator/Resources/LegadoRuntime/legado-runtime.jar",
+        "bytes": 10749215,
+        "sha256": "f4300f156fe903111dc9b4033e3b8e8f6aef60566097f04fa4ffb15fe212e362"
+      }
+    }
+  },
+  "sourceBinding": {
+    "actualExecutionInputRecord": {
+      "path": ".build/original-runtime-ios-core-delta/execution-inputs.json",
+      "bytes": 82658,
+      "sha256": "6eebd6a8f4ededbea1d17ebcfb6f940b09a6c6e07e5e208b1243f8eeb9c09e04"
+    },
+    "actualInputLeaves": 379,
+    "integrationReferences": [
+      {
+        "path": "Packages/LegadoRuntime/Package.swift",
+        "bytes": 4171,
+        "sha256": "183cd2b775956d8c5b6f16bd97bbec13e7fca59fc26d3e03ef1569907f7c3e57"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/CLegadoJNI/LegadoJNI.m",
+        "bytes": 35615,
+        "sha256": "304c7e15c7bc1fb539f43dbf1cc55c33853251c703d7830fb136cc45722b9f0d"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/CLegadoJNI/include/LegadoJNI.h",
+        "bytes": 1442,
+        "sha256": "cf59d8119a24139c83c0ee1e445eeed9325fa1c1e14323db33bf4485d734434d"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/NativeLegadoTransport.swift",
+        "bytes": 7574,
+        "sha256": "c194738ef2154f00806a70027438a52017a21591ad52bf3c848ba9067fcfaff9"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+        "bytes": 22366,
+        "sha256": "e7d4cb12c15ae63a910bcdafb1d7f4fe73b8de7509d394df6f4b145d87014e39"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+        "bytes": 77890,
+        "sha256": "57f4627a6c5436bfa67c91e7036ccadcc18016cf55c4a05da9b663946f1ca01b"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoPreviewStateOwner.swift",
+        "bytes": 21552,
+        "sha256": "19c12c40c251307b9e85d5dbac06949e82293ece4a4c48333af361da50be5fc2"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoContentBatchOwner.swift",
+        "bytes": 26209,
+        "sha256": "9e29ad73bf706f6cea054e68d0980bf1390a7b5bcf5ddaafa344a7145bd742bb"
+      },
+      {
+        "path": "scripts/legado-ios/build-zero.sh",
+        "bytes": 7595,
+        "sha256": "3f15ac061dec52ac6dbe32699550074dd7d4c97f3d1bb7bb7d496f52a5d40fba"
+      },
+      {
+        "path": "scripts/legado-ios/verify-runtime.py",
+        "bytes": 3692,
+        "sha256": "4058d90cda2628c668ba280e9daad04a52e57d8574395374c5d1d568f9ce9507"
+      },
+      {
+        "path": "scripts/legado-ios/verify-runtime-reuse.py",
+        "bytes": 15250,
+        "sha256": "ea0ed26f51690a8634d0d2fd0b87aa975a34d4385b91b3e69c6d688420453fc3"
+      },
+      {
+        "path": "scripts/legado-ios/verify-native-reuse.py",
+        "bytes": 27751,
+        "sha256": "9496cc619d17bc50a293c4737e9f9add566d35fb227bf49b93eb2c083436890c"
+      },
+      {
+        "path": "scripts/legado-ios/stage-runtime.py",
+        "bytes": 4278,
+        "sha256": "be7d62b2ec20307107b07e7a35e9d0dcc22bf8393bb0e6d80f4bdaea36ed6ed6"
+      },
+      {
+        "path": "scripts/legado-ios/prepare-app-runtime.py",
+        "bytes": 6970,
+        "sha256": "57692d0371642c06663179c5256cbf484d0dca12f3c3a470ab42b0e2e623bfaa"
+      },
+      {
+        "path": "scripts/legado-ios/verify-native-exports.py",
+        "bytes": 3576,
+        "sha256": "c952690394a11ef512cbc3a709e021b0d5839a9085afed60dc2d22dabacbe645"
+      },
+      {
+        "path": "scripts/reader-experience/runtime-packaging.py",
+        "bytes": 12688,
+        "sha256": "0104eb7c1551a4bff437f28d02f52c5c6f7b7fb42eef46cfa0eebe6bed735812"
+      },
+      {
+        "path": "scripts/reader-experience/runtime-notices.py",
+        "bytes": 6992,
+        "sha256": "f2655858b99a9c365d221fa11f9335fc46c7277eeb673829fc3201570982da42"
+      },
+      {
+        "path": "scripts/reader-experience/build.sh",
+        "bytes": 6451,
+        "sha256": "4477729e9e4574b2d1224c851f91e54a6b42e0cc934cc85450abb7895cb2d668"
+      },
+      {
+        "path": ".github/workflows/legado-native-reader-test.yml",
+        "bytes": 10240,
+        "sha256": "e4dfe5a019e714e4eef0f700db5d62e637b6c1f23b09a007601e4864d26aed70"
+      },
+      {
+        "path": "Tests/iOS/LegadoNativeMainJSReaderTests.swift",
+        "bytes": 33102,
+        "sha256": "fb90306876590a3fdb5ff8027e6afada74051082c984789a87206c3c516b3c39"
+      }
+    ],
+    "nativeThreadJavap": [
+      {
+        "platform": "device",
+        "command": [
+          "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\javap.exe",
+          "-s",
+          "F:\\yuedu-reader\\.build\\legado-ios\\device-static\\java-home\\modules\\java.base\\sun\\nio\\ch\\NativeThread.class"
+        ],
+        "exitCode": 0,
+        "output": {
+          "path": ".build/original-runtime-ios-core-delta/native-thread-device-javap.log",
+          "bytes": 360,
+          "sha256": "6126ba318e595ad4ce7434377e3019834da1b1885d0afc18487ab9957522865b"
+        }
+      },
+      {
+        "platform": "simulator",
+        "command": [
+          "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\javap.exe",
+          "-s",
+          "F:\\yuedu-reader\\.build\\legado-ios\\simulator-static\\java-home\\modules\\java.base\\sun\\nio\\ch\\NativeThread.class"
+        ],
+        "exitCode": 0,
+        "output": {
+          "path": ".build/original-runtime-ios-core-delta/native-thread-simulator-javap.log",
+          "bytes": 360,
+          "sha256": "6126ba318e595ad4ce7434377e3019834da1b1885d0afc18487ab9957522865b"
+        }
+      }
+    ]
+  },
+  "records": [
+    {
+      "path": ".build/original-runtime-ios-core-delta/execution-inputs.json",
+      "bytes": 82658,
+      "sha256": "6eebd6a8f4ededbea1d17ebcfb6f940b09a6c6e07e5e208b1243f8eeb9c09e04"
+    },
+    {
+      "path": ".build/original-runtime-ios-core-delta/native-input-continuity.json",
+      "bytes": 3399,
+      "sha256": "dd3e6fdf2d593ab00f2d7a58bcf837100415d313026c193d4c2d1e8bbf818dcb"
+    },
+    {
+      "path": ".build/original-runtime-ios-core-delta/native-materialization.json",
+      "bytes": 2410,
+      "sha256": "2c6a8a5ed37f8aa229c93234f19a4aaf24c1319fb0c34a41384e33609c826f0c"
+    },
+    {
+      "path": ".build/original-runtime-ios-core-delta/ordinary-v1.json",
+      "bytes": 1358,
+      "sha256": "951fefcc6b9936c90b396268161148f8efc0f19bfa54450e7ad4d7ce23d9bea7"
+    },
+    {
+      "path": ".build/original-runtime-ios-core-delta/ordinary-v1.log",
+      "bytes": 8437,
+      "sha256": "cb97b7c8fa522e8e405ce9ceb5fc5ab58e0999c4a8e53e191b11853eb900423b"
+    },
+    {
+      "path": ".build/original-runtime-ios-core-delta/ordinary-jar-audit.json",
+      "bytes": 7027,
+      "sha256": "7a09bb86867f986d84183864e2f5e2a300a68bb08838fc2d6c06e3a57ed599db"
+    },
+    {
+      "path": ".build/original-runtime-ios-core-delta/actual-jar-javap.json",
+      "bytes": 603,
+      "sha256": "43654003b589fdff2aeee92da56d69f0849ec7a201e88b9ee67c678397c011d1"
+    },
+    {
+      "path": ".build/original-runtime-ios-core-delta/actual-jar-javap.log",
+      "bytes": 3161,
+      "sha256": "1456ca67ac309a376d1eeee09b34953e7e3c81fa9415045314dcf25e4c0a82a3"
+    },
+    {
+      "path": ".build/original-runtime-ios-core-delta/stage-final.json",
+      "bytes": 19621,
+      "sha256": "8b2e3ff500d8005435403dae7835791bdb15eb53e88127b0662a1f6b000a3b78"
+    },
+    {
+      "path": ".build/original-runtime-ios-core-delta/native-thread-device-javap.log",
+      "bytes": 360,
+      "sha256": "6126ba318e595ad4ce7434377e3019834da1b1885d0afc18487ab9957522865b"
+    },
+    {
+      "path": ".build/original-runtime-ios-core-delta/native-thread-simulator-javap.log",
+      "bytes": 360,
+      "sha256": "6126ba318e595ad4ce7434377e3019834da1b1885d0afc18487ab9957522865b"
+    },
+    {
+      "path": ".build/original-runtime-ios-core-delta/run-ordinary.py",
+      "bytes": 2811,
+      "sha256": "b84b7434d92b7f617e180db9c11a9881eaf6b193ea56be6e8c3c1bf941f8ff96"
+    },
+    {
+      "path": ".build/original-runtime-ios-core-delta/materialize-native.py",
+      "bytes": 1630,
+      "sha256": "d152b6b535c16d73c357f02e45dde6f21e9a70774323d4351160d530e67d7bb1"
+    },
+    {
+      "path": ".build/original-runtime-ios-core-delta/audit-ordinary.py",
+      "bytes": 3038,
+      "sha256": "1dd628c1b913ec4e2f66a21e1e28dcb2b35ae87cac2775e630fbad5e7400d1fb"
+    },
+    {
+      "path": ".build/original-runtime-ios-core-delta/stage-core.py",
+      "bytes": 3409,
+      "sha256": "56891f693d989296fc8a349767190e6c229ebd5ea557d17cf7360127b87d9fe9"
+    },
+    {
+      "path": ".build/original-runtime-ios-core-delta/freeze-receipt.py",
+      "bytes": 9987,
+      "sha256": "b48f64bae626838f482649959e5351dcbe823983c376297533b262162564befd"
+    }
+  ],
+  "attemptNotes": [
+    "One actual ordinary build/smoke, one full safe native extraction, one two-platform audit/materialization/stage; all completed. No test reruns for unchanged source were added.",
+    "Initial inspection suggested a weak static ABI filename check, but actual current ABI was correct; that hypothesis produced no parser/gate/source edits.",
+    "No current Zero source build defect was established. The local standard native roots were simply absent; the exact already-audited cached native product was available and has now been restored.",
+    "The existing safe extractor checks each child ancestors and then one full tree; it does not repeatedly scan the whole34k tree for each child. Windows extraction took about274seconds; no safety shortcut/optimization was introduced."
+  ],
+  "notExecuted": {
+    "AppleSDKCompilation": true,
+    "SwiftPackageNativeLink": true,
+    "JNI_CreateJavaVM_OnApple": true,
+    "OriginalTraditionalNativeBusinessChain": true,
+    "OriginalBatchAppNativePersistence": true,
+    "DeviceValidation": true
+  },
+  "remaining": [
+    "Root must execute one current-source Mac native stage with LEGADO_RUNTIME_SOURCE_ONLY unset, current fresh ordinary JAR and correct platform JavaHome; real source-only diagnostics cannot satisfy this.",
+    "The current existing native-reader product test is one mainJs chain, not acceptance of the new original-traditional search/detail/TOC/content/batch App persistence chain; that matching native product test remains necessary.",
+    "No App.app/IPA was created or mutated locally, no old executable was relabeled, and prepare-app-runtime/final39export checks must execute on the real newly linked App during the Mac stage.",
+    "A fresh Mac checkout must restore/rebuild the same pinned native artifacts using existing verified restore or build-zero path. These local ignored Windows files do not automatically exist in CI; historical artifact expiry or unavailable cache must fail rather than silently replace the pin.",
+    "Default traditional App route and all existing source/state/Cookie/network/UUID/generation owners remain unchanged; C3/C4/full source compatibility are not complete."
+  ],
+  "nextExistingProductionPath": {
+    "nativeBuildFromSourceIfRequired": "scripts/legado-ios/build-zero.sh (macOS/Xcode/bootJDK26; seven input pins unchanged)",
+    "nativeRestoreAndCurrentJar": "scripts/reader-experience/runtime-packaging.py + existing fixed native producer checks; no new restore protocol",
+    "stage": "scripts/legado-ios/stage-runtime.py (already executed locally for both platforms)",
+    "actualAppLinkAndJNI": "Existing .github/workflows/legado-native-reader-test.yml unsets SOURCE_ONLY and invokes main App build-for-testing + native export check + real current product test. Root owns any concentrated source/tag/selection changes."
+  }
+}

@@ -43,6 +43,20 @@ class OriginalContentBatchPublicTest {
             owner.reopen(); assertEquals("body-zero",owner.body(0)); assertEquals("body-one",owner.body(1))
         } }
     }
+    @Test(timeout=20_000) fun successfulPublicBatchReportsOnlyAcknowledgedHostEffects() {
+        for (reported in listOf(false, true)) Peer().use { peer ->
+            Owner(peer.origin,"book.putVariable('state','committed');java.cacheContent(chapters[0],'actual-file-prefix')").use { owner ->
+                owner.reportStateEffects.set(reported)
+                val response=owner.execute(); assertTrue(response.toString(),response["ok"].asBoolean)
+                assertEquals("actual-file-prefix",owner.body(0))
+                if (reported) {
+                    val effects=response["completedEffects"].asJsonArray.map{it.asString}
+                    assertEquals(listOf("bookVariablesMayCommit","bookVariablesCommitted","chapterContentMayCommit","chapterContentCommitted"),effects)
+                } else assertFalse("No effects are invented from DTO success",response.has("completedEffects"))
+                owner.reopen(); assertEquals("actual-file-prefix",owner.body(0)); assertTrue(peer.requests.isEmpty())
+            }
+        }
+    }
     @Test(timeout=20_000) fun ordinaryScriptErrorKeepsRealSavedPrefixAndDoesNotRetryMissingChapters() {
         Peer().use { peer -> Owner(peer.origin,"book.putVariable('state','committed');java.cacheContent(chapters[0],java.ajax(book.origin+'/zero'));throw Error('public-batch-failed')").use { owner ->
             owner.reportStateEffects.set(true)
@@ -57,6 +71,7 @@ class OriginalContentBatchPublicTest {
     @Test(timeout=35_000) fun cancellationCloseAndDeadlineRejectLateSecondSaveButKeepCommittedPrefix() {
         for(mode in listOf("cancel","close","deadline")) Peer().use { peer ->
             Owner(peer.origin,"java.cacheContent(chapters[0],java.ajax(book.origin+'/zero'));java.cacheContent(chapters[1],java.ajax(book.origin+'/blocked'))").use { owner ->
+                owner.reportStateEffects.set(true)
                 val pool=Executors.newSingleThreadExecutor()
                 try {
                     val input=owner.input().apply{addProperty("timeoutMs",if(mode=="deadline")2500 else 9000)}
@@ -65,6 +80,8 @@ class OriginalContentBatchPublicTest {
                     when(mode){"cancel"->LegadoRuntime.cancel("public-batch-$mode");"close"->LegadoRuntime.closeSession(owner.id)}
                     val response=parseObject(future.get(6,TimeUnit.SECONDS))
                     assertEquals(response.toString(),if(mode=="deadline")"TIMEOUT" else "CANCELLED",response["error"].asJsonObject["code"].asString)
+                    val effects=response["error"].asJsonObject["completedEffects"].asJsonArray.map{it.asString}
+                    assertTrue(response.toString(),effects.containsAll(listOf("chapterContentMayCommit","chapterContentCommitted")))
                     peer.release.countDown();assertEquals("body-zero",owner.body(0));assertNull(owner.body(1))
                 }finally{peer.release.countDown();pool.shutdownNow();check(pool.awaitTermination(3,TimeUnit.SECONDS))}
             }

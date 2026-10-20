@@ -1,0 +1,48 @@
+Compiled from "LegadoRuntime.kt"
+public final class io.yuedu.legado.LegadoRuntime {
+  public static final io.yuedu.legado.LegadoRuntime INSTANCE;
+    descriptor: Lio/yuedu/legado/LegadoRuntime;
+  public static final void setHostCallback(io.yuedu.legado.LegadoRuntime$HostCallback);
+    descriptor: (Lio/yuedu/legado/LegadoRuntime$HostCallback;)V
+
+  public static final java.lang.String createSession(java.lang.String);
+    descriptor: (Ljava/lang/String;)Ljava/lang/String;
+
+  public static final java.lang.String createSession(java.lang.String, java.lang.String);
+    descriptor: (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+
+  public static final java.lang.String execute(java.lang.String, java.lang.String, java.lang.String, java.lang.String);
+    descriptor: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+
+  public static final java.lang.String cancel(java.lang.String);
+    descriptor: (Ljava/lang/String;)Ljava/lang/String;
+
+  public static final java.lang.String closeSession(java.lang.String);
+    descriptor: (Ljava/lang/String;)Ljava/lang/String;
+
+  public final io.yuedu.legado.originalrule.RuleEnvironment originalRuleEnvironment$io_yuedu_legado_runtime(io.yuedu.legado.RuntimeTask);
+    descriptor: (Lio/yuedu/legado/RuntimeTask;)Lio/yuedu/legado/originalrule/RuleEnvironment;
+
+  public final io.yuedu.legado.originalrule.RuleEnvironment originalStateEnvironment$io_yuedu_legado_runtime(io.yuedu.legado.RuntimeTask);
+    descriptor: (Lio/yuedu/legado/RuntimeTask;)Lio/yuedu/legado/originalrule/RuleEnvironment;
+
+  public final io.yuedu.legado.originalrule.RulePersistenceBinding originalPersistence$io_yuedu_legado_runtime(io.yuedu.legado.RuntimeTask);
+    descriptor: (Lio/yuedu/legado/RuntimeTask;)Lio/yuedu/legado/originalrule/RulePersistenceBinding;
+
+  public final io.legado.app.data.entities.BookSource originalBookSource$io_yuedu_legado_runtime(io.yuedu.legado.RuntimeTask, io.yuedu.legado.originalrule.RuleEnvironment);
+    descriptor: (Lio/yuedu/legado/RuntimeTask;Lio/yuedu/legado/originalrule/RuleEnvironment;)Lio/legado/app/data/entities/BookSource;
+
+  public static final com.google.gson.JsonElement access$executeOperation(io.yuedu.legado.LegadoRuntime, io.yuedu.legado.RuntimeTask, java.lang.String, com.google.gson.JsonObject);
+    descriptor: (Lio/yuedu/legado/LegadoRuntime;Lio/yuedu/legado/RuntimeTask;Ljava/lang/String;Lcom/google/gson/JsonObject;)Lcom/google/gson/JsonElement;
+
+  public static final com.google.gson.JsonObject access$dispatchHost(io.yuedu.legado.LegadoRuntime, io.yuedu.legado.RuntimeTask, java.lang.String, com.google.gson.JsonObject);
+    descriptor: (Lio/yuedu/legado/LegadoRuntime;Lio/yuedu/legado/RuntimeTask;Ljava/lang/String;Lcom/google/gson/JsonObject;)Lcom/google/gson/JsonObject;
+
+  static {};
+    descriptor: ()V
+}
+Compiled from "NativeHost.java"
+public final class io.yuedu.legado.NativeHost {
+  public static native java.lang.String dispatch(java.lang.String, java.lang.String, java.lang.String);
+    descriptor: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+}

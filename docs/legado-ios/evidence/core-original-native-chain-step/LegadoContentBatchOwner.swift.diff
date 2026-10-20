@@ -1,0 +1,48 @@
+--- a/Modules/Services/Online/LegadoContentBatchOwner.swift
++++ b/Modules/Services/Online/LegadoContentBatchOwner.swift
+@@ -1,4 +1,5 @@
+ import Foundation
++import os
+ import LegadoRuntime
+ 
+ struct OriginalRuntimeBatchChapter: @unchecked Sendable {
+@@ -360,6 +361,7 @@
+         let process = LegadoRuntimeProcess.shared
+         let owner = try await process.bindPersistentContentBatch(request)
+         var finalBookCommitted = false
++        let reportedEffects = OSAllocatedUnfairLock(initialState: [String]())
+         do {
+             let runtime = try await process.executor()
+             try check(request.deadline)
+@@ -370,7 +372,8 @@
+                 try check(request.deadline)
+                 result = try await runtime.contentBatchOriginal(session: session, book: request.book,
+                     chapters: request.chapters.map(\.dto),
+-                    timeoutMilliseconds: Int64(min(300_000, max(1, request.deadline.timeIntervalSinceNow * 1000))), taskID: request.taskID)
++                    timeoutMilliseconds: Int64(min(300_000, max(1, request.deadline.timeIntervalSinceNow * 1000))), taskID: request.taskID,
++                    onReportedEffects: { effects in reportedEffects.withLock { $0 = effects } })
+                 guard result.missingChapters.count <= request.chapters.count,
+                       Set(result.missingChapters.map(\.index)).count == result.missingChapters.count,
+                       result.missingChapters.allSatisfy({ missing in
+@@ -387,14 +390,17 @@
+                 throw error
+             }
+             try await runtime.close(session: session)
++            try check(request.deadline)
+             await process.revokePersistentSource(owner: owner)
+             return result
+         } catch {
+             await process.revokePersistentSource(owner: owner)
+-            if finalBookCommitted {
+-                let failure = error as? LegadoRuntimeError
+-                throw LegadoRuntimeError(code: failure?.code ?? "STATE_IO", message: error.localizedDescription,
+-                    completedEffects: Array(Set((failure?.completedEffects ?? []) + ["bookVariablesCommitted"])).sorted())
++            let failure = error as? LegadoRuntimeError
++            let effects = Array(Set(reportedEffects.withLock { $0 } + (failure?.completedEffects ?? []) +
++                (finalBookCommitted ? ["bookVariablesCommitted"] : []))).sorted()
++            if !effects.isEmpty {
++                throw LegadoRuntimeError(code: failure?.code ?? (error is CancellationError ? "CANCELLED" : "STATE_IO"),
++                    message: error.localizedDescription, completedEffects: effects)
+             }
+             throw error
+         }

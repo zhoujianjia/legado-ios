@@ -1,0 +1,407 @@
+{
+  "schemaVersion": 1,
+  "preparedAtUTC": "2026-10-20T12:26:32.749558+00:00",
+  "status": "Production changes frozen for root review/integration; actual 4 JVM methods and ordinary 8-marker smoke passed. 3 native-reader methods and 1 new/1 changed Package method are prepared, Apple SDK/JNI execution zero.",
+  "baseline": "Exact canonical per-file baselines captured in baseline/; shared JVM base parent-reported 3b39c951. Concurrent renewal-only source changes are outside this delta.",
+  "actualChanges": [
+    "Existing preview context now durably stores original TOC metadata via bounded exact source/book/task TOC lease. Only discovering TOC tasks may CAS metadata; content can read it for original next-chapter lookup. It does not grant App body/UUID/generation authority.",
+    "A read-only current preview projection lets preview transfer preserve actual content callback state without refetching and mutating original TOC metadata.",
+    "Successful JVM envelopes preserve bounded original Host MayCommit/Committed names. Swift execute parses errors before deciding cancellation, typed DTO conversion retains receipt facts, and per-invocation App observers preserve receipts across close/final metadata publication errors. No effects are inferred solely from DTO success.",
+    "Three native-reader fixtures invoke actual default service/runtime/JNI/Host/BookStore/cache, controlled finite NW HTTP peer, original CSS/XPath/JSON/regex, two-page TOC/content, same Cookie and durable variables, actual index/UUID generations and cache restart readback, and cancel/drain with retained real saved prefix."
+  ],
+  "sourceBinding": {
+    "files": [
+      {
+        "path": "Modules/Services/Online/LegadoContentBatchOwner.swift",
+        "bytes": 26585,
+        "sha256": "0b86faa07fbe3ba3d8e0ec6c2ce39dca050faaf7d6a2a2f15fa9ac009386282e",
+        "snapshot": ".build/original-runtime-ios-native-chain-delta/final-sources/Modules/Services/Online/LegadoContentBatchOwner.swift",
+        "baseline": {
+          "path": ".build/original-runtime-ios-native-chain-delta/baseline/Modules/Services/Online/LegadoContentBatchOwner.swift",
+          "bytes": 26209,
+          "sha256": "9e29ad73bf706f6cea054e68d0980bf1390a7b5bcf5ddaafa344a7145bd742bb"
+        },
+        "diff": {
+          "path": ".build/original-runtime-ios-native-chain-delta/diffs/LegadoContentBatchOwner.swift.diff",
+          "bytes": 2695,
+          "sha256": "b223fb61444a090aedf976c16d261f47467f6421550ced0169946ab29a06753c"
+        }
+      },
+      {
+        "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+        "bytes": 82771,
+        "sha256": "a2777f5b25658cc2fd5929018bce7ea14b61f406e9d9940f1e249cfee3098868",
+        "snapshot": ".build/original-runtime-ios-native-chain-delta/final-sources/Modules/Services/Online/LegadoMainJSSourceService.swift",
+        "baseline": {
+          "path": ".build/original-runtime-ios-native-chain-delta/baseline/Modules/Services/Online/LegadoMainJSSourceService.swift",
+          "bytes": 77890,
+          "sha256": "57f4627a6c5436bfa67c91e7036ccadcc18016cf55c4a05da9b663946f1ca01b"
+        },
+        "diff": {
+          "path": ".build/original-runtime-ios-native-chain-delta/diffs/LegadoMainJSSourceService.swift.diff",
+          "bytes": 8571,
+          "sha256": "420f3b4d810db6c8c84736611f3a9107a55ff2ffa922f08a4cfaa4173f8ea3b9"
+        }
+      },
+      {
+        "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 64816,
+        "sha256": "004c834aa24df0511909eae76525684583026c30d7f28426dca24e112472288e",
+        "snapshot": ".build/original-runtime-ios-native-chain-delta/final-sources/Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "baseline": {
+          "path": ".build/original-runtime-ios-native-chain-delta/baseline/Modules/Services/Online/LegadoPersistentStateHost.swift",
+          "bytes": 59443,
+          "sha256": "6a2da8a7a1254530b5073f5629729483c5c51729f9b1a09c841a2b58799ff6a0"
+        },
+        "diff": {
+          "path": ".build/original-runtime-ios-native-chain-delta/diffs/LegadoPersistentStateHost.swift.diff",
+          "bytes": 8537,
+          "sha256": "7958fd835529bf4dd3e2cdaad4aa18a3488dff4a8c9376fa2b905cd2c86196a6"
+        }
+      },
+      {
+        "path": "Modules/Services/Online/LegadoPreviewStateOwner.swift",
+        "bytes": 22351,
+        "sha256": "f7ba52b3676f5d967ff082d50c4f7b6722baa384a19b31363bb3bfbf563c6f45",
+        "snapshot": ".build/original-runtime-ios-native-chain-delta/final-sources/Modules/Services/Online/LegadoPreviewStateOwner.swift",
+        "baseline": {
+          "path": ".build/original-runtime-ios-native-chain-delta/baseline/Modules/Services/Online/LegadoPreviewStateOwner.swift",
+          "bytes": 21552,
+          "sha256": "19c12c40c251307b9e85d5dbac06949e82293ece4a4c48333af361da50be5fc2"
+        },
+        "diff": {
+          "path": ".build/original-runtime-ios-native-chain-delta/diffs/LegadoPreviewStateOwner.swift.diff",
+          "bytes": 3815,
+          "sha256": "5a0629fe76034be6f69edffef4f6122a82d4f06551dff47a6b7d41c0578fc2c6"
+        }
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+        "bytes": 27919,
+        "sha256": "369934c052bb67174d10b5ca761af360ad1f6f031f3cc30d2474f8ba598a3202",
+        "snapshot": ".build/original-runtime-ios-native-chain-delta/final-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+        "baseline": {
+          "path": ".build/original-runtime-ios-native-chain-delta/baseline/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+          "bytes": 27474,
+          "sha256": "b0691bffe398d5573be298c490c91a100a7b0763215f1c8d29fffe940845d5b1"
+        },
+        "diff": {
+          "path": ".build/original-runtime-ios-native-chain-delta/diffs/LegadoRuntime.kt.diff",
+          "bytes": 1427,
+          "sha256": "e8955c29ee76c184df8b7a19eab64b85ef70101816c6fd236aad79835427881a"
+        }
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchPublicTest.kt",
+        "bytes": 13564,
+        "sha256": "04aef1de3721602abfa5b974682d3f9b3c5ee4e8e1534ae10b220ebd43e561ae",
+        "snapshot": ".build/original-runtime-ios-native-chain-delta/final-sources/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchPublicTest.kt",
+        "baseline": {
+          "path": ".build/original-runtime-ios-native-chain-delta/baseline/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalContentBatchPublicTest.kt",
+          "bytes": 12216,
+          "sha256": "31aa3b0164ce2b01ad6162c5ae6231bc3fc86f4cdb90f6c8365af5ec36c21ba7"
+        },
+        "diff": {
+          "path": ".build/original-runtime-ios-native-chain-delta/diffs/OriginalContentBatchPublicTest.kt.diff",
+          "bytes": 3266,
+          "sha256": "317c46fb86e7665d5cc8889b89065b33c48a91aedbd4ac5dcf57800f56ec8021"
+        }
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+        "bytes": 25308,
+        "sha256": "65c0c54ade2c7b98a708e84c5d6ca29fe3bfb5bcb133b7ac2a9b596ee6a183db",
+        "snapshot": ".build/original-runtime-ios-native-chain-delta/final-sources/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+        "baseline": {
+          "path": ".build/original-runtime-ios-native-chain-delta/baseline/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+          "bytes": 22366,
+          "sha256": "e7d4cb12c15ae63a910bcdafb1d7f4fe73b8de7509d394df6f4b145d87014e39"
+        },
+        "diff": {
+          "path": ".build/original-runtime-ios-native-chain-delta/diffs/LegadoRuntime.swift.diff",
+          "bytes": 12456,
+          "sha256": "d16576f124232157f50c9508c8dad2fac3ef8c42750de9e26c5ba217b80463c9"
+        }
+      },
+      {
+        "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+        "bytes": 12211,
+        "sha256": "c5538c11ff000368a55a67ca7b406249ceed11dbdf98f439a6917e73e30312af",
+        "snapshot": ".build/original-runtime-ios-native-chain-delta/final-sources/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+        "baseline": {
+          "path": ".build/original-runtime-ios-native-chain-delta/baseline/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+          "bytes": 11066,
+          "sha256": "5a6958e399c5403a2496a632542eb3bfb59c90ac9bec41b5b277ab77e126a63e"
+        },
+        "diff": {
+          "path": ".build/original-runtime-ios-native-chain-delta/diffs/LegadoOriginalAPITests.swift.diff",
+          "bytes": 2019,
+          "sha256": "c7ea31ee2b149424a85be925c35eea06592a8ddf4dc761838675863c4ca5559f"
+        }
+      },
+      {
+        "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoRuntimeTests.swift",
+        "bytes": 18754,
+        "sha256": "a234b50ce3b9401fe47f01626e7e98eec71ce34c47d76476ba7ce1ef152323b0",
+        "snapshot": ".build/original-runtime-ios-native-chain-delta/final-sources/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoRuntimeTests.swift",
+        "baseline": {
+          "path": ".build/original-runtime-ios-native-chain-delta/baseline/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoRuntimeTests.swift",
+          "bytes": 16964,
+          "sha256": "7fe1c059b72a2633d813afc8683232f3ebd6de89ca74a4262571598aaa75c726"
+        },
+        "diff": {
+          "path": ".build/original-runtime-ios-native-chain-delta/diffs/LegadoRuntimeTests.swift.diff",
+          "bytes": 3103,
+          "sha256": "3d77664beb05adb438d751ae8f2d0448d0c94907061acffabd9d7d5522f3fc0e"
+        }
+      },
+      {
+        "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "bytes": 131504,
+        "sha256": "32a25d061f3fced797c43921eb18fb4cb4c478cbbdcb77f0ca81a452c32cbd60",
+        "snapshot": ".build/original-runtime-ios-native-chain-delta/final-sources/Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "baseline": {
+          "path": ".build/original-runtime-ios-native-chain-delta/baseline/Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+          "bytes": 128552,
+          "sha256": "eb3a6808d260d40da3b7018830c154e166f0939587361fae88e41a69b56cafc0"
+        },
+        "diff": {
+          "path": ".build/original-runtime-ios-native-chain-delta/diffs/manifest.json.diff",
+          "bytes": 3725,
+          "sha256": "911a242679eec143d4d14f3ce7186f55ee17974e520e1e8bdf653665e2ab35f6"
+        }
+      },
+      {
+        "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+        "bytes": 33100,
+        "sha256": "a7a849365fa1768923762104ce07c06fa2a7b97fbfb856507594770886d9a0e6",
+        "snapshot": ".build/original-runtime-ios-native-chain-delta/final-sources/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+        "baseline": null,
+        "diff": {
+          "path": ".build/original-runtime-ios-native-chain-delta/diffs/LegadoNativeOriginalReaderTests.swift.diff",
+          "bytes": 33769,
+          "sha256": "4e781fd36c163de10c1bb3cee036295a10776b59189b5f2ceca7d375374618dd"
+        }
+      }
+    ],
+    "unchangedActualDependencies": [
+      {
+        "path": "Packages/LegadoRuntime/Package.swift",
+        "bytes": 4171,
+        "sha256": "183cd2b775956d8c5b6f16bd97bbec13e7fca59fc26d3e03ef1569907f7c3e57"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/CLegadoJNI/LegadoJNI.m",
+        "bytes": 35615,
+        "sha256": "304c7e15c7bc1fb539f43dbf1cc55c33853251c703d7830fb136cc45722b9f0d"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/CLegadoJNI/include/LegadoJNI.h",
+        "bytes": 1442,
+        "sha256": "cf59d8119a24139c83c0ee1e445eeed9325fa1c1e14323db33bf4485d734434d"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/NativeLegadoTransport.swift",
+        "bytes": 7574,
+        "sha256": "c194738ef2154f00806a70027438a52017a21591ad52bf3c848ba9067fcfaff9"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift",
+        "bytes": 8119,
+        "sha256": "50509734a46ef6a982faaff4aa24e49a9695ec58d8c33971b7f8c193d9aa6091"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+        "bytes": 6390,
+        "sha256": "4adcd5875ce01e95ec63e2902c321c384b813f3283bce2a8584c15d76b64882d"
+      },
+      {
+        "path": "Modules/Services/LibraryStore/BookStore.swift",
+        "bytes": 212377,
+        "sha256": "0504c1052c30e1fba3ebedced9946e1d9f06035609ab1fff81321cf16a5df3e3"
+      },
+      {
+        "path": "Modules/Services/LibraryStore/OriginalRuntimeCommitCancellation.swift",
+        "bytes": 762,
+        "sha256": "b7e8deae03869cc8ffb7998baa70fae785b95cf7c39ecafcae27ccd9438bef18"
+      },
+      {
+        "path": "Modules/Services/Online/ChapterCacheRepository.swift",
+        "bytes": 45847,
+        "sha256": "94ea188a3246a832734688ea6b117f62f5345b5fbada342847c5d29838ec3b79"
+      },
+      {
+        "path": "Modules/Services/Online/OnlineReadingPipeline.swift",
+        "bytes": 61584,
+        "sha256": "5be7448b4435e80f85fce62fa61152165da390ac6b745e06327347f02f412038"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoBookStateOwner.swift",
+        "bytes": 10875,
+        "sha256": "5d961b4fa5ed7f60cbddd773e3e324a3323e29bd7542597969dedf6c41c9d7ae"
+      },
+      {
+        "path": "Tests/iOS/LegadoNativeMainJSReaderTests.swift",
+        "bytes": 33102,
+        "sha256": "fb90306876590a3fdb5ff8027e6afada74051082c984789a87206c3c516b3c39"
+      },
+      {
+        "path": ".github/workflows/legado-native-reader-test.yml",
+        "bytes": 10240,
+        "sha256": "e4dfe5a019e714e4eef0f700db5d62e637b6c1f23b09a007601e4864d26aed70"
+      }
+    ],
+    "acceptedExecutionInputs": {
+      "path": ".build/original-runtime-ios-native-chain-delta/execution-inputs.json",
+      "bytes": 82580,
+      "sha256": "59515d6227fd3dc4e2ebacc8ba21265eefb0c61980b4bce1544a52b6d0145dd9"
+    },
+    "executionInputCount": 379,
+    "executionToFinalChanges": [
+      "Only provenance manifest changed after executed input snapshot to record a Swift Package fixture grammar correction. All executed JVM production/test/build files remain exact; final JAR has only that metadata member changed."
+    ],
+    "noCanonicalWrites": true
+  },
+  "actualJVM": {
+    "run": {
+      "path": ".build/original-runtime-ios-native-chain-delta/focused-and-ordinary-v2.json",
+      "bytes": 1991,
+      "sha256": "e8a66a38d064126042d1bb764ca8767bbe551b5b822318827507882db24ab27a"
+    },
+    "log": {
+      "path": ".build/original-runtime-ios-native-chain-delta/focused-and-ordinary-v2.log",
+      "bytes": 11827,
+      "sha256": "49674e10ed18de41de062776bb295e43b7fdcd1e2b91bc6a04bda40f0c0c2900"
+    },
+    "uniqueMethods": 4,
+    "newMethodCount": 1,
+    "modifiedExistingMethods": 1,
+    "existingRelevantMethods": 2,
+    "tests": {
+      "uniqueMethodCount": 4,
+      "suites": [
+        {
+          "file": {
+            "path": ".build/original-runtime-ios-native-chain-delta/jvm-work/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalContentBatchPublicTest.xml",
+            "bytes": 822,
+            "sha256": "4a007eb1da1ef6f193fca24b10f0daddf82473057bf65a7d3be12d9a256706b2"
+          },
+          "methods": [
+            "io.yuedu.legado.OriginalContentBatchPublicTest.successfulPublicBatchReportsOnlyAcknowledgedHostEffects",
+            "io.yuedu.legado.OriginalContentBatchPublicTest.ordinaryScriptErrorKeepsRealSavedPrefixAndDoesNotRetryMissingChapters",
+            "io.yuedu.legado.OriginalContentBatchPublicTest.cancellationCloseAndDeadlineRejectLateSecondSaveButKeepCommittedPrefix"
+          ]
+        },
+        {
+          "file": {
+            "path": ".build/original-runtime-ios-native-chain-delta/jvm-work/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalTraditionalRuntimeTest.xml",
+            "bytes": 706,
+            "sha256": "d45dc7b0a5b80784f43d02f3aae425dba87bec265efc7f300c043a393414a403"
+          },
+          "methods": [
+            "io.yuedu.legado.OriginalTraditionalRuntimeTest.publicFourStageChainKeepsOriginalSelectorsPagingVariablesCookiesAndBusinessDtos"
+          ]
+        }
+      ],
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "sourceUnchangedDuringRun": true,
+    "scope": "Public Runtime original four-stage flow and actual temporary FileRulePersistenceAdapter batch owner; not native JNI, App or WebKit execution."
+  },
+  "ordinaryJar": {
+    "finalJar": {
+      "path": ".build/original-runtime-ios-native-chain-delta/jvm-work/Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar",
+      "bytes": 10750264,
+      "sha256": "62a3cc0283c96e8a89d68aa4734debde5803db6ae3464734b7c0b487bcd514a1"
+    },
+    "testedJar": {
+      "path": ".build/original-runtime-ios-native-chain-delta/ordinary-tested-v2.jar",
+      "bytes": 10750262,
+      "sha256": "68fecaf4d35d3cec2fd4e54447412564dc1e69875af42abe5b7ed5c9e558641a"
+    },
+    "sameProductionClassCount": 396,
+    "smoke": {
+      "actualTestedJarMarkers": {
+        "PACKAGED_PAYLOAD_OK": true,
+        "PACKAGED_ORIGINAL_TRADITIONAL_OK": true,
+        "PACKAGED_APP_COOKIE_OWNER_READ_OK": true,
+        "PACKAGED_APP_COOKIE_OWNER_TEXT_OK": true,
+        "PACKAGED_APP_COOKIE_OWNER_BROWSER_PROTOCOL_OK": true,
+        "PACKAGED_ORIGINAL_EXPLORE_INFOMAP_OK": true,
+        "PACKAGED_ORIGINAL_BATCH_RATE_OK": true,
+        "PACKAGED_ORIGINAL_PUBLIC_BATCH_OK": true
+      },
+      "reuseToFinal": "Every non-manifest JAR member is byte-equal to tested JAR. No new execution of the manifest-only repack is asserted."
+    },
+    "manifest": {
+      "bytes": 131504,
+      "sha256": "32a25d061f3fced797c43921eb18fb4cb4c478cbbdcb77f0ca81a452c32cbd60",
+      "matchesFinalDraft": true
+    },
+    "testExclusion": {
+      "freshCompiledProjectTestClassesChecked": 195,
+      "leaks": []
+    },
+    "legacyNotices": 21,
+    "priorSourceProvenanceEntriesUnchanged": 57,
+    "audit": {
+      "path": ".build/original-runtime-ios-native-chain-delta/ordinary-and-xml-audit.json",
+      "bytes": 9579,
+      "sha256": "887e898f9d6f2deb02ca44da61d2a310f464a88c39d5b37d9081a23d5f39190c"
+    },
+    "manifestOnlyRepack": {
+      "path": ".build/original-runtime-ios-native-chain-delta/repack-final.json",
+      "bytes": 707,
+      "sha256": "8f0b373a725bf507edac368fcbb206b02a8cb5bbe4bbbbd89c0b1ab3088af3c4"
+    },
+    "priorC4V1": {
+      "path": ".build/original-runtime-ios-core-delta/preparation.json",
+      "bytes": 18075,
+      "sha256": "a2735f2f7f7343157c9090d99377a7c69bd5f8408668b14233203f8ef41285c0"
+    },
+    "staging": "Earlier two-platform staged resources remain immutable with v1 f4300f... JAR. Final v2 Jar62a3cc... is separately built/inspected; next real native-reader stage must use it or rebuild these exact integrated JVM/vendor inputs. Existing audited native framework/homes remain available without another 34k-file extraction."
+  },
+  "Swift": {
+    "grammar": {
+      "path": ".build/original-runtime-ios-native-chain-delta/grammar-final.json",
+      "bytes": 2661,
+      "sha256": "fc3d9c3877b0b0fb8c088e1af1cdf2297fbcb8f0fc188f3c8b023745a219cf0f"
+    },
+    "grammarSourceCount": 8,
+    "diagnostics": 0,
+    "initialGrammar": {
+      "path": ".build/original-runtime-ios-native-chain-delta/grammar-initial.json",
+      "bytes": 2856,
+      "sha256": "5d86bff032d15c4b4014341c99355f9f666966878d374db7551c16feed42c75e"
+    },
+    "initialFailure": "New Package cancellation fixture switch-await parser diagnostics (five). Changed only to existing fixture let-result/switch pattern; final actual affected parse zero, seven exact-byte successful parses reused. Not a Swift compiler claim.",
+    "SDKExecuted": false,
+    "JNIExecuted": false,
+    "nativeMethods": [
+      "yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",
+      "yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+      "yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix"
+    ],
+    "newPackageMethod": "LegadoRuntimeTests.LegadoRuntimeTests/testCancelledExecutePreservesReportedEffectsFromSuccessAndErrorEnvelopes",
+    "changedPackageMethod": "LegadoRuntimeTests.LegadoOriginalAPITests/testOriginalTypedErrorsAndIncompatibleDtosStayErrors",
+    "oldRelevantPackageMethods": [
+      "LegadoRuntimeTests.LegadoRuntimeTests/testCancelReachesRuntimeWhileExecuteWorkerIsBlocked",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testConfiguredTypedFourStageChainKeepsBusinessIdentitiesAndExplicitNoSave",
+      "LegadoRuntimeTests.LegadoOriginalAPITests/testTypedBatchReturnsMissingChapterIdentitiesAndDoesNotGrantSaves"
+    ],
+    "nativeInvocation": "Use existing real native-reader workflow/target with LEGADO_REQUIRE_NATIVE_MAINJS, SOURCE_ONLY unset, real new ordinary JAR, exported static VM and restored native payload. Preserve old mainJs fixture in its current independent host launch first (it sets process task tracing before VM startup); run the new suite in a separate test host launch afterward, exact 3 case leaves and no skips. No workflow or budget edits made here."
+  },
+  "failureAndLimits": [
+    "Initial fixture grammar diagnostics are retained; no JVM execution failures in this delta. No test/SDK/typecheck evidence is invented.",
+    "Foundation atomic context writes retain existing guarantees; no new file/directory fsync or power-loss guarantee. MayCommit is conservatively distinct from acknowledged Committed.",
+    "Host revoke/cancel cannot undo already issued/saved effects; request seal rejects future claims while exact prior receipt names and actual cache readback retain saved prefix facts.",
+    "Same preview record adds optional original TOC metadata (max20k entries, bridge1MiB, existing context8MiB), not a new file/database/owner/cache or App UUID assignment. Legacy nil optional field remains readable; only original TOC task has metadata publication capability.",
+    "Preview saved chapter identities intentionally retain existing unique URL constraint; original batch supports duplicate rawURL at distinct real App index/UUID via actual batch grant.",
+    "Default reading route, settings, source mode, transport owner and data owners remain unchanged. C3/C4/complete source compatibility still unaccepted; full media/audio/browser contract and Android differential/Apple JNI business execution remain outstanding."
+  ],
+  "rootReview": {
+    "status": "pending source-bound root review; child earlier confirmed real missing preview TOC route, fixed here, and source-only fixture mechanics checks are not SDK acceptance."
+  }
+}

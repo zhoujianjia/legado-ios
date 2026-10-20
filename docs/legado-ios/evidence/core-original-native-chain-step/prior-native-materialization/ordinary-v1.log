@@ -1,0 +1,91 @@
+
+F:\yuedu-reader>if "Windows_NT" == "Windows_NT" setlocal
+
+F:\yuedu-reader>set DIRNAME=F:\yuedu-reader\.tools\gradle-8.14.3\bin\ 
+
+F:\yuedu-reader>if "F:\yuedu-reader\.tools\gradle-8.14.3\bin\" == "" set DIRNAME=. 
+
+F:\yuedu-reader>set APP_BASE_NAME=gradle 
+
+F:\yuedu-reader>set APP_HOME=F:\yuedu-reader\.tools\gradle-8.14.3\bin\.. 
+
+F:\yuedu-reader>for %i in ("F:\yuedu-reader\.tools\gradle-8.14.3\bin\..") do set APP_HOME=%~fi 
+
+F:\yuedu-reader>set APP_HOME=F:\yuedu-reader\.tools\gradle-8.14.3 
+
+F:\yuedu-reader>set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m" "-javaagent:F:\yuedu-reader\.tools\gradle-8.14.3/lib/agents/gradle-instrumentation-agent-8.14.3.jar" 
+
+F:\yuedu-reader>if defined JAVA_HOME goto findJavaFromJavaHome 
+
+F:\yuedu-reader>set JAVA_HOME=F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1 
+
+F:\yuedu-reader>set JAVA_EXE=F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1/bin/java.exe 
+
+F:\yuedu-reader>if exist "F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1/bin/java.exe" goto execute 
+
+F:\yuedu-reader>set CLASSPATH= 
+
+F:\yuedu-reader>"F:\yuedu-reader\.tools\jdk21\jdk-21.0.12.1+1/bin/java.exe" "-Xmx64m" "-Xms64m" "-javaagent:F:\yuedu-reader\.tools\gradle-8.14.3/lib/agents/gradle-instrumentation-agent-8.14.3.jar"   "-Dorg.gradle.appname=gradle" -classpath "" -jar "F:\yuedu-reader\.tools\gradle-8.14.3\lib\gradle-gradle-cli-main-8.14.3.jar" -p F:\yuedu-reader\.build\original-runtime-ios-core-delta\work\Packages\LegadoRuntime\jvm --offline --no-daemon --console=plain runtimeJar runtimeSmoke 
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+w: Deprecated Gradle Version
+The used Gradle version (Gradle 8.14.3) is deprecated and will not be supported in future Kotlin Gradle Plugin releases.
+The minimum supported Gradle version will become Gradle 8.14.4 in Kotlin 2.5.0.
+
+This warning can be suppressed in 'gradle.properties':
+    kotlin.suppressGradlePluginWarnings=DeprecatedGradleVersionWarning
+Solution: Please update the Gradle version to at least Gradle 8.14.4.
+
+
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :processResources
+> Task :mergeServices
+
+> Task :compileKotlin
+w: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/BatchContentContext.kt:145:32 Condition is always 'true'.
+w: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeByJSoup.kt:77:38 Elvis operator (?:) always returns the left operand of non-nullable type 'String'.
+w: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt:122:27 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookChapterList.kt:75:31 Unnecessary safe call on a non-null receiver of type 'String'.
+w: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookChapterList.kt:108:35 Unnecessary non-null assertion (!!) on a non-null receiver of type 'String'.
+w: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt:87:27 Unnecessary safe call on a non-null receiver of type 'String'.
+w: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/BookContent.kt:116:56 Unnecessary non-null assertion (!!) on a non-null receiver of type 'String'.
+w: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/MainJsResultMarshaller.kt:177:36 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/MainJsResultMarshaller.kt:181:30 'constructor(p0: URL!, p1: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/TlsCapabilityProbe.kt:143:74 'class ThreadDeath : Error' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/TlsCapabilityProbe.kt:151:81 'class ThreadDeath : Error' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/TlsCapabilityProbe.kt:165:62 'class ThreadDeath : Error' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:177:36 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:188:37 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:194:24 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:205:24 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:215:25 'constructor(p0: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt:225:22 'constructor(p0: URL!, p1: String!): URL' is deprecated. Deprecated in Java.
+w: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt:30:33 This class is not recommended for use in Kotlin. Use 'kotlin.Any' instead.
+
+> Task :compileJava
+> Task :classes
+> Task :runtimeJar
+
+> Task :runtimeSmoke
+PACKAGED_PAYLOAD_OK {"ok":true,"taskId":"packaged-semantics","result":{"e4x":"ok","indirect":"function","dynamicThis":true,"legacy":42},"metrics":{"elapsedMs":476.7555}}
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+PACKAGED_ORIGINAL_TRADITIONAL_OK books=1 chapters=2 tocPages=2 firstChapterPages=2 sameCookie=true
+PACKAGED_APP_COOKIE_OWNER_READ_OK books=1 chapters=2 tocPages=2 firstChapterPages=2 rfcSnapshotReads=0
+PACKAGED_APP_COOKIE_OWNER_TEXT_OK books=1 chapters=2 tocPages=2 firstChapterPages=2 redirectResponseCommits=1 rfcSnapshotReads=0
+PACKAGED_APP_COOKIE_OWNER_BROWSER_PROTOCOL_OK orderedActions=4 partialEffectsPreserved=true actualWebKitExecuted=false
+PACKAGED_ORIGINAL_EXPLORE_INFOMAP_OK pages=2 sameContextAcrossSessions=true explicitSave=true nativeExecuted=false
+PACKAGED_ORIGINAL_PUBLIC_BATCH_OK publicJson=true saved=2 missing=1 explicitOwner=true appExecuted=false nativeExecuted=false
+PACKAGED_ORIGINAL_BATCH_RATE_OK saved=2 missing=1 sameOwner=true rateAdmissions=4 publicAppSaveEnabled=false nativeExecuted=false
+
+[Incubating] Problems report is available at: file:///F:/yuedu-reader/.build/original-runtime-ios-core-delta/work/Packages/LegadoRuntime/jvm/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 39s
+6 actionable tasks: 6 executed
+
+F:\yuedu-reader>if 0 EQU 0 goto mainEnd 
+
+F:\yuedu-reader>if "Windows_NT" == "Windows_NT" endlocal

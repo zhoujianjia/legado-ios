@@ -1,0 +1,133 @@
+--- a/Modules/Services/Online/LegadoMainJSSourceService.swift
++++ b/Modules/Services/Online/LegadoMainJSSourceService.swift
+@@ -119,6 +119,16 @@
+     }
+ }
+ 
++/// Original Room-style TOC metadata proof in the existing preview context file.
++/// It carries no App UUID/generation/body-save permission.
++struct LegadoPreviewTOCStateSnapshot: Sendable {
++    let recordID: String
++    let revision: UInt64
++    let rawSHA256: String
++    let wire: String
++    let value: Data?
++}
++
+ struct LegadoOriginalPreviewTransferReceipt: Sendable {
+     let recordID: String
+     let bookID: UUID
+@@ -499,6 +509,7 @@
+         var transferBookID: UUID?
+         var book: LegadoOriginalBook
+         var chapters: [LegadoOriginalChapter]
++        var originalTOC: [LegadoOriginalChapter]?
+         var chapterIDs: [UUID] = []
+         var bookLargeVariables: [String: String] = [:]
+         var chapterVariables: [String: [String: String]] = [:]
+@@ -583,17 +594,34 @@
+             operation: .toc(before.record.book, runPreUpdateJS: runPreUpdateJS), deadline: deadline)
+         guard case .toc(let book, let chapters) = result else { throw failure("INVALID_RESULT", "Original TOC omitted its DTOs") }
+         let updated = try finishPreview(reference, grant: grant, book: book, chapters: chapters, chapter: nil, deadline: deadline)
+-        let refs = try updated.chapters.map { chapter -> OnlineChapterRef in
++        return try previewTOCPackage(updated, reference: reference, previous: runtimeVariables, source: source)
++    }
++
++    /// Current owned preview projection only. Refreshing the source TOC would rerun
++    /// original upChapterInfo and may intentionally replace transient title/variables.
++    func originalPreviewSnapshot(source: BookSource, runtimeVariables: [String: String]?) async throws -> TOCPackage {
++        let signature = try originalSignature(source); let deadline = try operationDeadline()
++        try await acquire(source.bookSourceUrl, deadline: deadline)
++        defer { release(source.bookSourceUrl) }
++        try acceptOriginalRevision(source, signature: signature)
++        let reference = try previewContext(runtimeVariables, source: source, signature: signature)
++        let read = try readPreview(reference)
++        return try previewTOCPackage(read.record, reference: reference, previous: runtimeVariables, source: source)
++    }
++
++    private func previewTOCPackage(_ record: PreviewRecord, reference: ContextReference,
++                                   previous: [String: String]?, source: BookSource) throws -> TOCPackage {
++        let refs = try record.chapters.map { chapter -> OnlineChapterRef in
+             var ref = reference
+             ref.chapterJSON = String(decoding: try encoded(PreviewChapterReference(url: chapter.url, index: chapter.index)), as: UTF8.self)
+             let next = Int(chapter.index) + 1
+-            ref.nextChapterURL = next < updated.chapters.count ? updated.chapters[next].url : nil
+-            return OnlineChapterRef(id: updated.chapterIDs[Int(chapter.index)], index: Int(chapter.index), title: chapter.title, url: chapter.url,
++            ref.nextChapterURL = next < record.chapters.count ? record.chapters[next].url : nil
++            return OnlineChapterRef(id: record.chapterIDs[Int(chapter.index)], index: Int(chapter.index), title: chapter.title, url: chapter.url,
+                 isVolume: chapter.isVolume, isVip: chapter.isVip, isPay: chapter.isPay,
+-                runtimeVariables: try previewChapterProjection(updated, chapter: chapter, reference: ref))
+-        }
+-        return TOCPackage(sourceId: source.id, sourceName: source.bookSourceName, tocURL: url,
+-            runtimeVariables: try previewVariables(updated, reference: reference, previous: runtimeVariables),
++                runtimeVariables: try previewChapterProjection(record, chapter: chapter, reference: ref))
++        }
++        return TOCPackage(sourceId: source.id, sourceName: source.bookSourceName, tocURL: record.book.tocURL,
++            runtimeVariables: try previewVariables(record, reference: reference, previous: previous),
+             chapters: refs, rawHTMLFilename: nil, savedAt: Date())
+     }
+ 
+@@ -853,6 +881,55 @@
+             if let chapter { read.record.chapters[Int(chapter.index)].variable = raw }
+         } else { read.record.book.variable = raw; read.record.bookLargeVariables = large }
+         try cancellation.check(deadline: deadline); try grant.check(deadline: deadline)
++        let accepted = try replacePreview(read.record, previous: read, id: grant.recordID, deadline: deadline,
++            beforeWrite: {
++                try cancellation.check(deadline: deadline); try grant.check(deadline: deadline)
++                guard claimCommit() else { throw CancellationError() }
++            })
++        grant.accepted(revision: accepted.record.revision, sha256: accepted.sha256)
++        return true
++    }
++
++    private func validateOriginalPreviewTOC(_ chapters: [LegadoOriginalChapter], bookURL: String) throws {
++        guard chapters.count <= 20_000 else { throw failure("STATE_LIMIT", "Original preview TOC is oversized") }
++        var urls = Set<Data>()
++        for (offset, chapter) in chapters.enumerated() {
++            guard chapter.index == Int32(offset), LegadoPreviewIdentity.same(chapter.bookURL, bookURL),
++                  !chapter.url.isEmpty, chapter.url.utf8.count <= 8_192, urls.insert(Data(chapter.url.utf8)).inserted else {
++                throw failure("INVALID_STATE_REQUEST", "Original preview TOC identity is invalid")
++            }
++            _ = try previewVariableMap(chapter.variable)
++        }
++    }
++
++    func readPreviewTOCState(_ grant: OriginalRuntimePreviewGrant, wire: String, deadline: Date,
++                             cancellation: OriginalRuntimeCommitCancellation) throws -> LegadoPreviewTOCStateSnapshot {
++        try cancellation.check(deadline: deadline); try grant.check(deadline: deadline)
++        let read = try readPreview(grantReference(grant), check: {
++            try cancellation.check(deadline: deadline); try grant.check(deadline: deadline)
++        })
++        let value = try read.record.originalTOC.map { try encoded($0) }
++        guard (value?.count ?? 0) <= 1_048_576 else { throw failure("STATE_LIMIT", "Original preview TOC exceeds the state bridge budget") }
++        return .init(recordID: grant.recordID, revision: read.record.revision, rawSHA256: read.sha256, wire: wire, value: value)
++    }
++
++    func commitPreviewTOCState(_ grant: OriginalRuntimePreviewGrant, snapshot: LegadoPreviewTOCStateSnapshot,
++                               value: Data, deadline: Date, cancellation: OriginalRuntimeCommitCancellation,
++                               claimCommit: @Sendable () -> Bool) throws -> Bool {
++        try cancellation.check(deadline: deadline); try grant.check(deadline: deadline)
++        guard grant.discoveringChapters, value.count <= 1_048_576 else {
++            throw failure("UNSUPPORTED_CAPABILITY", "Only this original TOC operation can publish its bounded preview metadata")
++        }
++        var read = try readPreview(grantReference(grant), check: {
++            try cancellation.check(deadline: deadline); try grant.check(deadline: deadline)
++        })
++        guard snapshot.recordID == grant.recordID, snapshot.revision == read.record.revision,
++              snapshot.rawSHA256 == read.sha256 else { return false }
++        let toc: [LegadoOriginalChapter]
++        do { toc = try JSONDecoder().decode([LegadoOriginalChapter].self, from: value) }
++        catch { throw failure("INVALID_STATE_REQUEST", "Original preview TOC requires chapter metadata") }
++        try validateOriginalPreviewTOC(toc, bookURL: grant.bookURL)
++        read.record.originalTOC = toc
+         let accepted = try replacePreview(read.record, previous: read, id: grant.recordID, deadline: deadline,
+             beforeWrite: {
+                 try cancellation.check(deadline: deadline); try grant.check(deadline: deadline)
+@@ -1123,6 +1200,7 @@
+         return PreviewRead(record: next, raw: bytes, sha256: digest(bytes))
+     }
+     private func validatePreviewVariableBounds(_ record: PreviewRecord) throws {
++        if let toc = record.originalTOC { try validateOriginalPreviewTOC(toc, bookURL: record.book.bookURL) }
+         try LegadoPreviewVariableCodec.validateRepresentable([try previewVariableMap(record.book.variable) ?? [:], record.bookLargeVariables])
+         var effectiveChapterVariables: [String: [String: String]] = [:]
+         for chapter in record.chapters {

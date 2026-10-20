@@ -1,0 +1,543 @@
+import CryptoKit
+import Foundation
+import LegadoRuntime
+@preconcurrency import Network
+import XCTest
+@testable import yuedu_app
+
+/// The existing native-reader target must link the real ordinary JAR and Zero VM.
+/// All service/executor/Host/client/cache implementations below are production defaults.
+/// The loopback peer supplies bytes only; it is never a runtime transport substitute.
+final class LegadoNativeOriginalReaderTests: XCTestCase {
+    func testNativeOriginalWebBookPreviewTransferAndReopen() async throws {
+        executionTimeAllowance = 180
+        try await withFixture { fixture in
+            let books = try await fixture.service.originalSearch(query: "native-original", page: 2, source: fixture.source)
+            let found = try XCTUnwrap(books.first)
+            XCTAssertEqual(books.count, 1)
+            XCTAssertEqual(found.name, "Original JNI")
+            let detail = try await fixture.service.originalDetails(url: found.bookUrl, source: fixture.source,
+                runtimeVariables: found.runtimeVariables, knownBook: found)
+            XCTAssertEqual(detail.name, "Original JNI Updated")
+            let toc = try await fixture.service.originalTOC(url: detail.tocUrl, source: fixture.source,
+                runtimeVariables: detail.runtimeVariables, runPreUpdateJS: true)
+            XCTAssertEqual(toc.chapters.count, 2)
+            XCTAssertEqual(toc.chapters.map(\.index), [0, 1])
+            let originalIDs = toc.chapters.map(\.id)
+            let firstChapter = try XCTUnwrap(toc.chapters.first)
+            let secondChapter = try XCTUnwrap(toc.chapters.dropFirst().first)
+            let first = try await fixture.service.originalContent(ref: firstChapter, source: fixture.source)
+            XCTAssertTrue(first.contains("first&page"))
+            XCTAssertTrue(first.contains("last page"))
+            XCTAssertFalse(first.contains("REMOVE"))
+            XCTAssertFalse(fixture.peer.snapshot.requests.contains { $0.target == fixture.prefix + "/c2" })
+            // A new actual service reads the same preview file, not a shelf UUID
+            // invented for a search result or an injected in-memory executor.
+            let reopened = LegadoMainJSSourceService(contextDirectory: fixture.contextDirectory, operationTimeout: 45)
+            let second = try await reopened.originalContent(ref: secondChapter, source: fixture.source)
+            XCTAssertTrue(second.contains("second chapter"))
+            // Project this same file after content callbacks. Refetching the TOC
+            // would rerun original index/title metadata merging and lose state.
+            let transferTOC = try await reopened.originalPreviewSnapshot(source: fixture.source,
+                runtimeVariables: toc.runtimeVariables)
+            XCTAssertEqual(transferTOC.chapters.map(\.id), originalIDs)
+            let owned = try await self.ownedBook(fixture, title: detail.name, url: found.bookUrl,
+                tocURL: detail.tocUrl, chapters: transferTOC.chapters, variables: transferTOC.runtimeVariables)
+            let transferred = try await reopened.transferOriginalPreview(source: fixture.source,
+                runtimeVariables: transferTOC.runtimeVariables, to: owned.store, bookID: owned.book.id)
+            XCTAssertEqual(transferred.bookID, owned.book.id)
+            let actualChapters = try await owned.store.originalRuntimeChapters(bookID: owned.book.id)
+            XCTAssertEqual(actualChapters.map(\.id), originalIDs)
+            XCTAssertEqual(actualChapters.first?.runtimeVariables?["nativeParsed"], "yes")
+            let restarted = await Task.detached {
+                BookStore(metadataFileURL: fixture.metadata, legacyMetadataDefaults: nil)
+            }.value
+            let actualBook = await MainActor.run { restarted.readingBook(id: owned.book.id) }
+            XCTAssertEqual(actualBook?.id, owned.book.id)
+            XCTAssertEqual(actualBook?.isInBookshelf, false)
+            XCTAssertEqual(actualBook?.runtimeVariables?["nativeInfo"], "ready")
+            XCTAssertEqual(actualBook?.runtimeVariables?["nativeToc"], "ready")
+            XCTAssertEqual(actualBook?.runtimeVariables?["nativeBig"], String(repeating: "L", count: 10_000))
+            let requests = fixture.peer.snapshot.requests
+            XCTAssertEqual(requests.map(\.target), [fixture.prefix + "/search?key=native-original&page=2",
+                fixture.prefix + "/book", fixture.prefix + "/toc", fixture.prefix + "/toc2",
+                fixture.prefix + "/c1", fixture.prefix + "/c1p2", fixture.prefix + "/c2"])
+            XCTAssertTrue(requests.allSatisfy { $0.fixtureHeader == fixture.runID && $0.method == "GET" })
+            XCTAssertTrue(requests.dropFirst().allSatisfy { $0.cookie.contains(fixture.cookieName + "=wire") })
+            try await reopened.closeSessions()
+        }
+    }
+
+    func testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities() async throws {
+        executionTimeAllowance = 180
+        try await withFixture { fixture in
+            let owned = try await self.ownedBatchBook(fixture)
+            let manager = await self.manager(fixture)
+            let result = try await manager.fetchOriginalContentBatch(bookID: owned.book.id, sourceID: fixture.source.id,
+                book: owned.dto, chapterIndexes: [0, 1, 2], store: owned.store, timeout: 60, cache: fixture.cache)
+            XCTAssertEqual(result.missingChapters.map(\.index), [2])
+            XCTAssertEqual(result.missingChapters.first?.url, owned.chapters[2].url)
+            XCTAssertEqual(result.missingChapters.first?.bookURL, owned.dto.bookURL)
+            let freshCache = ChapterCacheRepository(rootDirectory: fixture.cacheDirectory)
+            let saved = try await BookStore.chapterCachePersistence {
+                let one = try XCTUnwrap(freshCache.loadChapterPackageSync(bookId: owned.book.id, chapterIndex: 0,
+                    expectedSourceURL: owned.chapters[0].url, expectedTOCTitle: owned.chapters[0].title))
+                let two = try XCTUnwrap(freshCache.loadChapterPackageSync(bookId: owned.book.id, chapterIndex: 1,
+                    expectedSourceURL: owned.chapters[1].url, expectedTOCTitle: owned.chapters[1].title))
+                let normalized = try XCTUnwrap(freshCache.loadNormalizedChapterHTMLSync(bookId: owned.book.id,
+                    chapterIndex: 1, expectedSourceURL: owned.chapters[1].url, expectedTOCTitle: owned.chapters[1].title))
+                let raw = try String(contentsOf: fixture.cacheDirectory.appendingPathComponent(owned.book.id.uuidString)
+                    .appendingPathComponent("1.raw.html"), encoding: .utf8)
+                return (one, two, raw, normalized,
+                    freshCache.loadChapterPackageSync(bookId: owned.book.id, chapterIndex: 2))
+            }
+            XCTAssertEqual(saved.0.content, "Batch wire content INDEX_0")
+            XCTAssertEqual(saved.1.content, "<usehtml><p>Batch wire content INDEX_1</p><img src='media.png'></usehtml>")
+            XCTAssertEqual(saved.2, saved.1.content)
+            XCTAssertTrue(saved.3.contains(fixture.baseURL + "/media.png"))
+            XCTAssertFalse(saved.3.contains("<usehtml"))
+            XCTAssertNil(saved.4)
+            XCTAssertEqual(owned.chapters[0].url, owned.chapters[1].url)
+            XCTAssertNotEqual(owned.chapters[0].id, owned.chapters[1].id)
+            let restarted = await Task.detached {
+                BookStore(metadataFileURL: fixture.metadata, legacyMetadataDefaults: nil)
+            }.value
+            let chapters = try await restarted.originalRuntimeChapters(bookID: owned.book.id)
+            XCTAssertEqual(chapters.map(\.id), owned.chapters.map(\.id))
+            XCTAssertEqual(chapters.map(\.cachedFilename), ["0.txt", "1.txt", nil])
+            let actualBook = await MainActor.run { restarted.readingBook(id: owned.book.id) }
+            XCTAssertEqual(actualBook?.runtimeVariables?["nativeHost"], "accepted")
+            XCTAssertEqual(actualBook?.runtimeVariables?["nativeSetter"], "final")
+            for chapter in owned.chapters {
+                let generation = await manager.originalRuntimeGeneration(bookID: owned.book.id, chapter: chapter)
+                XCTAssertNil(generation)
+            }
+            XCTAssertEqual(fixture.peer.snapshot.requests.map(\.target), [fixture.prefix + "/duplicate", fixture.prefix + "/duplicate"])
+        }
+    }
+
+    func testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix() async throws {
+        executionTimeAllowance = 180
+        try await withFixture { fixture in
+            let owned = try await self.ownedBatchBook(fixture, distinctURLs: true)
+            let manager = await self.manager(fixture)
+            let headers = self.expectation(description: "Native original second HTTP response is held after its first byte")
+            let peerClosed = self.expectation(description: "Cancelled original native client closes its held TCP socket")
+            fixture.peer.armHeldBody(target: fixture.prefix + "/held", headersSent: { headers.fulfill() },
+                peerClosed: { peerClosed.fulfill() })
+            let pending = Task {
+                try await manager.fetchOriginalContentBatch(bookID: owned.book.id, sourceID: fixture.source.id,
+                    book: owned.dto, chapterIndexes: [0, 1, 2], store: owned.store, timeout: 60, cache: fixture.cache)
+            }
+            await self.fulfillment(of: [headers], timeout: 30)
+            // The original loop cannot issue chapter two's HTTP request before
+            // chapter one's actual Host cacheContent save has returned.
+            let issued = fixture.peer.snapshot.heldHeadersSent
+            pending.cancel()
+            let terminal = await pending.result
+            XCTAssertTrue(issued)
+            await self.fulfillment(of: [peerClosed], timeout: 20)
+            if case .success = terminal { XCTFail("Cancelled native batch cannot return a successful missing list") }
+            if case .failure(let error) = terminal {
+                let failure = try XCTUnwrap(error as? OriginalContentBatchFailure)
+                let execution = try XCTUnwrap(failure.executionError)
+                let typed = try XCTUnwrap(execution as? LegadoRuntimeError)
+                XCTAssertEqual(typed.code, "CANCELLED", "Actual JNI cancellation must remain cancellation")
+                XCTAssertTrue(typed.completedEffects?.contains("chapterContentCommitted") == true,
+                    "JNI cancellation must retain the actual first Host save acknowledgement")
+                self.attach(["verifiedSavedIndexes": failure.verifiedSavedIndexes,
+                    "publicationFailed": failure.publicationError != nil], name: "OriginalNative-cancel-returned-facts")
+            }
+            let cache = ChapterCacheRepository(rootDirectory: fixture.cacheDirectory)
+            let saved = try await BookStore.chapterCachePersistence {
+                (cache.loadChapterPackageSync(bookId: owned.book.id, chapterIndex: 0,
+                    expectedSourceURL: owned.chapters[0].url, expectedTOCTitle: owned.chapters[0].title),
+                 cache.loadChapterPackageSync(bookId: owned.book.id, chapterIndex: 1))
+            }
+            XCTAssertEqual(saved.0?.content, "Batch wire content INDEX_0")
+            XCTAssertNil(saved.1)
+            for chapter in owned.chapters {
+                let generation = await manager.originalRuntimeGeneration(bookID: owned.book.id, chapter: chapter)
+                XCTAssertNil(generation)
+            }
+            XCTAssertTrue(fixture.peer.snapshot.heldPeerClosed)
+            XCTAssertEqual(fixture.peer.snapshot.requests.count, 2)
+        }
+    }
+
+    private struct Fixture: @unchecked Sendable {
+        let runID: String
+        let prefix: String
+        let cookieName: String
+        let baseURL: String
+        let root: URL
+        let contextDirectory: URL
+        let metadata: URL
+        let cacheDirectory: URL
+        let cache: ChapterCacheRepository
+        let peer: NativeOriginalLoopbackServer
+        let source: BookSource
+        let service: LegadoMainJSSourceService
+    }
+    private struct OwnedBook: @unchecked Sendable {
+        let store: BookStore
+        let book: ReadingBook
+        let dto: LegadoOriginalBook
+        let chapters: [OnlineChapterRef]
+    }
+    private func withFixture(_ body: (Fixture) async throws -> Void) async throws {
+        let diagnostics = await Task.detached { LegadoRuntime.diagnose() }.value
+        let required: Bool
+        #if LEGADO_REQUIRE_NATIVE_MAINJS
+        required = true
+        #else
+        required = ProcessInfo.processInfo.environment["LEGADO_REQUIRE_NATIVE_MAINJS"] == "1"
+            || UserDefaults.standard.bool(forKey: "LEGADO_REQUIRE_NATIVE_MAINJS")
+        #endif
+        guard diagnostics.available else {
+            if required { throw NativeOriginalReaderError.failed("Required actual JNI payload unavailable: \(diagnostics.issues)") }
+            throw XCTSkip("Requires the real ordinary runtime and native-reader build; source-only cannot pass")
+        }
+        let runID = UUID().uuidString.lowercased()
+        let peer = try NativeOriginalLoopbackServer(runID: runID)
+        let ready = expectation(description: "Owned original loopback is ready")
+        peer.start { ready.fulfill() }
+        await fulfillment(of: [ready], timeout: 10)
+        var problem: Error?
+        var fixture: Fixture?
+        do {
+            let base = try peer.readyBaseURL()
+            let root = FileManager.default.temporaryDirectory.appendingPathComponent("NativeOriginal-" + runID, isDirectory: true)
+            try await Task.detached { try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true) }.value
+            let context = root.appendingPathComponent("contexts", isDirectory: true)
+            let cache = root.appendingPathComponent("body", isDirectory: true)
+            let value = Fixture(runID: runID, prefix: "/" + runID, cookieName: "native_" + runID.replacingOccurrences(of: "-", with: ""),
+                baseURL: base, root: root, contextDirectory: context, metadata: root.appendingPathComponent("books_meta.json"),
+                cacheDirectory: cache, cache: .init(rootDirectory: cache), peer: peer, source: Self.source(base: base, runID: runID),
+                service: .init(contextDirectory: context, operationTimeout: 45))
+            fixture = value
+            try await body(value)
+        } catch { problem = error }
+        if let fixture {
+            do { try await fixture.service.closeSessions() }
+            catch {
+                attach(["sessionCleanupFailed": true, "originalOperationAlreadyFailed": problem != nil], name: "OriginalNative-session-cleanup")
+                if problem == nil { problem = error }
+            }
+        }
+        let stopped = expectation(description: "Owned original listener and all connections stop")
+        peer.stop { stopped.fulfill() }
+        await fulfillment(of: [stopped], timeout: 10)
+        let snapshot = peer.snapshot
+        XCTAssertEqual(snapshot.activeConnections, 0)
+        XCTAssertTrue(snapshot.listenerCancelled)
+        XCTAssertTrue(snapshot.errors.isEmpty, "\(snapshot.errors)")
+        attach(["nativeBridgePresent": diagnostics.nativeBridgePresent, "requiredPayload": required,
+            "fixtureRunID": runID, "requests": snapshot.requests.map(\.target),
+            "allConnectionsStopped": snapshot.listenerCancelled && snapshot.activeConnections == 0,
+            "executionPlatform": "actual native-reader target, not source-only or injected transport"], name: "OriginalNative-product-chain")
+        await BookStore.queuedWritesLanded()
+        if let fixture {
+            do { try await Task.detached { try FileManager.default.removeItem(at: fixture.root) }.value }
+            catch { if problem == nil { problem = error } }
+        }
+        if let problem { throw problem }
+    }
+    private func ownedBook(_ f: Fixture, title: String, url: String, tocURL: String,
+                           chapters: [OnlineChapterRef], variables: [String: String]? = nil) async throws -> OwnedBook {
+        let store = await Task.detached { BookStore(metadataFileURL: f.metadata, legacyMetadataDefaults: nil) }.value
+        var book = ReadingBook(title: title, author: "Owned author", source: url, contentFilename: "")
+        book.isOnline = true; book.isInBookshelf = false; book.bookSourceId = f.source.id
+        book.bookInfoURL = url; book.tocURL = tocURL; book.onlineChapters = chapters; book.runtimeVariables = variables
+        let actual = book
+        await MainActor.run { store.saveReadingBook(actual) }
+        await BookStore.queuedWritesLanded()
+        return .init(store: store, book: actual,
+            dto: .init(bookURL: url, origin: f.source.bookSourceUrl, name: title, author: "Owned author", tocURL: tocURL), chapters: chapters)
+    }
+    private func ownedBatchBook(_ f: Fixture, distinctURLs: Bool = false) async throws -> OwnedBook {
+        let chapters = (0..<3).map { index in
+            OnlineChapterRef(index: index, title: "Batch \(index)", url: f.baseURL + (index == 2 ? "/missing" : (distinctURLs && index == 1 ? "/held" : "/duplicate")))
+        }
+        return try await ownedBook(f, title: "Owned native batch", url: f.baseURL + "/book", tocURL: f.baseURL + "/toc", chapters: chapters)
+    }
+    private func manager(_ fixture: Fixture) async -> ChapterFetchManager {
+        let webViewFetcher = await MainActor.run { WebViewFetcher.shared }
+        return ChapterFetchManager(bookSourceFetcher: .init(mainJSService: fixture.service),
+            webViewFetcher: webViewFetcher, sourceResolver: { _ in fixture.source })
+    }
+    private static func source(base: String, runID: String) -> BookSource {
+        var source = BookSource(bookSourceUrl: base, bookSourceName: "Native original controlled source")
+        source.enabledCookieJar = true
+        source.header = "{\"X-Legado-Native-Fixture\":\"" + runID + "\",\"Accept-Encoding\":\"identity\",\"Connection\":\"close\"}"
+        source.searchUrl = base + "/search?key={{key}}&page={{page}}"
+        source.ruleSearch.bookList = ".book"; source.ruleSearch.name = "a@text"
+        source.ruleSearch.author = "b@text"; source.ruleSearch.bookUrl = "a@href"
+        source.ruleBookInfo.initScript = "@js:book.putVariable('nativeInfo','ready');java.put('nativeBig','L'.repeat(10000));result"
+        source.ruleBookInfo.name = "@XPath://h1/text()"; source.ruleBookInfo.tocUrl = "#toc@href"
+        source.ruleBookInfo.canReName = "yes"
+        source.ruleToc.preUpdateJs = "java.put('nativeToc','ready')"
+        source.ruleToc.chapterList = "$.chapters"; source.ruleToc.chapterName = "$.name"
+        source.ruleToc.chapterUrl = "$.url"; source.ruleToc.nextTocUrl = "$.next"
+        source.ruleContent.content = "#text@html"; source.ruleContent.nextContentUrl = ".next@href"
+        source.ruleContent.replaceRegex = "##REMOVE##"
+        source.ruleContent.title = "@js:if(String(java.get('nativeBig')).length!==10000)throw new Error('lost big variable');chapter.putVariable('nativeParsed','yes');String(chapter.title)+'!'"
+        source.ruleContent.contentBatch = """
+        book.putVariable('nativeHost','accepted');
+        for(var i=0;i<2;i++) {
+          var chapter=result.get(i); var wire=String(java.ajax(chapter.getAbsoluteURL()));
+          var body=i===0 ? wire+' INDEX_0' : "<usehtml><p>"+wire+" INDEX_1</p><img src='media.png'></usehtml>";
+          if(!java.cacheContent(chapter,body))throw new Error('actual App body save refused');
+        }
+        book.variable=JSON.stringify({nativeHost:'accepted',nativeSetter:'final'});
+        """
+        return source
+    }
+    private func attach(_ value: [String: Any], name: String) {
+        do {
+            let attachment = XCTAttachment(data: try JSONSerialization.data(withJSONObject: value, options: [.sortedKeys, .prettyPrinted]),
+                uniformTypeIdentifier: "public.json")
+            attachment.name = name + ".json"; attachment.lifetime = .keepAlways; add(attachment)
+        } catch { XCTFail("Could not attach original native evidence: \(error)") }
+    }
+}
+
+private enum NativeOriginalReaderError: Error { case failed(String) }
+
+/// Listener mechanics retained from the existing native-reader fixture; only the
+/// finite rule-source response table, observed Cookie and held target are changed.
+private final class NativeOriginalLoopbackServer: @unchecked Sendable {
+    struct Request: Codable {
+        let method: String
+        let target: String
+        let rawRequestBase64: String
+        let fixtureHeader: String
+        let cookie: String
+        let responseBody: String
+        var heldBody: Bool
+        var headersSent = false
+        var completeResponseWritten = false
+    }
+    struct Snapshot: Codable {
+        let requests: [Request]
+        let errors: [String]
+        let heldHeadersSent: Bool
+        let heldPeerClosed: Bool
+        let heldHeadersAtEpochMs: Double?
+        let heldPeerClosedAtEpochMs: Double?
+        let listenerCancelled: Bool
+        let activeConnections: Int
+    }
+    private let runID: String
+    private let listener: NWListener
+    private let queue = DispatchQueue(label: "LegadoNativeOriginal.loopback")
+    private let lock = NSLock()
+    private var base: String?
+    private var requests: [Request] = []
+    private var errors: [String] = []
+    private var connections: [UUID: NWConnection] = [:]
+    private var heldConnection: UUID?
+    private var holdNext = false
+    private var holdTarget: String?
+    private var heldHeaders = false
+    private var peerClosed = false
+    private var heldHeadersAtEpochMs: Double?
+    private var heldPeerClosedAtEpochMs: Double?
+    private var cancelled = false
+    private var stopping = false
+    private var readyCallback: (() -> Void)?
+    private var stopCallback: (() -> Void)?
+    private var headersCallback: (() -> Void)?
+    private var peerCallback: (() -> Void)?
+
+    init(runID: String) throws {
+        self.runID = runID
+        let parameters = NWParameters.tcp
+        parameters.requiredLocalEndpoint = .hostPort(host: "127.0.0.1", port: .any)
+        listener = try NWListener(using: parameters)
+    }
+    var snapshot: Snapshot {
+        lock.withLock { Snapshot(requests: requests, errors: errors, heldHeadersSent: heldHeaders,
+            heldPeerClosed: peerClosed, heldHeadersAtEpochMs: heldHeadersAtEpochMs,
+            heldPeerClosedAtEpochMs: heldPeerClosedAtEpochMs,
+            listenerCancelled: cancelled, activeConnections: connections.count) }
+    }
+    func readyBaseURL() throws -> String {
+        try lock.withLock {
+            guard let base, errors.isEmpty else { throw NativeOriginalReaderError.failed("Listener not ready: \(errors)") }
+            return base
+        }
+    }
+    func start(ready: @escaping () -> Void) {
+        lock.withLock { readyCallback = ready }
+        listener.stateUpdateHandler = { [weak self] state in
+            guard let self else { return }
+            switch state {
+            case .ready:
+                self.lock.withLock {
+                    if let port = self.listener.port { self.base = "http://127.0.0.1:\(port.rawValue)/\(self.runID)" }
+                    else { self.errors.append("Listener has no port") }
+                }
+                self.signalReady()
+            case .failed(let error): self.recordError("Listener failed: \(error)"); self.signalReady()
+            case .cancelled: self.lock.withLock { self.cancelled = true }; self.signalReady(); self.finishStop()
+            default: break
+            }
+        }
+        listener.newConnectionHandler = { [weak self] connection in
+            guard let self else { connection.cancel(); return }
+            self.accept(connection)
+        }
+        listener.start(queue: queue)
+    }
+    func armHeldBody(target: String, headersSent: @escaping () -> Void, peerClosed: @escaping () -> Void) {
+        lock.withLock { holdNext = true; holdTarget = target; headersCallback = headersSent; peerCallback = peerClosed }
+    }
+    func stop(completed: @escaping () -> Void) {
+        let open = lock.withLock { stopping = true; stopCallback = completed; return Array(connections.values) }
+        listener.newConnectionHandler = nil
+        listener.cancel()
+        open.forEach { $0.cancel() }
+        finishStop()
+    }
+    private func signalReady() {
+        let callback = lock.withLock { let value = readyCallback; readyCallback = nil; return value }
+        callback?()
+    }
+    private func finishStop() {
+        let callback = lock.withLock { () -> (() -> Void)? in
+            guard stopping, cancelled, connections.isEmpty else { return nil }
+            let value = stopCallback; stopCallback = nil; return value
+        }
+        callback?()
+    }
+    private func recordError(_ value: String) { lock.withLock { errors.append(value) } }
+    private func accept(_ connection: NWConnection) {
+        let id = UUID()
+        let accepted = lock.withLock { () -> Bool in
+            guard !stopping else { return false }
+            connections[id] = connection
+            return true
+        }
+        guard accepted else { connection.cancel(); return }
+        connection.stateUpdateHandler = { [weak self] state in
+            guard let self else { return }
+            switch state {
+            case .failed(let error):
+                if !self.isExpectedPeerClose(error, id: id) { self.recordError("Connection failed: \(error)") }
+                connection.cancel()
+            case .cancelled:
+                connection.stateUpdateHandler = nil
+                _ = self.lock.withLock { self.connections.removeValue(forKey: id) }
+                self.finishStop()
+            default: break
+            }
+        }
+        connection.start(queue: queue)
+        receive(connection, id: id, data: Data())
+    }
+    private func receive(_ connection: NWConnection, id: UUID, data: Data) {
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 16_384) { [weak self] chunk, _, done, error in
+            guard let self else { connection.cancel(); return }
+            var bytes = data
+            if let chunk { bytes.append(chunk) }
+            guard error == nil, bytes.count < 65_536 else { self.recordError("Invalid fixture request size/transport"); connection.cancel(); return }
+            if let boundary = bytes.range(of: Data("\r\n\r\n".utf8)) {
+                do { try self.respond(connection, id: id, bytes: bytes, boundary: boundary) }
+                catch { self.recordError(String(describing: error)); connection.cancel() }
+            } else if !done { self.receive(connection, id: id, data: bytes) }
+            else { self.recordError("Incomplete request headers"); connection.cancel() }
+        }
+    }
+    private func respond(_ connection: NWConnection, id: UUID, bytes: Data, boundary: Range<Data.Index>) throws {
+        guard bytes.count == boundary.upperBound,
+              let head = String(data: bytes[..<boundary.lowerBound], encoding: .utf8) else { throw NativeOriginalReaderError.failed("Expected header-only GET") }
+        let lines = head.components(separatedBy: "\r\n")
+        let first = (lines.first ?? "").split(separator: " ").map(String.init)
+        guard first.count == 3, first[0] == "GET", first[2] == "HTTP/1.1" else { throw NativeOriginalReaderError.failed("Unexpected request line") }
+        let target = first[1]
+        let headers = try lines.dropFirst().map { line -> (String, String) in
+            guard let colon = line.firstIndex(of: ":") else { throw NativeOriginalReaderError.failed("Malformed request header") }
+            return (String(line[..<colon]).lowercased(), String(line[line.index(after: colon)...]).trimmingCharacters(in: .whitespaces))
+        }
+        guard !headers.contains(where: { $0.0 == "transfer-encoding" || ($0.0 == "content-length" && $0.1 != "0") }) else {
+            throw NativeOriginalReaderError.failed("Unexpected GET body")
+        }
+        let base = try readyBaseURL()
+        let prefix = "/\(runID)"
+        let body: String
+        if target == prefix + "/search?key=native-original&page=2" {
+            body = "<div class='book'><a href='\(prefix)/book'>Original JNI</a><b>Owned author</b></div>"
+        } else if target == prefix + "/book" {
+            body = "<h1>Original JNI Updated</h1><a id='toc' href='\(prefix)/toc'>toc</a>"
+        } else if target == prefix + "/toc" {
+            body = try Self.json(["chapters": [["name": "One", "url": prefix + "/c1"]], "next": [prefix + "/toc2"]])
+        } else if target == prefix + "/toc2" {
+            body = try Self.json(["chapters": [["name": "Two", "url": prefix + "/c2"]], "next": []])
+        } else if target == prefix + "/c1" {
+            body = "<div id='text'>first&amp;page</div><a class='next' href='\(prefix)/c1p2'>next</a>"
+        } else if target == prefix + "/c1p2" {
+            body = "<div id='text'>last pageREMOVE</div><a class='next' href='\(prefix)/c2'>next chapter</a>"
+        } else if target == prefix + "/c2" { body = "<div id='text'>second chapter</div>" }
+        else if target == prefix + "/duplicate" || target == prefix + "/held" { body = "Batch wire content" }
+        else { throw NativeOriginalReaderError.failed("Unknown fixture route: \(target)") }
+        let entry = lock.withLock { () -> (Int, Bool) in
+            let held = holdNext && target == holdTarget
+            if held { holdNext = false; heldConnection = id }
+            let index = requests.count
+            requests.append(Request(method: first[0], target: target, rawRequestBase64: bytes.base64EncodedString(),
+                fixtureHeader: headers.first(where: { $0.0 == "x-legado-native-fixture" })?.1 ?? "",
+                cookie: headers.first(where: { $0.0 == "cookie" })?.1 ?? "", responseBody: body, heldBody: held))
+            return (index, held)
+        }
+        guard entry.0 < 16 else { throw NativeOriginalReaderError.failed("Fixture request limit exceeded") }
+        let content = Data(body.utf8)
+        let cookieName = "native_" + runID.replacingOccurrences(of: "-", with: "")
+        let setCookie = target == prefix + "/search?key=native-original&page=2"
+            ? "Set-Cookie: \(cookieName)=wire; Path=\(prefix)/; HttpOnly\r\n" : ""
+        let header = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: \(content.count)\r\n" + setCookie + "Connection: close\r\n\r\n"
+        var response = Data(header.utf8)
+        response.append(entry.1 ? Data(content.prefix(1)) : content)
+        connection.send(content: response, contentContext: entry.1 ? .defaultMessage : .finalMessage, isComplete: !entry.1,
+            completion: .contentProcessed { [weak self] error in
+                guard let self else { connection.cancel(); return }
+                if let error { self.recordError("Response write failed: \(error)"); connection.cancel(); return }
+                let callback = self.lock.withLock { () -> (() -> Void)? in
+                    self.requests[entry.0].headersSent = true
+                    self.requests[entry.0].completeResponseWritten = !entry.1
+                    guard entry.1 else { return nil }
+                    self.heldHeaders = true
+                    self.heldHeadersAtEpochMs = Date().timeIntervalSince1970 * 1000
+                    let value = self.headersCallback; self.headersCallback = nil; return value
+                }
+                if entry.1 { self.monitorPeer(connection, id: id); callback?() }
+                else { connection.cancel() }
+            })
+    }
+    private func monitorPeer(_ connection: NWConnection, id: UUID) {
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 1) { [weak self] bytes, _, done, error in
+            guard let self else { connection.cancel(); return }
+            if done && error == nil && (bytes == nil || bytes?.isEmpty == true) { self.signalPeerClose(id: id) }
+            else if let error, self.isExpectedPeerClose(error, id: id) { /* Recorded reset from the cancelled client. */ }
+            else { self.recordError("Held connection did not end with peer EOF/reset") }
+            connection.cancel()
+        }
+    }
+    private func isExpectedPeerClose(_ error: NWError, id: UUID) -> Bool {
+        guard case .posix(.ECONNRESET) = error, lock.withLock({ heldConnection == id && !stopping }) else { return false }
+        signalPeerClose(id: id)
+        return true
+    }
+    private func signalPeerClose(id: UUID) {
+        let callback = lock.withLock { () -> (() -> Void)? in
+            guard heldConnection == id, !stopping else { return nil }
+            peerClosed = true
+            heldPeerClosedAtEpochMs = Date().timeIntervalSince1970 * 1000
+            let value = peerCallback; peerCallback = nil; return value
+        }
+        callback?()
+    }
+    private static func json(_ value: Any) throws -> String {
+        String(decoding: try JSONSerialization.data(withJSONObject: value, options: [.sortedKeys]), as: UTF8.self)
+    }
+}

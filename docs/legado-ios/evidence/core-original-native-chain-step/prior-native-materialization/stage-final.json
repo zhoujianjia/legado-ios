@@ -1,0 +1,507 @@
+{
+  "schemaVersion": 1,
+  "startedAtUTC": "2026-10-20T11:45:47.143364+00:00",
+  "scope": "Actual existing production audit/restore/stage with immutable source-built Probe12 native ZIP and this source ordinary JAR; no native recompile, Apple link or JNI execution.",
+  "nativeAudit": {
+    "jar": {
+      "sha256": "f4300f156fe903111dc9b4033e3b8e8f6aef60566097f04fa4ffb15fe212e362",
+      "bytes": 10749215,
+      "maximumBaseClassMajor": 65,
+      "requiredClasses": [
+        "io/yuedu/legado/LegadoRuntime.class",
+        "io/yuedu/legado/NativeHost.class",
+        "io/yuedu/legado/ProductionHttpTransport.class",
+        "io/yuedu/legado/RuntimeSessionOptions.class",
+        "io/yuedu/legado/StaticScalarSelectorRule.class",
+        "org/htmlunit/corejs/javascript/Context.class",
+        "okhttp3/OkHttpClient.class",
+        "org/brotli/dec/BrotliInputStream.class",
+        "org/apache/commons/text/StringEscapeUtils.class",
+        "org/apache/commons/lang3/StringUtils.class",
+        "io/legado/app/model/analyzeRule/AnalyzeRule.class",
+        "io/legado/app/data/entities/Book.class",
+        "io/legado/app/data/entities/BookChapter.class",
+        "io/legado/app/data/entities/BookSource.class"
+      ],
+      "testClassesIncluded": false
+    },
+    "nativeLayout": {
+      "device": {
+        "staticValidationPassed": true,
+        "modules": [
+          "java.base",
+          "java.xml",
+          "java.desktop",
+          "java.datatransfer",
+          "java.prefs",
+          "java.logging",
+          "jdk.charsets",
+          "java.compiler",
+          "java.instrument",
+          "java.net.http",
+          "java.sql",
+          "java.transaction.xa",
+          "jdk.unsupported"
+        ],
+        "deviceValidationPassed": false,
+        "bytecodeCompatibility": {
+          "source": "modules/java.base/java/lang/Object.class",
+          "nativeClassMajor": 72,
+          "nativeClassMinor": 0,
+          "freshJarMaximumBaseClassMajor": 65,
+          "runtimeJavaVersionMeasured": false
+        }
+      },
+      "simulator": {
+        "staticValidationPassed": true,
+        "modules": [
+          "java.base",
+          "java.xml",
+          "java.desktop",
+          "java.datatransfer",
+          "java.prefs",
+          "java.logging",
+          "jdk.charsets",
+          "java.compiler",
+          "java.instrument",
+          "java.net.http",
+          "java.sql",
+          "java.transaction.xa",
+          "jdk.unsupported"
+        ],
+        "deviceValidationPassed": false,
+        "bytecodeCompatibility": {
+          "source": "modules/java.base/java/lang/Object.class",
+          "nativeClassMajor": 72,
+          "nativeClassMinor": 0,
+          "freshJarMaximumBaseClassMajor": 65,
+          "runtimeJavaVersionMeasured": false
+        }
+      }
+    },
+    "nativeExecutionVerified": false,
+    "deviceValidationPassed": false
+  },
+  "movedRoots": [
+    {
+      "path": "Packages/LegadoRuntime/Artifacts/OpenJDK.xcframework",
+      "source": "Exact safe-extracted pinned ZIP root; audit before same-volume rename",
+      "operation": "materialized",
+      "overwroteExisting": false
+    },
+    {
+      "path": ".build/legado-ios/device-static/java-home",
+      "source": "Exact safe-extracted pinned ZIP root; audit before same-volume rename",
+      "operation": "materialized",
+      "overwroteExisting": false
+    },
+    {
+      "path": ".build/legado-ios/simulator-static/java-home",
+      "source": "Exact safe-extracted pinned ZIP root; audit before same-volume rename",
+      "operation": "materialized",
+      "overwroteExisting": false
+    }
+  ],
+  "platforms": {
+    "device": {
+      "resources": ".build/original-runtime-ios-core-delta/staged/device/Resources/LegadoRuntime",
+      "manifest": {
+        "staticValidationPassed": true,
+        "modules": [
+          "java.base",
+          "java.xml",
+          "java.desktop",
+          "java.datatransfer",
+          "java.prefs",
+          "java.logging",
+          "jdk.charsets",
+          "java.compiler",
+          "java.instrument",
+          "java.net.http",
+          "java.sql",
+          "java.transaction.xa",
+          "jdk.unsupported"
+        ],
+        "deviceValidationPassed": false,
+        "jarSHA256": "f4300f156fe903111dc9b4033e3b8e8f6aef60566097f04fa4ffb15fe212e362",
+        "layout": "exploded-java-home/modules",
+        "sourcePins": {
+          "schemaVersion": 1,
+          "openjdkMobile": {
+            "repository": "https://github.com/openjdk/mobile.git",
+            "commit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb"
+          },
+          "iosTools": {
+            "repository": "https://github.com/openjdk-mobile/ios-tools.git",
+            "commit": "2f0a489b48cdb13901185be051004f7a9c23bf14"
+          },
+          "libffi": {
+            "version": "3.5.2",
+            "url": "https://github.com/libffi/libffi/releases/download/v3.5.2/libffi-3.5.2.tar.gz",
+            "sha256": "f3a3082a23b37c293a4fcd1053147b371f2ff91fa7ea1b2a52e335676bac82dc"
+          },
+          "requiredModules": [
+            "java.base",
+            "java.xml",
+            "java.desktop",
+            "java.datatransfer",
+            "java.prefs",
+            "java.logging",
+            "jdk.charsets",
+            "java.compiler",
+            "java.instrument",
+            "java.net.http",
+            "java.sql",
+            "java.transaction.xa",
+            "jdk.unsupported"
+          ],
+          "bootJdkFeature": 26,
+          "minimumIOS": "18.0",
+          "notes": "Source pins, not an assertion that these inputs have passed an iOS device gate. Current upstream workflow uses JDK 26 as boot JDK. Exploded JDK layout is java.home/modules, not java.home/lib/modules."
+        },
+        "runtimeNotices": {
+          "schemaVersion": 1,
+          "verified": true,
+          "manifestSHA256": "0b60c9ed3e2b6e4c70f36627db630c8b3b0b72a0a5b016c5b9d9f580d3e4574a",
+          "noticeFileCount": 37,
+          "noticeBytes": 370325,
+          "filePathSHA256Aggregate": "c3657edbb39827de27bceada841512944496d01ba02197d94c6789e889cc3874",
+          "requiredModuleCount": 13,
+          "staticArchiveGroupCount": 8,
+          "sourcePins": {
+            "openjdkMobile": {
+              "repository": "https://github.com/openjdk/mobile.git",
+              "commit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb"
+            },
+            "iosTools": {
+              "repository": "https://github.com/openjdk-mobile/ios-tools.git",
+              "commit": "2f0a489b48cdb13901185be051004f7a9c23bf14"
+            },
+            "libffi": {
+              "version": "3.5.2",
+              "url": "https://github.com/libffi/libffi/releases/download/v3.5.2/libffi-3.5.2.tar.gz",
+              "sha256": "f3a3082a23b37c293a4fcd1053147b371f2ff91fa7ea1b2a52e335676bac82dc"
+            },
+            "requiredModules": [
+              "java.base",
+              "java.xml",
+              "java.desktop",
+              "java.datatransfer",
+              "java.prefs",
+              "java.logging",
+              "jdk.charsets",
+              "java.compiler",
+              "java.instrument",
+              "java.net.http",
+              "java.sql",
+              "java.transaction.xa",
+              "jdk.unsupported"
+            ]
+          },
+          "coverage": {
+            "allRequiredModuleLegalSourceCandidatesEnumerated": true,
+            "rootNoticesIncluded": true,
+            "allStaticArchiveGroupsListed": true,
+            "nativeObjectAndHeaderLicenseReviewComplete": false,
+            "correspondingDependencySourceClosureEstablished": false,
+            "componentLicenseCombinationReviewed": false,
+            "redistributionClearanceEstablished": false
+          },
+          "scope": "Original notice materials, module-source candidate inventory and build-script archive composition only. Preserves all platform candidates (including Windows, Unix and GCC texts) without claiming they are selected, linked, or applicable on iOS. HotSpot/source-header review, ios-tools symbol_keeper license applicability, other dependencies and corresponding-source completeness remain separate reviews."
+        }
+      },
+      "verifiedAfterStage": {
+        "staticValidationPassed": true,
+        "modules": [
+          "java.base",
+          "java.xml",
+          "java.desktop",
+          "java.datatransfer",
+          "java.prefs",
+          "java.logging",
+          "jdk.charsets",
+          "java.compiler",
+          "java.instrument",
+          "java.net.http",
+          "java.sql",
+          "java.transaction.xa",
+          "jdk.unsupported"
+        ],
+        "deviceValidationPassed": false
+      },
+      "noticeBytesVerified": {
+        "schemaVersion": 1,
+        "verified": true,
+        "manifestSHA256": "0b60c9ed3e2b6e4c70f36627db630c8b3b0b72a0a5b016c5b9d9f580d3e4574a",
+        "noticeFileCount": 37,
+        "noticeBytes": 370325,
+        "filePathSHA256Aggregate": "c3657edbb39827de27bceada841512944496d01ba02197d94c6789e889cc3874",
+        "requiredModuleCount": 13,
+        "staticArchiveGroupCount": 8,
+        "sourcePins": {
+          "openjdkMobile": {
+            "repository": "https://github.com/openjdk/mobile.git",
+            "commit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb"
+          },
+          "iosTools": {
+            "repository": "https://github.com/openjdk-mobile/ios-tools.git",
+            "commit": "2f0a489b48cdb13901185be051004f7a9c23bf14"
+          },
+          "libffi": {
+            "version": "3.5.2",
+            "url": "https://github.com/libffi/libffi/releases/download/v3.5.2/libffi-3.5.2.tar.gz",
+            "sha256": "f3a3082a23b37c293a4fcd1053147b371f2ff91fa7ea1b2a52e335676bac82dc"
+          },
+          "requiredModules": [
+            "java.base",
+            "java.xml",
+            "java.desktop",
+            "java.datatransfer",
+            "java.prefs",
+            "java.logging",
+            "jdk.charsets",
+            "java.compiler",
+            "java.instrument",
+            "java.net.http",
+            "java.sql",
+            "java.transaction.xa",
+            "jdk.unsupported"
+          ]
+        },
+        "coverage": {
+          "allRequiredModuleLegalSourceCandidatesEnumerated": true,
+          "rootNoticesIncluded": true,
+          "allStaticArchiveGroupsListed": true,
+          "nativeObjectAndHeaderLicenseReviewComplete": false,
+          "correspondingDependencySourceClosureEstablished": false,
+          "componentLicenseCombinationReviewed": false,
+          "redistributionClearanceEstablished": false
+        },
+        "scope": "Original notice materials, module-source candidate inventory and build-script archive composition only. Preserves all platform candidates (including Windows, Unix and GCC texts) without claiming they are selected, linked, or applicable on iOS. HotSpot/source-header review, ios-tools symbol_keeper license applicability, other dependencies and corresponding-source completeness remain separate reviews."
+      },
+      "jar": {
+        "bytes": 10749215,
+        "sha256": "f4300f156fe903111dc9b4033e3b8e8f6aef60566097f04fa4ffb15fe212e362"
+      },
+      "moduleInventory": [
+        "java.base",
+        "java.compiler",
+        "java.datatransfer",
+        "java.desktop",
+        "java.instrument",
+        "java.logging",
+        "java.net.http",
+        "java.prefs",
+        "java.sql",
+        "java.transaction.xa",
+        "java.xml",
+        "jdk.charsets",
+        "jdk.unsupported"
+      ],
+      "packagedAppBuilt": false,
+      "nativeExecuted": false
+    },
+    "simulator": {
+      "resources": ".build/original-runtime-ios-core-delta/staged/simulator/Resources/LegadoRuntime",
+      "manifest": {
+        "staticValidationPassed": true,
+        "modules": [
+          "java.base",
+          "java.xml",
+          "java.desktop",
+          "java.datatransfer",
+          "java.prefs",
+          "java.logging",
+          "jdk.charsets",
+          "java.compiler",
+          "java.instrument",
+          "java.net.http",
+          "java.sql",
+          "java.transaction.xa",
+          "jdk.unsupported"
+        ],
+        "deviceValidationPassed": false,
+        "jarSHA256": "f4300f156fe903111dc9b4033e3b8e8f6aef60566097f04fa4ffb15fe212e362",
+        "layout": "exploded-java-home/modules",
+        "sourcePins": {
+          "schemaVersion": 1,
+          "openjdkMobile": {
+            "repository": "https://github.com/openjdk/mobile.git",
+            "commit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb"
+          },
+          "iosTools": {
+            "repository": "https://github.com/openjdk-mobile/ios-tools.git",
+            "commit": "2f0a489b48cdb13901185be051004f7a9c23bf14"
+          },
+          "libffi": {
+            "version": "3.5.2",
+            "url": "https://github.com/libffi/libffi/releases/download/v3.5.2/libffi-3.5.2.tar.gz",
+            "sha256": "f3a3082a23b37c293a4fcd1053147b371f2ff91fa7ea1b2a52e335676bac82dc"
+          },
+          "requiredModules": [
+            "java.base",
+            "java.xml",
+            "java.desktop",
+            "java.datatransfer",
+            "java.prefs",
+            "java.logging",
+            "jdk.charsets",
+            "java.compiler",
+            "java.instrument",
+            "java.net.http",
+            "java.sql",
+            "java.transaction.xa",
+            "jdk.unsupported"
+          ],
+          "bootJdkFeature": 26,
+          "minimumIOS": "18.0",
+          "notes": "Source pins, not an assertion that these inputs have passed an iOS device gate. Current upstream workflow uses JDK 26 as boot JDK. Exploded JDK layout is java.home/modules, not java.home/lib/modules."
+        },
+        "runtimeNotices": {
+          "schemaVersion": 1,
+          "verified": true,
+          "manifestSHA256": "0b60c9ed3e2b6e4c70f36627db630c8b3b0b72a0a5b016c5b9d9f580d3e4574a",
+          "noticeFileCount": 37,
+          "noticeBytes": 370325,
+          "filePathSHA256Aggregate": "c3657edbb39827de27bceada841512944496d01ba02197d94c6789e889cc3874",
+          "requiredModuleCount": 13,
+          "staticArchiveGroupCount": 8,
+          "sourcePins": {
+            "openjdkMobile": {
+              "repository": "https://github.com/openjdk/mobile.git",
+              "commit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb"
+            },
+            "iosTools": {
+              "repository": "https://github.com/openjdk-mobile/ios-tools.git",
+              "commit": "2f0a489b48cdb13901185be051004f7a9c23bf14"
+            },
+            "libffi": {
+              "version": "3.5.2",
+              "url": "https://github.com/libffi/libffi/releases/download/v3.5.2/libffi-3.5.2.tar.gz",
+              "sha256": "f3a3082a23b37c293a4fcd1053147b371f2ff91fa7ea1b2a52e335676bac82dc"
+            },
+            "requiredModules": [
+              "java.base",
+              "java.xml",
+              "java.desktop",
+              "java.datatransfer",
+              "java.prefs",
+              "java.logging",
+              "jdk.charsets",
+              "java.compiler",
+              "java.instrument",
+              "java.net.http",
+              "java.sql",
+              "java.transaction.xa",
+              "jdk.unsupported"
+            ]
+          },
+          "coverage": {
+            "allRequiredModuleLegalSourceCandidatesEnumerated": true,
+            "rootNoticesIncluded": true,
+            "allStaticArchiveGroupsListed": true,
+            "nativeObjectAndHeaderLicenseReviewComplete": false,
+            "correspondingDependencySourceClosureEstablished": false,
+            "componentLicenseCombinationReviewed": false,
+            "redistributionClearanceEstablished": false
+          },
+          "scope": "Original notice materials, module-source candidate inventory and build-script archive composition only. Preserves all platform candidates (including Windows, Unix and GCC texts) without claiming they are selected, linked, or applicable on iOS. HotSpot/source-header review, ios-tools symbol_keeper license applicability, other dependencies and corresponding-source completeness remain separate reviews."
+        }
+      },
+      "verifiedAfterStage": {
+        "staticValidationPassed": true,
+        "modules": [
+          "java.base",
+          "java.xml",
+          "java.desktop",
+          "java.datatransfer",
+          "java.prefs",
+          "java.logging",
+          "jdk.charsets",
+          "java.compiler",
+          "java.instrument",
+          "java.net.http",
+          "java.sql",
+          "java.transaction.xa",
+          "jdk.unsupported"
+        ],
+        "deviceValidationPassed": false
+      },
+      "noticeBytesVerified": {
+        "schemaVersion": 1,
+        "verified": true,
+        "manifestSHA256": "0b60c9ed3e2b6e4c70f36627db630c8b3b0b72a0a5b016c5b9d9f580d3e4574a",
+        "noticeFileCount": 37,
+        "noticeBytes": 370325,
+        "filePathSHA256Aggregate": "c3657edbb39827de27bceada841512944496d01ba02197d94c6789e889cc3874",
+        "requiredModuleCount": 13,
+        "staticArchiveGroupCount": 8,
+        "sourcePins": {
+          "openjdkMobile": {
+            "repository": "https://github.com/openjdk/mobile.git",
+            "commit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb"
+          },
+          "iosTools": {
+            "repository": "https://github.com/openjdk-mobile/ios-tools.git",
+            "commit": "2f0a489b48cdb13901185be051004f7a9c23bf14"
+          },
+          "libffi": {
+            "version": "3.5.2",
+            "url": "https://github.com/libffi/libffi/releases/download/v3.5.2/libffi-3.5.2.tar.gz",
+            "sha256": "f3a3082a23b37c293a4fcd1053147b371f2ff91fa7ea1b2a52e335676bac82dc"
+          },
+          "requiredModules": [
+            "java.base",
+            "java.xml",
+            "java.desktop",
+            "java.datatransfer",
+            "java.prefs",
+            "java.logging",
+            "jdk.charsets",
+            "java.compiler",
+            "java.instrument",
+            "java.net.http",
+            "java.sql",
+            "java.transaction.xa",
+            "jdk.unsupported"
+          ]
+        },
+        "coverage": {
+          "allRequiredModuleLegalSourceCandidatesEnumerated": true,
+          "rootNoticesIncluded": true,
+          "allStaticArchiveGroupsListed": true,
+          "nativeObjectAndHeaderLicenseReviewComplete": false,
+          "correspondingDependencySourceClosureEstablished": false,
+          "componentLicenseCombinationReviewed": false,
+          "redistributionClearanceEstablished": false
+        },
+        "scope": "Original notice materials, module-source candidate inventory and build-script archive composition only. Preserves all platform candidates (including Windows, Unix and GCC texts) without claiming they are selected, linked, or applicable on iOS. HotSpot/source-header review, ios-tools symbol_keeper license applicability, other dependencies and corresponding-source completeness remain separate reviews."
+      },
+      "jar": {
+        "bytes": 10749215,
+        "sha256": "f4300f156fe903111dc9b4033e3b8e8f6aef60566097f04fa4ffb15fe212e362"
+      },
+      "moduleInventory": [
+        "java.base",
+        "java.compiler",
+        "java.datatransfer",
+        "java.desktop",
+        "java.instrument",
+        "java.logging",
+        "java.net.http",
+        "java.prefs",
+        "java.sql",
+        "java.transaction.xa",
+        "java.xml",
+        "jdk.charsets",
+        "jdk.unsupported"
+      ],
+      "packagedAppBuilt": false,
+      "nativeExecuted": false
+    }
+  },
+  "finishedAtUTC": "2026-10-20T11:46:06.040295+00:00",
+  "nativeRecompiled": false,
+  "AppleSDKExecuted": false,
+  "JNIExecuted": false
+}

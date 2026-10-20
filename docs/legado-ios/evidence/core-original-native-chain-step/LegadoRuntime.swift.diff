@@ -1,0 +1,156 @@
+--- a/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift
++++ b/Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift
+@@ -173,6 +173,12 @@
+ 
+     /// Returns the complete JVM JSON envelope, keeping model conversion outside JNI.
+     public func execute(session: LegadoSourceSession, operation: String, requestJSON: String = "{}", taskID: String = UUID().uuidString) async throws -> String {
++        let response = try await executeResponse(session: session, operation: operation, requestJSON: requestJSON, taskID: taskID)
++        try Self.checkCancellation(after: response.envelope.completedEffects)
++        return response.json
++    }
++    private struct ExecutionResponse: Sendable { let json: String; let envelope: Envelope }
++    private func executeResponse(session: LegadoSourceSession, operation: String, requestJSON: String, taskID: String) async throws -> ExecutionResponse {
+         if session.sourceMode == .originalTraditional {
+             try await work {
+                 try Self.requireOriginalRequestBudget(requestJSON.utf8.count)
+@@ -182,12 +188,24 @@
+         guard !taskID.isEmpty, !operation.isEmpty else { throw LegadoRuntimeError(code: "invalid_request", message: "taskID and operation are required") }
+         try Task.checkCancellation()
+         return try await withTaskCancellationHandler {
+-            let response = try await work {
+-                try self.ensureStarted()
+-                return try self.transport.execute(session.id, taskID, operation, requestJSON)
+-            }
+-            try Task.checkCancellation()
+-            _ = try Self.envelope(response)
++            let response: ExecutionResponse
++            do {
++                response = try await work {
++                    try self.ensureStarted()
++                    let raw = try self.transport.execute(session.id, taskID, operation, requestJSON)
++                    return ExecutionResponse(json: raw, envelope: try Self.envelope(raw))
++                }
++            } catch {
++                // Native/JVM completion may already acknowledge an irreversible
++                // effect. Preserve its exact MayCommit/Committed names on cancel.
++                if Task.isCancelled, let failure = error as? LegadoRuntimeError,
++                   let effects = failure.completedEffects, !effects.isEmpty {
++                    throw LegadoRuntimeError(code: "CANCELLED", message: "Execution cancelled after reported platform effects", completedEffects: effects)
++                }
++                try Task.checkCancellation()
++                throw error
++            }
++            try Self.checkCancellation(after: response.envelope.completedEffects)
+             return response
+         } onCancel: {
+             // A different worker must deliver cancel while an execute worker is inside Rhino.
+@@ -212,8 +230,9 @@
+     /// Opt-in retained WebBook business API. The host must grant the same source owner;
+     /// missing Cookie/book/chapter capabilities remain typed runtime errors.
+     public func searchOriginal(session: LegadoSourceSession, key: String, page: Int32? = 1,
+-                               timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString) async throws -> LegadoOriginalSearchResult {
+-        try await executeOriginal(session, "search", OriginalSearchRequest(key: key, page: page, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
++                               timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString,
++                                 onReportedEffects: (@Sendable ([String]) -> Void)? = nil) async throws -> LegadoOriginalSearchResult {
++        try await executeOriginal(session, "search", OriginalSearchRequest(key: key, page: page, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID, onReportedEffects)
+     }
+     /// Explore itself only peeks the process context, as original WebBook does.
+     /// Open/evaluate/pause are explicit lifecycle calls from the embedding UI.
+@@ -234,35 +253,40 @@
+         try await executeOriginal(session, "exploreContext", OriginalExploreContextRequest(action: "savePending", script: nil, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
+     }
+     public func detailsOriginal(session: LegadoSourceSession, book: LegadoOriginalBook, canReName: Bool = true,
+-                                timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString) async throws -> LegadoOriginalDetailsResult {
+-        try await executeOriginal(session, "details", OriginalDetailsRequest(book: book, canReName: canReName, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
++                                timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString,
++                                 onReportedEffects: (@Sendable ([String]) -> Void)? = nil) async throws -> LegadoOriginalDetailsResult {
++        try await executeOriginal(session, "details", OriginalDetailsRequest(book: book, canReName: canReName, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID, onReportedEffects)
+     }
+     public func chaptersOriginal(session: LegadoSourceSession, book: LegadoOriginalBook, runPreUpdateJs: Bool = false,
+                                  isFromBookInfo: Bool = false, timeoutMilliseconds: Int64 = 30_000,
+-                                 taskID: String = UUID().uuidString) async throws -> LegadoOriginalChaptersResult {
+-        try await executeOriginal(session, "toc", OriginalChaptersRequest(book: book, runPreUpdateJs: runPreUpdateJs, isFromBookInfo: isFromBookInfo, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
++                                 taskID: String = UUID().uuidString,
++                                 onReportedEffects: (@Sendable ([String]) -> Void)? = nil) async throws -> LegadoOriginalChaptersResult {
++        try await executeOriginal(session, "toc", OriginalChaptersRequest(book: book, runPreUpdateJs: runPreUpdateJs, isFromBookInfo: isFromBookInfo, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID, onReportedEffects)
+     }
+     /// Returns text and updated business entities; the existing App pipeline must own saving.
+     /// No App UUID or ChapterCacheRepository generation is synthesized here.
+     public func contentOriginal(session: LegadoSourceSession, book: LegadoOriginalBook, chapter: LegadoOriginalChapter,
+                                 nextChapterURL: String? = nil, timeoutMilliseconds: Int64 = 30_000,
+-                                taskID: String = UUID().uuidString) async throws -> LegadoOriginalContentResult {
+-        try await executeOriginal(session, "content", OriginalContentRequest(book: book, chapter: chapter, nextChapterUrl: nextChapterURL, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
++                                taskID: String = UUID().uuidString,
++                                 onReportedEffects: (@Sendable ([String]) -> Void)? = nil) async throws -> LegadoOriginalContentResult {
++        try await executeOriginal(session, "content", OriginalContentRequest(book: book, chapter: chapter, nextChapterUrl: nextChapterURL, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID, onReportedEffects)
+     }
+     /// Executes original batch callbacks and returns chapters that remain unsaved.
+     /// The embedding App must first bind its real book and active chapter generations;
+     /// a source-only/preview owner cannot authorize this operation.
+     public func contentBatchOriginal(session: LegadoSourceSession, book: LegadoOriginalBook,
+                                      chapters: [LegadoOriginalChapter], timeoutMilliseconds: Int64 = 30_000,
+-                                     taskID: String = UUID().uuidString) async throws -> LegadoOriginalContentBatchResult {
++                                     taskID: String = UUID().uuidString,
++                                 onReportedEffects: (@Sendable ([String]) -> Void)? = nil) async throws -> LegadoOriginalContentBatchResult {
+         guard chapters.count <= 32, Set(chapters.map(\.index)).count == chapters.count else {
+             throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "Original batch requires at most 32 unique chapter indexes")
+         }
+         return try await executeOriginal(session, "contentBatch", OriginalContentBatchRequest(book: book, chapters: chapters,
+-            timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
++            timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID, onReportedEffects)
+     }
+     private func executeOriginal<Request: Encodable & Sendable, Response: Decodable & Sendable>(
+-        _ session: LegadoSourceSession, _ operation: String, _ request: Request, _ timeoutMilliseconds: Int64, _ taskID: String
++        _ session: LegadoSourceSession, _ operation: String, _ request: Request, _ timeoutMilliseconds: Int64, _ taskID: String,
++        _ onReportedEffects: (@Sendable ([String]) -> Void)? = nil
+     ) async throws -> Response {
+         guard session.sourceMode == .originalTraditional else {
+             throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY", message: "Original business API requires an explicitly configured original-traditional session")
+@@ -277,8 +301,12 @@
+             Self.logger.debug("original.dto.encode bytes=\(data.count) main=\(Thread.isMainThread)")
+             return String(decoding: data, as: UTF8.self)
+         }
+-        let raw = try await execute(session: session, operation: operation, requestJSON: requestJSON, taskID: taskID)
+-        let result: Response = try await work {
++        let response = try await executeResponse(session: session, operation: operation, requestJSON: requestJSON, taskID: taskID)
++        // Bounded invocation facts survive DTO conversion and embedding close/save failures.
++        onReportedEffects?(response.envelope.completedEffects ?? [])
++        let raw = response.json
++        let result: Response
++        do { result = try await work {
+             // The JVM bounds the business result to 8 MiB; reserve a finite envelope allowance.
+             guard raw.utf8.count <= 8 * 1024 * 1024 + 64 * 1024 else {
+                 throw LegadoRuntimeError(code: "PAYLOAD_TOO_LARGE", message: "Original response exceeds the bridge budget")
+@@ -287,9 +315,22 @@
+             Self.logger.debug("original.dto.decode bytes=\(data.count) main=\(Thread.isMainThread)")
+             do { return try JSONDecoder().decode(OriginalBusinessEnvelope<Response>.self, from: data).result }
+             catch { throw LegadoRuntimeError(code: "invalid_response", message: "Original runtime omitted or returned an incompatible business DTO") }
++        } } catch {
++            try Self.checkCancellation(after: response.envelope.completedEffects)
++            if let effects = response.envelope.completedEffects, !effects.isEmpty {
++                throw LegadoRuntimeError(code: (error as? LegadoRuntimeError)?.code ?? "invalid_response",
++                    message: error.localizedDescription, completedEffects: effects)
++            }
++            throw error
++        }
++        try Self.checkCancellation(after: response.envelope.completedEffects)
++        return result
++    }
++    private static func checkCancellation(after effects: [String]?) throws {
++        if Task.isCancelled, let effects, !effects.isEmpty {
++            throw LegadoRuntimeError(code: "CANCELLED", message: "Execution cancelled after reported platform effects", completedEffects: effects)
+         }
+         try Task.checkCancellation()
+-        return result
+     }
+     private static func requireOriginalRequestBudget(_ bytes: Int) throws {
+         guard bytes <= 4 * 1024 * 1024 else {
+@@ -316,7 +357,7 @@
+         thread.qualityOfService = .userInitiated
+         thread.start()
+     }
+-    internal struct Envelope: Decodable { let ok: Bool; let sessionId: String?; let error: LegadoRuntimeError? }
++    internal struct Envelope: Decodable, Sendable { let ok: Bool; let sessionId: String?; let error: LegadoRuntimeError?; let completedEffects: [String]? }
+     internal static func envelope(_ json: String) throws -> Envelope {
+         guard let data = json.data(using: .utf8), let envelope = try? JSONDecoder().decode(Envelope.self, from: data) else {
+             throw LegadoRuntimeError(code: "invalid_response", message: "JVM response is not an envelope")

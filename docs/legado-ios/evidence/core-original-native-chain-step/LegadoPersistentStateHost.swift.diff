@@ -1,0 +1,123 @@
+--- a/Modules/Services/Online/LegadoPersistentStateHost.swift
++++ b/Modules/Services/Online/LegadoPersistentStateHost.swift
+@@ -121,6 +121,11 @@
+         let owner: String; let binding: Binding; let backing: AppLegadoContentBatchOwner
+         let keys: [LegadoContentStateKey]; let snapshot: LegadoContentStateSnapshot
+     }
++    private struct PreviewTOCLease {
++        let owner: String; let binding: Binding; let grant: OriginalRuntimePreviewGrant
++        let snapshot: LegadoPreviewTOCStateSnapshot
++    }
++    private var previewTOCLeases: [Int64: PreviewTOCLease] = [:]
+     private var contentOwners: [String: AppLegadoContentBatchOwner] = [:]
+     private var contentLeases: [Int64: ContentLease] = [:]
+     private var pendingEntityOperations: [String: [UUID: OriginalRuntimeCommitCancellation]] = [:]
+@@ -160,6 +165,7 @@
+             leases = leases.filter { $0.value.binding.sourceURL != sourceURL }
+             entityLeases = entityLeases.filter { $0.value.binding.sourceURL != sourceURL }
+             contentLeases = contentLeases.filter { $0.value.binding.sourceURL != sourceURL }
++            previewTOCLeases = previewTOCLeases.filter { $0.value.binding.sourceURL != sourceURL }
+         }
+         guard bindings.count < 256 else { throw failure("STATE_LIMIT", "Too many active source state owners") }
+         let owner = UUID().uuidString
+@@ -261,6 +267,7 @@
+         bookOwners.removeValue(forKey: owner)?.revoke()
+         contentOwners.removeValue(forKey: owner)
+         contentLeases = contentLeases.filter { $0.value.owner != owner }
++        previewTOCLeases = previewTOCLeases.filter { $0.value.owner != owner }
+         leases = leases.filter { $0.value.owner != owner }
+         entityLeases = entityLeases.filter { $0.value.owner != owner }
+         if let removed, !bindings.values.contains(where: { $0.sourceURL == removed.sourceURL }) {
+@@ -270,7 +277,7 @@
+ 
+     /// Value-free diagnostics for verifying bounded ownership bookkeeping.
+     func ownershipCounts() -> (bindings: Int, sourceRevisions: Int, leases: Int) {
+-        (bindings.count, revisions.count, leases.count + entityLeases.count + contentLeases.count)
++        (bindings.count, revisions.count, leases.count + entityLeases.count + contentLeases.count + previewTOCLeases.count)
+     }
+ 
+     func dispatch(_ request: LegadoHostRequest) async throws -> String {
+@@ -285,6 +292,7 @@
+         do {
+           let decoded = try decodeStateRequest(request)
+           let input = decoded.input; let owner = decoded.owner; let binding = decoded.binding
++          if let result = try await dispatchPreviewTOCStateIfNeeded(request, decoded: decoded) { return result }
+           if let result = try await dispatchContentStateIfNeeded(request, decoded: decoded) { return result }
+           if let result = try await dispatchEntityStateIfNeeded(request, decoded: decoded) { return result }
+           return try SourcePerfTrace.span("legado.state.host", "bytes=\(request.requestJSON.utf8.count) main=\(Thread.isMainThread)") {
+@@ -702,6 +710,7 @@
+             leases.removeValue(forKey: expired)
+             entityLeases.removeValue(forKey: expired)
+             contentLeases.removeValue(forKey: expired)
++            previewTOCLeases.removeValue(forKey: expired)
+         }
+     }
+ 
+@@ -730,6 +739,67 @@
+         return try encoded(["authorized": true])
+     }
+ 
++    /// The original TOC metadata table belongs to the existing preview context,
++    /// not the App body cache. No preview read or TOC publish grants a body save.
++    private func dispatchPreviewTOCStateIfNeeded(_ request: LegadoHostRequest, decoded: DecodedStateInput) async throws -> String? {
++        let preview = bookOwners[decoded.owner] as? LegadoPreviewStateOwner
++        let isRead = request.operation == "state.read" && decoded.parts.values.contains { $0[1] == "toc" } && preview != nil
++        guard isRead || decoded.revision.flatMap({ previewTOCLeases[$0] }) != nil else { return nil }
++        guard let preview else { throw failure("INVALID_STATE_OWNER", "Preview TOC grant is no longer bound") }
++        try preview.validateRequest(request)
++        let grant = preview.grant; let deadline = try cookieReadDeadline(decoded.input)
++        let ticket = OriginalRuntimeCommitCancellation(); let id = UUID()
++        pendingEntityOperations[request.taskID, default: [:]][id] = ticket
++        defer {
++            pendingEntityOperations[request.taskID]?.removeValue(forKey: id)
++            if pendingEntityOperations[request.taskID]?.isEmpty == true { pendingEntityOperations.removeValue(forKey: request.taskID) }
++        }
++        return try await SourcePerfTrace.spanAsync("legado.state.preview-toc", "bytes=\(request.requestJSON.utf8.count) main=\(Thread.isMainThread)") {
++            if isRead {
++                guard let keys = decoded.keys, keys.count == 1, let wire = keys.first,
++                      let parts = decoded.parts[wire], parts.count == 3, parts[1] == "toc",
++                      LegadoPreviewIdentity.same(parts[0], decoded.binding.sourceURL),
++                      LegadoPreviewIdentity.same(parts[2], grant.bookURL) else {
++                    throw failure("UNSUPPORTED_CAPABILITY", "Preview TOC requires one exact source/book metadata key")
++                }
++                let snapshot = try await withTaskCancellationHandler {
++                    try await grant.service.readPreviewTOCState(grant, wire: wire, deadline: deadline, cancellation: ticket)
++                } onCancel: { ticket.cancel() }
++                try check(request); try currentEntityBinding(owner: decoded.owner, binding: decoded.binding)
++                let values = snapshot.value.map { [wire: $0.base64EncodedString()] } ?? [:]
++                // Content uses this solely for original next-chapter lookup. Only
++                // the explicit TOC task can acquire a metadata publication lease.
++                guard grant.discoveringChapters else { return try encoded(["revision": 0, "values": values]) }
++                guard previewTOCLeases.count < 32, nextLease < Int64.max else { throw failure("STATE_LIMIT", "Preview TOC lease budget exceeded") }
++                nextLease += 1
++                let proof = LegadoPreviewTOCStateSnapshot(recordID: snapshot.recordID, revision: snapshot.revision,
++                    rawSHA256: snapshot.rawSHA256, wire: wire, value: nil)
++                previewTOCLeases[nextLease] = .init(owner: decoded.owner, binding: decoded.binding, grant: grant, snapshot: proof)
++                leaseOrder.append(nextLease); trimLeases()
++                return try encoded(["revision": nextLease, "values": values])
++            }
++            guard let revision = decoded.revision, let lease = previewTOCLeases[revision],
++                  lease.owner == decoded.owner, lease.binding.sourceRevision == decoded.binding.sourceRevision else {
++                return try encoded(["committed": false])
++            }
++            previewTOCLeases.removeValue(forKey: revision)
++            guard let changes = decoded.input["changes"] as? [String: Any], changes.count == 1,
++                  let first = changes.first, first.key.utf8.elementsEqual(lease.snapshot.wire.utf8),
++                  let text = first.value as? String, text.utf8.count <= 1_398_104,
++                  let data = Data(base64Encoded: text), data.count <= 1_048_576 else {
++                throw failure("UNSUPPORTED_CAPABILITY", "Preview TOC publication cannot change entity variables or chapter bodies")
++            }
++            try check(request); try currentEntityBinding(owner: decoded.owner, binding: decoded.binding)
++            let committed = try await withTaskCancellationHandler {
++                try await grant.service.commitPreviewTOCState(grant, snapshot: lease.snapshot, value: data,
++                    deadline: deadline, cancellation: ticket,
++                    claimCommit: { request.recordPossibleEffect("previewTOCMayCommit") })
++            } onCancel: { ticket.cancel() }
++            if committed { request.recordPossibleEffect("previewTOCCommitted") }
++            return try encoded(["committed": committed])
++        }
++    }
++
+     private func dispatchContentStateIfNeeded(_ request: LegadoHostRequest, decoded: DecodedStateInput) async throws -> String? {
+         let isRead = request.operation == "state.read" && decoded.parts.values.contains { $0[1] == "content" || $0[1] == "toc" }
+         guard isRead || decoded.revision.flatMap({ contentLeases[$0] }) != nil else { return nil }

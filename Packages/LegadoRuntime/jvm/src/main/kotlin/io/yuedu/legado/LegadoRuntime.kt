@@ -100,8 +100,15 @@ object LegadoRuntime {
             }, timeoutMs, TimeUnit.MILLISECONDS)
             val result = session.withCurrentTask(current) { executeOperation(current, operation, input) }
             current.ensureActiveForRuntime()
-            return jsonObject("ok" to true, "taskId" to taskId, "result" to result,
-                "metrics" to jsonObject("elapsedMs" to (System.nanoTime() - startedAt) / 1_000_000.0)).toString()
+            val response = jsonObject("ok" to true, "taskId" to taskId, "result" to result,
+                "metrics" to jsonObject("elapsedMs" to (System.nanoTime() - startedAt) / 1_000_000.0))
+            // MayCommit and Committed names retain the Host's distinct meanings.
+            // A successful operation can reach Swift just as its task is cancelled;
+            // keep the existing acknowledged effects available at that boundary.
+            current.hostEffectsSnapshot().takeIf { it.isNotEmpty() }?.let {
+                response.add("completedEffects", gson.toJsonTree(it))
+            }
+            return response.toString()
         } catch (error: Exception) {
             val hostFailure = generateSequence(error as Throwable?) { it.cause }
                 .filterIsInstance<RuntimeFailure>().firstOrNull()

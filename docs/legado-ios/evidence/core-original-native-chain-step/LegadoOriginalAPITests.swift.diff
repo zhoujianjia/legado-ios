@@ -1,0 +1,28 @@
+--- a/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift
++++ b/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift
+@@ -1,4 +1,5 @@
+ import XCTest
++import os
+ @testable import LegadoRuntime
+ 
+ private final class OriginalAPITransport: LegadoRuntimeTransport, @unchecked Sendable {
+@@ -112,6 +113,19 @@
+         transport.respondNext("{\"ok\":true,\"result\":{\"books\":[{\"name\":\"missing identity\"}]}}")
+         do { _ = try await runtime.searchOriginal(session: source, key: "owned"); XCTFail("Expected DTO error") }
+         catch let error as LegadoRuntimeError { XCTAssertEqual(error.code, "invalid_response") }
++        // The embedding must retain exact completion facts through its later
++        // session close or final App publication; they are not DTO authority.
++        let observed = OSAllocatedUnfairLock(initialState: [String]())
++        transport.respondNext(#"{"ok":true,"result":{"books":[]},"completedEffects":["previewTOCMayCommit","previewTOCCommitted"]}"#)
++        let success = try await runtime.searchOriginal(session: source, key: "owned",
++            onReportedEffects: { effects in observed.withLock { $0 = effects } })
++        XCTAssertTrue(success.books.isEmpty)
++        XCTAssertEqual(observed.withLock { $0 }, ["previewTOCMayCommit", "previewTOCCommitted"])
++        transport.respondNext(#"{"ok":true,"result":{"books":[{"name":"missing identity"}]},"completedEffects":["chapterContentMayCommit"]}"#)
++        do { _ = try await runtime.searchOriginal(session: source, key: "owned"); XCTFail("DTO failure cannot erase prior effects") }
++        catch let error as LegadoRuntimeError {
++            XCTAssertEqual(error.code, "invalid_response"); XCTAssertEqual(error.completedEffects, ["chapterContentMayCommit"])
++        }
+     }
+     func testNullPageAndUtf8RequestBudgetAreExplicit() async throws {
+         let transport = OriginalAPITransport(); let runtime = runtime(transport); let source = try await session(runtime)
