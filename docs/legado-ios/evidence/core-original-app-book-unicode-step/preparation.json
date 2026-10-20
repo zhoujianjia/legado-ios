@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "status": "actual-shared-App-book-metadata-byte-identity-repaired-SDK-unexecuted",
+  "preparedAtUTC": "2026-10-20T07:03:31.385850+00:00",
+  "sourceFiles": [
+    {
+      "intendedPath": "Modules/Services/LibraryStore/BookStore.swift",
+      "baselineBytes": 204268,
+      "baselineSHA256": "ec72751bbb5f30fa8337010d67678ab45c27ef0e8e7fb1677dde728993f6e189",
+      "workPath": ".build/original-app-book-unicode-delta/work/BookStore.swift",
+      "bytes": 205611,
+      "sha256": "9d4c420d8882948378728d4f58f1e40da3ea15fe8ffff46b71caf137f5b65690",
+      "snapshotPath": ".build/original-app-book-unicode-delta/freeze-v1/BookStore.swift"
+    },
+    {
+      "intendedPath": "Modules/Services/LibraryStore/OriginalRuntimeBookMetadataOwner.swift",
+      "baselineBytes": 10804,
+      "baselineSHA256": "6e7c9d9ae4c00db60e5a04b9bc0917be1c1b653f8190c39f00c900fb1b260ca7",
+      "workPath": ".build/original-app-book-unicode-delta/work/OriginalRuntimeBookMetadataOwner.swift",
+      "bytes": 10892,
+      "sha256": "cbc9a1066e9df3ca5c61b27fd81fb6cb28c0d7e1c5a0d3656d474fff17d32f93",
+      "snapshotPath": ".build/original-app-book-unicode-delta/freeze-v1/OriginalRuntimeBookMetadataOwner.swift"
+    },
+    {
+      "intendedPath": "Tests/iOS/yuedu appTests/LegadoBookMetadataOwnerTests.swift",
+      "baselineBytes": 19836,
+      "baselineSHA256": "0f7a143d4daf89829b83abf05f3d36a079b4861fbe46a01c588279d0735f2fb1",
+      "workPath": ".build/original-app-book-unicode-delta/work/LegadoBookMetadataOwnerTests.swift",
+      "bytes": 24210,
+      "sha256": "d57f2b6413ad282a031904e3eea3b0fd0139dcd94fb8383cc3fbc0d487f1c7e3",
+      "snapshotPath": ".build/original-app-book-unicode-delta/freeze-v1/LegadoBookMetadataOwnerTests.swift"
+    }
+  ],
+  "rootConfirmedProblem": "Synthesized Swift String/Dictionary equality hides distinct Java NFC/NFD byte edits. The actual replaceRecords change detector and metadata overlay may miss an App change and retain the old projection; canonical URL equality can keep an old grant alive.",
+  "productionChange": [
+    "RuntimeBookSnapshot compares exact UTF-8 URLs, variable names and values while retaining nil versus empty.",
+    "Same shared comparator drives the existing metadata revision and main publication guard; identity lookup, durable identity and overlay require the same raw URL.",
+    "No new queue, actor, file, scan, App UUID or reading-position projection. The map comparator uses existing Dictionary indices and UTF8 views without a second map."
+  ],
+  "nativeDefinitions": {
+    "new": 2,
+    "methods": [
+      "unicodeVariableEditsSurviveMetadataOverlayAndOldCAS",
+      "unicodeBookURLChangeRevokesOldMetadataIdentity"
+    ],
+    "existingSameSuite": 7,
+    "executed": 0
+  },
+  "validation": {
+    "grammarFiles": 3,
+    "diagnostics": 0,
+    "SDKCompilation": false,
+    "nativeExecution": 0,
+    "realFileRegressionPrepared": "First method runs key-only and value-only App edits through real BookStore normal save/overlay, verifies raw disk and a reopened normal store, then rejects old CAS and retains the exact file. Second changes a canonically equivalent URL, verifies old grant rejection and actual raw URL after reopen."
+  },
+  "remaining": [
+    "The App Dictionary can only represent one canonical-equivalence variable key at a time. Original raw key collisions must be rejected or separately represented before bridging into this owner; the preview writer is being repaired separately.",
+    "Underlying metadata Foundation atomic writes do not add explicit file or directory fsync here. No power-loss or physical-device proof.",
+    "Native/SDK execution required; preparation and grammar diagnostics do not establish platform passing results."
+  ]
+}

@@ -292,4 +292,72 @@ struct LegadoBookMetadataOwnerTests {
         #expect(finalShelf.map(\.id) == [f.reading.id])
         #expect(finalReading.map(\.id) == [f.shelf.id])
     }
+
+    @Test("byte-distinct Java variable keys and values survive actual App edits and reject an older metadata CAS")
+    func unicodeVariableEditsSurviveMetadataOverlayAndOldCAS() async throws {
+        let composed = "\u{00e9}"
+        let decomposed = "e\u{0301}"
+        for editKey in [false, true] {
+            let f = try await fixture(); defer { cleanup(f) }
+            let oldKey = editKey ? composed : "value"
+            let oldValue = editKey ? "unchanged" : composed
+            let newKey = editKey ? decomposed : "value"
+            let newValue = editKey ? "unchanged" : decomposed
+            var book = f.shelf
+            book.runtimeVariables = [oldKey: oldValue]
+            f.store.saveReadingBook(book)
+            await BookStore.queuedWritesLanded()
+            _ = try await bind(f, book: book)
+            let expected = try await f.store.originalRuntimeBookVariableSnapshot(bookID: book.id,
+                sourceID: f.sourceID, bookURL: book.source)
+            book.runtimeVariables = [newKey: newValue]
+            f.store.saveReadingBook(book)
+            f.store.updatePosition(bookId: book.id, position: 0.63, forceSave: true)
+            await BookStore.queuedWritesLanded()
+            let bytes = try Data(contentsOf: f.shelfURL)
+            let actual = try #require(try JSONDecoder().decode([ReadingBook].self, from: bytes).first { $0.id == book.id })
+            let actualMap = try #require(actual.runtimeVariables)
+            #expect(actualMap.count == 1)
+            #expect(Data(try #require(actualMap.keys.first).utf8) == Data(newKey.utf8))
+            #expect(Data(try #require(actualMap.values.first).utf8) == Data(newValue.utf8))
+            #expect(actual.currentPosition == 0.63)
+            #expect(!(try await f.store.compareOriginalRuntimeBook(expected: expected, expectedView: expected.book,
+                variables: ["stale": "must not replace the App edit"], deadline: Date().addingTimeInterval(30),
+                cancellation: OriginalRuntimeCommitCancellation(), validateGrant: {})))
+            #expect(try Data(contentsOf: f.shelfURL) == bytes)
+            let reopened = BookStore(metadataFileURL: f.shelfURL)
+            let restored = try #require(reopened.readingBook(id: book.id)?.runtimeVariables)
+            #expect(Data(try #require(restored.keys.first).utf8) == Data(newKey.utf8))
+            #expect(Data(try #require(restored.values.first).utf8) == Data(newValue.utf8))
+        }
+    }
+
+    @Test("a byte-distinct but canonically equivalent book URL retires the actual prior metadata grant")
+    func unicodeBookURLChangeRevokesOldMetadataIdentity() async throws {
+        let f = try await fixture(); defer { cleanup(f) }
+        let oldURL = "https://metadata-owned.invalid/caf\u{00e9}"
+        let newURL = "https://metadata-owned.invalid/cafe\u{0301}"
+        var book = f.shelf
+        book.source = oldURL; book.bookInfoURL = oldURL; book.tocURL = oldURL + "/toc"
+        f.store.saveReadingBook(book)
+        await BookStore.queuedWritesLanded()
+        _ = try await bind(f, book: book)
+        let expected = try await f.store.originalRuntimeBookVariableSnapshot(bookID: book.id,
+            sourceID: f.sourceID, bookURL: oldURL)
+        book.source = newURL; book.bookInfoURL = newURL; book.tocURL = newURL + "/toc"
+        book.runtimeVariables = ["new-identity": "kept"]
+        f.store.saveReadingBook(book)
+        await BookStore.queuedWritesLanded()
+        #expect(f.store.originalRuntimeBookSnapshot(id: book.id, sourceID: f.sourceID, bookURL: oldURL) == nil)
+        #expect(f.store.originalRuntimeBookSnapshot(id: book.id, sourceID: f.sourceID, bookURL: newURL) != nil)
+        let bytes = try Data(contentsOf: f.shelfURL)
+        #expect(!(try await f.store.compareOriginalRuntimeBook(expected: expected, expectedView: expected.book,
+            variables: ["stale": "must not follow another raw URL"], deadline: Date().addingTimeInterval(30),
+            cancellation: OriginalRuntimeCommitCancellation(), validateGrant: {})))
+        #expect(try Data(contentsOf: f.shelfURL) == bytes)
+        let reopened = BookStore(metadataFileURL: f.shelfURL)
+        let actual = try #require(reopened.readingBook(id: book.id))
+        #expect(Data(try #require(actual.bookInfoURL).utf8) == Data(newURL.utf8))
+        #expect(actual.runtimeVariables == ["new-identity": "kept"])
+    }
 }

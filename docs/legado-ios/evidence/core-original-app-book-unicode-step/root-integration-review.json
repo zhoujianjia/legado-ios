@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUTC": "2026-10-20T07:07:47.870418+00:00",
+  "reviewKind": "actual-shared-owner-caller-and-file-path-static-review",
+  "confirmedBlockers": [],
+  "sourceBinding": [
+    {
+      "intendedPath": "Modules/Services/LibraryStore/BookStore.swift",
+      "baselineBytes": 204268,
+      "baselineSHA256": "ec72751bbb5f30fa8337010d67678ab45c27ef0e8e7fb1677dde728993f6e189",
+      "workPath": ".build/original-app-book-unicode-delta/work/BookStore.swift",
+      "bytes": 205611,
+      "sha256": "9d4c420d8882948378728d4f58f1e40da3ea15fe8ffff46b71caf137f5b65690",
+      "snapshotPath": ".build/original-app-book-unicode-delta/freeze-v1/BookStore.swift"
+    },
+    {
+      "intendedPath": "Modules/Services/LibraryStore/OriginalRuntimeBookMetadataOwner.swift",
+      "baselineBytes": 10804,
+      "baselineSHA256": "6e7c9d9ae4c00db60e5a04b9bc0917be1c1b653f8190c39f00c900fb1b260ca7",
+      "workPath": ".build/original-app-book-unicode-delta/work/OriginalRuntimeBookMetadataOwner.swift",
+      "bytes": 10892,
+      "sha256": "cbc9a1066e9df3ca5c61b27fd81fb6cb28c0d7e1c5a0d3656d474fff17d32f93",
+      "snapshotPath": ".build/original-app-book-unicode-delta/freeze-v1/OriginalRuntimeBookMetadataOwner.swift"
+    },
+    {
+      "intendedPath": "Tests/iOS/yuedu appTests/LegadoBookMetadataOwnerTests.swift",
+      "baselineBytes": 19836,
+      "baselineSHA256": "0f7a143d4daf89829b83abf05f3d36a079b4861fbe46a01c588279d0735f2fb1",
+      "workPath": ".build/original-app-book-unicode-delta/work/LegadoBookMetadataOwnerTests.swift",
+      "bytes": 24210,
+      "sha256": "d57f2b6413ad282a031904e3eea3b0fd0139dcd94fb8383cc3fbc0d487f1c7e3",
+      "snapshotPath": ".build/original-app-book-unicode-delta/freeze-v1/LegadoBookMetadataOwnerTests.swift"
+    }
+  ],
+  "findings": [
+    "replaceRecords compares RuntimeBookSnapshot before queueing noteAppChange; custom UTF8 equality now recognizes raw-key-only and raw-value-only changes and advances the existing owner projection on its sole persistQueue.",
+    "sameVariables uses the actual matching Dictionary index to compare both retained key bytes and value bytes. It preserves nil versus empty and does not allocate a second map or scan the library.",
+    "Existing register/candidate/accepted/publicationFinished snapshots inherit the corrected equality; noteAppChange and final UI publication explicitly use the same variable-byte predicate.",
+    "Grant lookup, durable metadata identity and existing overlay all require the raw book URL. The same App UUID/source UUID and all three reading-position fields remain unchanged.",
+    "The two new test definitions exercise real App record edits, queue-owned normal file writes, direct file decode, normal BookStore reopen and old CAS rejection. Queue completion alone is never the assertion of persistence.",
+    "All seven old methods are byte-exact. Tree-sitter checked these three changed files once. No Swift SDK/compiler/native execution is claimed."
+  ],
+  "newNativeDefinitions": 2,
+  "nativeExecutions": 0,
+  "SDKCompilation": false
+}

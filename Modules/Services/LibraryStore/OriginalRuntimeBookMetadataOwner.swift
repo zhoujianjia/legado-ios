@@ -131,7 +131,7 @@ final class OriginalRuntimeBookMetadataOwner: @unchecked Sendable {
         }
         // TOC/title/progress metadata does not advance a variables-key revision. It must
         // neither shadow an accepted variable map nor revoke that map's UI publication.
-        guard previous.variables != current.variables else { return }
+        guard !BookStore.RuntimeBookSnapshot.sameVariables(previous.variables, current.variables) else { return }
         let desired = current
         do { entries[current.id] = .init(snapshot: try next(desired)) }
         catch {
@@ -187,7 +187,7 @@ final class OriginalRuntimeBookMetadataOwner: @unchecked Sendable {
             }
             guard let desired = entries[result[index].id]?.snapshot.book,
                   result[index].isOnline, result[index].bookSourceId == desired.sourceID,
-                  (result[index].bookInfoURL ?? result[index].source) == desired.bookURL else { continue }
+                  (result[index].bookInfoURL ?? result[index].source).utf8.elementsEqual(desired.bookURL.utf8) else { continue }
             result[index].runtimeVariables = desired.variables
         }
         return result
@@ -200,7 +200,7 @@ final class OriginalRuntimeBookMetadataOwner: @unchecked Sendable {
     }
     private func touch(_ id: UUID) { recency.removeAll { $0 == id }; recency.append(id) }
     private func sameIdentity(_ a: BookStore.RuntimeBookSnapshot, _ b: BookStore.RuntimeBookSnapshot) -> Bool {
-        a.id == b.id && a.isOnline && b.isOnline && a.sourceID == b.sourceID && a.bookURL == b.bookURL
+        a.id == b.id && a.isOnline && b.isOnline && a.sourceID == b.sourceID && a.bookURL.utf8.elementsEqual(b.bookURL.utf8)
     }
     static func replacingVariables(in book: BookStore.RuntimeBookSnapshot, with variables: [String: String]?) -> BookStore.RuntimeBookSnapshot {
         .init(id: book.id, sourceID: book.sourceID, isOnline: book.isOnline, bookURL: book.bookURL,

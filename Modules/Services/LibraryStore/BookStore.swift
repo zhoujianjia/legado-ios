@@ -113,6 +113,30 @@ class BookStore: ObservableObject, BookProvider {
         let bookURL: String
         let tocURL: String
         let variables: [String: String]?
+
+        // Java variable names, values and source URLs preserve their UTF-8 identity.
+        // Dictionary/String equality alone treats distinct NFC/NFD bytes as equal.
+        static func sameVariables(_ lhs: [String: String]?, _ rhs: [String: String]?) -> Bool {
+            switch (lhs, rhs) {
+            case (nil, nil): return true
+            case let (left?, right?):
+                guard left.count == right.count else { return false }
+                for (key, value) in left {
+                    guard let index = right.index(forKey: key),
+                          key.utf8.elementsEqual(right[index].key.utf8),
+                          value.utf8.elementsEqual(right[index].value.utf8) else { return false }
+                }
+                return true
+            default: return false
+            }
+        }
+
+        static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.id == rhs.id && lhs.sourceID == rhs.sourceID && lhs.isOnline == rhs.isOnline &&
+                lhs.bookURL.utf8.elementsEqual(rhs.bookURL.utf8) &&
+                lhs.tocURL.utf8.elementsEqual(rhs.tocURL.utf8) &&
+                sameVariables(lhs.variables, rhs.variables)
+        }
     }
     let objectWillChange = ObservableObjectPublisher()
     private let recordStorage = BookRecordStorage()
@@ -307,7 +331,7 @@ class BookStore: ObservableObject, BookProvider {
     /// this validation never scans the library, performs I/O or touches main-owned arrays.
     func originalRuntimeBookSnapshot(id: UUID, sourceID: UUID, bookURL: String) -> RuntimeBookSnapshot? {
         runtimeRecordIndex.withLock { values in
-            guard let record = values.entries[id]?.snapshot, record.isOnline, record.sourceID == sourceID, record.bookURL == bookURL else { return nil }
+            guard let record = values.entries[id]?.snapshot, record.isOnline, record.sourceID == sourceID, record.bookURL.utf8.elementsEqual(bookURL.utf8) else { return nil }
             return record
         }
     }
@@ -382,7 +406,7 @@ class BookStore: ObservableObject, BookProvider {
         let location = try metadataLocation(id: book.id)
         let record = location.records[location.offset]
         guard record.isOnline, record.bookSourceId == book.sourceID,
-              (record.bookInfoURL ?? record.source) == book.bookURL else {
+              (record.bookInfoURL ?? record.source).utf8.elementsEqual(book.bookURL.utf8) else {
             throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY", message: "The durable App book identity differs from its grant")
         }
         return location
@@ -503,9 +527,10 @@ class BookStore: ObservableObject, BookProvider {
                       self.recordStorage.values.indices.contains(candidate.offset),
                       self.recordStorage.values[candidate.offset].id == expected.book.id else { return false }
                 let current = Self.runtimeSnapshot(self.recordStorage.values[candidate.offset])
-                guard current.sourceID == sourceID, current.bookURL == expected.book.bookURL,
+                guard current.sourceID == sourceID, current.bookURL.utf8.elementsEqual(expected.book.bookURL.utf8),
                       self.runtimeBookMetadata.permitsPublication(accepted),
-                      current.variables == expectedView.variables || current.variables == expected.book.variables else { return false }
+                      RuntimeBookSnapshot.sameVariables(current.variables, expectedView.variables) ||
+                        RuntimeBookSnapshot.sameVariables(current.variables, expected.book.variables) else { return false }
                 self.runtimeRecordIndex.withLock { index in
                     index.entries[expected.book.id] = .init(offset: candidate.offset, snapshot: current)
                     index.recency.removeAll { $0 == expected.book.id }; index.recency.append(expected.book.id)

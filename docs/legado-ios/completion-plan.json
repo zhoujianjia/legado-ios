@@ -354,7 +354,8 @@
             "docs/legado-ios/core-original-app-book-owner-step.json",
             "docs/legado-ios/core-original-app-cookie-owner-step.json",
             "docs/legado-ios/core-original-app-cookie-read-step.json",
-            "docs/legado-ios/core-original-app-cookie-text-step.json"
+            "docs/legado-ios/core-original-app-cookie-text-step.json",
+            "docs/legado-ios/core-original-app-book-unicode-step.json"
           ],
           "implementedSubtasksZh": [
             "Swift宿主已复用现有源变量/键值、登录头与文本缓存owner，绑定显式来源revision与CAS，删除登录头保留独立凭据；9项原owner与actor测试待SDK。完整Cookie属性、书URL/UUID/章节generation及正文保存App接线仍未完成，相关未接能力显式拒绝，传统产品入口未切换。",
@@ -363,7 +364,8 @@
             "Book变量回调已接原BookStore书架/阅读记录同persistQueue，实际文件读取/CAS/原子替换后才确认；small/large同变量map。旧整文件队列写入合并已接受投影，跨文件迁移先保Reader并集→Shelf耐久→最后修剪。TXT书签迁移原旁路已改真实async caller，offmain合并/拷贝后短main发布；4次晚期冲突可仅凭精确原journal接管，保新用户书签。8项新方法含实际失败/交错/重启，尚未SDK执行。",
             "已接通同一 Cookie owner 的 HTTP／WebKit／登录入口，修正过期旧值恢复、严格文件读取及复用导航的异步冲突；13项新增与16项受影响原生定义待本批SDK，原引擎完整Cookie读写和App入口仍未完成。",
             "原Cookie读取及AnalyzeUrl自动请求头已通过原任务HostCallback接同一App owner；47项实际JVM方法及普通JAR通过。只读模式拒绝写入和响应jar，2项新Swift定义待SDK；准确原DB/session文本写入和登录顺序继续实施，完整Cookie与App产品入口仍未完成。",
-            "原Cookie文本写入已通过同一App owner/Host接入显式app-owner-text模式，包含原Map/null/逐跳请求头和响应属性、登录先后副作用；63项JVM实际通过，普通生产JAR四组smoke通过，未带135个项目测试类或JUnit。新增App5及Package2仍SDK执行0，WK平台和完整Cookie合同仍未完成。"
+            "原Cookie文本写入已通过同一App owner/Host接入显式app-owner-text模式，包含原Map/null/逐跳请求头和响应属性、登录先后副作用；63项JVM实际通过，普通生产JAR四组smoke通过，未带135个项目测试类或JUnit。新增App5及Package2仍SDK执行0，WK平台和完整Cookie合同仍未完成。",
+            "已修复实际书架元数据 owner 的 Unicode 字节保真漏洞：变量名/值或书籍URL的NFC/NFD差异会推进原revision、拒绝旧grant/CAS和旧UI发布，不再被原whole-record overlay漏掉。新增2项真实文件保存/正常重开/旧CAS拒绝用例定义，7项原同组未改；3文件语法0诊断，SDK执行0。"
           ],
           "nextActionZh": "合并同Host的真实预览owner；继续原setWebCookie、remove的WK副作用、clear原DB子集及native入口到原session文本的合同。将新App5/Package2与受影响旧owner方法集中SDK，随后打通普通JAR/JNI/原生阅读，不以JVM或语法通过宣称完整兼容。"
         },
@@ -747,7 +749,8 @@
       "cookieReadSDKCorrectedInitial": "docs/legado-ios/core-cookie-read-sdk-corrected-initial.json",
       "originalCookieTextImplementation": "docs/legado-ios/core-original-app-cookie-text-step.json",
       "appRenewalOwnerImplementation": "docs/legado-ios/core-renewal-app-owner-step.json",
-      "cookieReadSDKCorrectedFollowup1": "docs/legado-ios/core-cookie-read-sdk-corrected-followup1.json"
+      "cookieReadSDKCorrectedFollowup1": "docs/legado-ios/core-cookie-read-sdk-corrected-followup1.json",
+      "appBookUnicodeImplementation": "docs/legado-ios/core-original-app-book-unicode-step.json"
     }
   },
   "stages": [
@@ -4806,6 +4809,10 @@
     "cookie-read-sdk-corrected-followup1": {
       "path": "docs/legado-ios/core-cookie-read-sdk-corrected-followup1.json",
       "scope": "Same exact live run/job observed once after committed Cookie/App implementation; native still in-progress and independent Package pending, zero executions accepted."
+    },
+    "app-book-unicode": {
+      "path": "docs/legado-ios/core-original-app-book-unicode-step.json",
+      "scope": "Actual shared BookStore metadata owner byte identity, revision and publication repair; two new native real-file definitions and seven old unchanged, SDK0. Raw JSON duplicate/canonical-key representability is a separate unfinished bridge boundary."
     }
   },
   "retainedExistingWork": [
