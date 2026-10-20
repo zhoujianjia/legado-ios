@@ -1,0 +1,247 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T01:06:27.980938+00:00",
+  "status": "first-production-request-segment-desktop-verified-replacement-policy-sdk-pending",
+  "summaryZh": "本批优先推进自签与书源核心：补上保留原协调器的 task-bound JVM HTTP 首段生产接线，新增同版本覆盖安装前的纯 metadata 策略；未完成完整书源兼容或实际自签。",
+  "sourceBinding": {
+    "kind": "precommit-worktree-byte-binding-not-a-CI-HEAD",
+    "precommitBase": "08241fa5df2874e77101422eabf6b4de3192c98c",
+    "baseProvidedByRootNotQueriedHere": true,
+    "fileCount": 9,
+    "groups": {
+      "core": 3,
+      "replacementPolicy": 2,
+      "toolsAndWorkflow": 4
+    },
+    "canonicalDocumentsExcludedToAvoidCircularBinding": true,
+    "files": [
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+        "bytes": 19691,
+        "sha256": "3a5e6a04e41400e4b7b76b841f2dfb539f5799a3672762f1b6336737da7e9c05"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+        "bytes": 3856,
+        "sha256": "f87a2acb96ce642bcb4684871a6791bdafdfefe62323508ccd10db6279f59b3b"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRuleHttpPlatformTest.kt",
+        "bytes": 18087,
+        "sha256": "91742c567fe6143980d46943d96134b63420223c395350c8468b34b226f0733a"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalReplacementPolicy.swift",
+        "bytes": 14675,
+        "sha256": "8d8c3c6f890d5bfc81ac9501ac59c3a9cb2a7049e075dc98f009653cdb534541"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalReplacementPolicyTests.swift",
+        "bytes": 12456,
+        "sha256": "c6e0b9e146c12e605f56a38b3004cd53296092f78ca984be8bc76484a705ad90"
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 18672,
+        "sha256": "c44c710252a74ee4b94a0525589e0cd22975321b4ea6bcb9ccb45a0989de3e11"
+      },
+      {
+        "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 26076,
+        "sha256": "e7ad93e4db550d46e72259a005b24f1c0b7dd3d963f385b703086b2861e09d66"
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tests.sh",
+        "bytes": 4385,
+        "sha256": "29eecb7210eab95addc90294dae58ec1c5e96e1a5891424ab60573872d6dc36a"
+      },
+      {
+        "path": ".github/workflows/reader-renewal-probe.yml",
+        "bytes": 4620,
+        "sha256": "3e63a852375e8163f226f210ccbf2b58638e5533daad5e92f5d922fe3c63d4eb"
+      }
+    ]
+  },
+  "core": {
+    "preparation": "docs/legado-ios/evidence/core-self-signing-first-segment/core/preparation-v2.json",
+    "behaviorZh": "显式 originalRuleEnvironment(task) 工厂复用 SourceJavaHost、既有 dispatchHost 和唯一 ProductionHttpTransport；保留 typed StrResponse/raw OkHttp、请求字节、原错误约定、同 task deadline 与取消。",
+    "lifecycleZh": "环境关闭拒绝晚结果，不即时中断已运行 host 或取消共享 session；请求仍受现有 task deadline 约束。成功后解除 caller 取消回调。",
+    "actualJVM": {
+      "newMethods": 8,
+      "newExecutions": 8,
+      "suites": [
+        {
+          "suite": "io.yuedu.legado.OriginalAnalyzeRuleTest",
+          "methods": 18,
+          "executions": 18
+        },
+        {
+          "suite": "io.yuedu.legado.OriginalRuleHttpPlatformTest",
+          "methods": 8,
+          "executions": 8
+        },
+        {
+          "suite": "io.yuedu.legado.ProductionHttpTransportTest",
+          "methods": 12,
+          "executions": 12
+        }
+      ],
+      "totalMethods": 38,
+      "totalExecutions": 38,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "scope": "Windows JDK21 / Gradle offline / owned loopback; Kotlin compilation and execution actual"
+    },
+    "historicalV1": {
+      "actualExecutions": 37,
+      "preserved": true,
+      "notAddedToFinal38": true
+    },
+    "ordinaryPayload": {
+      "runtimeJarBuilt": true,
+      "runtimeSmokePassed": true,
+      "record": "docs/legado-ios/evidence/core-self-signing-first-segment/core/ordinary-v2.json",
+      "classAudit": "docs/legado-ios/evidence/core-self-signing-first-segment/core/ordinary-test-class-audit.json",
+      "jarLocalOnly": {
+        "path": ".build/original-rule-http-first-segment/ordinary-v2-legado-runtime.jar",
+        "bytes": 10266324,
+        "sha256": "e440df461cdcf221cdaa4674dcb9440647d76e219e19f015844eff421712973b"
+      },
+      "jarArchived": false,
+      "engineTestsFlag": false,
+      "requiredClassesPresent": [
+        "io/yuedu/legado/originalrule/ProductionRulePlatform.class",
+        "io/legado/app/model/analyzeRule/AnalyzeRule.class"
+      ],
+      "JUnitAndProjectTestClassesPresent": false,
+      "compiledProjectTestClassesCompared": 63,
+      "provenanceAndNoticesByteEqualCount": 22
+    },
+    "appTraditionalRouteChanged": false,
+    "newExecuteOperationAdded": false,
+    "fullAnalyzeUrlImplemented": false,
+    "fullTraditionalReadingChainIntegrated": false,
+    "sourceStateAndLoginUnified": false,
+    "actualIOSOrJNIExecutions": 0
+  },
+  "selfSigning": {
+    "preparation": "docs/legado-ios/evidence/core-self-signing-first-segment/replacement-policy/preparation.json",
+    "behaviorZh": "纯 metadata 比较同版本/同build下账号绑定、主App/widget/share身份、Team与App ID prefix、App Groups/keychain连续性和候选有效期；metadataCompatible 不表示签名或安装成功。",
+    "plannedSwiftMethods": 5,
+    "plannedSwiftExecutions": 5,
+    "methodIdentities": [
+      "SelfRenewalReplacementPolicyTests/rejectsAccountTeamAndBundleMappingChanges()",
+      "SelfRenewalReplacementPolicyTests/rejectsMissingDuplicateOrIncompleteBundleInventory()",
+      "SelfRenewalReplacementPolicyTests/rejectsChangedOrUnknownEntitlementGroups()",
+      "SelfRenewalReplacementPolicyTests/rejectsUnverifiedExpiredOrInvalidCandidateMaterial()",
+      "SelfRenewalReplacementPolicyTests/sameVersionAndBuildYieldOnlyMetadataPreflight()"
+    ],
+    "actualSwiftExecutions": 0,
+    "actualSwiftSDKBuilds": 0,
+    "treeSitterGrammarFiles": 2,
+    "treeSitterGrammarPassed": true,
+    "finalGrammar": "docs/legado-ios/evidence/core-self-signing-first-segment/replacement-policy/grammar-final.json",
+    "earlierGrammarPreservedAsHistorical": true,
+    "inputKind": "owned synthetic metadata assertions; no user material",
+    "realPlatformAdapterImplemented": false,
+    "cryptographicVerificationPerformed": false,
+    "authenticatedInstallTransportIntegrated": false,
+    "signerIntegrated": false,
+    "installationPerformed": false,
+    "renewalProven": false
+  },
+  "verificationPreparation": {
+    "record": "docs/legado-ios/evidence/core-self-signing-first-segment/gates/result.json",
+    "portableGuardMethodsPassed": 18,
+    "shellSyntaxPassed": true,
+    "workflowLintPassed": true,
+    "worktreeSourceInputInventoryCount": 34,
+    "sourceInventory": "docs/legado-ios/evidence/core-self-signing-first-segment/gates/source-input-inventory.json",
+    "inventoryIsCISourceBinding": false,
+    "workflowSelection": "replacement",
+    "plannedActualWorkflowCases": {
+      "replacement": 5
+    },
+    "preservedAvailableAllModeGroups": {
+      "unit": 8,
+      "discovery": 16,
+      "ui": 1
+    },
+    "oldGroupsRerunByThisBatch": false,
+    "countsAndGrammarEstablishSDKAcceptance": false,
+    "JVMIncludedInSourceOnlyWorkflow": false
+  },
+  "userPriority": {
+    "focusZh": "先做自签和书源核心，其余未完成／按用户要求暂缓；当前不执行或向用户索取真机验证。",
+    "scopeSummary": "docs/legado-ios/evidence/core-self-signing-first-segment/scope/change-summary.json",
+    "unfinishedDeferredWorkpackageCount": 17,
+    "unfinishedDeferredWorkpackages": [
+      "reading-quick-panel-accessibility",
+      "reading-experience-design",
+      "reading-performance-and-prefetch",
+      "license-and-source-closure",
+      "cloud-validation-and-final-delivery",
+      "main-js-product",
+      "local-formats",
+      "annotations-dictionary",
+      "backup-webdav",
+      "source-type-routing",
+      "rss",
+      "tts",
+      "media",
+      "paragraph-reviews",
+      "lan-web-services",
+      "automatic-tasks",
+      "platform-integration"
+    ],
+    "previousCodeAndEvidencePreserved": true,
+    "scopeChecker": "docs/legado-ios/evidence/core-self-signing-first-segment/scope/plan-check.json",
+    "scopeCheckerCounts": {
+      "stages": 8,
+      "workpackages": 33,
+      "featureDomains": 64
+    },
+    "scopeCheckerIsFeatureAcceptance": false,
+    "physicalDeviceValidationPerformed": false,
+    "deviceValidationCurrentlyDeferred": true
+  },
+  "historicalCloudBaseline": {
+    "record": "docs/legado-ios/evidence/core-self-signing-first-segment/baseline/observation.json",
+    "source": "5f543a15747fc07007c70b11bb367576131e7cac",
+    "runID": 39348857481,
+    "observedAtUTC": "2026-10-20T01:03:45.823032+00:00",
+    "runStatusAtObservation": "in_progress",
+    "jobStatusAtObservation": "in_progress",
+    "conclusionAtObservation": null,
+    "APIRequestsPreviouslyMade": 2,
+    "newRequestsByArchiver": 0,
+    "currentStatusClaimed": false,
+    "SDKAcceptanceEstablishedByStatus": false,
+    "scopeZh": "仅保留已取得的 E 历史观察，不推断当前状态、用例执行或新批次验收。"
+  },
+  "cloudSubmission": {
+    "submitted": false,
+    "source": null,
+    "runs": [],
+    "noteZh": "待根统一提交后记录真实不可变源码及run；当前代码、门禁与库存只代表准备。"
+  },
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "archive": {
+    "manifest": {
+      "path": "docs/legado-ios/evidence/core-self-signing-first-segment/manifest.json",
+      "bytes": 15087,
+      "sha256": "edab648f362bba760fd5b8e625f564eb05b0f7a822346447ca64ecd4826272f6"
+    },
+    "rawFiles": 52,
+    "directoryFilesIncludingManifest": 53,
+    "directoryTotalBytesIncludingManifest": 446695,
+    "originalUserReportOrContextArchived": false,
+    "IPAOrJAROrRealKeysArchived": false,
+    "existingDocumentsModifiedByArchiver": false,
+    "testsOrNetworkOrGitRunByArchiver": false
+  }
+}

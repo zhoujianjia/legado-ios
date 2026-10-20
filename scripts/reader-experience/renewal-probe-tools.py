@@ -23,6 +23,7 @@ TAG_PREFIX = "reader-renewal-"
 UNIT_SUITE = "SelfRenewalTransportProbeTests"
 DISCOVERY_SUITE = "SelfRenewalDiscoveryProbeTests"
 UI_SUITE = "SelfRenewalProbeUITests"
+REPLACEMENT_SUITE = "SelfRenewalReplacementPolicyTests"
 LANGUAGES = ("zh-Hant", "zh-Hans", "en", "ja", "ko")
 BONJOUR_SERVICES = ("_calibresmartdeviceapp._tcp", "_remotepairing._tcp")
 USAGE_KEY = "NSLocalNetworkUsageDescription"
@@ -55,6 +56,13 @@ EXPECTED_CASES = {
         "selectionIsStableAcrossOrderAndUsesShorterDuplicateTTL",
         "selectionPreservesHardLimitsCancellationAndSnapshotChecks",
     )},
+    "replacement": {REPLACEMENT_SUITE + "/" + name for name in (
+        "rejectsAccountTeamAndBundleMappingChanges",
+        "rejectsMissingDuplicateOrIncompleteBundleInventory",
+        "rejectsChangedOrUnknownEntitlementGroups",
+        "rejectsUnverifiedExpiredOrInvalidCandidateMaterial",
+        "sameVersionAndBuildYieldOnlyMetadataPreflight",
+    )},
     "ui": {UI_SUITE + "/testReadOnlyConnectionProbeCanExportWithoutClaimingRenewal"},
 }
 SOURCE_INPUTS = (
@@ -67,6 +75,8 @@ SOURCE_INPUTS = (
     "Targets/Yuedu/SharedApp/AppDependencies.swift",
     "Tests/iOS/yuedu appTests/SelfRenewalTransportProbeTests.swift",
     "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift",
+    "Modules/Services/SelfRenewal/SelfRenewalReplacementPolicy.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalReplacementPolicyTests.swift",
     "Tests/iOS-UI/SelfRenewalProbeUITests.swift",
     "Info.plist",
     "Yuedu-Reader.xcodeproj/project.pbxproj",
@@ -85,7 +95,20 @@ SOURCE_INPUTS = (
 
 
 def validate_tag():
+    selection_mode()
     return smoke.validate_tag(TAG_PREFIX)
+
+
+def selection_mode():
+    mode = os.environ.get("YUEDU_RENEWAL_SELECTION", "all")
+    if mode not in {"all", "replacement"}:
+        raise ValueError("YUEDU_RENEWAL_SELECTION must be all or replacement")
+    return mode
+
+
+def selected_cases():
+    mode = selection_mode()
+    return EXPECTED_CASES if mode == "all" else {"replacement": EXPECTED_CASES["replacement"]}
 
 
 def require_source_only():
@@ -160,6 +183,8 @@ def verify_built_discovery_metadata(app, info):
 
 
 def prepare(work):
+    mode = selection_mode()
+    cases = selected_cases()
     require_source_only()
     if (work / "overlays.json").exists() or (work / "source-inputs.json").exists():
         raise ValueError("Refusing to overwrite prior renewal preparation evidence")
@@ -168,7 +193,8 @@ def prepare(work):
     record = {"schemaVersion": 1, "sourceCommit": audit["sourceCommit"],
               "sourceTag": TAG_PREFIX + audit["sourceCommit"][:7],
               "sourceInputs": records, "runtimeSourceOnly": True,
-              "intendedTests": {key: sorted(value) for key, value in EXPECTED_CASES.items()}}
+              "selectionMode": mode,
+              "intendedTests": {key: sorted(value) for key, value in cases.items()}}
     smoke.config.write_new_json(work / "source-inputs.json", record)
     return record
 
@@ -210,6 +236,8 @@ def verify_cases(tree, group):
 
 
 def result(work):
+    mode = selection_mode()
+    cases = selected_cases()
     require_source_only()
     source = validate_tag()
     audit = smoke.read_json(work / "overlays.json")
@@ -220,7 +248,8 @@ def result(work):
     if (inputs.get("sourceCommit") != source or inputs.get("runtimeSourceOnly") is not True
             or inputs.get("sourceTag") != TAG_PREFIX + source[:7]
             or inputs.get("sourceInputs") != source_inputs(audit)
-            or inputs.get("intendedTests") != {key: sorted(value) for key, value in EXPECTED_CASES.items()}):
+            or inputs.get("selectionMode") != mode
+            or inputs.get("intendedTests") != {key: sorted(value) for key, value in cases.items()}):
         raise ValueError("Renewal source-input audit changed or differs from this source")
     settings = smoke.read_json(work / "build-settings.json")
     matches = [entry["buildSettings"] for entry in settings if entry.get("target") == smoke.config.MAIN_TARGET]
@@ -244,20 +273,21 @@ def result(work):
         raise ValueError("The diagnostic test host must include only synthetic Firebase configuration")
     smoke.config.no_jvm_payload(app)
     groups = {}
-    for group in EXPECTED_CASES:
+    for group in cases:
         groups[group] = {
             **smoke.verify_summary(smoke.read_json(work / (group + "-summary.json")), len(EXPECTED_CASES[group])),
             **verify_cases(smoke.read_json(work / (group + "-tests.json")), group),
         }
     evidence = {}
-    for name in ("build-settings.json", "source-inputs.json", "overlays.json", "project-overlay.json",
-                 "info-overlay.json", "unit-summary.json", "unit-tests.json", "discovery-summary.json",
-                 "discovery-tests.json", "ui-summary.json", "ui-tests.json"):
+    evidence_names = ["build-settings.json", "source-inputs.json", "overlays.json", "project-overlay.json", "info-overlay.json"]
+    evidence_names += [group + suffix for group in cases for suffix in ("-summary.json", "-tests.json")]
+    for name in evidence_names:
         evidence[name] = smoke.config.digest(work / name)
     return {"schemaVersion": 2, "sourceCommit": source, "sourceTag": TAG_PREFIX + source[:7],
             "status": "passed", "configuration": "Debug", "executionPlatform": "ios-simulator",
             "simulatorDestination": os.environ.get("YUEDU_DEST"),
-            "developerDirectory": os.environ.get("DEVELOPER_DIR"), "targetedTests": groups,
+            "developerDirectory": os.environ.get("DEVELOPER_DIR"), "selectionMode": mode,
+            "targetedTests": groups, "unselectedTestGroups": [group for group in EXPECTED_CASES if group not in cases],
             "testedInfoSHA256": smoke.config.digest(app / "Info.plist"),
             "sourceOverlays": audit, "sourceInputs": inputs["sourceInputs"], "evidenceSHA256": evidence,
             "builtDiscoveryMetadata": metadata,
@@ -267,13 +297,16 @@ def result(work):
             "serviceIdentityVerified": False,
             "selfRenewalVerified": False, "unattendedRenewalVerified": False,
             "computerPoweredOff": "notMeasured", "companionAppsAbsent": "notMeasured",
-            "limitations": ["Simulator tests of a read-only diagnostic, not a delivered IPA or iPhone test.",
+            "limitations": ["Only the selected Simulator groups are accepted; not a delivered IPA or iPhone test.",
+                            "Five replacement-policy cases check caller-supplied metadata only; no real platform adapter, signature or profile authenticity is established.",
+                            "No Apple login, pairing, signing, installation or renewal operation is performed."] + (
+                           ["This selection executes only replacement metadata cases; unit, discovery and UI groups are not executed or accepted."]
+                           if mode == "replacement" else [
                             "Unit network responses come from owned temporary loopback fixture listeners.",
                             "The explicit UI operation browses only RemotePairing, filters numeric local ownership, opens TCP and closes without an application payload.",
                             "The existing eight QueryType fixture cases remain separate from sixteen discovery cases and one UI case.",
                             "A bare TCP connection does not establish service identity or an authenticated usable transport.",
-                            "No Apple login, pairing, signing, installation or renewal operation is performed.",
-                            "The previous fixed-loopback experiment does not exclude alternate transports; discovery fixtures and Simulator UI do not establish iPhone reachability."]}
+                            "The previous fixed-loopback experiment does not exclude alternate transports; discovery fixtures and Simulator UI do not establish iPhone reachability."])}
 
 
 def main():
@@ -294,6 +327,8 @@ def main():
         elif args.phase == "prepare":
             record = prepare(smoke.config.checked_path(args.work))
         elif args.phase == "verify-tests":
+            if args.group not in selected_cases():
+                raise ValueError("Test group is not part of YUEDU_RENEWAL_SELECTION")
             record = {**smoke.verify_summary(smoke.read_json(args.summary), len(EXPECTED_CASES[args.group])),
                       **verify_cases(smoke.read_json(args.tests), args.group)}
         else:

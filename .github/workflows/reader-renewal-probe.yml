@@ -22,6 +22,7 @@ jobs:
     timeout-minutes: 95
     env:
       LEGADO_RUNTIME_SOURCE_ONLY: '1'
+      YUEDU_RENEWAL_SELECTION: replacement
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -45,7 +46,7 @@ jobs:
           echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
           echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
           xcodebuild -version 2>&1 | tee .build/ci-logs/reader-renewal-xcode.log
-      - name: Execute eight fixed-port cases, sixteen discovery cases and one diagnostic UI case
+      - name: Execute only five replacement metadata cases
         run: bash scripts/reader-experience/renewal-probe-tests.sh 2>&1 | tee .build/ci-logs/reader-renewal.log
       - name: Preserve probe test evidence without application binaries
         if: always()
@@ -62,7 +63,8 @@ jobs:
         if: always()
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
-          This source-only Debug Simulator workflow selects exactly eight SelfRenewalTransportProbeTests, sixteen SelfRenewalDiscoveryProbeTests and one SelfRenewalProbeUITests case in three independently checked xcresult bundles. Every group requires its fixed count and exact method identities, zero failures and zero skips. It does not repeat the reader smoke suite.
-          Existing QueryType network cases inject owned temporary loopback listeners. Discovery fixtures inject browser, resolver, interface, clock and TCP seams; the TCP adapter case uses an owned temporary listener and requires zero application payload. The explicit UI operation browses only RemotePairing, filters numeric same-device addresses, opens TCP and closes without sending an application frame. It no longer starts the fixed-port QueryType probe. Passing validates bounded diagnostics, redaction, cancellation and the export interface; it does not establish iPhone local-network privacy behavior, service identity, authentication, signing, installation or self-renewal. No Apple account or real pairing file is used. Computer-powered-off and absence-of-companion-app conditions remain unmeasured.
+          This source-only Debug Simulator workflow fixes YUEDU_RENEWAL_SELECTION=replacement and executes exactly five SelfRenewalReplacementPolicyTests in one independently checked xcresult bundle, requiring its exact method identities, zero failures and zero skips. It does not execute or accept the unchanged transport 8, discovery 16 or diagnostic UI 1 groups. Their original selectors and strict gates remain available through explicit all mode. It does not repeat the reader smoke suite.
+          The replacement-policy group uses synthetic installed/candidate metadata only. It checks identity and entitlement continuity for a same-version renewal, but does not read real certificates or profiles, attest caller-supplied authenticity, integrate a signer, or perform an installation. A metadata-compatible result leaves authentication, signing, replacement and renewal unverified.
+          The replacement-only selection neither invokes the fixed-port QueryType probe nor browses RemotePairing or opens diagnostic TCP connections. Passing establishes only the selected metadata policy checks; it does not establish iPhone local-network privacy behavior, service identity, authentication, signing, installation or self-renewal. No Apple account or real pairing file is used. Computer-powered-off and absence-of-companion-app conditions remain unmeasured.
           Exact source hashes, audited local-mode Info/project overlays, synthetic cloud configuration, final build settings, logs, xcresult bundles and UI attachments are retained. The actual built Info.plist must preserve Calibre and declare exactly one RemotePairing Bonjour service; its privacy fallback must match both source build configurations, and all five built privacy localizations must match their corresponding source values. The existing independent app identifiers require zero project replacements when already present. LEGADO_RUNTIME_SOURCE_ONLY=1 excludes the experimental JVM. No device archive, IPA or main-app binary is generated for distribution or uploaded by this workflow.
           TEXT

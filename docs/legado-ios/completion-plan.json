@@ -6,67 +6,71 @@
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
-    "当前状态": "书源兼容仍有实际开发缺口：传统规则产品入口继续走现有 Swift／JSC，原 AnalyzeRule 协调器尚未接入完整阅读路由；原 AnalyzeUrl／WebBook 请求与分页编排、批量正文、源状态持久化、Cookie／浏览器宿主仍未闭环。有限 mainJs 纯文本链路已有历史运行证据，不能外推全部书源。最近几批主要完成字体与进度可靠性、UMD 准备、观测和续签诊断，没有完成上述主链路；下一就绪批改为 runtime-core、traditional-rules、url-http，先集中补齐一条无登录纯文本传统源的固定完整链路所需生产缺口，仍沿用原产品切换验收门槛。5f543a1 三组 source-only 检查点已提交，但排除了 JVM，不能证明原核心接入成功。阅读布局与性能、书架离线、备份、本地格式、批注字典、RSS／朗读／媒体、LAN 与通用任务、平台入口及最终源码许可材料仍各有未完成项，代码已写与实际执行验收分开记录。全部无需真机工作、完整兼容、自续签和许可闭合继续为未完成。",
+    "当前状态": "按用户最新要求，当前只主动推进自签与书源核心功能。核心指既定原 JVM 传统规则兼容、请求语义、搜索→详情→目录→正文完整链路、必要状态持久化及阅读进度可靠性；不重新选引擎，不把字段保存或观察器准备当完整兼容。自签是独立优先主线，仍只有有限探针证据，实际签名／覆盖安装尚未实现或证明。字体外观、UMD／MOBI、RSS／TTS／媒体／段评、LAN／MCP／Cron、批注字典、扩展平台入口及最终材料等均未完成／按用户要求暂缓；已有代码、真实证据与可靠性改进保留。真机验证全部暂不执行，也不向用户索取测试，不据此认定通过。现有三组 source-only 提交及失败原件保持各自源码边界，不能证明 JVM 产品核心或自签成功。",
     "实施顺序": [
       {
         "阶段": 1,
         "内容": "基础可靠性",
         "交付": "进度写入保护、同键规则等待取消、阅读快捷面板辅助功能，以及可追踪任务清单。",
-        "验收": "写盘故障、真实重开恢复、取消与关闭通知、字号和亮度操作的固定用例通过。"
+        "验收": "写盘故障、真实重开恢复、取消与关闭通知、字号和亮度操作的固定用例通过。",
+        "当前范围状态": "核心所需部分主动推进，其余未完成／按用户要求暂缓"
       },
       {
         "阶段": 2,
         "内容": "阅读体验",
         "交付": "完善字体选择与预览、排版预设、夜间阅读、无障碍和 iPad 自适应；只修改已确认的缺口。",
-        "验收": "换字体、旋转、分页与滚动切换、分屏改变宽度后，仍保留同一段文字的阅读锚点；性能改动有前后测量。"
+        "验收": "换字体、旋转、分页与滚动切换、分屏改变宽度后，仍保留同一段文字的阅读锚点；性能改动有前后测量。",
+        "当前范围状态": "核心所需部分主动推进，其余未完成／按用户要求暂缓"
       },
       {
         "阶段": 3,
         "内容": "传统规则与请求语义",
         "交付": "补齐原 AnalyzeRule、AnalyzeUrl 及其实体与网络接口。",
-        "验收": "固定输入对照原版请求字节、输出及 Java 类型、异常、变量、Cookie 和缓存变化，保留差异。"
+        "验收": "固定输入对照原版请求字节、输出及 Java 类型、异常、变量、Cookie 和缓存变化，保留差异。",
+        "当前范围状态": "核心主线主动推进"
       },
       {
         "阶段": 4,
         "内容": "完整阅读链路与宿主",
         "交付": "将原核心接入搜索、发现、详情、目录和正文；补齐状态持久化、书源网页登录和平台宿主。",
-        "验收": "固定多页和批量内容链路、重启状态、并发隔离、超时取消通过后再接产品路由。"
+        "验收": "固定多页和批量内容链路、重启状态、并发隔离、超时取消通过后再接产品路由。",
+        "当前范围状态": "核心主线主动推进"
       },
       {
         "阶段": 5,
         "内容": "书库、文件与备份",
         "交付": "验证离线、换源、书签笔记、WebDAV 与备份恢复；补齐 UMD/MOBI，并验收现有 TXT/EPUB/PDF。",
-        "验收": "合法与损坏文件、中文编码、往返导入导出和中断恢复均有用例；失败不覆盖无法确认的旧数据。"
+        "验收": "合法与损坏文件、中文编码、往返导入导出和中断恢复均有用例；失败不覆盖无法确认的旧数据。",
+        "当前范围状态": "核心所需部分主动推进，其余未完成／按用户要求暂缓"
       },
       {
         "阶段": 6,
         "内容": "扩展阅读能力",
         "交付": "逐项完善 RSS、系统/HTTP 朗读、音频、漫画、文件源、视频及段评。",
-        "验收": "固定协议与界面流程分别通过；实际声音路由、锁屏、画中画等设备行为单列待测。"
+        "验收": "固定协议与界面流程分别通过；实际声音路由、锁屏、画中画等设备行为单列待测。",
+        "当前范围状态": "未完成／按用户要求暂缓"
       },
       {
         "阶段": 7,
         "内容": "编辑、服务与任务",
         "交付": "源编辑调试、日志、局域网、HTTP/Web 编辑器/WebSocket、13 个 MCP 工具，以及任务持久化与前台补跑。",
-        "验收": "请求、响应、错误、副作用、连接关闭及前台生命周期逐项验证；不承诺后台常驻和精确 Cron。"
+        "验收": "请求、响应、错误、副作用、连接关闭及前台生命周期逐项验证；不承诺后台常驻和精确 Cron。",
+        "当前范围状态": "未完成／按用户要求暂缓"
       },
       {
         "阶段": 8,
         "内容": "交付材料与最终候选",
         "交付": "无书源候选包、准确对应源码、依赖与补丁材料、许可清单和简短真机待测表。",
-        "验收": "实际成品字节与不可变源码对应；明确 MPL/GPL/Classpath/AGPL 及源码闭包未决项，不能用测试代替权利核验。"
+        "验收": "实际成品字节与不可变源码对应；明确 MPL/GPL/Classpath/AGPL 及源码闭包未决项，不能用测试代替权利核验。",
+        "当前范围状态": "未完成／按用户要求暂缓"
       }
     ],
     "阅读体验重点": [
-      "保留两款已有授权中文字体和自定义字体导入，先检查现有预览和预设是否满足需要。",
-      "切章、换字体、旋转及分页/滚动切换保持文字锚点，不用会变化的全书页码定位。",
-      "检查夜间对比度、字号、触控目标、减少动态效果与读屏信息。",
-      "适配 iPad 分屏和横竖屏，避免正文或操作项被裁切。",
-      "离线恢复和按需预取复用现有下载及缓存服务，取消过时任务。",
-      "启动、长章排版和内存先测量再优化，不凭代码观感宣称更快。"
+      "仅维护核心正文、切章、章节身份及阅读进度文本锚点可靠性，保留已做的数据保护。",
+      "字体、主题、外观、辅助功能扩展、适配和主动性能优化均未完成／按用户要求暂缓；已有能力与证据保留。"
     ],
     "继续保留": "简体界面、账号与会员入口清理、独立品牌、缓存 TXT 导出、已有字体及全部用户书籍/书源/进度。书源自身的登录验证继续保留。",
-    "自续签边界": "目前只有只读连接探针。免费账号、只装阅读器且无需日常电脑的安装通道尚未证明可行；通道、实际签名覆盖安装、后台及到期恢复必须独立验收，不计为已完成。",
+    "自续签边界": "目前只有只读连接探针。免费账号、只装阅读器且无需日常电脑的安装通道尚未证明可行；通道、实际签名覆盖安装、后台及到期恢复必须独立验收，不计为已完成。 用户现将自签列为优先主线，但当前不做任何真机验证或索取用户测试；原实现与验收缺口不因此消失。",
     "完成口径": "逐工作包保存真实证据；电脑或模拟器通过只完成对应范围，不换算为全功能、全部书源或真机完成率。",
     "开发与验证节奏": [
       "先按依赖顺序完成同一阶段的相关优化，再集中进行一次云端编译和集成验证。",
@@ -76,10 +80,11 @@
       "没有新改动、真实失败或未解决疑点时，不重复启动构建。"
     ],
     "本批执行": [
-      "主线改回书源兼容：先集中推进原运行时公开语义、AnalyzeRule 与 AnalyzeUrl／HTTP 生产缺口；固定无登录纯文本传统源的搜索→详情→目录→两章及次页正文作为首个完整链路目标。",
-      "验收以原公开入口的请求字节、Java 类型、异常及状态副作用为准；普通 JAR→JNI→现有原生服务→阅读／缓存实际执行前，不切换传统产品唯一入口，不宣称完整兼容。",
-      "已有字体、进度、WebDAV、UMD 与性能观测保留各自实现和待验收状态；复用未变化证据，不让外围准备继续取代书源生产主线。",
-      "续签仍是独立诊断支线。5f543a1 已提交的源码检查与完整 JVM 产品链验收分开；不为本次优先级调整重新触发构建或要求用户重复测旧包。"
+      "自签独立优先：推进无需真机的通道与签名／安装接口接入准备，复用已有证据；未满足传输身份及授权门槛前不进行产品签名安装集成，完整自签仍未实现。",
+      "核心主线：沿锁定 Rhino／Zero／原协调器／AnalyzeUrl 和既有服务实现一条传统纯文本源的搜索→详情→目录→两章及次页正文闭环，补齐必要持久化、缓存和进度可靠性。",
+      "原公开入口 typed 结果、请求字节、异常及副作用与普通 JAR→JNI→原生阅读实际证据具备前，不切换传统唯一产品入口，不宣称全面兼容。",
+      "其余工作包未完成／按用户要求暂缓，不再用字体、外观、本地格式、性能观测或材料归档代替核心产品进展；既有实现与真实证据完整保留。",
+      "当前不执行任何真机验证，不向用户索取安装、报告或测试；历史真机门槛保留为未完成，不转成通过。"
     ]
   },
   "baseline": {
@@ -108,44 +113,48 @@
     "unsupportedBehavior": "Return explicit capability/error information; do not fabricate successful empty results or silently switch rule engines.",
     "backgroundBoundary": "Foreground services and system-permitted scheduling only; do not promise persistent servers or precise background Cron.",
     "legalBoundary": "Preserve original license partitions, attribution and source obligations; this plan is implementation/material work, not legal advice or a clearance determination.",
-    "userRequestedDeviceVerificationScopes": [
+    "userRequestedDeviceVerificationScopes": [],
+    "historicalUserRequestedDeviceVerificationScopes": [
       "self-renewal-read-only-transport"
     ]
   },
   "execution": {
     "immediateBatch": [
+      "automatic-renewal-feasibility",
       "runtime-core",
       "traditional-rules",
       "url-http"
     ],
     "parallelLanes": [
       {
-        "id": "reader-lane",
-        "initialWorkpackage": "reading-position-write-integrity",
-        "next": [
-          "reader-layout",
-          "reading-experience-design",
-          "reading-performance-and-prefetch"
-        ]
+        "id": "self-signing-lane",
+        "initialWorkpackage": "automatic-renewal-feasibility",
+        "next": [],
+        "scopeZh": "自签独立主线；仅推进无需真机的可实现准备，保留传输／授权／签名安装门槛。"
       },
       {
-        "id": "runtime-lane",
-        "initialWorkpackage": "rule-scope-wait-cancellation",
+        "id": "core-source-lane",
+        "initialWorkpackage": "runtime-core",
         "next": [
-          "runtime-core",
           "traditional-rules",
-          "url-http"
-        ]
-      },
-      {
-        "id": "evidence-lane",
-        "initialWorkpackage": "plan-and-evidence-refresh",
-        "next": [
-          "license-and-source-closure"
-        ]
+          "url-http",
+          "source-state",
+          "traditional-reading-pipeline"
+        ],
+        "supportingWorkpackages": [
+          "reading-position-write-integrity",
+          "source-schema",
+          "cookie-browser-login",
+          "host-adapters",
+          "reader-layout",
+          "reader-library",
+          "reader-online-storage",
+          "source-debug-logs"
+        ],
+        "scopeZh": "既定原 JVM 传统书源兼容、完整请求／阅读链路、必要状态持久化与阅读进度可靠性；不擅切引擎。"
       }
     ],
-    "schedulingRule": "Implement related workpackages in their dependency order. Reviewed dependency code/contracts may unblock implementation within the same stage while integration evidence is pending. Cloud execution does not block other ready development. Switching the product rule engine and release integration still require their existing compatibility and safety gates.",
+    "schedulingRule": "Only self-signing and the existing traditional-source core route are active. Follow the unchanged dependency graph and compatibility gates; preserve completed reliability work. Deferred extensions are not resumed automatically while waiting for cloud evidence. No physical-device validation or user test request is active.",
     "validationRule": "During development run inexpensive static checks and the smallest relevant local regression after related edits. Collect the reviewed changes for one stage and run cloud iOS compilation/integration once at that stage checkpoint. Reuse unchanged passing evidence; only new changes, actual failures or unresolved concerns justify another run. Each major subsystem keeps its own checkpoint rather than deferring every check until project completion.",
     "progressRule": "Report implementation progress, local checks, pending integration and the next stage checkpoint separately. Do not spend an active development turn repeatedly waiting for a cloud build; a passing local check does not imply iOS acceptance.",
     "terminalNonDeviceState": "All implementable desktop/Simulator tasks verified, external/device-dependent feasibility decisions explicit, one audited source-free candidate and concise deferred checklist. Do not mark the full feature domains complete while required evidence is missing.",
@@ -154,43 +163,103 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Read actual source-bound evidence from the three consolidated jobs; diagnose only new failures or unresolved concerns. Do not repeat unchanged suites or trigger per small fix. A new diagnostic IPA follows required SDK evidence and package audit; no new Release has been triggered.",
+      "nextPlannedCheckpoint": "One source-only replacement metadata5 selection after this reviewed offline core/self-signing slice. Preserve the previous E8/16/UI1 saved observations; do not rerun unchanged diagnostics, smoke, measurements, fonts or UMD. New JVM38 remains Windows-bound; this workflow excludes JVM and cannot accept the new original-rule adapter on iOS/JNI. No Release/IPA or physical-device request.",
       "alreadyRunningTasks": "C renewal source1a87f6d passed its actual8/13/UI1 job; A build12 separately audited/delivered and now has a user report stopping before TCP at its old endpoint cap. D sourcef3e0b15 smoke39289697059 and measurements39289697993 are saved completed/failure: duplicate UMD resource outputs, actual Swift/iOS0. Those failures and original artifacts are preserved; initial in-progress receipts remain historical. New source 5f543a1 was submitted as renewal8/16/UI1, smoke and independent measurements. docs/legado-ios/stage-checkpoint-5f543a1-initial.json saves three initial API reads only; it does not establish passing native executions. Original D failures remain preserved."
     },
     "nextReadyBatch": [
+      "automatic-renewal-feasibility",
       "runtime-core",
       "traditional-rules",
       "url-http"
     ],
-    "readinessMeaningZh": "readiness 指本包下一步实际动作是否具备条件；准备、可靠性修复和独立协议夹具可先行。ready 不表示原 dependsOn 或阶段出口已验收，不允许因此切换产品路由或声明完整兼容。有依赖的包仍明确列出 readyPreparation；真机及外部决定不阻塞其他独立工作。",
+    "readinessMeaningZh": "readiness 只表示本包下一步技术动作是否具备条件，既不表示已验收也不覆盖用户当前范围。deferredQueue 与 execution.status=unfinished_deferred_by_user 明确暂停外围工作；其中保留的原 readiness 仅作技术事实，不授权主动开发。自签 ready 仅限无需真机的准备，仍保留原集成门槛。",
     "readyQueue": [
-      "plan-and-evidence-refresh",
-      "license-and-source-closure",
+      "automatic-renewal-feasibility",
       "runtime-core",
       "traditional-rules",
       "url-http",
+      "plan-and-evidence-refresh",
       "reader-layout",
       "reader-library",
-      "reader-online-storage",
-      "local-formats",
-      "annotations-dictionary"
+      "reader-online-storage"
     ],
     "awaitingEvidenceQueue": [
-      "reading-quick-panel-accessibility",
-      "backup-webdav",
-      "reading-experience-design",
       "reading-position-write-integrity",
-      "source-schema",
-      "reading-performance-and-prefetch",
-      "automatic-renewal-feasibility"
+      "source-schema"
     ],
-    "deferredQueue": [],
+    "deferredQueue": [
+      "reading-quick-panel-accessibility",
+      "reading-experience-design",
+      "reading-performance-and-prefetch",
+      "license-and-source-closure",
+      "cloud-validation-and-final-delivery",
+      "main-js-product",
+      "local-formats",
+      "annotations-dictionary",
+      "backup-webdav",
+      "source-type-routing",
+      "rss",
+      "tts",
+      "media",
+      "paragraph-reviews",
+      "lan-web-services",
+      "automatic-tasks",
+      "platform-integration"
+    ],
     "currentDeviceCandidate": {
       "userRequestedOn": "2026-10-19",
-      "scopeZh": "已交付 build12 并收到报告：本次停在旧四端点守卫，TCP 尝试为零；候选选择修复已准备，尚未交付新包，完整自动续签仍未实现。",
+      "scopeZh": "已交付 build12 并收到报告：本次停在旧四端点守卫，TCP 尝试为零；候选选择修复已准备，尚未交付新包，完整自动续签仍未实现。 用户最新要求暂不真机验证：当前不要求安装／复测，也未制作或交付新 IPA；旧报告与未完成事实保留。",
       "record": "docs/legado-ios/native-reader-experience-build12.json",
       "build": "12",
-      "fullAutomaticRenewalImplemented": false
+      "fullAutomaticRenewalImplemented": false,
+      "currentDeviceValidationStatus": "deferred_by_user_not_accepted"
+    },
+    "userPriorityScope": {
+      "requestedOn": "2026-10-20",
+      "activeLines": [
+        "self-signing",
+        "traditional-source-core"
+      ],
+      "activeWorkpackages": [
+        "plan-and-evidence-refresh",
+        "reading-position-write-integrity",
+        "rule-scope-wait-cancellation",
+        "automatic-renewal-feasibility",
+        "runtime-core",
+        "source-schema",
+        "traditional-rules",
+        "url-http",
+        "source-state",
+        "traditional-reading-pipeline",
+        "cookie-browser-login",
+        "host-adapters",
+        "reader-layout",
+        "reader-library",
+        "reader-online-storage",
+        "source-debug-logs"
+      ],
+      "unfinishedDeferredWorkpackages": [
+        "reading-quick-panel-accessibility",
+        "reading-experience-design",
+        "reading-performance-and-prefetch",
+        "license-and-source-closure",
+        "cloud-validation-and-final-delivery",
+        "main-js-product",
+        "local-formats",
+        "annotations-dictionary",
+        "backup-webdav",
+        "source-type-routing",
+        "rss",
+        "tts",
+        "media",
+        "paragraph-reviews",
+        "lan-web-services",
+        "automatic-tasks",
+        "platform-integration"
+      ],
+      "physicalDeviceValidationNow": false,
+      "askUserForDeviceTestsNow": false,
+      "existingCodeEvidenceAndPassedReliabilityPreserved": true
     }
   },
   "stages": [
@@ -305,7 +374,7 @@
           "分开已验证、代码完成待iOS、已有实现待验收、未实现或未证明、暂缓真机，保留历史SHA、失败与原日志。",
           "用便携guard检查唯一归属、阶段及任务DAG、证据路径、execution覆盖和未完成边界。"
         ],
-        "nextAction": "把本批恢复保护、真实云编译失败及下一集中检查点的准确来源写入账本；后续继续按原依赖推进。",
+        "nextAction": "只维护自签与核心书源主线的真实实现、失败和源码绑定证据；其余包保留未完成／暂缓标记，不再另开外围开发或独立材料批次。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "ready",
         "readyPreparation": [
           "立即核对计划与四个未完成布尔边界，把证据映射到精确来源。",
@@ -325,7 +394,9 @@
           "scripts/reader-experience/test-check-completion-plan.py"
         ],
         "deferredHardware": [],
-        "verificationBoundary": "只验证计划结构、来源与口径，不执行应用功能，不证明规则兼容、许可、真机或续签。"
+        "verificationBoundary": "只验证计划结构、来源与口径，不执行应用功能，不证明规则兼容、许可、真机或续签。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "active_core_line"
       }
     },
     {
@@ -388,7 +459,9 @@
         "deferredHardware": [
           "最终签名包的前后台和冷启动进度连续性。"
         ],
-        "verificationBoundary": "局部通过只证明列明的实际执行范围；不推断全部功能、原核心产品路由或真机通过。保留失败和历史证据。"
+        "verificationBoundary": "局部通过只证明列明的实际执行范围；不推断全部功能、原核心产品路由或真机通过。保留失败和历史证据。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "active_core_line"
       }
     },
     {
@@ -424,7 +497,7 @@
           "接入 S3／S4 原协调器时重放同键初始化阻塞、独立键推进、取消、关闭及创建锁清理。",
           "验证不发布半初始化或关闭后结果、原共享状态语义不变；保留原基线异常编号差异。"
         ],
-        "nextAction": "将现有信号驱动回归映射到普通 JAR 产品桥固定契约，待原协调器接口具备后集中执行。",
+        "nextAction": "复用已有同键初始化取消／关闭基线，在原协调器和普通 JAR 接口接线时补齐实际生命周期；保留已通过事实，不重建第二套 scope／缓存。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "depends-on-work",
         "readyPreparation": [
           "固定普通桥的取消／close 请求及资源观察信号，不重跑未变桌面套件。"
@@ -440,7 +513,9 @@
         "deferredHardware": [
           "原协调器接线后的普通签名 App 取消及资源恢复。"
         ],
-        "verificationBoundary": "局部通过只证明列明的实际执行范围；不推断全部功能、原核心产品路由或真机通过。保留失败和历史证据。"
+        "verificationBoundary": "局部通过只证明列明的实际执行范围；不推断全部功能、原核心产品路由或真机通过。保留失败和历史证据。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "active_core_line"
       }
     },
     {
@@ -472,16 +547,14 @@
       ],
       "execution": {
         "summaryZh": "快捷面板字号和亮度读屏",
-        "currentState": "快捷面板字号、亮度读屏、原生关闭和端点手势修正已有实现；c009a49 云测在快捷面板测试文件编译失败，尚未执行 iOS 测试。已移除对只读 Reduce Motion 系统环境的非法写入，并显式捕获递归闭包 self，保留两个测试及全部断言；实际重编与 TXT UI 验收仍待相关检查点。",
+        "currentState": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。 此前实现与证据事实：快捷面板字号、亮度读屏、原生关闭和端点手势修正已有实现；c009a49 云测在快捷面板测试文件编译失败，尚未执行 iOS 测试。已移除对只读 Reduce Motion 系统环境的非法写入，并显式捕获递归闭包 self，保留两个测试及全部断言；实际重编与 TXT UI 验收仍待相关检查点。",
         "remainingWork": [
           "核对当前源码实际 TXT UI 和辅助树结果，保留失败、截图和重开锚点。",
           "最大辅助字号、五语和原生关闭可达性随阅读阶段集中验收；VoiceOver 实机独立保留。"
         ],
-        "nextAction": "在修复实际编译失败后的集中检查点核对 TXT 字号、亮度 5%／100% 与关闭重开原始结果。",
+        "nextAction": "按用户要求暂缓本包新增实现、专项准备与主动验证；保留已有功能和证据。仅在其实际缺陷阻断当前自签／书源核心链路时，由主线明确纳入最小修复；恢复扩展须用户重新安排。按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "awaiting-cloud",
-        "readyPreparation": [
-          "后续阅读 UI 修改复用同一个导入／重开方法和真实控件。"
-        ],
+        "readyPreparation": [],
         "acceptance": [
           "按钮读出当前字号，亮度标签和显示值一致，所有操作可达。",
           "TXT 改样式／亮度后重开仍恢复同一稳定文字锚点。"
@@ -496,7 +569,17 @@
         "deferredHardware": [
           "VoiceOver 实际朗读与实体屏幕亮度体验。"
         ],
-        "verificationBoundary": "局部通过只证明列明的实际执行范围；不推断全部功能、原核心产品路由或真机通过。保留失败和历史证据。"
+        "verificationBoundary": "局部通过只证明列明的实际执行范围；不推断全部功能、原核心产品路由或真机通过。保留失败和历史证据。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "unfinished_deferred_by_user",
+        "deferredReason": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。",
+        "resumeAfterUserDeferral": {
+          "technicalReadinessBeforeDeferral": "awaiting-cloud",
+          "nextAction": "在修复实际编译失败后的集中检查点核对 TXT 字号、亮度 5%／100% 与关闭重开原始结果。",
+          "readyPreparation": [
+            "后续阅读 UI 修改复用同一个导入／重开方法和真实控件。"
+          ]
+        }
       }
     },
     {
@@ -535,18 +618,15 @@
       ],
       "execution": {
         "summaryZh": "字体、夜间阅读与无障碍",
-        "currentState": "字体文件与注册失败事务已实现并独审；ccafee5 的真实 Xcode 26.2 Debug arm64 Simulator 日志记录六个生产文件编译、主 App module 与 executable/debug-dylib 链接。测试目标被预取夹具初始化错误阻断，所有 iOS 用例实际执行 0，不能推断字体运行或 CoreText 回滚通过。该最小测试修复已进入集中源码 1a87f6d，reader-smoke 39281083749 于 15:53 UTC 首次观察 queued；字体 24／42、local-product 50／68 仍待真实叶集验收。便携及 grammar 历史结果保留；其余阅读矩阵仍未验收。 1a87f6d reader-smoke 实际在 Python collector 的 19 个 setUp 中因路径保护失败，Xcode／全部 iOS 步骤跳过；没有编译器错误或本批运行验收。测试自有临时根已最小 resolve、独审确认生产保护和 19 个用例身份不变，root 原工具输出 19 通过；macOS 修复仍待后续集中验证。 后续已按同阶段固定源码 f3e0b15 统一提交 smoke 与独立 measurement 检查点；此处仅记录提交，不推断新 Swift 用例、schema 行或性能样本通过。 后续已核 D 实际结果：UMD 夹具同名资源打包冲突导致两任务均在编译／测试前失败，相关新 Swift 执行仍为 0；已准备最小显式目录修复，待下一集中 SDK 验证。 后续已统一提交固定源码 5f543a1 的续签诊断、smoke 与独立 measurements；这里只记录提交，未验收新 Swift 执行、观测行或性能样本。",
+        "currentState": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。 此前实现与证据事实：字体文件与注册失败事务已实现并独审；ccafee5 的真实 Xcode 26.2 Debug arm64 Simulator 日志记录六个生产文件编译、主 App module 与 executable/debug-dylib 链接。测试目标被预取夹具初始化错误阻断，所有 iOS 用例实际执行 0，不能推断字体运行或 CoreText 回滚通过。该最小测试修复已进入集中源码 1a87f6d，reader-smoke 39281083749 于 15:53 UTC 首次观察 queued；字体 24／42、local-product 50／68 仍待真实叶集验收。便携及 grammar 历史结果保留；其余阅读矩阵仍未验收。 1a87f6d reader-smoke 实际在 Python collector 的 19 个 setUp 中因路径保护失败，Xcode／全部 iOS 步骤跳过；没有编译器错误或本批运行验收。测试自有临时根已最小 resolve、独审确认生产保护和 19 个用例身份不变，root 原工具输出 19 通过；macOS 修复仍待后续集中验证。 后续已按同阶段固定源码 f3e0b15 统一提交 smoke 与独立 measurement 检查点；此处仅记录提交，不推断新 Swift 用例、schema 行或性能样本通过。 后续已核 D 实际结果：UMD 夹具同名资源打包冲突导致两任务均在编译／测试前失败，相关新 Swift 执行仍为 0；已准备最小显式目录修复，待下一集中 SDK 验证。 后续已统一提交固定源码 5f543a1 的续签诊断、smoke 与独立 measurements；这里只记录提交，未验收新 Swift 执行、观测行或性能样本。",
         "remainingWork": [
           "在本批固定源码的集中 reader-smoke 检查点实际编译及执行 local-product 50／68，保留原始 summary、tests 叶集、日志、环境及 source；独立核对字体 24／42。",
           "默认 Operations missing-URL 用例只准备了真实调用链，尚未运行；需验证 CoreText 双 scope／同 PostScript 替换失败后旧注册恢复、in-use／权限及缺失 URL 行为，不推断已注册后丢失字体 cache 已获验证。",
           "继续现有字体预览、间距、面板、viewport 的渲染、五语／读屏顺序、夜间／增强对比度、旋转与 iPad 窗口变化后的语义锚点矩阵；普通 selection／theme 在 await 期间不锁定，userFonts JSON／UserDefaults 和删除数组发布仍在主线程。"
         ],
-        "nextAction": "读取固定源码 5f543a1 实际对应分组和原始证据，沿用本包精确计数与范围分别验收；实际失败再修复，云测期间继续 ready 开发。",
+        "nextAction": "按用户要求暂缓本包新增实现、专项准备与主动验证；保留已有功能和证据。仅在其实际缺陷阻断当前自签／书源核心链路时，由主线明确纳入最小修复；恢复扩展须用户重新安排。按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "awaiting-cloud",
-        "readyPreparation": [
-          "复用现有 SourcePerfTrace 的 main／bytes 和固定自有故障 fixture 审阅原始输出；不把 portable 或 grammar screen 当作 CoreText／iOS 通过。",
-          "继续复用 ReaderQuickThemePanelLayoutTests、ReaderViewportSizeObserverTests 和 ReaderLiveStyleRefreshTests 准备夜间／增强对比度／真实旋转与分屏矩阵，保留现有第一层 importer。"
-        ],
+        "readyPreparation": [],
         "acceptance": [
           "合法/损坏字体、同 PostScript 重导入、删除被两处选中的字体、写盘/注册失败均有固定临时目录用例；失败不丢旧字体，重复操作不积累副本。",
           "最大辅助字号、Reduce Motion、所有末行操作可达、关闭按钮和亮度 5%/100% 均通过真实 UI/Hosting 验收。",
@@ -575,7 +655,18 @@
           "实体屏幕与 VoiceOver 体验",
           "签名安装后的系统字体持久注册和长时交互"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "unfinished_deferred_by_user",
+        "deferredReason": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。",
+        "resumeAfterUserDeferral": {
+          "technicalReadinessBeforeDeferral": "awaiting-cloud",
+          "nextAction": "读取固定源码 5f543a1 实际对应分组和原始证据，沿用本包精确计数与范围分别验收；实际失败再修复，云测期间继续 ready 开发。",
+          "readyPreparation": [
+            "复用现有 SourcePerfTrace 的 main／bytes 和固定自有故障 fixture 审阅原始输出；不把 portable 或 grammar screen 当作 CoreText／iOS 通过。",
+            "继续复用 ReaderQuickThemePanelLayoutTests、ReaderViewportSizeObserverTests 和 ReaderLiveStyleRefreshTests 准备夜间／增强对比度／真实旋转与分屏矩阵，保留现有第一层 importer。"
+          ]
+        }
       }
     },
     {
@@ -615,18 +706,15 @@
       ],
       "execution": {
         "summaryZh": "启动、排版、内存与预取测量",
-        "currentState": "20/100 章十跳、损坏缓存与原 50 行排版阶段证据继续按各自源码验收。独立启动/内存 9 文件与未注册 UMD 纯解析器 16 文件保持原冻结字节；另已准备并审查独立 runner 8 文件，接入 memory 1/1、UI launch 1/1、UMD 11/11 三组精确实际叶集门、38 源文件及环境/overlay/Debug 主代码载荷绑定。作者实际 portable collector 22、shared 24、stage 20 有原始日志；root 主树同组检查与 bash/diff 仅 tool-reported-only，无新增 raw，不累计为更多用例。独立 workflow/选择的代码已接入，该批已统一提交，结果待验；实际 Swift/SDK、新 XCTest、启动和内存样本均 0，不在 C1a87f6d 或 A Release 中。awaiting-cloud 仅表示等待对应证据。 后续已按同阶段固定源码 f3e0b15 统一提交 smoke 与独立 measurement 检查点；此处仅记录提交，不推断新 Swift 用例、schema 行或性能样本通过。 后续已核 D 实际结果：UMD 夹具同名资源打包冲突导致两任务均在编译／测试前失败，相关新 Swift 执行仍为 0；已准备最小显式目录修复，待下一集中 SDK 验证。 后续已统一提交固定源码 5f543a1 的续签诊断、smoke 与独立 measurements；这里只记录提交，未验收新 Swift 执行、观测行或性能样本。",
+        "currentState": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。 此前实现与证据事实：20/100 章十跳、损坏缓存与原 50 行排版阶段证据继续按各自源码验收。独立启动/内存 9 文件与未注册 UMD 纯解析器 16 文件保持原冻结字节；另已准备并审查独立 runner 8 文件，接入 memory 1/1、UI launch 1/1、UMD 11/11 三组精确实际叶集门、38 源文件及环境/overlay/Debug 主代码载荷绑定。作者实际 portable collector 22、shared 24、stage 20 有原始日志；root 主树同组检查与 bash/diff 仅 tool-reported-only，无新增 raw，不累计为更多用例。独立 workflow/选择的代码已接入，该批已统一提交，结果待验；实际 Swift/SDK、新 XCTest、启动和内存样本均 0，不在 C1a87f6d 或 A Release 中。awaiting-cloud 仅表示等待对应证据。 后续已按同阶段固定源码 f3e0b15 统一提交 smoke 与独立 measurement 检查点；此处仅记录提交，不推断新 Swift 用例、schema 行或性能样本通过。 后续已核 D 实际结果：UMD 夹具同名资源打包冲突导致两任务均在编译／测试前失败，相关新 Swift 执行仍为 0；已准备最小显式目录修复，待下一集中 SDK 验证。 后续已统一提交固定源码 5f543a1 的续签诊断、smoke 与独立 measurements；这里只记录提交，未验收新 Swift 执行、观测行或性能样本。",
         "remainingWork": [
           "读取固定源码 5f543a1 独立 memory 1/1、launch UI 1/1、UMD 11/11 及原始样本；保留 D 资源冲突失败，提交本身不证明通过、样本有效或性能改善。",
           "按固定 source、实际 Xcode/SDK/runtime/UDID、overlay 和构建产物身份取得真实 memory 1/1、launch 1/1 与 UMD 11/11、零失败/跳过/额外叶；须满足 5 个启动样本、2×5 个内存样本及 300 条完整 raw phase events，不能仅凭 shape 或自报接受。",
           "继续取得原预取/损坏缓存/50 行阶段的源码对应证据；测量仅 CPU layer.contents 提交与 AX 正文、进程 sampled footprint/RSS，保留 periodic/gap 门与裁切边界。没有可比实测前值不宣称性能收益，不更改未确认错误的排队策略。"
         ],
-        "nextAction": "读取固定源码 5f543a1 实际对应分组和原始证据，沿用本包精确计数与范围分别验收；实际失败再修复，云测期间继续 ready 开发。",
+        "nextAction": "按用户要求暂缓本包新增实现、专项准备与主动验证；保留已有功能和证据。仅在其实际缺陷阻断当前自签／书源核心链路时，由主线明确纳入最小修复；恢复扩展须用户重新安排。按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "awaiting-cloud",
-        "readyPreparation": [
-          "逐 SHA 核对 runner 8、原测量 9 与纯解析器 16 文件；保留 v1/v2、修复前外移叶负例、独审 replay、全部作者 raw、A Debug link 与旧 UI 原始结构/环境证据。",
-          "独立保留 memory、launch、UMD 的真实 leaf/source/environment/host 绑定；不把旧 UI 结构、synthetic 负例或文件 hash 当新 SDK 执行，不混入旧 TXT 与 stage 50 计数。"
-        ],
+        "readyPreparation": [],
         "acceptance": [
           "每章规模/环境固定；排版每 fixture 五次、五阶段总 50 唯一记录，所有内容覆盖/版本/ready 断言通过，保留原始日志而非仅摘要。",
           "20/100 十跳保留真实 active/queued、请求/完成/取消顺序和恢复；损坏缓存轻量 hit 与完整验证行为分别记录。",
@@ -660,7 +748,18 @@
           "最终硬件持续滚动/翻页、低内存、热/电池",
           "系统缓存未清的 process-cold 不能冒充冷设备启动"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "unfinished_deferred_by_user",
+        "deferredReason": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。",
+        "resumeAfterUserDeferral": {
+          "technicalReadinessBeforeDeferral": "awaiting-cloud",
+          "nextAction": "读取固定源码 5f543a1 实际对应分组和原始证据，沿用本包精确计数与范围分别验收；实际失败再修复，云测期间继续 ready 开发。",
+          "readyPreparation": [
+            "逐 SHA 核对 runner 8、原测量 9 与纯解析器 16 文件；保留 v1/v2、修复前外移叶负例、独审 replay、全部作者 raw、A Debug link 与旧 UI 原始结构/环境证据。",
+            "独立保留 memory、launch、UMD 的真实 leaf/source/environment/host 绑定；不把旧 UI 结构、synthetic 负例或文件 hash 当新 SDK 执行，不混入旧 TXT 与 stage 50 计数。"
+          ]
+        }
       }
     },
     {
@@ -695,19 +794,16 @@
       ],
       "execution": {
         "summaryZh": "闭合来源、修改、许可和对应源码材料，保留未解决权利问题。",
-        "currentState": "已有源码锁、组件清单、37份notice、字体许可及品牌记录；完整对应源码、构建安装输入、链接对象和许可组合尚未闭合。临时公开诊断授权不是正式分发许可。",
+        "currentState": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。 此前实现与证据事实：已有源码锁、组件清单、37份notice、字体许可及品牌记录；完整对应源码、构建安装输入、链接对象和许可组合尚未闭合。临时公开诊断授权不是正式分发许可。",
         "remainingWork": [
           "固定engine、JDK、ios-tools、native对象与依赖的源码、补丁、构建安装输入及获取方式，实际核验源码可取得。",
           "扩展传递依赖、字体、插图、样书／数据、头文件和静态对象，hash和notice不等于权利或源码完整。",
           "保留MPL、Legado GPLv3默认分区、Oracle GPLv2/ClassPath例外、ios-tools AGPLv3及symbol_keeper.cpp注入边界。",
           "在最终commit核对IPA内notice、source及品牌，按临时授权清理诊断和历史产物；删除无法召回已下载副本。"
         ],
-        "nextAction": "立即整理对应源码闭合manifest：revision、获取方式、补丁、构建安装输入、文件许可分区、未解决项和核验动作。",
+        "nextAction": "按用户要求暂缓本包新增实现、专项准备与主动验证；保留已有功能和证据。仅在其实际缺陷阻断当前自签／书源核心链路时，由主线明确纳入最小修复；恢复扩展须用户重新安排。按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "ready",
-        "readyPreparation": [
-          "现在即可核验工程材料和源码获取，保留原许可、署名与历史原件。",
-          "把材料齐全和权利／组合是否解决分成两个状态，不自行判定法律许可。"
-        ],
+        "readyPreparation": [],
         "acceptance": [
           "精确候选对应源码、补丁及工具链输入可取得并有原始SHA，不只链接变化分支。",
           "注入对象、notice、依赖、字体和品牌与候选字节相符，遗漏显式列出。",
@@ -723,7 +819,18 @@
           "Resources/ReaderFonts/ReaderFonts-provenance.json"
         ],
         "deferredHardware": [],
-        "verificationBoundary": "只做工程材料与边界核对，不作法律意见、商标检索或许可已清判断；legalRedistributionClearanceEstablished保持false。"
+        "verificationBoundary": "只做工程材料与边界核对，不作法律意见、商标检索或许可已清判断；legalRedistributionClearanceEstablished保持false。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "unfinished_deferred_by_user",
+        "deferredReason": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。",
+        "resumeAfterUserDeferral": {
+          "technicalReadinessBeforeDeferral": "ready",
+          "nextAction": "立即整理对应源码闭合manifest：revision、获取方式、补丁、构建安装输入、文件许可分区、未解决项和核验动作。",
+          "readyPreparation": [
+            "现在即可核验工程材料和源码获取，保留原许可、署名与历史原件。",
+            "把材料齐全和权利／组合是否解决分成两个状态，不自行判定法律许可。"
+          ]
+        }
       }
     },
     {
@@ -760,17 +867,17 @@
       "automaticSelfRenewalImplemented": false,
       "execution": {
         "summaryZh": "保留单App、免费团队、电脑离线条件下自续签的独立可行性门槛。",
-        "currentState": "已收到并核对 build12 动态发现报告：2 条服务记录、6 次地址回调、1 次排除，剩余 5 个去重候选在赋值 approved 前触发旧 4 端点守卫，TCP 尝试为 0。用户另报电脑开机、USB 已拔、VPN 关闭、无伴侣 App；原报告 notMeasured 保留。已实现完整窗口后稳定选择最多 4 个、明确跳过计数的修复，并保留硬溢出、地址归属、TTL、总截止及零载荷约束；新 8／16／1 Swift 叶集待真实 SDK 验证，不能将准备改成通道或续签成功。 后续已统一提交固定源码 5f543a1 的续签诊断、smoke 与独立 measurements；这里只记录提交，未验收新 Swift 执行、观测行或性能样本。",
+        "currentState": "本批新增纯元数据覆盖预检：主App／Widget／Share三角色的账号、Team、App-ID前缀、bundle映射与数据访问组保持；同版本同build可预检，候选授权窗口必须有效。它只比较未来平台适配器提供的事实，当前没有真实适配器、证书／profile验证、签名器或安装后端。5个Swift方法只已定义且grammar通过，实际SDK／测试为0；新18个便携守卫及34源码清单为验证准备。 已收到并核对 build12 动态发现报告：2 条服务记录、6 次地址回调、1 次排除，剩余 5 个去重候选在赋值 approved 前触发旧 4 端点守卫，TCP 尝试为 0。用户另报电脑开机、USB 已拔、VPN 关闭、无伴侣 App；原报告 notMeasured 保留。已实现完整窗口后稳定选择最多 4 个、明确跳过计数的修复，并保留硬溢出、地址归属、TTL、总截止及零载荷约束；新 8／16／1 Swift 叶集待真实 SDK 验证，不能将准备改成通道或续签成功。 后续已统一提交固定源码 5f543a1 的续签诊断、smoke 与独立 measurements；这里只记录提交，未验收新 Swift 执行、观测行或性能样本。 用户现将自签列为独立优先主线；当前仅推进不依赖真机的实现准备与已有 SDK 证据核对，完整自签仍未实现，当前不索取设备验证。",
         "remainingWork": [
           "取得固定新源码的旧通道 8／动态发现 16／UI 1 实际通过叶集及原始证据，保留仅最多 4 个选中候选的覆盖边界。",
           "新包可用后先核对 TCP 与动态发现结果；当前电脑仍开机，不能据此证明电脑关闭条件下的独立运行。",
           "只有同设备认证安装传输门槛成立后，才开始并分别验收 profile／签名、同身份替换、冷启数据保留、允许的后台触发和到期恢复。"
         ],
-        "nextAction": "核对固定源码 5f543a1 旧通道 8／动态发现 16／UI 1 实际通过叶集及原始证据；SDK 和成品审核通过后交付改变过的诊断包。旧 build12 无需重复测试，完整续签仍未实现。",
-        "readiness": "awaiting-cloud",
+        "nextAction": "集中验证新增5个覆盖元数据方法；旧8／16／UI1沿原源码证据保留，未改部分不重复执行。继续补可离线开发的传输／真实签名适配边界，真机认证、签名覆盖安装和数据保留当前均按用户要求暂不验证。",
+        "readiness": "ready",
         "readyPreparation": [
-          "审查只读探针长度、超时、取消、错误归一化和不导出原reply的边界，复用已有证据。",
-          "准备无真实秘密的协议夹具；transport前不引入signer或新AGPL续签依赖。"
+          "复用已有只读探针与冻结 SDK 证据，明确原自签通道、授权、签名、覆盖安装和调度的现有接口与缺口。",
+          "只推进可在本地／模拟器完成的受控输入输出及失败／取消接入准备；不读取真实账号、配对文件或私人书源，不向用户请求真机操作。"
         ],
         "acceptance": [
           "QueryType、TCP、认证session、安装transport和实际续签分层记录，前一层成功不升级后一层。",
@@ -794,12 +901,17 @@
           "docs/legado-ios/native-reader-experience-build12.json",
           "docs/legado-ios/self-renewal-device-discovery-build12.json",
           "docs/legado-ios/self-renewal-candidate-selection-batch.json",
-          "docs/legado-ios/stage-checkpoint-5f543a1-initial.json"
+          "docs/legado-ios/stage-checkpoint-5f543a1-initial.json",
+          "docs/legado-ios/core-self-signing-first-segment.json"
         ],
         "deferredHardware": [
           "已按用户要求交付 build12 通道诊断包，待电脑关机、USB 断开的动态发现报告；认证 transport、签名、替换安装、冷启数据与无人值守分别待验。"
         ],
-        "verificationBoundary": "automaticSelfRenewalImplemented和feasibilityEstablished仍false；提醒、到期显示、跳外部工具及模拟成功都不是自续签，不承诺精确后台触发。"
+        "verificationBoundary": "automaticSelfRenewalImplemented和feasibilityEstablished仍false；提醒、到期显示、跳外部工具及模拟成功都不是自续签，不承诺精确后台触发。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "active_self_signing_line",
+        "previousReadinessRetained": "awaiting-cloud",
+        "readyMeaning": "仅表示无需真机的自签接口／输入输出／失败取消及安装通道接入准备现在可推进；已有云端结果待核，传输授权与产品签名安装门槛未通过。"
       }
     },
     {
@@ -849,19 +961,16 @@
       ],
       "execution": {
         "summaryZh": "按阶段集中取得精确源码证据，最后交付一个无内置书源候选。",
-        "currentState": "已有历史build10及受范围约束的cloud原件；后续批次有portable预检失败与待复验代码，旧IPA、桌面和探针数量不能汇总为最新全部通过，阶段依赖尚未完成。 最新 run 39249523428／2747900 的便携检查通过，首组 Xcode 编译失败；没有本次 iOS 执行计数。已保存完整原 artifact 并修复 CodingKeys 声明，待本批恢复修改统一复验。",
+        "currentState": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。 此前实现与证据事实：已有历史build10及受范围约束的cloud原件；后续批次有portable预检失败与待复验代码，旧IPA、桌面和探针数量不能汇总为最新全部通过，阶段依赖尚未完成。 最新 run 39249523428／2747900 的便携检查通过，首组 Xcode 编译失败；没有本次 iOS 执行计数。已保存完整原 artifact 并修复 CodingKeys 声明，待本批恢复修改统一复验。",
         "remainingWork": [
           "阶段修改审查后集中编译与必要测试，实际失败才复验；云任务期间继续独立ready工作，不持续轮询。",
           "分别保留方法／参数执行、零失败／跳过／预期失败、日志／summary／tests和源码／artifact摘要；guard失败不冒充App失败。",
           "ordinary-JAR native、产品路由、15秒取消／45秒操作和七次wire请求按各自门槛验收，不放宽或用mock替代。",
           "最后固定一个候选及源码、runtime、字体、notice、无私人源无secret材料，独立复核，给剩余硬件及外部决定短清单。"
         ],
-        "nextAction": "本批先固化三十三包执行计划与结构证据；后续按依赖推进，在各阶段检查点集中验证，相关验收具备后才制作最终候选。",
+        "nextAction": "按用户要求暂缓本包新增实现、专项准备与主动验证；保留已有功能和证据。仅在其实际缺陷阻断当前自签／书源核心链路时，由主线明确纳入最小修复；恢复扩展须用户重新安排。按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "depends-on-work",
-        "readyPreparation": [
-          "整理现有原件的源码、计数及状态和下一检查点独立组，不为查旧状态重新构建。",
-          "准备候选材料及无源／密钥检查，保持全部阶段及非真机工作未完成。"
-        ],
+        "readyPreparation": [],
         "acceptance": [
           "所需桌面／Simulator证据对应确切源码、配置、fixture和范围，缺失项继续待办。",
           "同阶段兼容组共享构建及payload，独立门槛保留；只因改动、实际失败或未解疑点重验。",
@@ -878,7 +987,18 @@
         "deferredHardware": [
           "最终候选的手势、字体舒适度、VoiceOver、多任务、热耗电与权限硬件清单暂缓；续签及权利独立未决。"
         ],
-        "verificationBoundary": "账本和便携guard通过只证明声明范围，不是全工程、Release IPA或真机通过；暂不要求用户安装测试。"
+        "verificationBoundary": "账本和便携guard通过只证明声明范围，不是全工程、Release IPA或真机通过；暂不要求用户安装测试。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "unfinished_deferred_by_user",
+        "deferredReason": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。",
+        "resumeAfterUserDeferral": {
+          "technicalReadinessBeforeDeferral": "depends-on-work",
+          "nextAction": "本批先固化三十三包执行计划与结构证据；后续按依赖推进，在各阶段检查点集中验证，相关验收具备后才制作最终候选。",
+          "readyPreparation": [
+            "整理现有原件的源码、计数及状态和下一检查点独立组，不为查旧状态重新构建。",
+            "准备候选材料及无源／密钥检查，保持全部阶段及非真机工作未完成。"
+          ]
+        }
       }
     },
     {
@@ -909,14 +1029,14 @@
       ],
       "execution": {
         "summaryZh": "普通产品桥的原运行时语义",
-        "currentState": "锁定Rhino/Zero与Java互操作已有桌面及历史独立Probe证据；普通主App固定mainJS链路通过只证明有限调用，动态this/eval/Function、E4X及全部Java返回类型尚未在当前普通产品桥逐项重放。 历史设备报告和含测试类的Probe JAR不能替代当前普通JAR、原生模块、JNI边界及签名App的同源码验收。",
+        "currentState": "本批新增显式 task-bound 原规则请求平台，复用同一 JVM HTTP、任务截止时间与取消；关闭环境拒绝晚结果。Windows JDK21 已实际通过新增8／原协调器18／现有HTTP12，共38方法38执行，普通runtimeJar／runtimeSmoke亦通过。未改变App传统唯一入口，没有新增运行时operation，完整AnalyzeUrl／WebBook、原源状态和登录宿主仍未完成；iOS／JNI实际验收未取得。 原范围现状保留：锁定Rhino/Zero与Java互操作已有桌面及历史独立Probe证据；普通主App固定mainJS链路通过只证明有限调用，动态this/eval/Function、E4X及全部Java返回类型尚未在当前普通产品桥逐项重放。 历史设备报告和含测试类的Probe JAR不能替代当前普通JAR、原生模块、JNI边界及签名App的同源码验收。",
         "remainingWork": [
           "锁定Rhino/Zero与Java互操作已有桌面及历史独立Probe证据；普通主App固定mainJS链路通过只证明有限调用，动态this/eval/Function、E4X及全部Java返回类型尚未在当前普通产品桥逐项重放。 历史设备报告和含测试类的Probe JAR不能替代当前普通JAR、原生模块、JNI边界及签名App的同源码验收。",
           "1. 冻结现有JsEngineCapabilitiesTest与InteropSemanticSuiteTest向量清单，标记已验证的桌面/Probe/普通App来源，复用未变代码的已有证据。",
           "2. 以现有LegadoRuntime执行接口和合成mainJS函数重放动态绑定、E4X、Java字符串/集合/byte[]/重载/可捕获异常；逐项保留值、Java类型、错误，不把中间Java对象先转成Swift近似值。",
           "3. 普通JAR产物核验后，在下一次相关阶段统一模拟器任务运行上述产品桥子集；通过前不扩写核心兼容结论。"
         ],
-        "nextAction": "1. 冻结现有JsEngineCapabilitiesTest与InteropSemanticSuiteTest向量清单，标记已验证的桌面/Probe/普通App来源，复用未变代码的已有证据。",
+        "nextAction": "沿锁定 Rhino／Zero／Java 互操作路线补普通 JAR 产品桥的实际语义缺口，复用既有原向量和未变证据；先满足传统公开规则入口所需的绑定、返回类型与取消，不切换引擎。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "ready",
         "readyPreparation": [
           "整理与补齐普通产品桥的固定语义向量及原结果索引；无需等待阅读UI或网络。"
@@ -931,12 +1051,15 @@
           "docs/legado-ios/device-validation.json",
           "docs/legado-ios/sdk-and-rule-scope-validation.json",
           "docs/legado-ios/native-cancellation-investigation.json",
-          "docs/legado-ios/runtime-notices.md"
+          "docs/legado-ios/runtime-notices.md",
+          "docs/legado-ios/core-self-signing-first-segment.json"
         ],
         "deferredHardware": [
           "最终签名App从主屏幕冷启动、无调试器/JIT执行核心/E4X/Java子集；记录新源码与资源身份。"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "active_core_line"
       }
     },
     {
@@ -1007,7 +1130,9 @@
         "deferredHardware": [
           "最终签名App手动导入、编辑、导出、覆盖升级与重启，确认源/分组/用户修改不丢；不内置源。"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "active_core_line"
       }
     },
     {
@@ -1042,14 +1167,14 @@
       ],
       "execution": {
         "summaryZh": "原 AnalyzeRule 公开入口",
-        "currentState": "JVM已保留原AnalyzeRule协调器切片和CSS/XPath/JSONPath/regex helper，但产品传统阅读与DeclarativeSource没有调用它；有限静态选择/替换通过不能替代完整公开入口。 有状态47调用保留两处异常脚本编号差异；完整JS/get-put、列表/元素转换、URL分支、同实例并发及iOS协调器执行仍有边界。",
+        "currentState": "本批新增显式 task-bound 原规则请求平台，复用同一 JVM HTTP、任务截止时间与取消；关闭环境拒绝晚结果。Windows JDK21 已实际通过新增8／原协调器18／现有HTTP12，共38方法38执行，普通runtimeJar／runtimeSmoke亦通过。未改变App传统唯一入口，没有新增运行时operation，完整AnalyzeUrl／WebBook、原源状态和登录宿主仍未完成；iOS／JNI实际验收未取得。 原范围现状保留：JVM已保留原AnalyzeRule协调器切片和CSS/XPath/JSONPath/regex helper，但产品传统阅读与DeclarativeSource没有调用它；有限静态选择/替换通过不能替代完整公开入口。 有状态47调用保留两处异常脚本编号差异；完整JS/get-put、列表/元素转换、URL分支、同实例并发及iOS协调器执行仍有边界。",
         "remainingWork": [
           "JVM已保留原AnalyzeRule协调器切片和CSS/XPath/JSONPath/regex helper，但产品传统阅读与DeclarativeSource没有调用它；有限静态选择/替换通过不能替代完整公开入口。 有状态47调用保留两处异常脚本编号差异；完整JS/get-put、列表/元素转换、URL分支、同实例并发及iOS协调器执行仍有边界。",
           "1. 在现有OriginalAnalyzeRuleTest按公开getString/getStringList/getElements入口组织CSS/XPath/JSONPath/regex和组合规则，而非只验底层helper；复用28标量、36 JSONPath和47有状态原基线。",
           "2. 先定位并记录每个实际差异：空/缺失/错误、||/&&/%%、捕获组、替换、HTML实体、Java DOM/节点类型、动态JS与变量；一次修复一个原入口差异，比较器不替实现补值。",
           "3. 原协调器分阶段接入现有JVM业务编排所需接口，先补平台依赖再做普通JAR→Swift固定产品链路，禁止用新Swift解析器绕过原协调器。"
         ],
-        "nextAction": "1. 在现有OriginalAnalyzeRuleTest按公开getString/getStringList/getElements入口组织CSS/XPath/JSONPath/regex和组合规则，而非只验底层helper；复用28标量、36 JSONPath和47有状态原基线。",
+        "nextAction": "结合已接通的显式请求平台完成原公开规则与URL编排，逐步推进固定传统源完整阅读链；本批38桌面通过不替代原完整语义、持久状态或App唯一入口验收。",
         "readiness": "ready",
         "readyPreparation": [
           "补原公开入口缺失向量、将已有golden逐项映射到当前协调器测试；与schema和URL原契约可并行。"
@@ -1065,12 +1190,15 @@
           "docs/legado-ios/stateful-port-reference/2026-10-19/record.json",
           "docs/legado-ios/jsonpath-public-reference.json",
           "docs/legado-ios/scalar-selector-port.json",
-          "docs/legado-ios/traditional-stateful-reference.json"
+          "docs/legado-ios/traditional-stateful-reference.json",
+          "docs/legado-ios/core-self-signing-first-segment.json"
         ],
         "deferredHardware": [
           "最终普通JVM中重放选定原向量，再用用户自有代表传统源验证真实链路；私人源不进入仓库/日志。"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "active_core_line"
       }
     },
     {
@@ -1099,14 +1227,14 @@
       ],
       "execution": {
         "summaryZh": "原 AnalyzeUrl 与请求语义",
-        "currentState": "传统产品仍走Swift/JSC AnalyzeUrl；原协调器RulePlatform.request明确报未连接，JVM SourceJavaHost生产路径拒绝动态URL、动态header、proxy及若干URL选项。 JVM普通HTTP已有固定字节/TLS/取消证据，但不覆盖完整AnalyzeUrl编排；URLSession可选宿主不能保留重复头字段，不能用它冒充原响应类型或完整wire一致。",
+        "currentState": "本批新增显式 task-bound 原规则请求平台，复用同一 JVM HTTP、任务截止时间与取消；关闭环境拒绝晚结果。Windows JDK21 已实际通过新增8／原协调器18／现有HTTP12，共38方法38执行，普通runtimeJar／runtimeSmoke亦通过。未改变App传统唯一入口，没有新增运行时operation，完整AnalyzeUrl／WebBook、原源状态和登录宿主仍未完成；iOS／JNI实际验收未取得。 原范围现状保留：传统产品仍走Swift/JSC AnalyzeUrl；原协调器RulePlatform.request明确报未连接，JVM SourceJavaHost生产路径拒绝动态URL、动态header、proxy及若干URL选项。 JVM普通HTTP已有固定字节/TLS/取消证据，但不覆盖完整AnalyzeUrl编排；URLSession可选宿主不能保留重复头字段，不能用它冒充原响应类型或完整wire一致。",
         "remainingWork": [
           "传统产品仍走Swift/JSC AnalyzeUrl；原协调器RulePlatform.request明确报未连接，JVM SourceJavaHost生产路径拒绝动态URL、动态header、proxy及若干URL选项。 JVM普通HTTP已有固定字节/TLS/取消证据，但不覆盖完整AnalyzeUrl编排；URLSession可选宿主不能保留重复头字段，不能用它冒充原响应类型或完整wire一致。",
           "1. 按原AnalyzeUrl的URL JS、模板、key/page分支、header/bodyJs、请求选项执行顺序建立固定loopback请求记录；每个缺口保留原字节/类型/异常。",
           "2. 把锁定AnalyzeUrl必要依赖接到现有JVM传输和原StrResponse/Connection.Response接口，统一RulePlatform.request与当前网络宿主，保留不支持错误，不加静默平台回退。",
           "3. 扩大现有SourceHttpSemanticsTest/ProductionHttpTransportTest到POST/二进制/GBK、重复头/Set-Cookie、相对重定向、超时/取消/重试和DNS/proxy边界；阶段末单次普通App集中验证。"
         ],
-        "nextAction": "1. 按原AnalyzeUrl的URL JS、模板、key/page分支、header/bodyJs、请求选项执行顺序建立固定loopback请求记录；每个缺口保留原字节/类型/异常。",
+        "nextAction": "沿锁定原AnalyzeUrl补动态URL／header／bodyJs和请求选项执行顺序，使用本批唯一task-bound传输接点；先对照原请求字节／Java返回类型／异常与状态，再接完整WebBook，不另造解析器或Swift回退。",
         "readiness": "ready",
         "readyPreparation": [
           "立即构造原AnalyzeUrl固定输入与loopback wire向量；不等待UI或状态持久化实现。"
@@ -1119,12 +1247,15 @@
         "evidence": [
           "docs/legado-ios/traditional-rule-integration.md",
           "docs/legado-ios/http-wire-capability.json",
-          "docs/legado-ios/native-worker-thread-fix.json"
+          "docs/legado-ios/native-worker-thread-fix.json",
+          "docs/legado-ios/core-self-signing-first-segment.json"
         ],
         "deferredHardware": [
           "真机TLS/网络切换、代理/权限、实际站点重定向和超时；无系统长期后台网络承诺。"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "active_core_line"
       }
     },
     {
@@ -1161,7 +1292,7 @@
           "2. 在现有状态/持久化服务边界设计一个JVM适配契约，按实际所有权读写；不另建第二个无主缓存，不把JSC共享内存或@Published状态直接从后台读取。",
           "3. 补固定时钟、失败写入、源编辑失效、同key waiter取消、close后拒绝发布及重启恢复场景；落盘失败保留旧文件，成功后才标持久。"
         ],
-        "nextAction": "1. 从既有47调用前后状态建立source/book/chapter/key、文本/二进制缓存、TTL、memory-only/disk-only、关闭/删源语义表，明确哪些原状态必须跨进程。\n2. 在现有状态/持久化服务边界设计一个JVM适配契约，按实际所有权读写；不另建第二个无主缓存，不把JSC共享内存或@Published状态直接从后台读取。\n3. 补固定时钟、失败写入、源编辑失效、同key waiter取消、close后拒绝发布及重启恢复场景；落盘失败保留旧文件，成功后才标持久。",
+        "nextAction": "在既有存储所有权中实现源／书／章必要变量、Cookie 与缓存的持久边界，先覆盖当前传统源闭环；实际核对隔离、失败保留旧字节、关闭取消及新进程恢复。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "depends-on-work",
         "readyPreparation": [
           "整理状态所有权/TTL/持久化契约和合成失败向量；可与解析和HTTP工作并行。"
@@ -1180,7 +1311,9 @@
         "deferredHardware": [
           "杀进程/覆盖升级/源编辑后的恢复、原生取消资源回收、长时间多源并发与内存压力。"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "active_core_line"
       }
     },
     {
@@ -1222,7 +1355,7 @@
           "2. 在现有服务中接入锁定WebBook编排与统一原协调器/AnalyzeUrl，保持搜索快照路由、稳定OnlineChapterRef身份和(spineIndex,charOffset)锚点；验证缓存命中、网络及失败路径。",
           "3. 单独实现并验原一次批量contentBatch/maxBatchSize协议：返回章映射、cacheContent、缺失章节和取消；多章并发下载不能代替此验收。原链路证明完整前不切传统产品唯一入口。"
         ],
-        "nextAction": "1. 先以现有固定服务器制作静态CSS/XPath/JSONPath/regex四种同功能链路，记录搜索→详情→目录→两章/次页正文的原请求、typed结果和状态。\n2. 在现有服务中接入锁定WebBook编排与统一原协调器/AnalyzeUrl，保持搜索快照路由、稳定OnlineChapterRef身份和(spineIndex,charOffset)锚点；验证缓存命中、网络及失败路径。\n3. 单独实现并验原一次批量contentBatch/maxBatchSize协议：返回章映射、cacheContent、缺失章节和取消；多章并发下载不能代替此验收。原链路证明完整前不切传统产品唯一入口。",
+        "nextAction": "集中实现一条无登录纯文本传统源的搜索→详情→目录→两章及次页正文闭环，经过同一原协调器／请求／普通 JAR→JNI→现有原生服务→阅读与缓存；保留章节身份和文本锚点。原合同与真实执行门槛未过前，不切换传统产品唯一入口，不宣称全面兼容。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "depends-on-work",
         "readyPreparation": [
           "准备固定原WebBook样例、请求/状态schema和现有服务适配测试入口；不等待全S3结束才做参考采集。"
@@ -1240,7 +1373,9 @@
         "deferredHardware": [
           "用户自有代表传统源真实搜索/发现/登录、长目录、多页正文、离线重启与连续阅读；不推断全部书源兼容率。"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "active_core_line"
       }
     },
     {
@@ -1270,18 +1405,16 @@
       ],
       "execution": {
         "summaryZh": "mainJS 可选接口与内容协议",
-        "currentState": "现有LegadoMainJSSourceService仅type0纯文本、String正文，显式拒绝HTML/media；App只接搜索/详情/目录/正文。普通固定JNI链路和取消/恢复已有证据。 JVM存在更多可选函数分派与batch/prototype能力，但完整可选接口、发现/分页、批量、原宿主类型、跨进程源状态及非文本结果没有全部进入原生产品服务验收。",
+        "currentState": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。 此前实现与证据事实：现有LegadoMainJSSourceService仅type0纯文本、String正文，显式拒绝HTML/media；App只接搜索/详情/目录/正文。普通固定JNI链路和取消/恢复已有证据。 JVM存在更多可选函数分派与batch/prototype能力，但完整可选接口、发现/分页、批量、原宿主类型、跨进程源状态及非文本结果没有全部进入原生产品服务验收。",
         "remainingWork": [
           "现有LegadoMainJSSourceService仅type0纯文本、String正文，显式拒绝HTML/media；App只接搜索/详情/目录/正文。普通固定JNI链路和取消/恢复已有证据。 JVM存在更多可选函数分派与batch/prototype能力，但完整可选接口、发现/分页、批量、原宿主类型、跨进程源状态及非文本结果没有全部进入原生产品服务验收。",
           "1. 列出原JsSourceEngine可选函数与当前JVM/Swift分派的逐项差集，先补缺省函数、存在但返回null/空/非法类型、异常和参数book/chapter上下文向量。",
           "2. 沿既有LegadoMainJSSourceService逐项扩展已经有原基线且宿主就绪的结果；先保留明确错误，HTML/media与batch需各自正式内容协议，不能伪造成纯文本。",
           "3. 复用已通过的原生取消/恢复，新增源编辑/并发/重启状态和可选接口固定链路，按相关批次合并普通App验证。"
         ],
-        "nextAction": "1. 列出原JsSourceEngine可选函数与当前JVM/Swift分派的逐项差集，先补缺省函数、存在但返回null/空/非法类型、异常和参数book/chapter上下文向量。\n2. 沿既有LegadoMainJSSourceService逐项扩展已经有原基线且宿主就绪的结果；先保留明确错误，HTML/media与batch需各自正式内容协议，不能伪造成纯文本。\n3. 复用已通过的原生取消/恢复，新增源编辑/并发/重启状态和可选接口固定链路，按相关批次合并普通App验证。",
+        "nextAction": "按用户要求暂缓本包新增实现、专项准备与主动验证；保留已有功能和证据。仅在其实际缺陷阻断当前自签／书源核心链路时，由主线明确纳入最小修复；恢复扩展须用户重新安排。按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "depends-on-work",
-        "readyPreparation": [
-          "可选分派差集、错误/空结果向量与固定DTO契约可立即推进；有限纯文本现路径的未变证据可复用。"
-        ],
+        "readyPreparation": [],
         "acceptance": [
           "函数缺失与函数报错有不同结果；search/details/toc/content/explore/batch等只对已实现声明的接口通过，不把JVM内部返回当Swift入口已支持。",
           "同book/chapter DTO校验、源签名更新、排队绝对deadline与取消互不污染；失败不切JSC。",
@@ -1295,7 +1428,17 @@
         "deferredHardware": [
           "用户自有代表mainJS源、重启/编辑/登录/长会话与最终签名普通App的原生取消恢复。"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "unfinished_deferred_by_user",
+        "deferredReason": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。",
+        "resumeAfterUserDeferral": {
+          "technicalReadinessBeforeDeferral": "depends-on-work",
+          "nextAction": "1. 列出原JsSourceEngine可选函数与当前JVM/Swift分派的逐项差集，先补缺省函数、存在但返回null/空/非法类型、异常和参数book/chapter上下文向量。\n2. 沿既有LegadoMainJSSourceService逐项扩展已经有原基线且宿主就绪的结果；先保留明确错误，HTML/media与batch需各自正式内容协议，不能伪造成纯文本。\n3. 复用已通过的原生取消/恢复，新增源编辑/并发/重启状态和可选接口固定链路，按相关批次合并普通App验证。",
+          "readyPreparation": [
+            "可选分派差集、错误/空结果向量与固定DTO契约可立即推进；有限纯文本现路径的未变证据可复用。"
+          ]
+        }
       }
     },
     {
@@ -1334,7 +1477,7 @@
           "2. 让同一源身份的JVM Cookie/登录头与现有持久化、WKWebsiteDataStore使用一个明确适配边界；原生browser等待由worker挂起，MainActor只呈现/完成，真实dismissal释放资源。",
           "3. 按原LoginUiV2控件/动作及既有RowUi/Flex样式投影逐项补契约：初值、click/toggle/select事件、变量写回、重新登录、取消和源编辑失效，不混入已移除App账号。"
         ],
-        "nextAction": "1. 准备本地固定登录站点：重复Set-Cookie、跨域/路径/过期、显式Cookie覆盖、401/403 loginCheckJs、跳转验证码与退出/取消；保留原Cookie和请求字节。\n2. 让同一源身份的JVM Cookie/登录头与现有持久化、WKWebsiteDataStore使用一个明确适配边界；原生browser等待由worker挂起，MainActor只呈现/完成，真实dismissal释放资源。\n3. 按原LoginUiV2控件/动作及既有RowUi/Flex样式投影逐项补契约：初值、click/toggle/select事件、变量写回、重新登录、取消和源编辑失效，不混入已移除App账号。",
+        "nextAction": "只补核心书源实际需要的同源 Cookie、登录头与既有登录／浏览器宿主契约，保持一个持久会话边界；无登录首条链路先完成，后续按真实源合同补登录，不扩展无关平台功能。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "depends-on-work",
         "readyPreparation": [
           "固定站点/原HTTP与Cookie向量、LoginUiV2事件表和现有投影差异审查可并行。"
@@ -1356,7 +1499,9 @@
         "deferredHardware": [
           "真实站点验证码/网页登录、系统键盘、前后台/权限、WKWebView数据清理及签名App重启恢复。"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "active_core_line"
       }
     },
     {
@@ -1396,10 +1541,10 @@
           "2. 为Base64 flags/charset/AES/RSA/digest、Java byte[]重载、QueryTTF/字体反混淆、文本/二进制文件和ZIP/RAR/7z准备固定小向量；映射Android路径到既有iOS沙盒并验证路径逃逸拒绝。",
           "3. 把eventListener/customButton/callBackJs调用放到既有SourceCallBackService所有权中，对原事件名、book/chapter/result与refresh副作用逐项接JVM；UI动作只在主线程呈现。"
         ],
-        "nextAction": "1. 对原JsExtensions/JsEncodeUtils与当前RuleJsExtensions、SourceJavaHost、JSC能力表做可执行API差集，首批按主链路实际需要逐项选择，不把未知API返回空值/伪成功。\n2. 为Base64 flags/charset/AES/RSA/digest、Java byte[]重载、QueryTTF/字体反混淆、文本/二进制文件和ZIP/RAR/7z准备固定小向量；映射Android路径到既有iOS沙盒并验证路径逃逸拒绝。\n3. 把eventListener/customButton/callBackJs调用放到既有SourceCallBackService所有权中，对原事件名、book/chapter/result与refresh副作用逐项接JVM；UI动作只在主线程呈现。",
+        "nextAction": "只接当前传统源核心链路实际调用的 Java／文件／编码等宿主，复用既有所有权和原类型；未实现能力明确拒绝。用户字体／外观扩展和泛化 API 清单不作为当前主动开发。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "depends-on-work",
         "readyPreparation": [
-          "API差集和小型字节/字体/归档/事件向量可立即并行；使用已锁定依赖，不擅自新增替代库。"
+          "仅为当前核心链路的实际阻断缺陷准备最小复现和相关局部验证，不主动扩展本包完整功能。"
         ],
         "acceptance": [
           "编码/加密/字节重载返回真实原Java类型，错误可被脚本捕获；已有inline CryptoJS不被重复初始化改变状态。",
@@ -1416,7 +1561,13 @@
         "deferredHardware": [
           "文件选择/分享的沙盒授权与大归档中断、实际字体反混淆源、provider/crypto差异、真实自定义按钮与返回阅读。"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "active_core_line",
+        "activeScope": "只接当前传统源核心链路实际调用的 Java／文件／编码等宿主，复用既有所有权和原类型；未实现能力明确拒绝。用户字体／外观扩展和泛化 API 清单不作为当前主动开发。",
+        "previousReadyPreparationRetained": [
+          "API差集和小型字节/字体/归档/事件向量可立即并行；使用已锁定依赖，不擅自新增替代库。"
+        ]
       }
     },
     {
@@ -1450,10 +1601,10 @@
           "CoreText 分页、滚动、字体、图片和稳定位置系统已存在；缺的是当前集成源码在长章/中西混排/图片、不同翻页模式及旋转/分屏后的完整锚点验收，不能因为菜单或大量测试存在判定完成。",
           "复用 ReaderLiveStyleRefreshTests、CoreTextWritingModeTests、CoreTextPagedScrollAppearanceTests 和程序翻页回归，新增自有长章/图片 fixture 的旋转与 iPad 窗口变化验证；先固定当前文字摘录及 spineIndex/charOffset，再触发真实模式/样式变化并比较恢复。"
         ],
-        "nextAction": "复用 ReaderLiveStyleRefreshTests、CoreTextWritingModeTests、CoreTextPagedScrollAppearanceTests 和程序翻页回归，新增自有长章/图片 fixture 的旋转与 iPad 窗口变化验证；先固定当前文字摘录及 spineIndex/charOffset，再触发真实模式/样式变化并比较恢复。",
+        "nextAction": "仅维护核心正文显示、切章及既有文本锚点的可靠性，修复实际阻断书源链路的布局缺陷；不主动增加字体、主题、外观、旋转／分屏等扩展。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "ready",
         "readyPreparation": [
-          "补真实引擎与 hosting 的固定锚点组合测试，复用现有 CoreTextReadingPosition 和 ReaderSessionCoordinator；不新增另一套页码/位置系统。"
+          "仅为当前核心链路的实际阻断缺陷准备最小复现和相关局部验证，不主动扩展本包完整功能。"
         ],
         "acceptance": [
           "分页与滚动均完整覆盖正文，无空白未就绪终态。",
@@ -1473,7 +1624,13 @@
           "实体横竖屏手势与动画",
           "真实显示字体舒适度和长期流畅度"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "active_core_line",
+        "activeScope": "仅维护核心正文显示、切章及既有文本锚点的可靠性，修复实际阻断书源链路的布局缺陷；不主动增加字体、主题、外观、旋转／分屏等扩展。",
+        "previousReadyPreparationRetained": [
+          "补真实引擎与 hosting 的固定锚点组合测试，复用现有 CoreTextReadingPosition 和 ReaderSessionCoordinator；不新增另一套页码/位置系统。"
+        ]
       }
     },
     {
@@ -1509,11 +1666,10 @@
           "书架、分组、排序、稳定书籍 ID、写盘故障保留和统计跟踪器均已有；尚未证明原数据完整往返和统计在跨日、暂停、切书、重启、备份合并时不重复。统计目前同步 load/save，不能凭现有两个基础测试推断大库生命周期表现。",
           "先扩充现有 ReadingStatsSessionTracker/ReadingStatsStore 的可控时钟、临时文件和合并去重用例，再做书架/分组保存重开矩阵；只把原数据 schema 对照留给兼容验收，不让它阻塞本地持久化可靠性。"
         ],
-        "nextAction": "先扩充现有 ReadingStatsSessionTracker/ReadingStatsStore 的可控时钟、临时文件和合并去重用例，再做书架/分组保存重开矩阵；只把原数据 schema 对照留给兼容验收，不让它阻塞本地持久化可靠性。",
+        "nextAction": "仅完善核心书籍／书源关联、章节身份、书架保存重开与进度恢复；复用现有 store。新分组、统计扩展等非闭环必需工作按用户要求暂缓。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "ready",
         "readyPreparation": [
-          "对现有统计 tracker 注入固定日期/位置序列，补跨日、负时钟、重复会话 ID 合并、暂停/切书的确定性回归；不另造统计 store。",
-          "复用 BookStore(metadataFileURL:)、BookStoreShelfRecoveryTests 与 BookshelfGroupsUITests，在临时目录验证增删改组/排序/重开和失败保护。"
+          "仅为当前核心链路的实际阻断缺陷准备最小复现和相关局部验证，不主动扩展本包完整功能。"
         ],
         "acceptance": [
           "新增/移组/改名/排序/删除/重开不换 ID，不误删 off-shelf 阅读记录。",
@@ -1533,7 +1689,14 @@
           "前后台真实会话边界",
           "手机已有书籍升级/恢复的最终无损验收"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "active_core_line",
+        "activeScope": "仅完善核心书籍／书源关联、章节身份、书架保存重开与进度恢复；复用现有 store。新分组、统计扩展等非闭环必需工作按用户要求暂缓。",
+        "previousReadyPreparationRetained": [
+          "对现有统计 tracker 注入固定日期/位置序列，补跨日、负时钟、重复会话 ID 合并、暂停/切书的确定性回归；不另造统计 store。",
+          "复用 BookStore(metadataFileURL:)、BookStoreShelfRecoveryTests 与 BookshelfGroupsUITests，在临时目录验证增删改组/排序/重开和失败保护。"
+        ]
       }
     },
     {
@@ -1569,10 +1732,10 @@
           "离线队列、按章 checksum、漫画完整 manifest、缓存分类清理和换源章节映射均已有。当前缺的是网络中断/取消/重启、清理与在途写入冲突、换源缓存失效及标题对齐的固定综合验收；完整原 WebBook 路由未完成只限制兼容结论，不阻塞这些本地场景。",
           "在既有注入 roots、ChapterFetching 和 owned URLProtocol 上构造下载中断/重启、移除下载与 reconcile/在途保存竞争；换源先用合成章节快照测试对齐与旧任务隔离，暂不宣称任何真实书源兼容。"
         ],
-        "nextAction": "在既有注入 roots、ChapterFetching 和 owned URLProtocol 上构造下载中断/重启、移除下载与 reconcile/在途保存竞争；换源先用合成章节快照测试对齐与旧任务隔离，暂不宣称任何真实书源兼容。",
+        "nextAction": "仅完成核心章缓存写入、失败保护、旧任务隔离与重启恢复，保证新书源链路不会污染已保存书籍和进度；新增批量下载、换源体验等外围扩展暂缓。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "ready",
         "readyPreparation": [
-          "扩展 OfflineDownloadManagerTests、OfflineChapterStoreTests、CacheManagementServiceTests 与 ChapterAlignmentTests 的真实临时文件/owned response 组合；信号驱动取消，不 sleep。"
+          "仅为当前核心链路的实际阻断缺陷准备最小复现和相关局部验证，不主动扩展本包完整功能。"
         ],
         "acceptance": [
           "取消阅读不取消同书 download，暂停/恢复只继续未完成章。",
@@ -1591,7 +1754,13 @@
           "网络可达性切换与后台生命周期",
           "系统磁盘压力和终止后的真实恢复"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "active_core_line",
+        "activeScope": "仅完成核心章缓存写入、失败保护、旧任务隔离与重启恢复，保证新书源链路不会污染已保存书籍和进度；新增批量下载、换源体验等外围扩展暂缓。",
+        "previousReadyPreparationRetained": [
+          "扩展 OfflineDownloadManagerTests、OfflineChapterStoreTests、CacheManagementServiceTests 与 ChapterAlignmentTests 的真实临时文件/owned response 组合；信号驱动取消，不 sleep。"
+        ]
       }
     },
     {
@@ -1625,20 +1794,16 @@
       ],
       "execution": {
         "summaryZh": "本地 TXT／EPUB／PDF 验收及 UMD／MOBI 支持",
-        "currentState": "TXT/EPUB/PDF 继续按既有统一导入及 CoreText/Readium/PDFKit 路径验收。UMD16 的未注册 type1 文本 parser 与原 Java 自有 5 fixture/15 章黄金观察保持不变；其 11 方法已随 D f3e0b15 的集中 source-only smoke 与 memory1/UI1/UMD11 runner 提交，沿用原首次观察，不在本批更新云端状态或接受结果。新增并独审的字面阅读 5 文件在主树匹配冻结字节：复用 UnifiedChapter、TXTBookDocument 和同一 TXT/Node/CoreText 构造器，保留原目录及字面正文，显式用户转换与替换仅影响渲染。新增 8 方法仅 planned，Swift/SDK/iOS 实际均 0；portable12、5 fixture/15 章完整性及 5 文件 grammar 通过不代表 Swift 验收。该 5 文件不在 D 源码内，也未触发新 CI；UMD/MOBI 仍未注册产品导入或阅读路由，checked lease 仍仅 design0。 后续已核 D 实际结果：UMD 夹具同名资源打包冲突导致两任务均在编译／测试前失败，相关新 Swift 执行仍为 0；已准备最小显式目录修复，待下一集中 SDK 验证。 后续已统一提交固定源码 5f543a1 的续签诊断、smoke 与独立 measurements；这里只记录提交，未验收新 Swift 执行、观测行或性能样本。",
+        "currentState": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。 此前实现与证据事实：TXT/EPUB/PDF 继续按既有统一导入及 CoreText/Readium/PDFKit 路径验收。UMD16 的未注册 type1 文本 parser 与原 Java 自有 5 fixture/15 章黄金观察保持不变；其 11 方法已随 D f3e0b15 的集中 source-only smoke 与 memory1/UI1/UMD11 runner 提交，沿用原首次观察，不在本批更新云端状态或接受结果。新增并独审的字面阅读 5 文件在主树匹配冻结字节：复用 UnifiedChapter、TXTBookDocument 和同一 TXT/Node/CoreText 构造器，保留原目录及字面正文，显式用户转换与替换仅影响渲染。新增 8 方法仅 planned，Swift/SDK/iOS 实际均 0；portable12、5 fixture/15 章完整性及 5 文件 grammar 通过不代表 Swift 验收。该 5 文件不在 D 源码内，也未触发新 CI；UMD/MOBI 仍未注册产品导入或阅读路由，checked lease 仍仅 design0。 后续已核 D 实际结果：UMD 夹具同名资源打包冲突导致两任务均在编译／测试前失败，相关新 Swift 执行仍为 0；已准备最小显式目录修复，待下一集中 SDK 验证。 后续已统一提交固定源码 5f543a1 的续签诊断、smoke 与独立 measurements；这里只记录提交，未验收新 Swift 执行、观测行或性能样本。",
         "remainingWork": [
           "保留 D 已提交的原 11 方法与集中 runner 的独立源绑定结果；新增 8 个 UMDReadingPreparationTests 方法仍需未来经批准的固定源码 Apple SDK 编译及精确 8/8 真实执行，保留原始 xcresult/log，不以 portable 或 grammar 代替。",
           "实现并独审最小 shared-writer checked import commit：复用现有 pause/drain，覆盖同文件跨 store/direct writer 与 records revision 冲突，成功前不发布，失败或 CAS rollback 不确定时保留 owned recovery；不新增 GCD 或平行书架，不宣称全局 crash/powerloss 事务。",
           "在 checked commit 完成后将原 .umd 保留、显式目录和字面正文接入同一 LocalBookImportService/BookParserRegistry 及既有 reader，覆盖目录、同步 TXT 入口、share/Calibre/iCloud 与关闭重开；不得把原 byte offset 当持久 charOffset，不经标题 regex 重猜目录，不静默转 TXT 冒充完整支持。",
           "真实导入、目录、正文、重开及失败不污染旧书架均验收后再接受 UMD 子集；MOBI 仍需合法无 DRM 子集、样本、许可调查及真实 parser/import/reader。TXT/EPUB/PDF 原有固定回归继续保持。"
         ],
-        "nextAction": "读取固定源码 5f543a1 实际对应分组和原始证据，沿用本包精确计数与范围分别验收；实际失败再修复，云测期间继续 ready 开发。",
+        "nextAction": "按用户要求暂缓本包新增实现、专项准备与主动验证；保留已有功能和证据。仅在其实际缺陷阻断当前自签／书源核心链路时，由主线明确纳入最小修复；恢复扩展须用户重新安排。按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "ready",
-        "readyPreparation": [
-          "复用已冻结未注册 decoder/file parser、原 Java 5 fixture/15 getter 与 11 方法精确身份；strict malformed、预算及加密拒绝是项目策略，不伪称原 Java 坏输入异常。",
-          "收敛 checked lease design0 为最小 shared writer 原语，覆盖旧 direct writers、跨 store、取消后结果收尾与失败恢复；独立实现评审后再复用同一 importer/reader。",
-          "保持 MOBI 调查与 TXT/EPUB/PDF 原验收边界；不得以改扩展名、静默 TXT storageText 或第二 importer/renderer 伪装完整格式支持。"
-        ],
+        "readyPreparation": [],
         "acceptance": [
           "UMD/MOBI 合法 fixture 能导入、显示正确标题/目录/正文并重开到稳定文本锚点；错误/截断/超界/加密不支持形态明确拒绝。",
           "任何失败不新增半本书、不破坏原输入或已保存书架；批量坏一项不抹掉成功项。",
@@ -1674,7 +1839,19 @@
           "系统文件提供商、共享扩展与安全作用域",
           "代表性大 EPUB/PDF/UMD/MOBI 的实体内存/交互"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "unfinished_deferred_by_user",
+        "deferredReason": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。",
+        "resumeAfterUserDeferral": {
+          "technicalReadinessBeforeDeferral": "ready",
+          "nextAction": "读取固定源码 5f543a1 实际对应分组和原始证据，沿用本包精确计数与范围分别验收；实际失败再修复，云测期间继续 ready 开发。",
+          "readyPreparation": [
+            "复用已冻结未注册 decoder/file parser、原 Java 5 fixture/15 getter 与 11 方法精确身份；strict malformed、预算及加密拒绝是项目策略，不伪称原 Java 坏输入异常。",
+            "收敛 checked lease design0 为最小 shared writer 原语，覆盖旧 direct writers、跨 store、取消后结果收尾与失败恢复；独立实现评审后再复用同一 importer/reader。",
+            "保持 MOBI 调查与 TXT/EPUB/PDF 原验收边界；不得以改扩展名、静默 TXT storageText 或第二 importer/renderer 伪装完整格式支持。"
+          ]
+        }
       }
     },
     {
@@ -1706,17 +1883,14 @@
       ],
       "execution": {
         "summaryZh": "书签、笔记、高亮与字典",
-        "currentState": "原生书签、笔记/高亮、正则规则和选区已有；测试已覆盖稳定位置及增删/改色身份保留，但加工正文后的跨页锚点、导出恢复和规则重叠仍缺完整证据。原版自定义字典规则网络/解析映射没有实现证明；AI 查词或系统选区功能不能代替它。",
+        "currentState": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。 此前实现与证据事实：原生书签、笔记/高亮、正则规则和选区已有；测试已覆盖稳定位置及增删/改色身份保留，但加工正文后的跨页锚点、导出恢复和规则重叠仍缺完整证据。原版自定义字典规则网络/解析映射没有实现证明；AI 查词或系统选区功能不能代替它。",
         "remainingWork": [
           "原生书签、笔记/高亮、正则规则和选区已有；测试已覆盖稳定位置及增删/改色身份保留，但加工正文后的跨页锚点、导出恢复和规则重叠仍缺完整证据。原版自定义字典规则网络/解析映射没有实现证明；AI 查词或系统选区功能不能代替它。",
           "先用合成正文补跨页/跨行/替换前后高亮和笔记身份、引用摘录、导出再恢复；字典工作单独接现有选区动作与服务层，先固定多字典/空/失败/取消/返回原锚点的 owned HTTP 契约，解析引擎相关兼容部分保持独立验收。"
         ],
-        "nextAction": "扩展 BookStoreTextAnnotationTests、BookmarkStablePositionTests 和 RegexHighlightDecorationTests，加入替换/加工后的 UTF-16 范围与摘录对照；复用既有 renderer/store。",
+        "nextAction": "按用户要求暂缓本包新增实现、专项准备与主动验证；保留已有功能和证据。仅在其实际缺陷阻断当前自签／书源核心链路时，由主线明确纳入最小修复；恢复扩展须用户重新安排。按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "ready",
-        "readyPreparation": [
-          "扩展 BookStoreTextAnnotationTests、BookmarkStablePositionTests 和 RegexHighlightDecorationTests，加入替换/加工后的 UTF-16 范围与摘录对照；复用既有 renderer/store。",
-          "定位并冻结原字典数据字段和自有响应，准备现有选区入口的服务协议、取消和恢复锚点测试；先不切换任何书源规则路由。"
-        ],
+        "readyPreparation": [],
         "acceptance": [
           "标注增删/改色/笔记编辑不改无关标注，重排后仍指同一文本范围。",
           "plain/regex 分组、优先级及与手工高亮重叠均有实际渲染或几何结果，导出恢复保留 ID/日期/摘录。",
@@ -1735,7 +1909,18 @@
           "真实触控选区、朗读与无障碍顺序",
           "系统字典/浏览器/键盘生命周期"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "unfinished_deferred_by_user",
+        "deferredReason": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。",
+        "resumeAfterUserDeferral": {
+          "technicalReadinessBeforeDeferral": "ready",
+          "nextAction": "扩展 BookStoreTextAnnotationTests、BookmarkStablePositionTests 和 RegexHighlightDecorationTests，加入替换/加工后的 UTF-16 范围与摘录对照；复用既有 renderer/store。",
+          "readyPreparation": [
+            "扩展 BookStoreTextAnnotationTests、BookmarkStablePositionTests 和 RegexHighlightDecorationTests，加入替换/加工后的 UTF-16 范围与摘录对照；复用既有 renderer/store。",
+            "定位并冻结原字典数据字段和自有响应，准备现有选区入口的服务协议、取消和恢复锚点测试；先不切换任何书源规则路由。"
+          ]
+        }
       }
     },
     {
@@ -1766,7 +1951,7 @@
       ],
       "execution": {
         "summaryZh": "备份范围与 WebDAV 恢复保护",
-        "currentState": "恢复保护及 12 方法／27 执行的自有故障用例已写入源码：先验证文件、协调既有 writer、提交错误回滚、冲突不假报成功并保留 TOC／legacy inline 数据。产品代码已在 ccdddd3 的 build 11 Release 编译通过；c009a49 测试目标因快捷面板测试编译失败，恢复用例实际执行仍为 0。该测试编译修复已集成，等待相关检查点重编执行；完整／选择性／加密与原版备份协议未完成。",
+        "currentState": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。 此前实现与证据事实：恢复保护及 12 方法／27 执行的自有故障用例已写入源码：先验证文件、协调既有 writer、提交错误回滚、冲突不假报成功并保留 TOC／legacy inline 数据。产品代码已在 ccdddd3 的 build 11 Release 编译通过；c009a49 测试目标因快捷面板测试编译失败，恢复用例实际执行仍为 0。该测试编译修复已集成，等待相关检查点重编执行；完整／选择性／加密与原版备份协议未完成。",
         "remainingWork": [
           "集中运行新增 12／27 用例，核对真实 xcresult、零失败／跳过和原始日志；测试定义与只读代码审查不能代替执行。",
           "扩展取消、重开和实际 Source／Replace writer lease 集成；本批 injected 事务及 BookStore writer 用例不等于三 store 全面验证。",
@@ -1774,12 +1959,9 @@
           "对原版备份输入、合并和冲突协议保存固定参考与往返结果，并用自有 WebDAV 服务验认证、传输中断及取消。",
           "提交暂停期间以版本检查拒绝新编辑；下载阶段沿用原 overwrite 语义。当前只做进程内普通失败回滚，不承诺跨文件／侧文件断电事务。"
         ],
-        "nextAction": "在本批统一 source-only Debug 检查点实际编译并执行 WebDAVRestoreIntegrityTests 12 方法／27 执行，保存独立结果；后续再按原依赖完善备份范围和协议。",
+        "nextAction": "按用户要求暂缓本包新增实现、专项准备与主动验证；保留已有功能和证据。仅在其实际缺陷阻断当前自签／书源核心链路时，由主线明确纳入最小修复；恢复扩展须用户重新安排。按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "awaiting-cloud",
-        "readyPreparation": [
-          "按现有各 store 所有权准备完整备份 manifest，不复制另一份运行中 store。",
-          "准备取消／源与替换规则 writer lease／重开及自有 WebDAV 协议夹具。"
-        ],
+        "readyPreparation": [],
         "acceptance": [
           "坏 manifest/sources/books/rules、401、网络失败、无数据、取消都保留原字节且零 store 发布/成功状态。",
           "第二/第三文件写入故障回滚先前提交，保留原来缺失文件的缺失状态；故障解除后一次正常恢复成功，不 sleep/自动重试掩盖错误。",
@@ -1803,7 +1985,18 @@
           "真实个人服务器认证/网络切换",
           "最终签名应用升级/重装、Files 分享导入导出"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "unfinished_deferred_by_user",
+        "deferredReason": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。",
+        "resumeAfterUserDeferral": {
+          "technicalReadinessBeforeDeferral": "awaiting-cloud",
+          "nextAction": "在本批统一 source-only Debug 检查点实际编译并执行 WebDAVRestoreIntegrityTests 12 方法／27 执行，保存独立结果；后续再按原依赖完善备份范围和协议。",
+          "readyPreparation": [
+            "按现有各 store 所有权准备完整备份 manifest，不复制另一份运行中 store。",
+            "准备取消／源与替换规则 writer lease／重开及自有 WebDAV 协议夹具。"
+          ]
+        }
       }
     },
     {
@@ -1831,18 +2024,16 @@
       ],
       "execution": {
         "summaryZh": "五类书源的明确分流",
-        "currentState": "Swift OnlineBookContentKind当前只有text/audio/manga，type1/2已有分流；type3文件与type4视频没有完整对应产品流程，未知类型在部分推断/校验路径仍不形成明确支持边界。 JVM App guard仅支持type0 mainJS。不得由type0文本闭环或已有inline-video入口推定五类源全部支持。",
+        "currentState": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。 此前实现与证据事实：Swift OnlineBookContentKind当前只有text/audio/manga，type1/2已有分流；type3文件与type4视频没有完整对应产品流程，未知类型在部分推断/校验路径仍不形成明确支持边界。 JVM App guard仅支持type0 mainJS。不得由type0文本闭环或已有inline-video入口推定五类源全部支持。",
         "remainingWork": [
           "Swift OnlineBookContentKind当前只有text/audio/manga，type1/2已有分流；type3文件与type4视频没有完整对应产品流程，未知类型在部分推断/校验路径仍不形成明确支持边界。 JVM App guard仅支持type0 mainJS。不得由type0文本闭环或已有inline-video入口推定五类源全部支持。",
           "1. 穷举type0/1/2/3/4及未知值，在搜索结果→详情→目录→内容→下载/打开的每个既有入口记录当前行为，加入合成防误分流契约。",
           "2. 对type3建立原downloadUrls/文件获取与现有LocalBookImportService的接口合同；对type4建立原video episode/媒体内容合同，未支持前返回明确unsupported，不通过放宽文字guard实现。",
           "3. 在传统/mainJS各自可用的内容接口上接入同一源类型判定；聚合源返回的明确子类型保持边界，音频/漫画不因transport提示被强制WebView。"
         ],
-        "nextAction": "1. 穷举type0/1/2/3/4及未知值，在搜索结果→详情→目录→内容→下载/打开的每个既有入口记录当前行为，加入合成防误分流契约。\n2. 对type3建立原downloadUrls/文件获取与现有LocalBookImportService的接口合同；对type4建立原video episode/媒体内容合同，未支持前返回明确unsupported，不通过放宽文字guard实现。\n3. 在传统/mainJS各自可用的内容接口上接入同一源类型判定；聚合源返回的明确子类型保持边界，音频/漫画不因transport提示被强制WebView。",
+        "nextAction": "按用户要求暂缓本包新增实现、专项准备与主动验证；保留已有功能和证据。仅在其实际缺陷阻断当前自签／书源核心链路时，由主线明确纳入最小修复；恢复扩展须用户重新安排。按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "depends-on-work",
-        "readyPreparation": [
-          "类型路由现状表、五类合成输入与负向契约可以现在准备，无需等待完整引擎迁移。"
-        ],
+        "readyPreparation": [],
         "acceptance": [
           "0–4和未知值逐一验证目标服务/错误；文件/视频不得被标为成功的纯文本阅读。",
           "聚合源文字/音频/漫画混合结果、显式类型与URL推断冲突时选定明确候选，不误验证次要模式。",
@@ -1856,7 +2047,17 @@
         "deferredHardware": [
           "实际音频/漫画/文件/视频源的解码、系统文件选择/打开、网络媒体权限及返回阅读。"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "unfinished_deferred_by_user",
+        "deferredReason": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。",
+        "resumeAfterUserDeferral": {
+          "technicalReadinessBeforeDeferral": "depends-on-work",
+          "nextAction": "1. 穷举type0/1/2/3/4及未知值，在搜索结果→详情→目录→内容→下载/打开的每个既有入口记录当前行为，加入合成防误分流契约。\n2. 对type3建立原downloadUrls/文件获取与现有LocalBookImportService的接口合同；对type4建立原video episode/媒体内容合同，未支持前返回明确unsupported，不通过放宽文字guard实现。\n3. 在传统/mainJS各自可用的内容接口上接入同一源类型判定；聚合源返回的明确子类型保持边界，音频/漫画不因transport提示被强制WebView。",
+          "readyPreparation": [
+            "类型路由现状表、五类合成输入与负向契约可以现在准备，无需等待完整引擎迁移。"
+          ]
+        }
       }
     },
     {
@@ -1884,18 +2085,16 @@
       ],
       "execution": {
         "summaryZh": "RSS 原规则、收藏与离线",
-        "currentState": "已有RSS/Atom、Legado JSON导入导出、RSSStore与JSC规则抓取；其实现调用Swift AnalyzeUrl/ModernRuleEngine/JSCoreEngine，并非原JVM Rss/RssParserByRule链路。 原规则订阅的完整字段、分页/全文/login/收藏/历史/离线与状态副作用尚无固定原版全链路对照；入口存在不证明兼容。",
+        "currentState": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。 此前实现与证据事实：已有RSS/Atom、Legado JSON导入导出、RSSStore与JSC规则抓取；其实现调用Swift AnalyzeUrl/ModernRuleEngine/JSCoreEngine，并非原JVM Rss/RssParserByRule链路。 原规则订阅的完整字段、分页/全文/login/收藏/历史/离线与状态副作用尚无固定原版全链路对照；入口存在不证明兼容。",
         "remainingWork": [
           "已有RSS/Atom、Legado JSON导入导出、RSSStore与JSC规则抓取；其实现调用Swift AnalyzeUrl/ModernRuleEngine/JSCoreEngine，并非原JVM Rss/RssParserByRule链路。 原规则订阅的完整字段、分页/全文/login/收藏/历史/离线与状态副作用尚无固定原版全链路对照；入口存在不证明兼容。",
           "1. 以现有LegadoRSSCompatTests与RSSPageDecodingTests为起点，冻结RSS/Atom及原规则订阅的固定list/detail/next-page/login响应，核对sortUrl、singleUrl、反序与空/错误区别。",
           "2. 逐项对比现有LegadoSourceJSONParser字段往返、文章稳定身份/去重、全文/图片/日期和ruleNextPage；只修原契约已证实的差异，不另建RSS模型或抓取路线。",
           "3. 原JVM请求/解析/身份宿主就绪后，将规则RSS逐段接入同一原核心服务；继续使用现有RSSStore/原生列表与文章阅读，补收藏/历史/离线重启。"
         ],
-        "nextAction": "1. 以现有LegadoRSSCompatTests与RSSPageDecodingTests为起点，冻结RSS/Atom及原规则订阅的固定list/detail/next-page/login响应，核对sortUrl、singleUrl、反序与空/错误区别。\n2. 逐项对比现有LegadoSourceJSONParser字段往返、文章稳定身份/去重、全文/图片/日期和ruleNextPage；只修原契约已证实的差异，不另建RSS模型或抓取路线。\n3. 原JVM请求/解析/身份宿主就绪后，将规则RSS逐段接入同一原核心服务；继续使用现有RSSStore/原生列表与文章阅读，补收藏/历史/离线重启。",
+        "nextAction": "按用户要求暂缓本包新增实现、专项准备与主动验证；保留已有功能和证据。仅在其实际缺陷阻断当前自签／书源核心链路时，由主线明确纳入最小修复；恢复扩展须用户重新安排。按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "depends-on-work",
-        "readyPreparation": [
-          "固定feed与原Rss行为向量、JSON字段和文章身份审查可以立即并行。"
-        ],
+        "readyPreparation": [],
         "acceptance": [
           "标准RSS/Atom与原rule-source同站多分类/分页/反序/全文、相对URL、charset、loginCheckJs及Cookie对照原请求和文章输出。",
           "重复刷新不制造新id/无变化写盘，收藏、已读、历史和离线全文重启不丢。",
@@ -1907,7 +2106,17 @@
         "deferredHardware": [
           "用户自配真实订阅、OPML/JSON系统导入、前后台刷新/通知权限与生命周期恢复。"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "unfinished_deferred_by_user",
+        "deferredReason": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。",
+        "resumeAfterUserDeferral": {
+          "technicalReadinessBeforeDeferral": "depends-on-work",
+          "nextAction": "1. 以现有LegadoRSSCompatTests与RSSPageDecodingTests为起点，冻结RSS/Atom及原规则订阅的固定list/detail/next-page/login响应，核对sortUrl、singleUrl、反序与空/错误区别。\n2. 逐项对比现有LegadoSourceJSONParser字段往返、文章稳定身份/去重、全文/图片/日期和ruleNextPage；只修原契约已证实的差异，不另建RSS模型或抓取路线。\n3. 原JVM请求/解析/身份宿主就绪后，将规则RSS逐段接入同一原核心服务；继续使用现有RSSStore/原生列表与文章阅读，补收藏/历史/离线重启。",
+          "readyPreparation": [
+            "固定feed与原Rss行为向量、JSON字段和文章身份审查可以立即并行。"
+          ]
+        }
       }
     },
     {
@@ -1936,18 +2145,16 @@
       ],
       "execution": {
         "summaryZh": "朗读协议、句段锚点与取消",
-        "currentState": "已有SystemTTSEngine、HTTPTTSEngine、原生协调器、句段offset和HTTP/Edge/章节音频provider；现有定向测试不能证明原HTTP TTS完整协议或真实锁屏跟随。 HTTP请求模板/认证/charset与原Java类型、缓存/重试/取消、手动翻页与朗读位置协调、打断恢复仍缺同源码协议和设备证据。",
+        "currentState": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。 此前实现与证据事实：已有SystemTTSEngine、HTTPTTSEngine、原生协调器、句段offset和HTTP/Edge/章节音频provider；现有定向测试不能证明原HTTP TTS完整协议或真实锁屏跟随。 HTTP请求模板/认证/charset与原Java类型、缓存/重试/取消、手动翻页与朗读位置协调、打断恢复仍缺同源码协议和设备证据。",
         "remainingWork": [
           "已有SystemTTSEngine、HTTPTTSEngine、原生协调器、句段offset和HTTP/Edge/章节音频provider；现有定向测试不能证明原HTTP TTS完整协议或真实锁屏跟随。 HTTP请求模板/认证/charset与原Java类型、缓存/重试/取消、手动翻页与朗读位置协调、打断恢复仍缺同源码协议和设备证据。",
           "1. 用既有TTSNarrationOffsetMap/SystemTTSEngine/TTSCoordinator/HTTPTTSQueue测试先固定start/pause/skip/rate/手动翻页/跨章等待状态表与句子锚点。",
           "2. 建立固定短音频端点，对原HTTP TTS sentence/audio请求、header/body/认证/charset、JS库、缓存、失败重试与取消逐项留wire/状态golden；与UI播放验证分开。",
           "3. URL/HTTP语义稳定后复用既有TTSAudioProvider与播放器接原协议，保留可取消预合成和当前播放优先级，不凭静音保活单元测试宣称系统后台保证。"
         ],
-        "nextAction": "1. 用既有TTSNarrationOffsetMap/SystemTTSEngine/TTSCoordinator/HTTPTTSQueue测试先固定start/pause/skip/rate/手动翻页/跨章等待状态表与句子锚点。\n2. 建立固定短音频端点，对原HTTP TTS sentence/audio请求、header/body/认证/charset、JS库、缓存、失败重试与取消逐项留wire/状态golden；与UI播放验证分开。\n3. URL/HTTP语义稳定后复用既有TTSAudioProvider与播放器接原协议，保留可取消预合成和当前播放优先级，不凭静音保活单元测试宣称系统后台保证。",
+        "nextAction": "按用户要求暂缓本包新增实现、专项准备与主动验证；保留已有功能和证据。仅在其实际缺陷阻断当前自签／书源核心链路时，由主线明确纳入最小修复；恢复扩展须用户重新安排。按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "depends-on-work",
-        "readyPreparation": [
-          "状态/句段锚点向量及固定音频HTTP请求原基线可以现在并行，不依赖真实设备或完整传统路由。"
-        ],
+        "readyPreparation": [],
         "acceptance": [
           "原正文offset→朗读替换/ruby/多角色chunk→源句子锚点映射双向正确，翻页/跳章/速率变更不重复或漏段。",
           "固定HTTP TTS认证、GBK/二进制音频、空/坏音频、预取失败到真正播放时重试和取消按原顺序；未播放失败不终止当前音频。",
@@ -1959,7 +2166,17 @@
         "deferredHardware": [
           "真实语音、扬声器/蓝牙/耳机、锁屏/控制中心、电话/Siri/其他App中断、后台跨章与实际句子跟随。"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "unfinished_deferred_by_user",
+        "deferredReason": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。",
+        "resumeAfterUserDeferral": {
+          "technicalReadinessBeforeDeferral": "depends-on-work",
+          "nextAction": "1. 用既有TTSNarrationOffsetMap/SystemTTSEngine/TTSCoordinator/HTTPTTSQueue测试先固定start/pause/skip/rate/手动翻页/跨章等待状态表与句子锚点。\n2. 建立固定短音频端点，对原HTTP TTS sentence/audio请求、header/body/认证/charset、JS库、缓存、失败重试与取消逐项留wire/状态golden；与UI播放验证分开。\n3. URL/HTTP语义稳定后复用既有TTSAudioProvider与播放器接原协议，保留可取消预合成和当前播放优先级，不凭静音保活单元测试宣称系统后台保证。",
+          "readyPreparation": [
+            "状态/句段锚点向量及固定音频HTTP请求原基线可以现在并行，不依赖真实设备或完整传统路由。"
+          ]
+        }
       }
     },
     {
@@ -1988,18 +2205,16 @@
       ],
       "execution": {
         "summaryZh": "音频、视频与媒体协议",
-        "currentState": "已有AudiobookPlayer/AVQueuePlayer、受保护header资源、预载、Now Playing和inline-video协调；这些不是完整音频/视频源协议、视频选集/弹幕/PiP全量原版验收。 type4完整视频内容路由缺失，mainJS媒体被明确拒绝；实际编解码、后台音频/画中画等只能保留设备门槛。",
+        "currentState": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。 此前实现与证据事实：已有AudiobookPlayer/AVQueuePlayer、受保护header资源、预载、Now Playing和inline-video协调；这些不是完整音频/视频源协议、视频选集/弹幕/PiP全量原版验收。 type4完整视频内容路由缺失，mainJS媒体被明确拒绝；实际编解码、后台音频/画中画等只能保留设备门槛。",
         "remainingWork": [
           "已有AudiobookPlayer/AVQueuePlayer、受保护header资源、预载、Now Playing和inline-video协调；这些不是完整音频/视频源协议、视频选集/弹幕/PiP全量原版验收。 type4完整视频内容路由缺失，mainJS媒体被明确拒绝；实际编解码、后台音频/画中画等只能保留设备门槛。",
           "1. 按原AudioPlay/VideoPlay冻结播放列表、URL/header/Cookie、seek/rate/片头片尾/播放模式、过期链接重解与缓存的固定媒体服务向量。",
           "2. 先对现有ChapterAudioProvider/AudiobookPlayer/HeaderedMediaAsset做本地短媒体状态与请求验收；同一资产不制造第二播放器/缓存服务。",
           "3. 视频源与选集协议在source-type-routing确定后接入现有AVPlayer/inline能力；弹幕/PiP恢复各有明确原状态表和不支持边界，不把脚本打开视频当全视频源支持。"
         ],
-        "nextAction": "1. 按原AudioPlay/VideoPlay冻结播放列表、URL/header/Cookie、seek/rate/片头片尾/播放模式、过期链接重解与缓存的固定媒体服务向量。\n2. 先对现有ChapterAudioProvider/AudiobookPlayer/HeaderedMediaAsset做本地短媒体状态与请求验收；同一资产不制造第二播放器/缓存服务。\n3. 视频源与选集协议在source-type-routing确定后接入现有AVPlayer/inline能力；弹幕/PiP恢复各有明确原状态表和不支持边界，不把脚本打开视频当全视频源支持。",
+        "nextAction": "按用户要求暂缓本包新增实现、专项准备与主动验证；保留已有功能和证据。仅在其实际缺陷阻断当前自签／书源核心链路时，由主线明确纳入最小修复；恢复扩展须用户重新安排。按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "depends-on-work",
-        "readyPreparation": [
-          "短媒体固定文件/HTTP服务、原播放状态表与受保护header/Range契约可立即并行。"
-        ],
+        "readyPreparation": [],
         "acceptance": [
           "固定媒体的请求头/Cookie、Range/seek、重定向和过期URL、列表末尾/随机/循环、片头片尾和失败恢复与原版状态一致。",
           "章节边界预载、用户跳章、取消旧解析、缓存/断网恢复不播错书/错章；Now Playing只反映当前实际播放。",
@@ -2011,7 +2226,17 @@
         "deferredHardware": [
           "实际codec/DRM可支持边界、扬声器/蓝牙/耳机、锁屏/后台、真实PiP、网络切换、前后台恢复与热量/电池。"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "unfinished_deferred_by_user",
+        "deferredReason": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。",
+        "resumeAfterUserDeferral": {
+          "technicalReadinessBeforeDeferral": "depends-on-work",
+          "nextAction": "1. 按原AudioPlay/VideoPlay冻结播放列表、URL/header/Cookie、seek/rate/片头片尾/播放模式、过期链接重解与缓存的固定媒体服务向量。\n2. 先对现有ChapterAudioProvider/AudiobookPlayer/HeaderedMediaAsset做本地短媒体状态与请求验收；同一资产不制造第二播放器/缓存服务。\n3. 视频源与选集协议在source-type-routing确定后接入现有AVPlayer/inline能力；弹幕/PiP恢复各有明确原状态表和不支持边界，不把脚本打开视频当全视频源支持。",
+          "readyPreparation": [
+            "短媒体固定文件/HTTP服务、原播放状态表与受保护header/Range契约可立即并行。"
+          ]
+        }
       }
     },
     {
@@ -2040,18 +2265,16 @@
       ],
       "execution": {
         "summaryZh": "原段评协议与段落动作",
-        "currentState": "原ReviewRule全部30字段现已保留，仍无基于该schema的完整原段评执行路径；JSC LegadoSourceBridge.ruleReview仍只投影旧review键。 已有段评marker/SVG气泡、ReviewSummaryResponseCache和源JS点击动作属于现有特定流程，不等于原传统/mainJS评论列表、汇总/详情分页、回复/赞踩/删除及媒体协议。",
+        "currentState": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。 此前实现与证据事实：原ReviewRule全部30字段现已保留，仍无基于该schema的完整原段评执行路径；JSC LegadoSourceBridge.ruleReview仍只投影旧review键。 已有段评marker/SVG气泡、ReviewSummaryResponseCache和源JS点击动作属于现有特定流程，不等于原传统/mainJS评论列表、汇总/详情分页、回复/赞踩/删除及媒体协议。",
         "remainingWork": [
           "原ReviewRule全部30字段现已保留，仍无基于该schema的完整原段评执行路径；JSC LegadoSourceBridge.ruleReview仍只投影旧review键。 已有段评marker/SVG气泡、ReviewSummaryResponseCache和源JS点击动作属于现有特定流程，不等于原传统/mainJS评论列表、汇总/详情分页、回复/赞踩/删除及媒体协议。",
           "1. 从原JsSourceReview与ReviewRule固定汇总/详情/次页/回复/赞踩/删除输入输出及失败/空语义，先记录paragraphIndex/data/id与原正文的锚定规则。",
           "2. 定义一次评论服务请求/状态契约，沿既有源会话、ReviewTarget与原生阅读锚点接原传统和mainJS协议；schema/JS桥字段、请求、分页和动作分批补，不能以字段保留跳过执行。",
           "3. 复用现有marker渲染/ReviewActionRunner及媒体能力，补重复分页、编辑/删除失败、过期Token、关闭/切书取消与回到同段落的固定回归。"
         ],
-        "nextAction": "1. 从原JsSourceReview与ReviewRule固定汇总/详情/次页/回复/赞踩/删除输入输出及失败/空语义，先记录paragraphIndex/data/id与原正文的锚定规则。\n2. 定义一次评论服务请求/状态契约，沿既有源会话、ReviewTarget与原生阅读锚点接原传统和mainJS协议；schema/JS桥字段、请求、分页和动作分批补，不能以字段保留跳过执行。\n3. 复用现有marker渲染/ReviewActionRunner及媒体能力，补重复分页、编辑/删除失败、过期Token、关闭/切书取消与回到同段落的固定回归。",
+        "nextAction": "按用户要求暂缓本包新增实现、专项准备与主动验证；保留已有功能和证据。仅在其实际缺陷阻断当前自签／书源核心链路时，由主线明确纳入最小修复；恢复扩展须用户重新安排。按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "depends-on-work",
-        "readyPreparation": [
-          "原评论协议golden、段落/id锚点与动作状态表现在可准备；不等待整媒体阶段完成才做参考。"
-        ],
+        "readyPreparation": [],
         "acceptance": [
           "同一章节summary→detail→nextPage→reply保持原paragraph/id顺序；空评论与解析/登录失败可区分。",
           "文字处理/分页/字体变化后评论仍落在原段落；投票/回复/删除的请求、返回及缓存失效逐项比对原行为。",
@@ -2065,7 +2288,17 @@
         "deferredHardware": [
           "用户自有真实评论源、登录Token/验证码、评论媒体/动作、字体或旋转后锚点及返回阅读现场。"
         ],
-        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。"
+        "verificationBoundary": "现有实现、测试定义和原版参考分别记账；只有对应源码的实际执行及原始结果才能验收。准备夹具或通过局部检查不代表整包、原核心或真机完成；继续使用原 dependsOn 和阶段出口。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "unfinished_deferred_by_user",
+        "deferredReason": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。",
+        "resumeAfterUserDeferral": {
+          "technicalReadinessBeforeDeferral": "depends-on-work",
+          "nextAction": "1. 从原JsSourceReview与ReviewRule固定汇总/详情/次页/回复/赞踩/删除输入输出及失败/空语义，先记录paragraphIndex/data/id与原正文的锚定规则。\n2. 定义一次评论服务请求/状态契约，沿既有源会话、ReviewTarget与原生阅读锚点接原传统和mainJS协议；schema/JS桥字段、请求、分页和动作分批补，不能以字段保留跳过执行。\n3. 复用现有marker渲染/ReviewActionRunner及媒体能力，补重复分页、编辑/删除失败、过期Token、关闭/切书取消与回到同段落的固定回归。",
+          "readyPreparation": [
+            "原评论协议golden、段落/id锚点与动作状态表现在可准备；不等待整媒体阶段完成才做参考。"
+          ]
+        }
       }
     },
     {
@@ -2101,11 +2334,10 @@
           "在完成的traditional/mainJs产品路径上接同一调试用例服务，不能以JSC调试成功推断原JVM产品路由已接。",
           "补合成cookie、token、认证头、正文secret脱敏和取消后重入／跨源隔离验收；测试源码存在不等于本次执行。"
         ],
-        "nextAction": "先建立原阶段／日志API、现有入口、已有测试和缺失契约矩阵，准备无真实密钥的固定样本，再随S4产品路径接线。",
+        "nextAction": "仅接核心请求与规则链路所需的阶段错误和脱敏诊断，不记录私人书源或凭据；完整编辑器、LAN／HTTP／WebSocket／MCP 等扩展仍暂缓。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "depends-on-work",
         "readyPreparation": [
-          "现在可提取锁定原调试／日志契约和固定错误样本。",
-          "核对录制关闭、500条缓冲、8KB正文截断及共享脱敏边界，复用现有redactor。"
+          "仅为当前核心链路的实际阻断缺陷准备最小复现和相关局部验证，不主动扩展本包完整功能。"
         ],
         "acceptance": [
           "自有源覆盖search/info/toc/content，保留阶段、typed错误、真实取消及恢复结果。",
@@ -2122,7 +2354,14 @@
         "deferredHardware": [
           "暂缓真实设备大源编辑键盘／分享、日志导出和实际网站登录调试；不读私人源。"
         ],
-        "verificationBoundary": "代码和测试定义不代表本次已运行；日志功能不能证明原核心路由，不允许上传实际认证数据。"
+        "verificationBoundary": "代码和测试定义不代表本次已运行；日志功能不能证明原核心路由，不允许上传实际认证数据。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "active_core_line",
+        "activeScope": "仅接核心请求与规则链路所需的阶段错误和脱敏诊断，不记录私人书源或凭据；完整编辑器、LAN／HTTP／WebSocket／MCP 等扩展仍暂缓。",
+        "previousReadyPreparationRetained": [
+          "现在可提取锁定原调试／日志契约和固定错误样本。",
+          "核对录制关闭、500条缓冲、8KB正文截断及共享脱敏边界，复用现有redactor。"
+        ]
       }
     },
     {
@@ -2154,18 +2393,15 @@
       ],
       "execution": {
         "summaryZh": "完成受控前台LAN与原HTTP、Web编辑器、WebSocket、MCP协议。",
-        "currentState": "已有NWListener、六位PIN和四类只读GET：/health、/、/book/:id、/api/sources。不是原HTTP控制器、LAN迁移、Web编辑器、调试WebSocket或十三个编目MCP工具的完成证明。",
+        "currentState": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。 此前实现与证据事实：已有NWListener、六位PIN和四类只读GET：/health、/、/book/:id、/api/sources。不是原HTTP控制器、LAN迁移、Web编辑器、调试WebSocket或十三个编目MCP工具的完成证明。",
         "remainingWork": [
           "逐原路由比对method、状态、鉴权和持久副作用，LAN校验和／断线／重复导入不能由只读列表替代。",
           "补连接所有权、start/stop、端口占用、残缺／超长请求和取消场景；验证stop后已有连接结束及数据快照线程边界。",
           "在现有服务体系接HTTP控制器、许可明确的编辑器资产、WebSocket顺序／背压／重连／终止和MCP参数／错误／进度，不建重复缓存或存储。"
         ],
-        "nextAction": "提取锁定原HTTP、WebSocket与十三MCP工具清单，给现有四GET标精确覆盖，再准备owned loopback／peer契约夹具。",
+        "nextAction": "按用户要求暂缓本包新增实现、专项准备与主动验证；保留已有功能和证据。仅在其实际缺陷阻断当前自签／书源核心链路时，由主线明确纳入最小修复；恢复扩展须用户重新安排。按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "depends-on-work",
-        "readyPreparation": [
-          "现在可完成协议清单、无真实数据client transcript、错误／断线样本和资产来源清单。",
-          "定义listener、连接、任务统一取消的前台生命周期。"
-        ],
+        "readyPreparation": [],
         "acceptance": [
           "逐原路由核对请求／响应字节、状态、鉴权失败和持久副作用，非法输入不伪成功。",
           "LAN固定文件校验和、重复导入与取消不破坏数据，断线终止owned连接和任务。",
@@ -2180,7 +2416,18 @@
         "deferredHardware": [
           "暂缓手机／iPad局域网权限、真实Wi-Fi同伴、浏览器互操作和前后台切换。"
         ],
-        "verificationBoundary": "只承诺App前台及系统允许的生命周期，不保证挂起后HTTP／WebSocket／MCP常驻；TTS的WebSocket客户端不是原调试服务。"
+        "verificationBoundary": "只承诺App前台及系统允许的生命周期，不保证挂起后HTTP／WebSocket／MCP常驻；TTS的WebSocket客户端不是原调试服务。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "unfinished_deferred_by_user",
+        "deferredReason": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。",
+        "resumeAfterUserDeferral": {
+          "technicalReadinessBeforeDeferral": "depends-on-work",
+          "nextAction": "提取锁定原HTTP、WebSocket与十三MCP工具清单，给现有四GET标精确覆盖，再准备owned loopback／peer契约夹具。",
+          "readyPreparation": [
+            "现在可完成协议清单、无真实数据client transcript、错误／断线样本和资产来源清单。",
+            "定义listener、连接、任务统一取消的前台生命周期。"
+          ]
+        }
       }
     },
     {
@@ -2209,18 +2456,15 @@
       ],
       "execution": {
         "summaryZh": "保留原自动任务语义，明确iOS只提供允许的调度与前台补偿。",
-        "currentState": "尚未在普通产品代码中确认通用原AutoTask/Cron存储、执行器和错过触发策略。已有RSS BGAppRefresh及测试是专用订阅刷新，不等于通用Cron完成。",
+        "currentState": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。 此前实现与证据事实：尚未在普通产品代码中确认通用原AutoTask/Cron存储、执行器和错过触发策略。已有RSS BGAppRefresh及测试是专用订阅刷新，不等于通用Cron完成。",
         "remainingWork": [
           "提取原任务实体、Cron边界、上下文与副作用，与source-state及书架共用持久任务模型。",
           "实现注入时钟的计算、重启、重入去重、取消及明确错过触发政策，再由前台驱动同一服务。",
           "接BGTaskScheduler机会和过期取消，保存实际执行时间与补偿结果，不把提交请求当定时执行成功。"
         ],
-        "nextAction": "先固定原Cron和错过触发参考样本，设计注入时钟、取消、持久化接口，待S4来源状态及书架契约具备后实现执行器。",
+        "nextAction": "按用户要求暂缓本包新增实现、专项准备与主动验证；保留已有功能和证据。仅在其实际缺陷阻断当前自签／书源核心链路时，由主线明确纳入最小修复；恢复扩展须用户重新安排。按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "depends-on-work",
-        "readyPreparation": [
-          "无需真机即可准备月末、闰日、时区、重启、取消和重入固定样本。",
-          "复用RSS调度生命周期经验，但不复用其数量作通用任务通过。"
-        ],
+        "readyPreparation": [],
         "acceptance": [
           "注入时钟验证边界、重启、错过触发、失败恢复、取消和不会重复写入的重入。",
           "状态原子持久化，取消／退出不伪报完成，前台补偿可复现。",
@@ -2235,7 +2479,18 @@
         "deferredHardware": [
           "暂缓BGTaskScheduler真实机会、系统终止、低电量、长期挂起及前台补偿观察。"
         ],
-        "verificationBoundary": "后台时机由iOS决定，不承诺精确Cron、后台线程常驻；桌面时钟夹具不证明硬件后台可用性。"
+        "verificationBoundary": "后台时机由iOS决定，不承诺精确Cron、后台线程常驻；桌面时钟夹具不证明硬件后台可用性。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "unfinished_deferred_by_user",
+        "deferredReason": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。",
+        "resumeAfterUserDeferral": {
+          "technicalReadinessBeforeDeferral": "depends-on-work",
+          "nextAction": "先固定原Cron和错过触发参考样本，设计注入时钟、取消、持久化接口，待S4来源状态及书架契约具备后实现执行器。",
+          "readyPreparation": [
+            "无需真机即可准备月末、闰日、时区、重启、取消和重入固定样本。",
+            "复用RSS调度生命周期经验，但不复用其数量作通用任务通过。"
+          ]
+        }
       }
     },
     {
@@ -2265,18 +2520,15 @@
       ],
       "execution": {
         "summaryZh": "复用导入、分享、浏览器和通知，验收系统边界及返回阅读。",
-        "currentState": "已有导入deep link、共享队列drainer、App onOpenURL、RSS通知与ShareExtension接线；fixed smoke和build10有明确范围，尚无完整平台入口与拒绝权限矩阵。",
+        "currentState": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。 此前实现与证据事实：已有导入deep link、共享队列drainer、App onOpenURL、RSS通知与ShareExtension接线；fixed smoke和build10有明确范围，尚无完整平台入口与拒绝权限矩阵。",
         "remainingWork": [
           "列Android openUrl、Intent与设备标识到iOS的支持、受限及不支持映射。",
           "验证文件／URL导入、扩展容器交接、重复／取消、拒绝权限和浏览器返回阅读锚点。",
           "核对script外部URL允许策略、失败和通知点击路由；仅对需要且存在的App Intents补实现，不凭菜单假定已支持。"
         ],
-        "nextAction": "整理onOpenURL、ShareExtension、共享导入队列、浏览器／通知回跳的全部入口，准备固定URL／文件和拒绝、重复、取消夹具。",
+        "nextAction": "按用户要求暂缓本包新增实现、专项准备与主动验证；保留已有功能和证据。仅在其实际缺陷阻断当前自签／书源核心链路时，由主线明确纳入最小修复；恢复扩展须用户重新安排。按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
         "readiness": "depends-on-work",
-        "readyPreparation": [
-          "立即产出入口、数据归属及错误矩阵，复用现有deep-link和共享队列测试，不新建导入系统。",
-          "先验证Simulator支持的身份与语义锚点保留。"
-        ],
+        "readyPreparation": [],
         "acceptance": [
           "固定文件、URL及扩展交接逐路由核对状态与持久副作用，坏输入不损坏既有数据。",
           "外部URL被拒、App不存在或取消有明确结果，返回后保留阅读锚点。",
@@ -2293,7 +2545,18 @@
         "deferredHardware": [
           "暂缓实际文档提供者、Files、系统分享目标、外部App、通知提示与手机／iPad回跳手势。"
         ],
-        "verificationBoundary": "Simulator路由检查和真实提供者／权限交互分开，Android特性不做无依据等价承诺。"
+        "verificationBoundary": "Simulator路由检查和真实提供者／权限交互分开，Android特性不做无依据等价承诺。 按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
+        "hardwareValidationStatus": "deferred_by_user_not_accepted",
+        "status": "unfinished_deferred_by_user",
+        "deferredReason": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。",
+        "resumeAfterUserDeferral": {
+          "technicalReadinessBeforeDeferral": "depends-on-work",
+          "nextAction": "整理onOpenURL、ShareExtension、共享导入队列、浏览器／通知回跳的全部入口，准备固定URL／文件和拒绝、重复、取消夹具。",
+          "readyPreparation": [
+            "立即产出入口、数据归属及错误矩阵，复用现有deep-link和共享队列测试，不新建导入系统。",
+            "先验证Simulator支持的身份与语义锚点保留。"
+          ]
+        }
       }
     }
   ],
@@ -3771,6 +4034,10 @@
     "stage-checkpoint-5f543a1": {
       "path": "docs/legado-ios/stage-checkpoint-5f543a1-initial.json",
       "scope": "Three saved source/tag/workflow/repository/event observations after one consolidated source-only submission; no passed case, sample, device or compatibility acceptance."
+    },
+    "core-self-signing-first-segment": {
+      "path": "docs/legado-ios/core-self-signing-first-segment.json",
+      "scope": "Actual Windows JVM38 and ordinary JAR smoke for the explicit task-bound request adapter; replacement metadata5 prepared with grammar2 and portable18. No App-route switch, actual Swift SDK result, account/sign/install, physical device or full compatibility acceptance."
     }
   },
   "retainedExistingWork": [

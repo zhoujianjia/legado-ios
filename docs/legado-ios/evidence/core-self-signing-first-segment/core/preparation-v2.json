@@ -1,0 +1,266 @@
+{
+  "schemaVersion": 1,
+  "createdAtUTC": "2026-10-20T01:00:47.590669+00:00",
+  "status": "desktop-verified-first-task-bound-request-segment-not-app-routed",
+  "summaryZh": "保留的原 AnalyzeRule 可显式创建 task-bound 生产 HTTP 环境，沿现有唯一 JVM 请求路径执行有限静态请求；关闭环境拒绝晚结果。",
+  "files": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+      "bytes": 19691,
+      "sha256": "3a5e6a04e41400e4b7b76b841f2dfb539f5799a3672762f1b6336737da7e9c05"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "bytes": 3856,
+      "sha256": "f87a2acb96ce642bcb4684871a6791bdafdfefe62323508ccd10db6279f59b3b"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRuleHttpPlatformTest.kt",
+      "bytes": 18087,
+      "sha256": "91742c567fe6143980d46943d96134b63420223c395350c8468b34b226f0733a"
+    }
+  ],
+  "unchangedReviewedInputs": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "bytes": 4714,
+      "sha256": "47f69c994ad614ba3ad1b7a047c6da0868aee0f06322c02f3ab5738a5b70f6f9"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt",
+      "bytes": 5430,
+      "sha256": "594b04a5377c8f469ff21dc9f33635038101d6d21ff033adfdd9ce9ec4d0550a"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/SourceHosts.kt",
+      "bytes": 15880,
+      "sha256": "f1c85e394aef46dcfee04db59ebdc856d9f4052399bc6fff2670164c7a5ddbbc"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/ProductionHttpTransport.kt",
+      "bytes": 10445,
+      "sha256": "a2bcb0432c02b1ac3e2ff12142bbfad82d425fd604bef50d7b927526f212a7e8"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoHttpRequestPreprocessor.kt",
+      "bytes": 7724,
+      "sha256": "47d6ff12c0a50af977160b30a737a39f2620f05b0c15c5300f51684bd7c16ebf"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+      "bytes": 37228,
+      "sha256": "aae5c57d943d62dd16d5a6be46fc398afa2cb8c8f4e89332a61b447b696e809c"
+    }
+  ],
+  "originalReference": {
+    "localArchive": "F:\\legado-master.zip",
+    "sha256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "entries": [
+      {
+        "entry": "legado-master/app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+        "bytes": 35401,
+        "sha256": "f7ba074137c8e3a847dc7bbf9465c7fd9318646c5670c144300e7959fb931a9b"
+      },
+      {
+        "entry": "legado-master/app/src/main/java/io/legado/app/help/JsExtensions.kt",
+        "bytes": 45719,
+        "sha256": "b587bd35e58898a0197abedb352a2acbe8c1a3c5c24573d77d2b7a98b6d7be6c"
+      }
+    ],
+    "scope": "只读原源码行为依据，未运行或改写原 AnalyzeUrl。"
+  },
+  "api": {
+    "factory": "LegadoRuntime.originalRuleEnvironment(RuntimeTask): RuleEnvironment (internal)",
+    "callPath": "retained AnalyzeRule → RulePlatform.request → SourceJavaHost → existing dispatchHost → ProductionHttpTransport",
+    "taskContext": "同一 RuntimeTask、deadline、Job、RuntimeSession 和现有 JVM cookie jar；distinct caller Job 取消仅在该请求期间连接到同一 task。",
+    "capabilityFailure": "现有 SourceJavaHost 的 UNSUPPORTED_CAPABILITY 转为原规则的 UnsupportedRuleCapability，不能被 ajax 伪装为成功正文。"
+  },
+  "v1EvidencePreserved": {
+    "record": {
+      "path": ".build/original-rule-http-first-segment/preparation-v1.json",
+      "bytes": 9563,
+      "sha256": "d138b16f06fa812d410b8a2801191a6d64997291641ce33a450c79255edcd646"
+    },
+    "sourceSnapshots": [
+      {
+        "path": ".build/original-rule-http-first-segment/v1-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+        "bytes": 19578,
+        "sha256": "2c52d35d19005de3cb22ea574b578391f1d2fe9228dbea11df029c941d15b79f"
+      },
+      {
+        "path": ".build/original-rule-http-first-segment/v1-sources/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+        "bytes": 3066,
+        "sha256": "14843ad978daaf3ce69014177c73e9ac6068465b340ae689493e0062552bb98a"
+      },
+      {
+        "path": ".build/original-rule-http-first-segment/v1-sources/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRuleHttpPlatformTest.kt",
+        "bytes": 15436,
+        "sha256": "552b1b5e55cf8b3c6291a9590c5d63039fb8d05cff4fdbcf85ae030cc42f848b"
+      }
+    ],
+    "focusedRaw": [
+      {
+        "path": ".build/original-rule-http-first-segment/focused-v1.log",
+        "bytes": 3720,
+        "sha256": "49b7bd9766d8c3389516a3d4060963d4cbf6622c688cd98b2d0466ca3b7e2c98"
+      },
+      {
+        "path": ".build/original-rule-http-first-segment/focused-v1.json",
+        "bytes": 788,
+        "sha256": "8ddf22138566818b7ebd647359b0765cdc30a3073c1eca8a56410f5d2edd519e"
+      }
+    ],
+    "methods": 37,
+    "executions": 37,
+    "failures": 0,
+    "meaning": "原首轮真实 37 通过不覆盖；v2 仅补 owner 生命周期检查及第 8 项回归。"
+  },
+  "lifecycleFix": {
+    "diff": {
+      "path": ".build/original-rule-http-first-segment/v1-to-v2.patch",
+      "bytes": 6519,
+      "sha256": "3624846e0bf39696fdcce269c4af231857f17170cb430e8fb7944b2e5189cf45"
+    },
+    "behaviorZh": "factory 在环境构造后绑定 ensureOpen；adapter 在入口、HTTP dispatch 前及正常返回前检查，关闭转 CancellationException，防 ajax 吞成正文。",
+    "closeBoundaryZh": "close 不承诺即时终止已运行 host，不取消共享 task/session；已运行 HTTP 继续受现有 task deadline/transport timeout 约束，但不发布关闭后的晚正文。",
+    "lateCancellationZh": "成功后 finally 解除 caller Job 回调，随后 caller.cancel 不会波及同 task 的后续请求。"
+  },
+  "actualVerification": {
+    "environment": "Windows / existing JDK21 / Gradle / --offline",
+    "newMethods": 8,
+    "newExecutions": 8,
+    "totalMethods": 38,
+    "totalExecutions": 38,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suites": [
+      {
+        "suite": "io.yuedu.legado.OriginalAnalyzeRuleTest",
+        "tests": 18,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "falseRuleDataWriteDoesNotFallThroughElvisToSource",
+          "closedCoordinatorRejectsHostCallsWhileItsSharedEnvironmentRemainsOpen",
+          "actualElementListsAndNestedJavaRuleCalls",
+          "statePrecedenceAndLocalValuesSurviveSetContent",
+          "hutoolStringBase64OverloadsKeepWhitespaceUrlSafeAndCharsetBehavior",
+          "retainedPublicScalarApiMatchesAll28OriginalAndroidObservations",
+          "noLibraryGlobalsAreInvocationLocalWhileInlineLibrarySharesBySource",
+          "bookAndChapterLargeVariableBackingIsDistinctAndRetainsOriginalReturnValues",
+          "originalClassIdentitiesAreRealAndVisibleThroughPackageLookup",
+          "cacheStringAndByteArrayBackingsRemainIndependentForTheSameKey",
+          "inlineBlockLibraryExecutesWhileActualMapLibrariesRemainUnsupported",
+          "scalarListAndUrlNormalizationStayInTheOriginalCoordinator",
+          "cachedMakeUpRuleReevaluatesCurrentJavaBook",
+          "retainedPublicJsonPathApisMatchAll36OriginalAndroidObservationsAndTypes",
+          "originalCryptoJsResourceAndSecureRandomRemainAvailable",
+          "closingEnvironmentReleasesSourceCacheAndPreventsFurtherEvaluation",
+          "platformCapabilitiesAreRejectedAndCancelledJobsRemainCancelled",
+          "sourceNamespaceAndCacheMemoryVsBackingAndSeconds"
+        ],
+        "raw": {
+          "path": ".build/original-rule-http-first-segment/focused-v2-xml/TEST-io.yuedu.legado.OriginalAnalyzeRuleTest.xml",
+          "bytes": 3168,
+          "sha256": "d71cdabd70a6bc6923884befa959366dfefd29852c61e21aa7a68179c305ef6b"
+        }
+      },
+      {
+        "suite": "io.yuedu.legado.OriginalRuleHttpPlatformTest",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "requestOptionsPreserveBodyBytesAndExplicitHeaderReplacement",
+          "taskAndCallerCancellationAbortHeldBodyWithoutReturningErrorText",
+          "taskDeadlineRemainsAuthoritativeDuringHeldResponse",
+          "environmentCloseRejectsLatePublicationAndFinishedRequestDetachesCaller",
+          "retainedRuleCallsUseProductionHttpAndKeepJvmResponseTypes",
+          "unsupportedRulesStayTypedAndNeverReachTransport",
+          "missingTaskTransportAndClosedLifetimesStayFailClosed",
+          "ordinaryIoFailureReturnsStackResponseAndNextRequestRecovers"
+        ],
+        "raw": {
+          "path": ".build/original-rule-http-first-segment/focused-v2-xml/TEST-io.yuedu.legado.OriginalRuleHttpPlatformTest.xml",
+          "bytes": 1540,
+          "sha256": "8ec674bf934a2d71320e4f298ec86e8453dc0c591eae1948fdd4e936a574ca96"
+        }
+      },
+      {
+        "suite": "io.yuedu.legado.ProductionHttpTransportTest",
+        "tests": 12,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          "mainJsFullReadingChainUsesProductionClientAndPreservesOrderedWireHeaders",
+          "expiredAbsoluteDeadlineCannotBecomeSuccessfulNetworkErrorText",
+          "connectReturnsRealJvmHeadersAndRawResponseMetadataWithoutLosingDuplicates",
+          "delayedDeadlineSchedulerCannotTurnAnIOExceptionIntoSuccessfulStackText",
+          "cancellationAfterHeadersAndCloseSessionUnblockBodyWithoutClearingLiveStateEarly",
+          "automaticLoginHeaderStaysOnItsSiteAndExplicitOverrideStillWorks",
+          "redirectCookiesAreSavedAtEachHopAndRespectPathAndDisabledJar",
+          "responseCharsetUsesHeaderThenHtmlMetaThenOriginalDetectorAndRemovesUtf8Bom",
+          "statusRetryAndEarlyCancellationUseOrdinaryFacadeWithoutNativeHost",
+          "explicitSessionOptionsDoNotPolluteSourceAndUnsupportedHostsOrUrlOptionsFailBeforeNetwork",
+          "transparentGzipDeflateAndBrotliAreDecodedButAuthoredEncodingOptsOut",
+          "legacyConstructorKeepsItsExplicitPlatformInjectionPath"
+        ],
+        "raw": {
+          "path": ".build/original-rule-http-first-segment/focused-v2-xml/TEST-io.yuedu.legado.ProductionHttpTransportTest.xml",
+          "bytes": 2269,
+          "sha256": "180523a299f192dcc27f4fc98253789cb0ddf4e3b72f8cbc9652c4cf4e97519b"
+        }
+      }
+    ],
+    "raw": [
+      {
+        "path": ".build/original-rule-http-first-segment/focused-v2.log",
+        "bytes": 3022,
+        "sha256": "685dfc0905643dbbea1e7ddcc863eb41f2b01ea7f6c248d14895f202c810f7a0"
+      },
+      {
+        "path": ".build/original-rule-http-first-segment/focused-v2.json",
+        "bytes": 788,
+        "sha256": "981c27b2d9c364f9e8d0d73b9306b6490ef778e9992e95527f60faf6854acb94"
+      }
+    ]
+  },
+  "ordinaryPayload": {
+    "record": {
+      "path": ".build/original-rule-http-first-segment/ordinary-v2.json",
+      "bytes": 7253,
+      "sha256": "2e89755a522aafaf22914a9cc373f075e90d95dcc5c30dcbc33ba3a7f5eb2db5"
+    },
+    "log": {
+      "path": ".build/original-rule-http-first-segment/ordinary-v2.log",
+      "bytes": 2985,
+      "sha256": "3a43f0fa350e916f5722870fcca548a15bdfe347990ba504f91fbcfbd5b98e17"
+    },
+    "jar": {
+      "path": ".build/original-rule-http-first-segment/ordinary-v2-legado-runtime.jar",
+      "bytes": 10266324,
+      "sha256": "e440df461cdcf221cdaa4674dcb9440647d76e219e19f015844eff421712973b"
+    },
+    "engineTestsFlag": false,
+    "requiredClasses": [
+      "io/yuedu/legado/originalrule/ProductionRulePlatform.class",
+      "io/legado/app/model/analyzeRule/AnalyzeRule.class"
+    ],
+    "junitOrProjectTestClasses": [],
+    "byteEqualProvenanceAndNoticesCount": 22,
+    "scopeZh": "普通 runtimeJar 与 runtimeSmoke 实际通过，没有 includeEngineTests，没有重跑全套；逐项原件 hash 在 ordinary-v2.json，不是 iOS/JNI 执行。"
+  },
+  "limitsZh": [
+    "未改变 App 传统书源的 Swift/JSC 路由；新工厂是供后续原流程显式调用的生产请求接点，没有新增 execute operation。",
+    "原 AnalyzeUrl 的完整动态解析、请求编排、WebView/Cronet/媒体、代理、限流、DNS、bodyJs 等未迁移；继续由现有限定适配器明确拒绝未支持输入。",
+    "RuleSource 环境缓存的登录头、变量和 Cookie API 尚未与 RuntimeSession 状态统一；测试中的既有 session 请求头不能当作原源状态同步已完成。",
+    "普通网络 I/O 错误保留现有 connect 的堆栈响应约定；取消和 deadline 抛取消，未新增重试、存储、缓存或 Swift 回退。",
+    "本批只改 3 个列明源码路径；未编辑 JVM build.gradle/依赖锁/vendor manifest 或 notices。普通 JAR 对应 provenance/notices 与当前冻结原件逐字节相同；不把打包验收当 iOS/JNI 执行。",
+    "未运行 iOS、Android、真机、云测、真实书源或完整阅读链；未切 App 路由，不宣称完整 AnalyzeRule/AnalyzeUrl 兼容。"
+  ],
+  "independentReview": "根与 UI agent 已参与静态复核，最终独立结论由根另行确认；此记录不代替独审。"
+}

@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T01:02:39.340454+00:00",
+  "status": "pure-metadata-preflight-source-preparation-SDK-execution-pending",
+  "files": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalReplacementPolicy.swift",
+      "bytes": 14675,
+      "sha256": "8d8c3c6f890d5bfc81ac9501ac59c3a9cb2a7049e075dc98f009653cdb534541"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalReplacementPolicyTests.swift",
+      "bytes": 12456,
+      "sha256": "c6e0b9e146c12e605f56a38b3004cd53296092f78ca984be8bc76484a705ad90"
+    }
+  ],
+  "contract": {
+    "inputTrust": "platformAdapterAssertion is solely a future real adapter prerequisite, not proof created by constructing a value. No real production adapter or account/certificate/profile inspection was added.",
+    "inputInventory": "Complete supported application/widget/share identity inventory; each role and bundle ID once, explicit parent and prefix relationships, same Team within each snapshot and exact mapping between snapshots. Extra/unknown extensions must not be omitted by the future adapter.",
+    "identity": "Opaque non-secret account binding plus per-role Team/App-ID-prefix/application-identifier comparisons; Team and App ID prefix are not assumed identical.",
+    "entitlements": "Known arrays required; nil unknown is rejected, empty known arrays are allowed. App Group sets match; keychain arrays including the default first group match. Duplicate/wildcard/invalid or oversized groups reject.",
+    "renewalVersionScope": "Same version AND build deliberately allowed. Any different per-role version/build is outside this narrow renewal policy, not a judgment that all upgrades/downgrades are prohibited.",
+    "validity": "Caller provides now. Each candidate interval is finite, ordered and valid at notBefore-inclusive/expiresAt-exclusive evaluation. An old installed authorization expiry does not prevent recovery identity comparison.",
+    "result": "metadataCompatible ReplacementPreflightPlan or fixed enum rejection. The plan binds both input snapshot IDs, three role mappings and earliest candidate authorization expiry. It executes nothing.",
+    "gates": "Authenticated transport, real signing adapter, revalidation of actual candidate/identities at use, installation and data-retention verification remain required; this does not integrate or bypass signerIntegration.",
+    "dataBounds": {
+      "bundles": 3,
+      "groupsPerKindPerBundle": 32,
+      "identifierUTF8Bytes": 255,
+      "versionBuildTokenBytes": 64,
+      "accountBindingBytes": 128
+    },
+    "rejectionPrivacy": "Only fixed snapshot kinds/roles/field categories/reasons, no account or Team values.",
+    "effects": "Pure synchronous value comparison: no IO, clock access, logging, Task/queue, persistence, signer/install call, UI or probe mutation."
+  },
+  "plannedTests": {
+    "suite": "SelfRenewalReplacementPolicyTests",
+    "methods": [
+      "rejectsAccountTeamAndBundleMappingChanges",
+      "rejectsMissingDuplicateOrIncompleteBundleInventory",
+      "rejectsChangedOrUnknownEntitlementGroups",
+      "rejectsUnverifiedExpiredOrInvalidCandidateMaterial",
+      "sameVersionAndBuildYieldOnlyMetadataPreflight"
+    ],
+    "methodIdentities": [
+      "SelfRenewalReplacementPolicyTests/rejectsAccountTeamAndBundleMappingChanges()",
+      "SelfRenewalReplacementPolicyTests/rejectsMissingDuplicateOrIncompleteBundleInventory()",
+      "SelfRenewalReplacementPolicyTests/rejectsChangedOrUnknownEntitlementGroups()",
+      "SelfRenewalReplacementPolicyTests/rejectsUnverifiedExpiredOrInvalidCandidateMaterial()",
+      "SelfRenewalReplacementPolicyTests/sameVersionAndBuildYieldOnlyMetadataPreflight()"
+    ],
+    "methodCount": 5,
+    "expectedExecutions": 5,
+    "parameterized": false,
+    "actualExecutions": 0,
+    "inputs": "Owned synthetic adapter assertions only; no cryptographic, certificate/profile, account or device verification."
+  },
+  "actualVerification": {
+    "grammarFiles": 2,
+    "grammarPassed": true,
+    "grammar": {
+      "path": ".build/renewal-discovery/replacement-policy-preparation/grammar-final.json",
+      "bytes": 646,
+      "sha256": "f8633d39391d9c1066f96c4852aca7725593184b82c6a2a3fbedc885eb8fc448"
+    },
+    "methodIdentitySourceCheck": true,
+    "purePathStaticScreen": true,
+    "SwiftTypechecks": 0,
+    "SwiftSDKBuilds": 0,
+    "SwiftTests": 0,
+    "iOSTests": 0,
+    "newNetworkOrCIOrGitOperationsByFreezer": 0
+  },
+  "primaryReferences": [
+    {
+      "url": "https://developer.apple.com/library/archive/technotes/tn2311/_index.html",
+      "path": ".build/renewal-discovery/replacement-policy-preparation/primary/TN2311-App-ID-prefixes.html",
+      "bytes": 19144,
+      "sha256": "96dc0fd1ddb8ace195f9b8c56d129c504abf917931c623e8e9d0ac73467dcd02"
+    },
+    {
+      "url": "https://developer.apple.com/documentation/security/sharing-access-to-keychain-items-among-a-collection-of-apps.md",
+      "path": ".build/renewal-discovery/replacement-policy-preparation/primary/Keychain-sharing.md",
+      "bytes": 12237,
+      "sha256": "e3b14b555e0ccef40580273a1a5e3dacfe16d3c6fe7e36ea2458451225118c6b"
+    }
+  ],
+  "acceptedRealityClaims": {
+    "cryptographicVerificationPerformed": false,
+    "deviceVerificationPerformed": false,
+    "signingPerformed": false,
+    "installationPerformed": false,
+    "renewalProven": false,
+    "automaticSelfRenewalImplemented": false
+  },
+  "remaining": [
+    "Independent review of frozen sources",
+    "Actual Apple SDK compilation and five source-bound real Swift test executions",
+    "Future real platform adapters must establish trustworthy immutable snapshots and complete inventories before use",
+    "Authenticated install transport, signer, installation and data preservation remain separate unimplemented/unaccepted gates"
+  ]
+}

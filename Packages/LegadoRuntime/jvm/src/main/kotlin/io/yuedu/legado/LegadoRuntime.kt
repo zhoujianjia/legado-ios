@@ -14,6 +14,8 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import org.htmlunit.corejs.javascript.Function
 import org.htmlunit.corejs.javascript.ScriptableObject
+import io.yuedu.legado.originalrule.ProductionRulePlatform
+import io.yuedu.legado.originalrule.RuleEnvironment
 
 /** Synchronous JNI facade. Call execute on a worker thread; cancel is safe on another thread. */
 object LegadoRuntime {
@@ -233,6 +235,19 @@ object LegadoRuntime {
             result = JsonParser.parseString(RhinoScriptEngine.eval("JSON.stringify(book)", scope, task.job).toString())
         }
         return MainJsResultMarshaller.marshal(operation, result, preparedInput, source)
+    }
+
+    /**
+     * Task-bound HTTP for the retained coordinator. This does not select it as the
+     * App's traditional-source route or replace the still-unported AnalyzeUrl.
+     */
+    internal fun originalRuleEnvironment(task: RuntimeTask): RuleEnvironment {
+        task.ensureActiveForRuntime()
+        check(!task.session.closed.get()) { "Session is closed" }
+        require(task.session.options.usesJvmHttp) { "Original-rule requests require the JVM HTTP transport" }
+        lateinit var environment: RuleEnvironment
+        environment = RuleEnvironment(ProductionRulePlatform(task, ::dispatchHost) { environment.ensureOpen() })
+        return environment
     }
 
     private fun dispatchHost(task: RuntimeTask, operation: String, request: JsonObject): JsonObject {

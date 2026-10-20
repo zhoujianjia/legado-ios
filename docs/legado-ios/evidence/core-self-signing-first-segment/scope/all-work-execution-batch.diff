@@ -1,0 +1,207 @@
+--- all-work-execution-batch.before
++++ all-work-execution-batch.after
+@@ -1,10 +1,10 @@
+ {
+   "schemaVersion": 1,
+-  "updatedOn": "2026-10-19",
++  "updatedOn": "2026-10-20",
+   "timeZone": "Asia/Shanghai",
+   "kind": "existing-plan-execution-and-restore-integrity-batch",
+   "auditedSourceCommit": "5616e76978938c9d89938a05f19d2b5abc40a751",
+-  "requestZh": "除了书源兼容，逐项核清其余未完成工作，完善原有计划并执行。",
++  "requestZh": "先做自签和核心功能；其余未完成／按用户要求暂缓，暂不做任何真机验证。",
+   "canonicalPlan": "docs/legado-ios/completion-plan.json",
+   "scope": {
+     "stages": 8,
+@@ -23,45 +23,104 @@
+       "acceptance",
+       "evidence",
+       "deferredHardware",
+-      "verificationBoundary"
+-    ]
++      "verificationBoundary",
++      "status",
++      "hardwareValidationStatus",
++      "deferredReason"
++    ],
++    "currentActiveLines": [
++      "self-signing",
++      "traditional-source-core"
++    ],
++    "activeWorkpackages": [
++      "plan-and-evidence-refresh",
++      "reading-position-write-integrity",
++      "rule-scope-wait-cancellation",
++      "automatic-renewal-feasibility",
++      "runtime-core",
++      "source-schema",
++      "traditional-rules",
++      "url-http",
++      "source-state",
++      "traditional-reading-pipeline",
++      "cookie-browser-login",
++      "host-adapters",
++      "reader-layout",
++      "reader-library",
++      "reader-online-storage",
++      "source-debug-logs"
++    ],
++    "unfinishedDeferredWorkpackages": [
++      "reading-quick-panel-accessibility",
++      "reading-experience-design",
++      "reading-performance-and-prefetch",
++      "license-and-source-closure",
++      "cloud-validation-and-final-delivery",
++      "main-js-product",
++      "local-formats",
++      "annotations-dictionary",
++      "backup-webdav",
++      "source-type-routing",
++      "rss",
++      "tts",
++      "media",
++      "paragraph-reviews",
++      "lan-web-services",
++      "automatic-tasks",
++      "platform-integration"
++    ],
++    "physicalDeviceValidationCurrentlyDeferred": true,
++    "askUserForDeviceTestsNow": false
+   },
+   "unfinishedAreasZh": [
+-    "基础可靠性：进度并发写入、原协调器接线后的取消及普通产品桥生命周期；快捷面板本次 iOS 验收。",
+-    "阅读体验：字体文件事务、夜间与辅助功能、长章与图片锚点、旋转／分屏、冷启动和峰值内存测量。",
+-    "原核心兼容：schema 默认值与无损往返、传统规则与 URL／HTTP、持久状态、完整阅读链路、登录及宿主；有限 mainJS 扩展。",
+-    "书库和文件：统计及分组重开、离线中断／清理冲突、换源、本地格式损坏用例；UMD／MOBI 尚未实现。",
+-    "批注和备份：加工正文锚点、字典原规则、完整／选择性／加密备份与 WebDAV 错误保护。",
+-    "扩展能力：五类源分流、RSS 原规则、HTTP 朗读、音频／视频、段评协议与动作。",
+-    "编辑与服务：原核心调试／脱敏、LAN／HTTP／编辑器／WebSocket／MCP、持久 Cron 与前台补跑、导入及系统回跳。",
+-    "交付：对应源码和许可材料闭合、无书源最终候选；手机自续签安装通道仍未证明。"
++    "当前主动：自签独立主线；传统书源兼容／请求／搜索详情目录正文链路、必要源状态持久化和进度可靠性。",
++    "未完成／按用户要求暂缓：字体外观、UMD／MOBI、本地格式扩展、批注字典、完整备份和统计／下载／换源等外围扩展。",
++    "未完成／按用户要求暂缓：RSS／TTS／媒体／段评、五类源扩展、LAN／MCP／Cron、完整编辑器和扩展平台入口。",
++    "最终材料与全功能交付暂缓，但原许可、来源和数据保护边界继续遵守；已有实现和真实证据不删除、不改成未实现。",
++    "所有真机验证当前不执行、不向用户索取；保留未来门槛，不能记作通过。"
+   ],
+   "currentImplementation": {
+     "priority": "P0",
+-    "workpackage": "backup-webdav",
+-    "problem": "Existing restore writes downloaded bytes before validating JSON, swallows several transfer/decode failures and may report success after a partial restore.",
+-    "status": "code_and_tests_reviewed_pending_swift_and_ios_execution",
+-    "requiredBehavior": [
+-      "Validate manifest and every present component before changing existing destination files; explicit 404 is the only optional absence.",
+-      "Propagate authentication, transfer and decode errors; no-data backup must fail.",
+-      "Coordinate existing store writers asynchronously; reject new edits after the prepare/pause boundary and publish only validated committed values. Download-phase overwrite semantics remain as before.",
+-      "Copy originals to owned temporary recovery files, rollback ordinary commit failures including a writer that changes bytes then throws, and retain recovery material if rollback fails."
+-    ],
+-    "boundary": "Current native three-file backup only; no crash/kill cross-file atomicity, full/encrypted backup or full original backup compatibility is claimed. Swift/iOS execution is pending.",
+-    "focusedTests": {
+-      "path": "Tests/iOS/yuedu appTests/WebDAVRestoreIntegrityTests.swift",
+-      "methods": 12,
+-      "parameterizedExecutions": 27,
+-      "actualExecutionPassed": false,
+-      "scope": "Owned injected three-file transactions plus the real BookStore writer boundary; manifest conflict choices. Source/Replace production leases, cancellation and real WebDAV servers remain unexecuted."
+-    },
+-    "preservedBehavior": [
+-      "Modern stripped backups reuse the existing locked TOC sidecar reader for chapter summaries before staging.",
+-      "Legacy inline chapter bytes remain in staged metadata until the existing writer flushes their sidecar before migrating the metadata; no sidecar crash transaction is claimed.",
+-      "TXT bookmark migration rejects the active restore writer boundary.",
+-      "Pending manifest conflict does not show a success alert; conflict-resolution errors reach the existing error UI.",
+-      "No source, cache, position or parser route was duplicated or switched."
+-    ]
++    "status": "active_scope_changed_by_user_not_feature_completion",
++    "activeLines": [
++      {
++        "id": "self-signing-lane",
++        "initialWorkpackage": "automatic-renewal-feasibility",
++        "next": [],
++        "scopeZh": "自签独立主线；仅推进无需真机的可实现准备，保留传输／授权／签名安装门槛。"
++      },
++      {
++        "id": "core-source-lane",
++        "initialWorkpackage": "runtime-core",
++        "next": [
++          "traditional-rules",
++          "url-http",
++          "source-state",
++          "traditional-reading-pipeline"
++        ],
++        "supportingWorkpackages": [
++          "reading-position-write-integrity",
++          "source-schema",
++          "cookie-browser-login",
++          "host-adapters",
++          "reader-layout",
++          "reader-library",
++          "reader-online-storage",
++          "source-debug-logs"
++        ],
++        "scopeZh": "既定原 JVM 传统书源兼容、完整请求／阅读链路、必要状态持久化与阅读进度可靠性；不擅切引擎。"
++      }
++    ],
++    "immediateBatch": [
++      "automatic-renewal-feasibility",
++      "runtime-core",
++      "traditional-rules",
++      "url-http"
++    ],
++    "coreGoalZh": "既定传统书源原核心的请求与完整阅读链路、必要状态持久化和阅读进度可靠性；不擅切引擎。",
++    "selfSigningBoundaryZh": "自签独立优先，当前可推进的非真机准备不等于通道、授权、签名安装或自动续签已实现。",
++    "previousWebDAVCodeAndEvidencePreserved": true,
++    "physicalDeviceValidationStatus": "deferred_by_user_not_accepted"
+   },
+   "actualCloudFailure": {
+     "runId": 39249523428,
+@@ -105,7 +164,7 @@
+     "smokeShellSyntax": "passed_with_Git_Bash_bash_n",
+     "gitDiffCheck": "passed"
+   },
+-  "nextCheckpoint": "The bounded discovery main app compiled and linked in Debug Simulator, but test-target compilation stopped before execution. Submit the source-reviewed typed-fixture and benchmark import repairs together, and prepare the requested build12 candidate from that same fixed source. Font transactions remain a separate prepared/reviewed batch; no complete non-device acceptance is claimed.",
++  "nextCheckpoint": "仅围绕相关自签与书源核心实际改动组织集中非真机检查，复用已提交任务的源码绑定证据；不自动开展暂缓扩展、材料批次或真机测试，不据此制作新 IPA。",
+   "newIPAProduced": false,
+   "privateSourceAccessed": false,
+   "physicalDeviceValidated": false,
+@@ -194,5 +253,43 @@
+     "newProductionFilesChangedByRepair": false,
+     "mainAppDebugSimulatorCompiledAndLinked": true,
+     "automaticSelfRenewalVerified": false
++  },
++  "previousImplementationRetained": {
++    "priority": "P0",
++    "workpackage": "backup-webdav",
++    "problem": "Existing restore writes downloaded bytes before validating JSON, swallows several transfer/decode failures and may report success after a partial restore.",
++    "status": "code_and_tests_reviewed_pending_swift_and_ios_execution",
++    "requiredBehavior": [
++      "Validate manifest and every present component before changing existing destination files; explicit 404 is the only optional absence.",
++      "Propagate authentication, transfer and decode errors; no-data backup must fail.",
++      "Coordinate existing store writers asynchronously; reject new edits after the prepare/pause boundary and publish only validated committed values. Download-phase overwrite semantics remain as before.",
++      "Copy originals to owned temporary recovery files, rollback ordinary commit failures including a writer that changes bytes then throws, and retain recovery material if rollback fails."
++    ],
++    "boundary": "Current native three-file backup only; no crash/kill cross-file atomicity, full/encrypted backup or full original backup compatibility is claimed. Swift/iOS execution is pending.",
++    "focusedTests": {
++      "path": "Tests/iOS/yuedu appTests/WebDAVRestoreIntegrityTests.swift",
++      "methods": 12,
++      "parameterizedExecutions": 27,
++      "actualExecutionPassed": false,
++      "scope": "Owned injected three-file transactions plus the real BookStore writer boundary; manifest conflict choices. Source/Replace production leases, cancellation and real WebDAV servers remain unexecuted."
++    },
++    "preservedBehavior": [
++      "Modern stripped backups reuse the existing locked TOC sidecar reader for chapter summaries before staging.",
++      "Legacy inline chapter bytes remain in staged metadata until the existing writer flushes their sidecar before migrating the metadata; no sidecar crash transaction is claimed.",
++      "TXT bookmark migration rejects the active restore writer boundary.",
++      "Pending manifest conflict does not show a success alert; conflict-resolution errors reach the existing error UI.",
++      "No source, cache, position or parser route was duplicated or switched."
++    ]
++  },
++  "userPriorityAdjustment": {
++    "requestedOn": "2026-10-20",
++    "scopeOnly": true,
++    "newProductionImplementationClaimed": false,
++    "existingPassedReliabilityNotReset": true,
++    "historicalChecksAndFailuresPreserved": true,
++    "deferredReason": "未完成／按用户要求暂缓：当前只主动推进自签与传统书源核心链路；本包不在本轮主动开发范围。已有代码、真实通过／失败证据及原验收门槛保留，暂缓不等于未实现，也不等于通过。",
++    "hardwareBoundary": "按用户最新要求，当前不执行任何真机验证，也不向用户索取安装、报告或测试；原真机验收项仅保留为未来未完成门槛，不得记为通过。",
++    "localBeforeAfterRecordDirectory": ".build/renewal-discovery/user-priority-core-self-signing-20261020",
++    "validationCommand": "python -B scripts/reader-experience/check-completion-plan.py --require-execution"
+   }
+ }

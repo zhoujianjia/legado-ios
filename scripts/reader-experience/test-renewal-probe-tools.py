@@ -43,7 +43,8 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         for path, data in self.originals.items():
             self.write(self.root / path, data)
         self.environment = {"GITHUB_SHA": SOURCE, "GITHUB_REF_NAME": "reader-renewal-aaaaaaa",
-                            "LEGADO_RUNTIME_SOURCE_ONLY": "1", "YUEDU_DEST": "id=synthetic-simulator"}
+                            "LEGADO_RUNTIME_SOURCE_ONLY": "1", "YUEDU_DEST": "id=synthetic-simulator",
+                            "YUEDU_RENEWAL_SELECTION": "all"}
 
     def write(self, path, data):
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -100,7 +101,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             "CONFIGURATION": "Debug", "SWIFT_VERSION": "5.0", "PLATFORM_NAME": "iphonesimulator",
             "PRODUCT_BUNDLE_IDENTIFIER": smoke.config.MAIN_BUNDLE, "TARGET_BUILD_DIR": str(app.parent),
             "FULL_PRODUCT_NAME": app.name}}])
-        for group in probe.EXPECTED_CASES:
+        for group in probe.selected_cases():
             count = len(probe.EXPECTED_CASES[group])
             self.write_json(group + "-summary.json", {"totalTestCount": count, "passedTests": count,
                                                       "failedTests": 0, "skippedTests": 0})
@@ -134,11 +135,13 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(audit["expectedTrackedChanges"], [smoke.INFO])
             smoke.require_source_stamp(plistlib.loads((self.root / smoke.INFO).read_bytes()), SOURCE)
             self.assertEqual(record["sourceCommit"], SOURCE)
+            self.assertEqual(record["selectionMode"], "all")
             self.assertEqual(len(record["intendedTests"]["unit"]), 8)
             self.assertEqual(len(record["intendedTests"]["discovery"]), 16)
+            self.assertEqual(len(record["intendedTests"]["replacement"]), 5)
             self.assertEqual(len(record["intendedTests"]["ui"]), 1)
             paths = {item["path"] for item in record["sourceInputs"]}
-            self.assertEqual(len(record["sourceInputs"]), 32)
+            self.assertEqual(len(record["sourceInputs"]), 34)
             self.assertTrue({"scripts/reader-experience/inspect-renewal-report.py",
                              "scripts/reader-experience/renewal-report-schema1.py",
                              "scripts/reader-experience/test-inspect-renewal-report.py"} <= paths)
@@ -195,6 +198,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(result["status"], "passed")
             self.assertEqual(result["targetedTests"]["unit"]["totalTestCount"], 8)
             self.assertEqual(result["targetedTests"]["discovery"]["totalTestCount"], 16)
+            self.assertEqual(result["targetedTests"]["replacement"]["totalTestCount"], 5)
             self.assertEqual(result["targetedTests"]["ui"]["totalTestCount"], 1)
             self.assertEqual(result["executionPlatform"], "ios-simulator")
             for key in ("iphoneTransportVerified", "selfRenewalVerified", "unattendedRenewalVerified",
@@ -205,6 +209,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(result["companionAppsAbsent"], "notMeasured")
             self.assertEqual(result["evidenceSHA256"]["unit-tests.json"], smoke.config.digest(self.work / "unit-tests.json"))
             self.assertEqual(result["evidenceSHA256"]["discovery-tests.json"], smoke.config.digest(self.work / "discovery-tests.json"))
+            self.assertEqual(result["evidenceSHA256"]["replacement-tests.json"], smoke.config.digest(self.work / "replacement-tests.json"))
             self.assertEqual(result["builtDiscoveryMetadata"]["bonjourServices"], list(probe.BONJOUR_SERVICES))
             self.assertEqual(len(result["builtDiscoveryMetadata"]["localizedUsageDescriptions"]), 5)
             self.assertEqual(next(item for item in result["sourceInputs"] if item["path"] == smoke.INFO)["sha256"],
@@ -369,6 +374,65 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             with self.subTest(encoded=encoded):
                 self.write(path, ('"' + probe.USAGE_KEY + '" = ' + encoded + ';\n').encode())
                 self.assertEqual(probe.decoded_strings_value(path, probe.USAGE_KEY), expected)
+
+    def test_replacement_selection_requires_only_its_five_exact_cases_and_never_accepts_unselected_groups(self):
+        with self.context(), patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": "replacement"}):
+            self.built_fixture()
+            inputs = smoke.read_json(self.work / "source-inputs.json")
+            self.assertEqual(inputs["selectionMode"], "replacement")
+            self.assertEqual(inputs["intendedTests"], {"replacement": sorted(probe.EXPECTED_CASES["replacement"])})
+            for group in ("unit", "discovery", "ui"):
+                self.assertFalse((self.work / (group + "-summary.json")).exists())
+                self.assertFalse((self.work / (group + "-tests.json")).exists())
+                # Even unrelated leftover files cannot become accepted test evidence.
+                self.write(self.work / (group + "-summary.json"), b"not selected; not JSON")
+                self.write(self.work / (group + "-tests.json"), b"not selected; not JSON")
+            result = probe.result(self.work)
+            self.assertEqual(result["selectionMode"], "replacement")
+            self.assertEqual(set(result["targetedTests"]), {"replacement"})
+            self.assertEqual(result["targetedTests"]["replacement"]["totalTestCount"], 5)
+            self.assertEqual(set(result["unselectedTestGroups"]), {"unit", "discovery", "ui"})
+            with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": "all"}), \
+                    self.assertRaisesRegex(ValueError, "source-input audit"):
+                probe.result(self.work)
+            for group in result["unselectedTestGroups"]:
+                self.assertNotIn(group + "-summary.json", result["evidenceSHA256"])
+                self.assertNotIn(group + "-tests.json", result["evidenceSHA256"])
+            for suffix in ("-summary.json", "-tests.json"):
+                path = self.work / ("replacement" + suffix)
+                original = path.read_bytes()
+                path.unlink()
+                with self.assertRaises(FileNotFoundError):
+                    probe.result(self.work)
+                self.write(path, original)
+            tree = self.tree("replacement")
+            tree["testNodes"][0]["children"][0]["nodeIdentifier"] = "OtherTests/looksPassed()"
+            self.write_json("replacement-tests.json", tree)
+            with self.assertRaisesRegex(ValueError, "Unexpected"):
+                probe.result(self.work)
+
+    def test_selection_rejects_invalid_values_before_prepare_and_prepare_result_mode_changes(self):
+        with self.context():
+            for mode in ("", "Replacement", "unit", "all,replacement"):
+                with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": mode}), \
+                        patch.object(smoke, "prepare") as prepare, self.assertRaisesRegex(ValueError, "YUEDU_RENEWAL_SELECTION"):
+                    probe.prepare(self.work)
+                prepare.assert_not_called()
+                self.assertFalse((self.work / "source-inputs.json").exists())
+            with patch.dict(os.environ):
+                os.environ.pop("YUEDU_RENEWAL_SELECTION")
+                self.assertEqual(probe.selection_mode(), "all")
+            self.built_fixture()
+            original = smoke.read_json(self.work / "source-inputs.json")
+            with patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": "replacement"}), \
+                    self.assertRaisesRegex(ValueError, "source-input audit"):
+                probe.result(self.work)
+            changed = copy.deepcopy(original)
+            changed["selectionMode"] = "replacement"
+            self.write_json("source-inputs.json", changed)
+            with self.assertRaisesRegex(ValueError, "source-input audit"):
+                probe.result(self.work)
+            self.write_json("source-inputs.json", original)
 
 
 if __name__ == "__main__":

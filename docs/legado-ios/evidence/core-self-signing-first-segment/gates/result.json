@@ -1,0 +1,114 @@
+{
+  "status": "passed",
+  "commands": [
+    {
+      "name": "renewal-evidence-guards",
+      "command": [
+        "C:\\Python312\\python.exe",
+        "-B",
+        "scripts/reader-experience/test-renewal-probe-tools.py",
+        "-v"
+      ],
+      "exitCode": 0,
+      "logs": [
+        {
+          "path": ".build/selfsign-core-gates-20261020/v2/renewal-evidence-guards.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".build/selfsign-core-gates-20261020/v2/renewal-evidence-guards.stderr",
+          "bytes": 3438,
+          "sha256": "63f41b846878cc73f78e28968c150437fdfad1f5d3873cba04e0845d3957b634"
+        }
+      ]
+    },
+    {
+      "name": "renewal-shell-syntax",
+      "command": [
+        "D:/app/Git/bin/bash.exe",
+        "-n",
+        "scripts/reader-experience/renewal-probe-tests.sh"
+      ],
+      "exitCode": 0,
+      "logs": [
+        {
+          "path": ".build/selfsign-core-gates-20261020/v2/renewal-shell-syntax.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".build/selfsign-core-gates-20261020/v2/renewal-shell-syntax.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "name": "renewal-workflow-lint",
+      "command": [
+        "F:\\yuedu-reader\\.tools\\actionlint\\actionlint.exe",
+        "-shellcheck=",
+        ".github/workflows/reader-renewal-probe.yml"
+      ],
+      "exitCode": 0,
+      "logs": [
+        {
+          "path": ".build/selfsign-core-gates-20261020/v2/renewal-workflow-lint.stdout",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".build/selfsign-core-gates-20261020/v2/renewal-workflow-lint.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    }
+  ],
+  "files": [
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "bytes": 18672,
+      "sha256": "c44c710252a74ee4b94a0525589e0cd22975321b4ea6bcb9ccb45a0989de3e11"
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "bytes": 26076,
+      "sha256": "e7ad93e4db550d46e72259a005b24f1c0b7dd3d963f385b703086b2861e09d66"
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tests.sh",
+      "bytes": 4385,
+      "sha256": "29eecb7210eab95addc90294dae58ec1c5e96e1a5891424ab60573872d6dc36a"
+    },
+    {
+      "path": ".github/workflows/reader-renewal-probe.yml",
+      "bytes": 4620,
+      "sha256": "3e63a852375e8163f226f210ccbf2b58638e5533daad5e92f5d922fe3c63d4eb"
+    }
+  ],
+  "portableGuardMethods": 18,
+  "guardSuiteParentEnvironmentSelection": "replacement",
+  "baseSyntheticContextSelection": "all",
+  "sourceInputs": {
+    "path": ".build/selfsign-core-gates-20261020/v2/source-input-inventory.json",
+    "sha256": "b3547e97ae321863b3f9f18bffd22e28cae14fd5b7d67ce5000ac44c72834c38",
+    "count": 34,
+    "sourceCommitBound": false
+  },
+  "availableAllModeCases": {
+    "unit": 8,
+    "discovery": 16,
+    "replacement": 5,
+    "ui": 1
+  },
+  "workflowSelection": "replacement",
+  "plannedActualWorkflowCases": {
+    "replacement": 5
+  },
+  "actualSwiftOrIOSTestExecutions": 0,
+  "actualSDKBuilds": 0,
+  "GitOrNetworkOrCIUsed": false,
+  "oldRootV1EvidenceUnchanged": true
+}

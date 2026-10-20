@@ -4,6 +4,11 @@ set -euo pipefail
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 REPO_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
 WORK="$REPO_DIR/.build/reader-renewal-probe"
+export YUEDU_RENEWAL_SELECTION=${YUEDU_RENEWAL_SELECTION-all}
+case "$YUEDU_RENEWAL_SELECTION" in
+  all|replacement) ;;
+  *) echo 'YUEDU_RENEWAL_SELECTION must be all or replacement.' >&2; exit 2 ;;
+esac
 [[ $(uname -s) == Darwin ]] || { echo 'Renewal probe tests require macOS/Xcode.' >&2; exit 2; }
 mkdir -p "$WORK"
 export DEVELOPER_DIR=${DEVELOPER_DIR:-$(bash "$REPO_DIR/scripts/sim.sh" xcode)}
@@ -26,27 +31,38 @@ ARGS=(
 )
 # Only local Simulator ad-hoc signing permits the XCTest hosts to launch. No
 # developer account, device provisioning or runtime payload is involved.
-bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/unit-tests.log" -t 2700 -- \
-  "${ARGS[@]}" -resultBundlePath "$WORK/unit.xcresult" \
-  -only-testing:'yuedu appTests/SelfRenewalTransportProbeTests'
-xcrun xcresulttool get test-results summary --path "$WORK/unit.xcresult" > "$WORK/unit-summary.json"
-xcrun xcresulttool get test-results tests --path "$WORK/unit.xcresult" > "$WORK/unit-tests.json"
-python3 "$SCRIPT_DIR/renewal-probe-tools.py" verify-tests --group unit \
-  --summary "$WORK/unit-summary.json" --tests "$WORK/unit-tests.json"
-bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/discovery-tests.log" -t 1200 -- \
-  "${ARGS[@]}" -resultBundlePath "$WORK/discovery.xcresult" \
-  -only-testing:'yuedu appTests/SelfRenewalDiscoveryProbeTests'
-xcrun xcresulttool get test-results summary --path "$WORK/discovery.xcresult" > "$WORK/discovery-summary.json"
-xcrun xcresulttool get test-results tests --path "$WORK/discovery.xcresult" > "$WORK/discovery-tests.json"
-python3 "$SCRIPT_DIR/renewal-probe-tools.py" verify-tests --group discovery \
-  --summary "$WORK/discovery-summary.json" --tests "$WORK/discovery-tests.json"
-bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/ui-tests.log" -t 1200 -- \
-  "${ARGS[@]}" -resultBundlePath "$WORK/ui.xcresult" \
-  -only-testing:'yuedu appUITests/SelfRenewalProbeUITests'
-xcrun xcresulttool get test-results summary --path "$WORK/ui.xcresult" > "$WORK/ui-summary.json"
-xcrun xcresulttool get test-results tests --path "$WORK/ui.xcresult" > "$WORK/ui-tests.json"
-python3 "$SCRIPT_DIR/renewal-probe-tools.py" verify-tests --group ui \
-  --summary "$WORK/ui-summary.json" --tests "$WORK/ui-tests.json"
+if [[ $YUEDU_RENEWAL_SELECTION == all ]]; then
+  bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/unit-tests.log" -t 2700 -- \
+    "${ARGS[@]}" -resultBundlePath "$WORK/unit.xcresult" \
+    -only-testing:'yuedu appTests/SelfRenewalTransportProbeTests'
+  xcrun xcresulttool get test-results summary --path "$WORK/unit.xcresult" > "$WORK/unit-summary.json"
+  xcrun xcresulttool get test-results tests --path "$WORK/unit.xcresult" > "$WORK/unit-tests.json"
+  python3 "$SCRIPT_DIR/renewal-probe-tools.py" verify-tests --group unit \
+    --summary "$WORK/unit-summary.json" --tests "$WORK/unit-tests.json"
+  bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/discovery-tests.log" -t 1200 -- \
+    "${ARGS[@]}" -resultBundlePath "$WORK/discovery.xcresult" \
+    -only-testing:'yuedu appTests/SelfRenewalDiscoveryProbeTests'
+  xcrun xcresulttool get test-results summary --path "$WORK/discovery.xcresult" > "$WORK/discovery-summary.json"
+  xcrun xcresulttool get test-results tests --path "$WORK/discovery.xcresult" > "$WORK/discovery-tests.json"
+  python3 "$SCRIPT_DIR/renewal-probe-tools.py" verify-tests --group discovery \
+    --summary "$WORK/discovery-summary.json" --tests "$WORK/discovery-tests.json"
+fi
+bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/replacement-tests.log" -t 900 -- \
+  "${ARGS[@]}" -resultBundlePath "$WORK/replacement.xcresult" \
+  -only-testing:'yuedu appTests/SelfRenewalReplacementPolicyTests'
+xcrun xcresulttool get test-results summary --path "$WORK/replacement.xcresult" > "$WORK/replacement-summary.json"
+xcrun xcresulttool get test-results tests --path "$WORK/replacement.xcresult" > "$WORK/replacement-tests.json"
+python3 "$SCRIPT_DIR/renewal-probe-tools.py" verify-tests --group replacement \
+  --summary "$WORK/replacement-summary.json" --tests "$WORK/replacement-tests.json"
+if [[ $YUEDU_RENEWAL_SELECTION == all ]]; then
+  bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/ui-tests.log" -t 1200 -- \
+    "${ARGS[@]}" -resultBundlePath "$WORK/ui.xcresult" \
+    -only-testing:'yuedu appUITests/SelfRenewalProbeUITests'
+  xcrun xcresulttool get test-results summary --path "$WORK/ui.xcresult" > "$WORK/ui-summary.json"
+  xcrun xcresulttool get test-results tests --path "$WORK/ui.xcresult" > "$WORK/ui-tests.json"
+  python3 "$SCRIPT_DIR/renewal-probe-tools.py" verify-tests --group ui \
+    --summary "$WORK/ui-summary.json" --tests "$WORK/ui-tests.json"
+fi
 xcodebuild -project "$REPO_DIR/Yuedu-Reader.xcodeproj" -scheme Yuedu-Reader \
   -destination "$YUEDU_DEST" "${ARGS[@]}" -showBuildSettings -json > "$WORK/build-settings.json"
 python3 "$SCRIPT_DIR/renewal-probe-tools.py" result --work "$WORK" > "$WORK/result.log"
