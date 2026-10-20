@@ -70,7 +70,7 @@
       "字体、主题、外观、辅助功能扩展、适配和主动性能优化均未完成／按用户要求暂缓；已有能力与证据保留。"
     ],
     "继续保留": "简体界面、账号与会员入口清理、独立品牌、缓存 TXT 导出、已有字体及全部用户书籍/书源/进度。书源自身的登录验证继续保留。",
-    "自续签边界": "已有只读连接探针，以及实际受控包的有界清单、代码摘要/CMS、嵌套资源和现代profile双CMS/身份校验代码；这些材料校验尚待当前源码SDK验收。账号授权、实际重签、认证安装和完整续签事务仍未实现。免费账号、只装阅读器且无需日常电脑的安装通道尚未证明可行；当前不做真机验证，不据此认定通过。",
+    "自续签边界": "已实现受控IPA读取、真实签名材料校验、单一软件Keychain材料库和thin64 arm64重签底层，新增部分尚待SDK执行。整包资源/profile与嵌套签名编排、账号服务、认证安装和持久续签事务仍未完成；电脑关闭、无伴侣的同机安装权限仍未证明。当前不执行真机验证。",
     "完成口径": "逐工作包保存真实证据；电脑或模拟器通过只完成对应范围，不换算为全功能、全部书源或真机完成率。",
     "开发与验证节奏": [
       "先按依赖顺序完成同一阶段的相关优化，再集中进行一次云端编译和集成验证。",
@@ -272,7 +272,9 @@
       "currentSteps": [
         "C1",
         "S1",
-        "C2"
+        "C2",
+        "S2",
+        "S3"
       ],
       "steps": [
         {
@@ -495,7 +497,7 @@
           "workpackages": [
             "automatic-renewal-feasibility"
           ],
-          "status": "unfinished_not_started",
+          "status": "in_progress",
           "actionsZh": [
             "实现账号授权、会话与凭据安全存取、过期／撤销／二次认证处理和受控服务适配；不把模拟账号当实际授权。",
             "实现同一免费团队、主App／Widget／Share的证书与profile申请／刷新、材料缓存及失效处理，保留原bundle和数据访问身份。"
@@ -509,7 +511,14 @@
           ],
           "actualAcceptedEvidence": [],
           "requiresPhysicalDevice": false,
-          "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。"
+          "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
+          "implementationEvidence": [
+            "docs/legado-ios/core-renewal-controlled-signing-step.json"
+          ],
+          "implementedSubtasksZh": [
+            "已接入单一actor签名材料库，使用既有KeychainHelper保存公开材料与代际日志；真实软件SecKey的生成、重开、profile双CMS及身份一致性验证、撤销和故障恢复已实现。7项原生方法待SDK；尚无Apple账号授权、二次认证、证书/profile远程申请或跨进程事务。"
+          ],
+          "nextActionZh": "集中执行新源码SDK方法并修复实际失败；继续同一材料库的真实整包重签租约接线，另行实现账号服务与材料刷新协议。"
         },
         {
           "id": "S3",
@@ -520,7 +529,7 @@
           "workpackages": [
             "automatic-renewal-feasibility"
           ],
-          "status": "unfinished_not_started",
+          "status": "in_progress",
           "actionsZh": [
             "按既定原生路线实现签名器适配，处理framework／extension／主App的签名顺序、profile和权限匹配。",
             "使用受控证书对自有包执行实际密码学重签，并由独立验证步骤复查包结构、签名、资源封印和身份。"
@@ -534,7 +543,14 @@
           ],
           "actualAcceptedEvidence": [],
           "requiresPhysicalDevice": false,
-          "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。"
+          "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
+          "implementationEvidence": [
+            "docs/legado-ios/core-renewal-controlled-signing-step.json"
+          ],
+          "implementedSubtasksZh": [
+            "已接入受控thin64 arm64重签器，调用真实SecKeyCreateSignature，重建CodeDirectory/CMS/agility及页/特殊槽摘要，并调用既有验签器复检。旧资源与替换slot3输入分开，Info/身份/权限字节保持；7项原生方法待SDK。整包嵌套/profile/资源编排与framework等布局仍未完成。"
+          ],
+          "nextActionZh": "集中执行受控重签SDK方法；在同一IPA提取器与材料库上完成嵌套包由内到外重签、实际新包封装及重新读取验签，明确拒绝尚不支持布局。"
         },
         {
           "id": "S4",
@@ -652,7 +668,8 @@
       "ownedStatePersistencePreparation": "docs/legado-ios/core-original-state-persistence-step.json",
       "sealedMaterialSDKResult": "docs/legado-ios/core-renewal-c8d899b-result.json",
       "controlledIPAImplementation": "docs/legado-ios/core-renewal-controlled-ipa-step.json",
-      "originalPublicRuntimePreparation": "docs/legado-ios/core-original-public-runtime-step.json"
+      "originalPublicRuntimePreparation": "docs/legado-ios/core-original-public-runtime-step.json",
+      "controlledSigningImplementation": "docs/legado-ios/core-renewal-controlled-signing-step.json"
     }
   },
   "stages": [
@@ -4579,6 +4596,10 @@
     "original-public-runtime-business-chain": {
       "path": "docs/legado-ios/core-original-public-runtime-step.json",
       "scope": "171 actual desktop JVM methods and ordinary JAR public four-stage smoke; Swift Package test definitions only, no JNI or native product route acceptance."
+    },
+    "controlled-keychain-and-thin64-signing": {
+      "path": "docs/legado-ios/core-renewal-controlled-signing-step.json",
+      "scope": "Six production/test source files, fourteen SDK-unexecuted definitions, owned original-input OpenSSL/digest audits. Neither full package signing nor Apple/account/installation authority."
     }
   },
   "retainedExistingWork": [

@@ -1,0 +1,210 @@
+{
+  "schema": 1,
+  "stage": "S2 single-owner software-Keychain signing material lifecycle",
+  "frozenAtUTC": "2026-10-20T04:04:25.779944+00:00",
+  "integrationState": "work-only-awaiting-root-review-and-merge",
+  "earlierSDKSourceExcludesTheseFiles": "478b69d6a1074e9a1d82c2b55e522b0d39e23f8a",
+  "sourceBinding": {
+    "files": [
+      {
+        "path": ".build/renewal-discovery/signing-material-vault-step/work/SelfRenewalSigningMaterialVault.swift",
+        "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+        "bytes": 29965,
+        "sha256": "93018a3bcdde08bb2c3477da6e0edd7922c649097d573df9c1e6b27de2d3783b",
+        "grammarErrors": []
+      },
+      {
+        "path": ".build/renewal-discovery/signing-material-vault-step/work/SelfRenewalSigningOwnedPKIFixture.swift",
+        "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift",
+        "bytes": 9300,
+        "sha256": "45f5a30a7577035c977ac622b59463df21c24e610aee8eb010928aeeb6eb2db4",
+        "grammarErrors": []
+      },
+      {
+        "path": ".build/renewal-discovery/signing-material-vault-step/work/SelfRenewalSigningMaterialVaultTests.swift",
+        "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+        "bytes": 21874,
+        "sha256": "ba8d963eaa13902aa7c3c9676240e3ec064847a84619db2fb36490e24d7f23f2",
+        "grammarErrors": []
+      }
+    ],
+    "count": 3,
+    "snapshots": "sources/"
+  },
+  "reusedUnmodifiedDependencies": [
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift",
+      "bytes": 5373,
+      "sha256": "19a0a52211c83ee22810db32fcc9d4dabcc3e89d13f06ead3e5fa824dcc60593",
+      "modifiedByThisStep": false
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalApplicationMaterialVerifier.swift",
+      "bytes": 12873,
+      "sha256": "395fb5baf2b0f0c093cc0d2eb8ac0526a1e0080f0f3b8ada06aa3996b69913f1",
+      "modifiedByThisStep": false
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalProvisioningProfileVerifier.swift",
+      "bytes": 16456,
+      "sha256": "e7fc2366b6149ff5a5b1dde04e3f0c854cc3a8205135a8ed4dd60c42c934b8d2",
+      "modifiedByThisStep": false
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift",
+      "bytes": 25565,
+      "sha256": "d835a75bdeb280173b388a943a018a672476898d50b309b1c21a04aaa28c9c57",
+      "modifiedByThisStep": false
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalApplicationMaterialFixture.swift",
+      "bytes": 140748,
+      "sha256": "eb9b966c9843518796926c5df2b932f571c88c8549e24531281eab1aa42f11f7",
+      "modifiedByThisStep": false
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalCMSFixture.swift",
+      "bytes": 42388,
+      "sha256": "a1ea510648fd0f0a748ad83b9f6ec0253bde44360e1d6fcf5e288525f6bd562e",
+      "modifiedByThisStep": false
+    }
+  ],
+  "publicPrimarySources": [
+    {
+      "url": "https://developer.apple.com/documentation/security/storing-keys-in-the-keychain.md",
+      "path": "storing-keys-in-the-keychain.md",
+      "bytes": 6021,
+      "sha256": "9381379a4558ceeadca9427a7c872584d82edc9da4e10b702f70578427272455"
+    },
+    {
+      "url": "https://developer.apple.com/documentation/security/ksecattrisextractable.md",
+      "path": "ksecattrisextractable.md",
+      "bytes": 1181,
+      "sha256": "6a2c9ff92d35170e1a64762a6d3c2ba47410c2fda1fc9d374613e9755b1d0f95"
+    },
+    {
+      "url": "https://developer.apple.com/documentation/security/seckeycreaterandomkey%28_%3A_%3A%29.md",
+      "path": "seckeycreaterandomkey.md",
+      "bytes": 1975,
+      "sha256": "6d08f21d969b866d1e9f557ae88f630023a263246bb8ff59978fe04c9682188c"
+    },
+    {
+      "url": "https://developer.apple.com/documentation/security/seckeycopypublickey%28_%3A%29.md",
+      "path": "seckeycopypublickey.md",
+      "bytes": 1462,
+      "sha256": "288d6acb945bb2b088bc18dca186de14f6802eedaffcfd9b48a7cd4776fc05a7"
+    }
+  ],
+  "preparedNativeTests": {
+    "suite": "SelfRenewalSigningMaterialVaultTests",
+    "methodCount": 7,
+    "methods": [
+      "publishesReloadsSignsAndRevokesOwnedKeychainMaterial()",
+      "rejectsSignedIdentityAndKeyChangesWithoutReplacingOldMaterial()",
+      "rejectsStaleCASAndCancellationBeforePublication()",
+      "preservesPublicationWhenManifestSaveFails()",
+      "recoversPendingKeyJournalWithoutDeletingPublishedKey()",
+      "rejectsExpiredProfilesAndLocallyRevokedLeases()",
+      "boundsLifetimeAndPreservesUnrelatedKeychainItems()"
+    ],
+    "executedSDKMethods": 0,
+    "acceptedSDKMethods": 0
+  },
+  "localValidation": {
+    "swiftGrammarFiles": 3,
+    "swiftGrammarErrors": 0,
+    "swiftTypecheck": false,
+    "independentOpenSSLCertificateChainChecks": 2,
+    "independentOpenSSLCMSSignatureChecks": 6,
+    "independentTamperedCMSRejected": 1,
+    "privateKeyExports": 0,
+    "privateKeyFiles": 0,
+    "swiftOrKeychainExecution": false,
+    "simulatorTests": false,
+    "deviceTests": false
+  },
+  "limits": {
+    "openNamespaces": 8,
+    "keysPerNamespaceIncludingJournal": 4,
+    "bundles": 8,
+    "certificatesPerChain": 8,
+    "certificateBytes": 65536,
+    "profileBytes": 65536,
+    "totalPublicMaterialBytes": 262144,
+    "manifestUTF8Bytes": 524288
+  },
+  "implemented": [
+    "Single injected actor owns lifecycle operations; no shared twin or second S3 key manager.",
+    "SecKeyCreateRandomKey creates permanent software RSA2048 private key with random module namespace/key UUID applicationTag, AfterFirstUnlockThisDeviceOnly, no sync, sign-only usage requests; public key is explicitly nonpermanent.",
+    "Only public SecKey representations are requested. Private keys remain Security objects and are never encoded, logged, embedded or written as files.",
+    "Public cert/profile bytes and generation journal reuse KeychainHelper under a dedicated service and exact random owned account; locked/missing reads fail closed.",
+    "Pending key journal is persisted before key creation; ready publication follows. Failure cleans only its newly generated exact key tag and leaves previous public material/key intact; pending entries support explicit recovery.",
+    "Sealed existing ApplicationMaterialVerifier result fixes team, app, groups/default keychain groups and signed profile entitlement allowance digest.",
+    "Candidate certificate chain is actually verified anchors-only/date/no-network, selected chain must match input leaf-to-anchor DER, and leaf public key must match the persisted private key public hash.",
+    "Every candidate profile passes existing verifyModern outer and inner CMS plus DER validity and developer-certificate hash checks, then matches pinned team/prefix/App ID pattern and full profile Entitlements digest.",
+    "Complete candidate validation precedes single-manifest generation publication; failure or cancellation observed before publication preserves the previous published material.",
+    "Lease reopens exact SecKey tag and revalidates actual material at current clock; generation guards are checked before signing and before later signed-byte publication.",
+    "Local revoke invalidates generation/published record before exact-item deletion; deletion errors never restore revoked publication. Destruction touches only keys recorded in this random module namespace.",
+    "Shared S3 KeyMaterial DTO is defined here with SecKey plus leaf-to-anchor certificate DER; raw DTO construction grants no authorization.",
+    "Owned native test definitions cover real Keychain protection attributes/generation/publication/reopen/signature verification/scoped revoke, stale/observed cancellation, identity/expiry/key mismatch, save failure, pending-journal recovery and scoped budgets."
+  ],
+  "transactionSemantics": [
+    "Generation CAS is only within one injected actor owner. KeychainHelper load-compare-save is not cross-actor or cross-process atomic CAS; S5 still needs sole-owner orchestration or stronger transaction support.",
+    "One generic-password item is the publication boundary. No atomic transaction across multiple key items and manifest is promised; pending journal tracks recoverable key-generation gaps.",
+    "A successful synchronous publication save is acknowledged. No post-commit CancellationError pretends the accepted save was rolled back.",
+    "Software keys may be exportable to other in-process code. This module requests no private export; it does not claim SecureEnclave or enforced nonextractability.",
+    "SecItemDelete removes the stored item but cannot invalidate already retained SecKey references. Retained raw key handles are not commit capabilities; caller must recheck lease at signing/publish boundaries.",
+    "Current clock and explicit local anchors are configuration, not Apple account, trusted time, remote revocation or provisioning-purpose proof."
+  ],
+  "unfinished": [
+    "All seven native methods are definitions only; actual Keychain persistence, Swift compilation and SDK runtime remain unverified until a later centralized SDK run.",
+    "New source is not in earlier 478b69d/78-method/68-input SDK run; independent Python/OpenSSL checks do not execute the Swift helper, vault or Security APIs.",
+    "No real Apple account, login/password/token, second factor, free-team certificate/profile request, remote Apple revocation/OCSP/CRL, Apple certificate purpose or full entitlement authorization is implemented.",
+    "No App dependency lifecycle/UI/account coordinator or cross-process transaction owner is integrated in this step.",
+    "Private signing keys are software Security keys for simulator-compatible tests, not a SecureEnclave/hardware portability promise.",
+    "S3 package orchestration must validate live leases before signing and before output commit; install/device/account/replacement authority remains absent."
+  ],
+  "authorizationClaims": {
+    "appleSigningAuthorityEstablished": false,
+    "remoteRevocationEstablished": false,
+    "accountIdentityEstablished": false,
+    "replacementAuthorized": false
+  },
+  "scope": {
+    "productionOrTestTargetsModified": false,
+    "existingVerifiersModified": false,
+    "ipaFilesModified": false,
+    "ciModified": false,
+    "docsModified": false,
+    "gitOperations": 0,
+    "realAccountsOrCredentialsRead": false,
+    "userArchivesOrPrivateSourcesRead": false
+  },
+  "evidence": [
+    {
+      "path": "grammar.json",
+      "bytes": 1252,
+      "sha256": "052bb0c8a8caee397a3d99f40cde4ea21cf84ca0bf2bebadc8e6608afba38da5"
+    },
+    {
+      "path": "fixture-generation.json",
+      "bytes": 5113,
+      "sha256": "60dce83da2a2d1d155e0308cd6699bf3eb5a6681983900ff9582ec4ab9a13b73"
+    },
+    {
+      "path": "generate-owned-public-vectors.py",
+      "bytes": 8842,
+      "sha256": "f45e2476273862e072f470f54dfb1facddb25a6340175bde50cccee51052b7a7"
+    },
+    {
+      "path": "freeze.py",
+      "bytes": 11017,
+      "sha256": "a4fa37532167d056bb7f32e56a69b3dbbdeae29e49e2940587d29fccad4e6a50"
+    },
+    {
+      "path": "primary/sources.json",
+      "bytes": 1019,
+      "sha256": "692a292e9bbc739655ee1a2a8f383187a9fe2756ce112d25a3fc1d64aac43882"
+    }
+  ]
+}

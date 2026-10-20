@@ -1,0 +1,164 @@
+{
+  "recordedAtUTC": "2026-10-20T03:57:43.815131+00:00",
+  "contracts": [
+    {
+      "source": "codesign_alloc.cpp",
+      "lines": [
+        167,
+        259
+      ],
+      "fact": "Existing LC_CODE_SIGNATURE denotes terminal LINKEDIT bytes; old layout and overflow must be checked before allocation.",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_codesigning/lib/codesign_alloc.cpp",
+      "sourceSHA256": "d76101e6f989374b3a065ca9c9d5fdfc2b8237f05894eda93b43e48f5e04a604"
+    },
+    {
+      "source": "codesign_alloc.cpp",
+      "lines": [
+        308,
+        318
+      ],
+      "fact": "The allocator changes LINKEDIT filesize to its new extent and rounds LINKEDIT vmsize to 0x4000.",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_codesigning/lib/codesign_alloc.cpp",
+      "sourceSHA256": "d76101e6f989374b3a065ca9c9d5fdfc2b8237f05894eda93b43e48f5e04a604"
+    },
+    {
+      "source": "signerutils.cpp",
+      "lines": [
+        47,
+        56
+      ],
+      "fact": "Embedded code-signature storage is 16-byte aligned.",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_codesigning/lib/signerutils.cpp",
+      "sourceSHA256": "2f352abf90941bca654b31bee3a44a75499abc22da4362601920c0ff6301c699"
+    },
+    {
+      "source": "signerutils.cpp",
+      "lines": [
+        188,
+        245
+      ],
+      "fact": "Allocate signature capacity, reopen the changed executable before building hashes, then ensure the finished SuperBlob fits the reservation.",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_codesigning/lib/signerutils.cpp",
+      "sourceSHA256": "2f352abf90941bca654b31bee3a44a75499abc22da4362601920c0ff6301c699"
+    },
+    {
+      "source": "signer.cpp",
+      "lines": [
+        640,
+        718
+      ],
+      "fact": "Build CodeDirectories from the allocated executable, sign the primary raw CodeDirectory, populate all CodeDirectories and the CMS wrapper, then write the embedded signature.",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_codesigning/lib/signer.cpp",
+      "sourceSHA256": "83c1cd525934c0b7d0c5f08322b02e347a5cbf9f521a67edd36023387a8559a2"
+    },
+    {
+      "source": "signer.cpp",
+      "lines": [
+        797,
+        858
+      ],
+      "fact": "Identifiers, team, executable segment, Info, requirements, CodeResources, XML/DER entitlements and constraints are CodeDirectory inputs/special slots.",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_codesigning/lib/signer.cpp",
+      "sourceSHA256": "83c1cd525934c0b7d0c5f08322b02e347a5cbf9f521a67edd36023387a8559a2"
+    },
+    {
+      "source": "signer.cpp",
+      "lines": [
+        885,
+        927
+      ],
+      "fact": "Signer uses SHA256 detached CMS over the complete raw CodeDirectory and includes v2 hash-agility plus the v1 cdhashes property list.",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_codesigning/lib/signer.cpp",
+      "sourceSHA256": "83c1cd525934c0b7d0c5f08322b02e347a5cbf9f521a67edd36023387a8559a2"
+    },
+    {
+      "source": "codedirectory.h",
+      "lines": [
+        142,
+        164
+      ],
+      "fact": "Special hashes index backwards from hashOffset; absent allocated special slots contain zeroes.",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_codesigning/lib/codedirectory.h",
+      "sourceSHA256": "dfc86acb9a1aaacdaf0f37aae0902df854c6cb384831caf8ca230eaa89189804"
+    },
+    {
+      "source": "codedirectory.cpp",
+      "lines": [
+        269,
+        288
+      ],
+      "fact": "Hash type 3 uses the actual truncated SHA256 hasher, yielding 20 bytes; do not replace its full hasher result with a 32-byte SHA256 value.",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/OSX/libsecurity_codesigning/lib/codedirectory.cpp",
+      "sourceSHA256": "9a4b47e6cee40983d71e3214286415ed7b83b22b403d5a7e89fad50d776646af"
+    },
+    {
+      "source": "SecKey.h",
+      "lines": [
+        843,
+        887
+      ],
+      "fact": "SecKeyCopyPublicKey supplies the public key. Only its public external representation is compared with the actual certificate public key; no private representation is requested.",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/keychain/headers/SecKey.h",
+      "sourceSHA256": "2cba3b0d904c00560c1f7d4d7efb163d75a1aa941bb40b7ef851723806f6d3a0"
+    },
+    {
+      "source": "SecKey.h",
+      "lines": [
+        1482,
+        1510
+      ],
+      "fact": "SecKeyCreateSignature and SecKeyVerifySignature are public APIs available on iOS 10+, suitable for this iOS 17 target.",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/keychain/headers/SecKey.h",
+      "sourceSHA256": "2cba3b0d904c00560c1f7d4d7efb163d75a1aa941bb40b7ef851723806f6d3a0"
+    },
+    {
+      "source": "SecKey.h",
+      "lines": [
+        1601,
+        1609
+      ],
+      "fact": "SecKeyIsAlgorithmSupported checks whether the concrete key supports the exact sign/verify algorithm.",
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/Security/main/keychain/headers/SecKey.h",
+      "sourceSHA256": "2cba3b0d904c00560c1f7d4d7efb163d75a1aa941bb40b7ef851723806f6d3a0"
+    }
+  ],
+  "implementedInterface": {
+    "type": "SelfRenewalControlledMachOSigner",
+    "keyMaterialOwner": "SelfRenewalSigningMaterialVault.KeyMaterial",
+    "operation": "nonisolated static async resign(Data, identity, originalAnchors, replacementAnchors, at, externalSpecialSlots, replacementExternalSpecialSlots) throws -> Result",
+    "externalSlotContract": "externalSpecialSlots authenticates OLD bytes only; replacementExternalSpecialSlots accepts only already-sealed slot 3. Slot 1 is immutable. Rebuilt hashes and output verification consume the merged NEW resources.",
+    "outputProof": "Actual Hashes.verify + Signed.bind facts for original and output; output authenticates actual certificate/key and raw CodeDirectory bytes, without Apple/profile/resource-tree/install permission."
+  },
+  "limits": {
+    "fileBytes": 67108864,
+    "signatureBytes": 16777216,
+    "eachExternalSlotBytes": 2097152,
+    "allowedOriginalExternalSlots": [
+      1,
+      3
+    ],
+    "allowedReplacementExternalSlots": [
+      3
+    ]
+  },
+  "supported": "Existing terminal signature; thin64 little-endian arm64-all MH_EXECUTE; known bounded load commands; final aligned LINKEDIT; unchanged signed CD templates/identity/page geometry; SHA1/SHA256/truncatedSHA256/SHA384; RSA2048..8192 and EC256/384 with SHA256 CMS.",
+  "typedRemaining": [
+    "fat and other CPU/file types",
+    "unsigned/ad-hoc or originally unauthenticated directories",
+    "adding a missing LC_CODE_SIGNATURE",
+    "unhandled load commands including LC_DYSYMTAB",
+    "encrypted/scatter/pre-encrypted/linkage directories",
+    "nonterminal signatures and unsupported extra signature slots",
+    "simultaneous SHA256 and truncatedSHA256 V2 OID collision",
+    "adding CodeResources where it was not previously sealed"
+  ],
+  "integrationRemaining": [
+    "SDK/typecheck and actual Swift signer execution",
+    "consume the vault generation/revocation lease before signing and package publication",
+    "package-wide bottom-up nested signing, actual new CodeResources trees and modern profiles",
+    "whole ApplicationMaterialVerifier after staging composition",
+    "Apple policy/entitlement/device/account/installation/replacement authority"
+  ],
+  "newSwiftSignerExecutions": 0,
+  "privateKeysIncludedInReviewSources": false
+}
