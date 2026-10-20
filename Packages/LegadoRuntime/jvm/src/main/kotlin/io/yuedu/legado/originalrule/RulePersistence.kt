@@ -14,7 +14,13 @@ interface RulePersistenceAdapter {
 }
 
 data class RulePersistenceSnapshot(val revision: Long, val values: Map<String, ByteArray>)
-class RulePersistenceException(message: String, cause: Throwable? = null) : IOException(message, cause)
+class RulePersistenceException private constructor(message: String, cause: Throwable?, internal val completedEffect: String?) : IOException(message, cause) {
+    constructor(message: String, cause: Throwable? = null) : this(message, cause, null)
+    internal companion object {
+        fun afterCommittedEffect(effect: String, message: String, cause: Throwable): RulePersistenceException =
+            RulePersistenceException(message, cause, effect)
+    }
+}
 
 /** Stable owner + source identity, separate from the ephemeral task/environment lifetime. */
 class RulePersistenceBinding(

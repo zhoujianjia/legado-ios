@@ -36,12 +36,13 @@ internal class ProductionRulePlatform(
 ) : RulePlatform() {
     override val userAgent: String? get() = task.session.options.userAgent
     private val appCookieOwner = if (task.session.options.usesAppCookieOwner) AppCookieOwnerClient(task, dispatch) else null
+    init { if (appCookieOwner != null) task.appCookieOwner = appCookieOwner }
     override val cookie: RuleCookieHost = object : RuleCookieHost() {
         override fun getCookie(url: String): String = readCookie(url)
         override fun getCookie(url: String, key: String?): String = readCookie(url, key)
-        override fun setCookie(url: String, value: String): Unit = cookieWrite("CookieStore.setCookie") { task.session.cookies.setRuleCookie(url, value) }
-        override fun replaceCookie(url: String, value: String): Unit = cookieWrite("CookieStore.replaceCookie") { task.session.cookies.replaceRuleCookie(url, value) }
-        override fun removeCookie(url: String): Unit = cookieWrite("CookieStore.removeCookie") { task.session.cookies.removeRuleCookie(url) }
+        override fun setCookie(url: String, value: String?): Unit = cookieWrite("set", url, value.orEmpty()) { task.session.cookies.setRuleCookie(url, value.orEmpty()) }
+        override fun replaceCookie(url: String, value: String): Unit = cookieWrite("replace", url, value) { task.session.cookies.replaceRuleCookie(url, value) }
+        override fun removeCookie(url: String): Unit = cookieWrite("remove", url) { task.session.cookies.removeRuleCookie(url) }
     }
 
     private val http = RuntimeHttpRequestExecutor(task) { current, operation, input ->
@@ -95,6 +96,26 @@ internal class ProductionRulePlatform(
         val changes = environment().cache.textChange(cacheKey, value)
         val headers = GSON.fromJsonObject<Map<String, String>>(value).getOrNull()
         val cookie = headers?.get("Cookie") ?: headers?.get("cookie")
+        if (appCookieOwner != null && task.session.options.writesAppCookieOwner) {
+            // Locked BaseSource.kt:235-246 has immediate sequential effects,
+            // with different order for put and remove. This is deliberately not
+            // the outward state.commit atomic batch API.
+            if (value == null) {
+                environment().cache.delete(cacheKey)
+                try { appCookieOwner.mutate("remove", source.getKey()) }
+                catch (error: CancellationException) { throw error }
+                catch (error: Exception) { throw RulePersistenceException.afterCommittedEffect("loginHeaderRemoval", "The login header was removed before Cookie removal failed; the original operation is sequential", error) }
+            } else {
+                cookie?.let { appCookieOwner.mutate("replace", source.getKey(), it) }
+                try { environment().cache.put(cacheKey, value) }
+                catch (error: CancellationException) { throw error }
+                catch (error: Exception) {
+                    if (!cookie.isNullOrEmpty()) throw RulePersistenceException.afterCommittedEffect("cookieText", "Cookie text was committed before the login header write failed; the original operation is sequential", error)
+                    throw error
+                }
+            }
+            return true
+        }
         if (appCookieOwner != null && (value == null || !cookie.isNullOrEmpty()))
             unsupportedRule("source.putLoginHeader/removeLoginHeader cross Cookie/login owner transaction is not connected")
         if (value != null && cookie.isNullOrEmpty()) {
@@ -222,13 +243,13 @@ internal class ProductionRulePlatform(
             ?: task.session.cookies.persistent(environment().persistence) { task.session.cookies.getCookie(url) }
     }
     private fun checkRequestCookieCapability(request: JsonObject) {
-        if (appCookieOwner != null && request["enabledCookieJar"]?.asBoolean == true)
+        if (appCookieOwner != null && !task.session.options.writesAppCookieOwner && request["enabledCookieJar"]?.asBoolean == true)
             unsupportedRule("CookieManager.loadRequest/saveResponse enabledCookieJar needs the App owner's response/session text transaction")
     }
-    private fun <T> cookieWrite(operation: String, body: () -> T): T {
+    private fun cookieWrite(action: String, url: String, value: String? = null, body: () -> Unit) {
         ensureOwnerOpen(); task.ensureActiveForRuntime()
-        if (appCookieOwner != null) unsupportedRule("$operation App text-owner durable mutation is not connected")
-        return cookieOperation(true, body)
+        if (appCookieOwner != null) { appCookieOwner.mutate(action, url, value); return }
+        cookieOperation(true, body)
     }
 
     private fun <T> cookieOperation(write: Boolean = false, body: () -> T): T {

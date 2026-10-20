@@ -115,7 +115,10 @@ object LegadoRuntime {
                 error is IllegalArgumentException || error is JsonParseException -> "INVALID_ARGUMENT"
                 else -> "SCRIPT_ERROR"
             }
-            val response = failure(code, hostFailure?.message ?: error.message ?: error.javaClass.simpleName, taskId)
+            val completedEffect = stateFailure?.completedEffect
+            val response = if (completedEffect == null) failure(code, hostFailure?.message ?: error.message ?: error.javaClass.simpleName, taskId)
+                else jsonObject("ok" to false, "taskId" to taskId, "error" to jsonObject("code" to code,
+                    "message" to stateFailure.message, "completedEffects" to listOf(completedEffect))).toString()
             if (originalTraditional && response.toByteArray(Charsets.UTF_8).size > OriginalTraditionalRuntime.MAX_RESULT_BYTES)
                 return failure("PAYLOAD_TOO_LARGE", "Original traditional error envelope exceeds 8 MiB UTF-8")
             return response
@@ -371,6 +374,9 @@ internal class RuntimeSession(val id: String, val source: JsonObject,
 internal class RuntimeTask(val id: String, val session: RuntimeSession, val job: kotlinx.coroutines.CompletableJob,
     val deadlineEpochMs: Long, val diagnosticHttp: TaskHttpDispatcher? = null) {
     val timedOut = AtomicBoolean(false)
+    // Installed by the original production platform, retained only by this task.
+    // The existing transport uses this exact callback for redirect/final Cookies.
+    internal var appCookieOwner: io.yuedu.legado.originalrule.AppCookieOwnerClient? = null
     internal val persistence: RulePersistenceBinding? by lazy { LegadoRuntime.originalPersistence(this) }
     private val persistentEnvironmentDelegate = lazy { if (persistence == null) null else LegadoRuntime.originalStateEnvironment(this) }
     internal val persistentEnvironment get() = persistentEnvironmentDelegate.value

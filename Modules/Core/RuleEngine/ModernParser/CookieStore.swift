@@ -23,6 +23,17 @@ final class CookieStore: @unchecked Sendable {
     func requestHeader(url: URL) async throws -> String? { try await owner.requestHeader(url: url) }
     func nativeCookies(url: URL) async throws -> [HTTPCookie] { try await owner.nativeCookies(url: url) }
     func snapshot() async throws -> CookiePersistenceOwner.Document { try await owner.snapshot() }
+    func originalRawText(domain: String) async throws -> String { try await owner.originalRawText(domain: domain) }
+    func originalText(domain: String) async throws -> String { try await owner.originalText(domain: domain) }
+    func originalSession(domain: String) async throws -> String { try await owner.originalSession(domain: domain) }
+    func mutateOriginalText(domain: String, action: String, raw: String?,
+                            validate: @escaping @Sendable () throws -> Void = {}) async throws {
+        try await owner.mutateOriginalText(domain: domain, action: action, raw: raw, validate: validate)
+    }
+    func ingestOriginalResponse(_ records: [CookiePersistenceOwner.Record], domain: String, persistentText: String, sessionText: String,
+                                validate: @escaping @Sendable () throws -> Void = {}) async throws {
+        try await owner.ingestOriginalResponse(records, domain: domain, persistentText: persistentText, sessionText: sessionText, validate: validate)
+    }
     func getOwned(url: String) async throws -> String { try await owner.get(url: url) }
     func getKeyOwned(url: String, key: String) async throws -> String {
         Self.value(try await owner.get(url: Self.normalizedURLString(url)), key: key)

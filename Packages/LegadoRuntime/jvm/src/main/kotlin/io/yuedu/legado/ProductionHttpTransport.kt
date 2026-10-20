@@ -4,6 +4,7 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import io.legado.app.model.analyzeRule.buildRequestClient
 import io.legado.app.model.analyzeRule.parseDnsIpAddresses
+import io.yuedu.legado.originalrule.OriginalCookieText
 import kotlinx.coroutines.InternalCoroutinesApi
 import okhttp3.Call
 import okhttp3.Headers
@@ -51,9 +52,21 @@ internal class ProductionHttpTransport(private val session: RuntimeSession) : Cl
         .addNetworkInterceptor { chain ->
             var request = chain.request()
             val state = request.tag(RuntimeTask::class.java)?.persistence
+            val task = request.tag(RuntimeTask::class.java)
             val initial = request.tag(InitialCookies::class.java)
             val cookieJarEnabled = initial?.enabledCookieJar ?: (session.source["enabledCookieJar"]?.takeIf { it.isJsonPrimitive }?.asBoolean == true)
-            if (cookieJarEnabled) {
+            val appText = initial?.originalRule == true && session.options.writesAppCookieOwner
+            if (cookieJarEnabled && appText) {
+                val owner = requireNotNull(task?.appCookieOwner) { "Original task Cookie owner callback is missing" }
+                requireNotNull(task).ensureActiveForRuntime()
+                val saved = owner.getCookie(request.url.toString())
+                // Locked CookieManager.loadRequest uses this actual request's
+                // Cookie header, including the prior request on a redirect, then
+                // merges current domain DB/session text with saved values last.
+                val cookie = OriginalCookieText.mergeCookies(request.header("Cookie"), saved).orEmpty()
+                request = request.newBuilder().removeHeader("Cookie")
+                    .apply { if (cookie.isNotEmpty()) header("Cookie", cookie) }.build()
+            } else if (cookieJarEnabled) {
                 val saved = session.cookies.persistent(state) { session.cookies.getCookie(request.url.toString()) }
                 val authored = initial?.takeIf { it.host == request.url.host }?.authored
                 val cookie = if (initial?.originalRule == true) mergeCookies(saved, authored) else mergeCookies(authored, saved)
@@ -61,7 +74,10 @@ internal class ProductionHttpTransport(private val session: RuntimeSession) : Cl
                     .apply { if (cookie.isNotEmpty()) header("Cookie", cookie) }.build()
             }
             val response = chain.proceed(request)
-            if (cookieJarEnabled) {
+            if (cookieJarEnabled && appText) {
+                try { requireNotNull(task?.appCookieOwner).saveResponse(response) }
+                catch (error: Throwable) { response.close(); throw error }
+            } else if (cookieJarEnabled) {
                 session.cookies.persistent(state, write = true) {
                     response.headers.values("Set-Cookie").forEach { session.cookies.setCookie(response.request.url.toString(), it) }
                 }
@@ -85,7 +101,8 @@ internal class ProductionHttpTransport(private val session: RuntimeSession) : Cl
         val originalRule = input["originalAnalyzeUrl"]?.asBoolean == true
         val request = Request.Builder().url(requestUrl).headers(headers).method(method, body)
             .tag(RuntimeTask::class.java, task)
-            .tag(InitialCookies::class.java, InitialCookies(requestUrl.host, headers["Cookie"], originalRule,
+            .tag(InitialCookies::class.java, InitialCookies(requestUrl.host,
+                headers["Cookie"], originalRule,
                 input["enabledCookieJar"]?.asBoolean)).build()
         val follow = input["followRedirects"]?.asBoolean ?: true
         val configured = if (originalRule) buildRequestClient(client, input["readTimeoutMs"]?.asLong,

@@ -5,7 +5,13 @@ import os
 public struct LegadoRuntimeError: Error, LocalizedError, Codable, Sendable, Equatable {
     public let code: String
     public let message: String
-    public init(code: String, message: String) { self.code = code; self.message = message }
+    /// Earlier effects of an original sequential operation can already be saved
+    /// when a later owner fails. Missing means no such completion is asserted.
+    public let completedEffects: [String]?
+    public init(code: String, message: String) { self.code = code; self.message = message; self.completedEffects = nil }
+    public init(code: String, message: String, completedEffects: [String]) {
+        self.code = code; self.message = message; self.completedEffects = completedEffects
+    }
     public var errorDescription: String? { "\(code): \(message)" }
 }
 
@@ -32,6 +38,9 @@ public struct LegadoSessionOptions: Encodable, Sendable {
         /// Read directly through the explicitly granted App owner. Rich response
         /// jar mutations remain unsupported; this never enables a product route.
         case appOwnerRead = "app-owner-read"
+        /// Original scalar text operations and known response Cookie ingestion.
+        /// Uses the same explicit App owner; outward atomic batches stay separate.
+        case appOwnerText = "app-owner-text"
     }
     public let cookieAccess: CookieAccess
     public let httpTransport: HTTPTransport

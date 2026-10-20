@@ -83,6 +83,7 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
     private struct Binding {
         let sourceURL: String
         let sourceRevision: String
+        let cookieCancellation = OriginalRuntimeCommitCancellation()
     }
     private struct Key {
         let wire: String
@@ -132,6 +133,7 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
         }
         if revisions[sourceURL] != sourceRevision {
             for (owner, binding) in bindings where binding.sourceURL == sourceURL {
+                binding.cookieCancellation.cancel()
                 bookOwners.removeValue(forKey: owner)?.revoke()
             }
             bindings = bindings.filter { $0.value.sourceURL != sourceURL }
@@ -179,6 +181,7 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
 
     func revoke(owner: String) {
         let removed = bindings.removeValue(forKey: owner)
+        removed?.cookieCancellation.cancel()
         bookOwners.removeValue(forKey: owner)?.revoke()
         leases = leases.filter { $0.value.owner != owner }
         entityLeases = entityLeases.filter { $0.value.owner != owner }
@@ -194,6 +197,7 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
 
     func dispatch(_ request: LegadoHostRequest) async throws -> String {
         if request.operation == "cookie.owner.read" { return try await readCookieOwner(request) }
+        if request.operation == "cookie.owner.text" { return try await textCookieOwner(request) }
         if request.operation != "state.read" && request.operation != "state.commit" {
             return try await fallback.dispatch(request)
         }
@@ -306,7 +310,7 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
                 } else {
                     // The original getSubDomain returns arbitrary non-URL text
                     // unchanged. Such a DB key is not a made-up HTTPS origin.
-                    value = try await cookieOwner.snapshot().legacyHeaders[domain] ?? ""
+                    value = try await cookieOwner.originalRawText(domain: domain)
                 }
             case "requestHeader":
                 guard let target = URL(string: url), target.host != nil,
@@ -328,6 +332,133 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
             AppLogger.error("The original runtime Cookie owner read failed", error: error)
             throw failure("STATE_IO", "The App Cookie owner could not be read")
         }
+    }
+
+    /// Single-owner original text operations are deliberately separate from the
+    /// outward atomic state.commit batch. No source/header/cache write occurs
+    /// inside this owner operation, and unsupported input is rejected first.
+    private func textCookieOwner(_ request: LegadoHostRequest) async throws -> String {
+        guard request.requestJSON.utf8.count <= 1_048_576 else { throw failure("STATE_LIMIT", "Cookie text request is oversized") }
+        let decoded: Any
+        do { decoded = try JSONSerialization.jsonObject(with: Data(request.requestJSON.utf8)) }
+        catch { throw failure("INVALID_STATE_REQUEST", "Cookie text request is not valid JSON") }
+        guard let input = decoded as? [String: Any], let owner = input["owner"] as? String,
+              let binding = bindings[owner], revisions[binding.sourceURL] == binding.sourceRevision else {
+            throw failure("INVALID_STATE_OWNER", "Cookie text has no current explicit owner")
+        }
+        guard let action = input["action"] as? String,
+              let url = input["url"] as? String, url.utf8.count <= 8_192,
+              let domain = input["domain"] as? String, domain.utf8.count <= 8_192 else {
+            throw failure("INVALID_STATE_REQUEST", "Cookie text requires bounded action URL and domain")
+        }
+        guard ["get", "session", "set", "replace", "remove", "removeKey", "response"].contains(action) else {
+            throw failure("UNSUPPORTED_CAPABILITY", "Unknown original Cookie text action")
+        }
+        let deadline = try cookieReadDeadline(input)
+        try checkCookieRead(request, deadline: deadline)
+        try binding.cookieCancellation.check(deadline: deadline)
+        let ticket = OriginalRuntimeCommitCancellation(), operationID = UUID()
+        pendingEntityOperations[request.taskID, default: [:]][operationID] = ticket
+        defer {
+            pendingEntityOperations[request.taskID]?.removeValue(forKey: operationID)
+            if pendingEntityOperations[request.taskID]?.isEmpty == true { pendingEntityOperations.removeValue(forKey: request.taskID) }
+        }
+        do {
+            if action == "get" || action == "session" {
+                let text = action == "get" ? try await cookieOwner.originalText(domain: domain)
+                    : try await cookieOwner.originalSession(domain: url)
+                try checkCookieRead(request, deadline: deadline)
+                try currentEntityBinding(owner: owner, binding: binding)
+                guard text.utf8.count <= 65_536 else { throw failure("STATE_LIMIT", "Cookie text result is oversized") }
+                return try encoded(["cookie": text])
+            }
+            let validate: @Sendable () throws -> Void = {
+                try ticket.check(deadline: deadline)
+                try binding.cookieCancellation.check(deadline: deadline)
+            }
+            if action == "response" {
+                let response = try originalResponseCookies(input, rawURL: url)
+                try await withTaskCancellationHandler {
+                    try await cookieOwner.ingestOriginalResponse(response.records, domain: domain,
+                        persistentText: response.persistent, sessionText: response.session, validate: validate)
+                } onCancel: { ticket.cancel() }
+            } else {
+                let raw = input["cookie"] as? String
+                guard action == "remove" || raw != nil, (raw?.utf8.count ?? 0) <= 65_536 else {
+                    throw failure("INVALID_STATE_REQUEST", "Cookie mutation requires bounded text")
+                }
+                try await withTaskCancellationHandler {
+                    try await cookieOwner.mutateOriginalText(domain: domain, action: action, raw: raw, validate: validate)
+                } onCancel: { ticket.cancel() }
+            }
+            // The actor has already replaced its file (or proved no change).
+            // A later cancel/revoke cannot be represented as an uncommitted write.
+            return try encoded(["committed": true])
+        } catch let error as CookieOwnerError { throw failure(error.code, error.message) }
+        catch let error as LegadoRuntimeError { throw error }
+        catch is CancellationError { throw CancellationError() }
+        catch {
+            AppLogger.error("The original Cookie text owner failed", error: error)
+            throw failure("STATE_IO", "The original Cookie text owner did not complete its operation")
+        }
+    }
+
+    private func originalResponseCookies(_ input: [String: Any], rawURL: String) throws
+        -> (records: [CookiePersistenceOwner.Record], persistent: String, session: String) {
+        guard let url = URL(string: rawURL), let host = url.host?.lowercased(),
+              ["http", "https"].contains(url.scheme?.lowercased() ?? ""),
+              let headers = input["headers"] as? [String], !headers.isEmpty, headers.count <= 256,
+              headers.reduce(0, { $0 + $1.utf8.count }) <= 65_536,
+              let cookies = input["cookies"] as? [[String: Any]], !cookies.isEmpty, cookies.count <= 256 else {
+            throw failure("INVALID_STATE_REQUEST", "Original response Cookies require bounded actual HTTP provenance")
+        }
+        var records: [CookiePersistenceOwner.Record] = []
+        var persistentValues: [String] = [], sessionValues: [String] = []
+        for cookie in cookies {
+            guard let name = cookie["name"] as? String, !name.isEmpty,
+                  let value = cookie["value"] as? String,
+                  let domain = cookie["domain"] as? String, !domain.isEmpty,
+                  let path = cookie["path"] as? String, path.hasPrefix("/"),
+                  let raw = cookie["setCookieHeader"] as? String, headers.contains(raw),
+                  let secure = cookieBoolean(cookie["secure"]), let httpOnly = cookieBoolean(cookie["httpOnly"]),
+                  let hostOnly = cookieBoolean(cookie["hostOnly"]), let persistent = cookieBoolean(cookie["persistent"]),
+                  let expiry = cookie["expiresAtMs"] as? NSNumber, CFGetTypeID(expiry) != CFBooleanGetTypeID(),
+                  let expiresAt = Int64(expiry.stringValue),
+                  hostOnly ? host == domain : (host == domain || host.hasSuffix("." + domain)) else {
+                throw failure("INVALID_STATE_REQUEST", "Original parsed Cookie attributes are malformed")
+            }
+            var properties: [HTTPCookiePropertyKey: Any] = [.name: name, .value: value,
+                .domain: hostOnly ? domain : "." + domain, .path: path, .originURL: url]
+            if secure { properties[.secure] = "TRUE" }
+            if httpOnly { properties[HTTPCookiePropertyKey("HttpOnly")] = "TRUE" }
+            let nativeExpiry = expiresAt == Int64.min ? Date(timeIntervalSince1970: 0)
+                : Date(timeIntervalSince1970: Double(expiresAt) / 1000)
+            if persistent {
+                // OkHttp Long.MIN_VALUE is an explicit deletion marker. Keep
+                // that exact integer in provenance and use an expired native date.
+                properties[.expires] = nativeExpiry
+            } else { properties[.discard] = "TRUE" }
+            guard let native = HTTPCookie(properties: properties), native.name == name, native.value == value,
+                  native.path == path, native.isSecure == secure, native.isHTTPOnly == httpOnly,
+                  native.isSessionOnly == !persistent, native.expiresDate == (persistent ? nativeExpiry : nil) else {
+                throw failure("UNSUPPORTED_CAPABILITY", "Parsed original Cookie cannot be represented by the existing native owner")
+            }
+            records.append(try CookiePersistenceOwner.Record(cookie: native, provenance: .httpResponse,
+                originURL: url, hostOnly: hostOnly, originalExpiresAtMs: expiresAt,
+                originalDomain: domain, originalSetCookieHeader: raw))
+            if persistent { persistentValues.append("\(name)=\(value)") }
+            else { sessionValues.append("\(name)=\(value)") }
+        }
+        let persistent = persistentValues.joined(separator: "; "), session = sessionValues.joined(separator: "; ")
+        guard input["persistentText"] as? String == persistent, input["sessionText"] as? String == session else {
+            throw failure("INVALID_STATE_REQUEST", "Original response text does not match its parsed attributes")
+        }
+        return (records, persistent, session)
+    }
+
+    private func cookieBoolean(_ raw: Any?) -> Bool? {
+        guard let number = raw as? NSNumber, CFGetTypeID(number) == CFBooleanGetTypeID() else { return nil }
+        return number.boolValue
     }
 
     private func cookieDomainURL(_ domain: String) -> URL? {

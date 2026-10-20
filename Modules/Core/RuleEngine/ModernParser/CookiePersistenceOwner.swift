@@ -47,6 +47,17 @@ actor CookiePersistenceOwner {
             case .url(let value): return value
             }
         }
+
+        static func == (lhs: Property, rhs: Property) -> Bool {
+            switch (lhs, rhs) {
+            case (.text(let a), .text(let b)): return a.utf8.elementsEqual(b.utf8)
+            case (.number(let a), .number(let b)): return a == b
+            case (.boolean(let a), .boolean(let b)): return a == b
+            case (.date(let a), .date(let b)): return a == b
+            case (.url(let a), .url(let b)): return a.absoluteString.utf8.elementsEqual(b.absoluteString.utf8)
+            default: return false
+            }
+        }
     }
 
     struct Record: Codable, Sendable, Equatable {
@@ -56,8 +67,12 @@ actor CookiePersistenceOwner {
         /// Unknown remains unknown. A leading dot is not a host-only proof.
         let hostOnly: Bool?
         let expiresAt: Date?
+        let originalExpiresAtMs: Int64?
+        let originalDomain: String?
+        let originalSetCookieHeader: String?
 
-        init(cookie: HTTPCookie, provenance: Provenance, originURL: URL?, hostOnly: Bool?) throws {
+        init(cookie: HTTPCookie, provenance: Provenance, originURL: URL?, hostOnly: Bool?,
+             originalExpiresAtMs: Int64? = nil, originalDomain: String? = nil, originalSetCookieHeader: String? = nil) throws {
             guard let original = cookie.properties else {
                 throw CookieOwnerError(code: "STATE_IO", message: "Cookie has no restorable native properties")
             }
@@ -68,6 +83,9 @@ actor CookiePersistenceOwner {
             self.originURL = originURL
             self.hostOnly = hostOnly
             self.expiresAt = cookie.expiresDate
+            self.originalExpiresAtMs = originalExpiresAtMs
+            self.originalDomain = originalDomain
+            self.originalSetCookieHeader = originalSetCookieHeader
             let restored = try native()
             guard restored.domain == cookie.domain, restored.path == cookie.path,
                   restored.name == cookie.name, restored.value == cookie.value,
@@ -91,6 +109,31 @@ actor CookiePersistenceOwner {
             }
             return cookie
         }
+
+        static func == (lhs: Record, rhs: Record) -> Bool {
+            func same(_ a: String?, _ b: String?) -> Bool {
+                switch (a, b) {
+                case (.none, .none): return true
+                case (.some(let a), .some(let b)): return a.utf8.elementsEqual(b.utf8)
+                default: return false
+                }
+            }
+            return lhs.properties == rhs.properties && lhs.provenance == rhs.provenance && lhs.hostOnly == rhs.hostOnly
+                && lhs.expiresAt == rhs.expiresAt && lhs.originalExpiresAtMs == rhs.originalExpiresAtMs
+                && same(lhs.originURL?.absoluteString, rhs.originURL?.absoluteString)
+                && same(lhs.originalDomain, rhs.originalDomain) && same(lhs.originalSetCookieHeader, rhs.originalSetCookieHeader)
+        }
+    }
+
+    /// Swift Dictionary String keys equate composed/decomposed Unicode; JVM/Room
+    /// raw domain keys do not. Non-ASCII original keys use rows in this same file,
+    /// without duplicating the ASCII domain data in legacyHeaders.
+    struct OriginalRawDomain: Codable, Sendable, Equatable {
+        let domain: String
+        let raw: String
+        static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.domain.utf8.elementsEqual(rhs.domain.utf8) && lhs.raw.utf8.elementsEqual(rhs.raw.utf8)
+        }
     }
 
     struct Document: Codable, Sendable, Equatable {
@@ -102,6 +145,18 @@ actor CookiePersistenceOwner {
         /// a second jar: an unchanged browser snapshot cannot overwrite a newer
         /// HTTP/script value or resurrect a cookie removed by this owner.
         var webKitObserved: [Record]?
+        var originalRawDomains: [OriginalRawDomain]? = nil
+
+        static func == (lhs: Self, rhs: Self) -> Bool {
+            guard lhs.version == rhs.version, lhs.cookies == rhs.cookies, lhs.webKitObserved == rhs.webKitObserved,
+                  lhs.originalRawDomains == rhs.originalRawDomains, lhs.legacyHeaders.count == rhs.legacyHeaders.count else { return false }
+            for (key, value) in lhs.legacyHeaders {
+                guard let index = rhs.legacyHeaders.index(forKey: key) else { return false }
+                let other = rhs.legacyHeaders[index]
+                guard key.utf8.elementsEqual(other.key.utf8), value.utf8.elementsEqual(other.value.utf8) else { return false }
+            }
+            return true
+        }
     }
 
     struct WebKitObservation: Sendable {
@@ -115,6 +170,7 @@ actor CookiePersistenceOwner {
     private let storage: HTTPCookieStorage
     private let beforeWrite: (@Sendable () throws -> Void)?
     private var document: Document?
+    private var originalSessionText: [Data: OriginalRawDomain] = [:]
 
     init(fileURL: URL, storage: HTTPCookieStorage, beforeWrite: (@Sendable () throws -> Void)? = nil) {
         self.fileURL = fileURL
@@ -167,7 +223,216 @@ actor CookiePersistenceOwner {
         let roots = try current.cookies.map { try $0.native() }.filter {
             $0.path == "/" && Self.stripped($0.domain) == Self.stripped(domain)
         }
-        return Self.legacyHeader(current.legacyHeaders[domain] ?? "", roots: roots)
+        return Self.legacyHeader(Self.originalRawText(current, domain: domain), roots: roots)
+    }
+
+    /// Original DB text stays in the existing raw field. Session text is the
+    /// original CacheManager projection in this same actor, not another RFC jar.
+    /// In particular it is not reconstructed from rich records after restart.
+    func originalText(domain: String) throws -> String {
+        let current = try loaded()
+        let raw = Self.originalRawText(current, domain: domain), session = originalSessionText[Data(domain.utf8)]?.raw ?? ""
+        guard raw.utf8.count + session.utf8.count <= 65_536 else {
+            throw CookieOwnerError(code: "STATE_LIMIT", message: "Original Cookie text exceeds its read budget")
+        }
+        return Self.mergeOriginalText(raw, session)
+    }
+
+    func originalSession(domain: String) throws -> String {
+        _ = try loaded()
+        return originalSessionText[Data(domain.utf8)]?.raw ?? ""
+    }
+
+    func originalRawText(domain: String) throws -> String { Self.originalRawText(try loaded(), domain: domain) }
+
+    func mutateOriginalText(domain: String, action: String, raw: String?,
+                            validate: @Sendable () throws -> Void = {}) throws {
+        try Task.checkCancellation(); try validate()
+        var next = try loaded()
+        guard domain.utf8.count <= 8_192, (raw?.utf8.count ?? 0) <= 65_536 else {
+            throw CookieOwnerError(code: "STATE_LIMIT", message: "Original Cookie mutation exceeds its byte budget")
+        }
+        guard ["set", "replace", "remove", "removeKey"].contains(action), action == "remove" || raw != nil else {
+            throw CookieOwnerError(code: "INVALID_STATE_REQUEST", message: "Unknown original Cookie text mutation")
+        }
+        if action == "replace", (domain.isEmpty || raw!.isEmpty) { return }
+        var sessions = originalSessionText
+        if action == "remove" {
+            Self.setOriginalRaw(nil, domain: domain, in: &next)
+            sessions.removeValue(forKey: Data(domain.utf8))
+        } else if action == "removeKey" {
+            // Locked CookieManager.removeCookie(url,key): an empty map does not
+            // replace the old cache/DB value. Preserve that original boundary.
+            if let session = sessions[Data(domain.utf8)]?.raw {
+                let remaining = Self.originalMap(session).filter { !$0.0.utf8.elementsEqual(raw!.utf8) }
+                if !remaining.isEmpty { sessions[Data(domain.utf8)] = OriginalRawDomain(domain: domain, raw: Self.originalString(remaining)) }
+            }
+            let cookie = Self.originalRawText(next, domain: domain)
+            guard cookie.utf8.count <= 65_536 else { throw CookieOwnerError(code: "STATE_LIMIT", message: "Original Cookie text exceeds its removal budget") }
+            if !cookie.isEmpty {
+                let remaining = Self.originalMap(cookie).filter { !$0.0.utf8.elementsEqual(raw!.utf8) }
+                if !remaining.isEmpty { Self.setOriginalRaw(Self.originalString(remaining), domain: domain, in: &next) }
+            }
+        } else if action == "replace" {
+            let old = Self.originalRawText(next, domain: domain)
+            guard old.utf8.count <= 65_536 else { throw CookieOwnerError(code: "STATE_LIMIT", message: "Original Cookie text exceeds its merge budget") }
+            Self.setOriginalRaw(old.isEmpty ? raw! : Self.mergeOriginalText(old, raw!), domain: domain, in: &next)
+        } else {
+            Self.setOriginalRaw(raw!, domain: domain, in: &next)
+        }
+        try Self.checkOriginalSessionBudget(sessions)
+        let removed = action == "remove" ? (storage.cookies ?? []).filter { Self.related($0.domain, domain) } : []
+        if action == "remove" {
+            next.cookies = try next.cookies.filter { !Self.related(try $0.native().domain, domain) }
+        }
+        // Raw set/replace, like original DB set/replace, does not manufacture or
+        // overwrite WK/HTTP attributes. Native requests use their RFC projection;
+        // original text requests use originalText above, with original precedence.
+        try accept(next, validate: validate) {
+            self.originalSessionText = sessions
+            removed.forEach(self.storage.deleteCookie)
+        }
+    }
+
+    /// Parsed by original OkHttp from this exact response URL/Set-Cookie headers.
+    /// Rich metadata and persistent text share this file's atomic replacement;
+    /// session text is published only after that succeeds, and expires at owner
+    /// lifetime just like original CacheManager's memory entries.
+    func ingestOriginalResponse(_ records: [Record], domain: String, persistentText: String, sessionText: String,
+                                validate: @Sendable () throws -> Void = {}) throws {
+        guard !records.isEmpty else { return }
+        guard domain.utf8.count <= 8_192, persistentText.utf8.count <= 65_536, sessionText.utf8.count <= 65_536 else {
+            throw CookieOwnerError(code: "STATE_LIMIT", message: "Original response Cookie text exceeds its byte budget")
+        }
+        var next = try loaded()
+        let native = try records.map { try $0.native() }
+        guard records.allSatisfy({ $0.provenance == .httpResponse && $0.originURL != nil && $0.hostOnly != nil }) else {
+            throw CookieOwnerError(code: "INVALID_STATE_REQUEST", message: "Original HTTP Cookie provenance is incomplete")
+        }
+        try merge(records, into: &next)
+        let old = Self.originalRawText(next, domain: domain)
+        guard old.utf8.count <= 65_536 else { throw CookieOwnerError(code: "STATE_LIMIT", message: "Original Cookie text exceeds its merge budget") }
+        if !domain.isEmpty, !persistentText.isEmpty {
+            Self.setOriginalRaw(old.isEmpty ? persistentText : Self.mergeOriginalText(old, persistentText), domain: domain, in: &next)
+        }
+        var sessions = originalSessionText
+        let previous = sessions[Data(domain.utf8)]?.raw ?? ""
+        sessions[Data(domain.utf8)] = OriginalRawDomain(domain: domain, raw: previous.isEmpty ? sessionText : Self.mergeOriginalText(previous, sessionText))
+        try Self.checkOriginalSessionBudget(sessions)
+        // Original DB raw strings do not carry natural expiry. Keep that text
+        // contract explicit; native requestHeader still uses v5 RFC expiry rules.
+        try accept(next, validate: validate) {
+            self.originalSessionText = sessions
+            native.forEach(self.storage.setCookie)
+        }
+    }
+
+    private static func checkOriginalSessionBudget(_ sessions: [Data: OriginalRawDomain]) throws {
+        guard sessions.count <= 256, sessions.values.reduce(0, { $0 + $1.domain.utf8.count + $1.raw.utf8.count }) <= 1_048_576 else {
+            throw CookieOwnerError(code: "STATE_LIMIT", message: "Original Cookie session text exceeds its owner budget")
+        }
+    }
+
+    private static func originalRawText(_ document: Document, domain: String) -> String {
+        if let row = document.originalRawDomains?.first(where: { $0.domain.utf8.elementsEqual(domain.utf8) }) { return row.raw }
+        guard let index = document.legacyHeaders.index(forKey: domain) else { return "" }
+        let entry = document.legacyHeaders[index]
+        return entry.key.utf8.elementsEqual(domain.utf8) ? entry.value : ""
+    }
+
+    private static func setOriginalRaw(_ raw: String?, domain: String, in document: inout Document) {
+        if domain.utf8.allSatisfy({ $0 < 128 }) {
+            if let index = document.legacyHeaders.index(forKey: domain),
+               !document.legacyHeaders[index].key.utf8.elementsEqual(domain.utf8) {
+                // A v1 Unicode key can canonically equal an ASCII key (Kelvin
+                // sign/K). Preserve its exact original identity before insertion.
+                guard raw != nil else { return }
+                let previous = document.legacyHeaders.remove(at: index)
+                var rows = document.originalRawDomains ?? []
+                rows.append(OriginalRawDomain(domain: previous.key, raw: previous.value))
+                document.originalRawDomains = rows
+            }
+            if let raw { document.legacyHeaders[domain] = raw }
+            else { document.legacyHeaders.removeValue(forKey: domain) }
+            return
+        }
+        if let index = document.legacyHeaders.index(forKey: domain), document.legacyHeaders[index].key.utf8.elementsEqual(domain.utf8) {
+            document.legacyHeaders.remove(at: index)
+        }
+        var rows = document.originalRawDomains ?? []
+        rows.removeAll { $0.domain.utf8.elementsEqual(domain.utf8) }
+        if let raw { rows.append(OriginalRawDomain(domain: domain, raw: raw)) }
+        document.originalRawDomains = rows.isEmpty ? nil : rows
+    }
+
+    private static func validateOriginalRawDomains(_ document: Document, code: String) throws {
+        let rows = document.originalRawDomains ?? []
+        guard rows.count + document.legacyHeaders.count <= 16_384 else {
+            throw CookieOwnerError(code: code, message: "Too many original Cookie domains")
+        }
+        var identities = Set(document.legacyHeaders.keys.map { Data($0.utf8) })
+        for row in rows {
+            guard !row.domain.utf8.allSatisfy({ $0 < 128 }), row.domain.utf8.count <= 8_192, row.raw.utf8.count <= 65_536,
+                  identities.insert(Data(row.domain.utf8)).inserted else {
+                throw CookieOwnerError(code: code, message: "Original Cookie domain rows are duplicate or oversized")
+            }
+        }
+    }
+
+    private static func mergeOriginalText(_ values: String...) -> String {
+        var ordered: [(String, String)] = []
+        var positions: [Data: Int] = [:]
+        for value in values {
+            for pair in originalMap(value) {
+                let identity = Data(pair.0.utf8)
+                if let position = positions[identity] { ordered[position].1 = pair.1 }
+                else { positions[identity] = ordered.count; ordered.append(pair) }
+            }
+        }
+        return originalString(ordered)
+    }
+
+    private static func originalMap(_ value: String) -> [(String, String)] {
+        var ordered: [(String, String)] = []
+        var positions: [Data: Int] = [:]
+        // Split the ASCII code units, as the original JVM regex does. Swift
+        // Character splitting would miss '=' or ';' followed by a combining mark.
+        for field in value.utf8.split(separator: 59, omittingEmptySubsequences: false) {
+            guard let equals = field.firstIndex(of: 61) else { continue }
+            let rawKey = String(decoding: field[..<equals], as: UTF8.self)
+            let rawValue = String(decoding: field[field.index(after: equals)...], as: UTF8.self)
+            guard !rawValue.unicodeScalars.allSatisfy({ scalar in
+                // Character.isWhitespace || isSpaceChar from pinned JDK21,
+                // which is Kotlin Char.isWhitespace; NEL(U+0085) is not blank.
+                switch scalar.value {
+                case 9...13, 28...32, 0xA0, 0x1680, 0x2000...0x200A, 0x2028, 0x2029, 0x202F, 0x205F, 0x3000: return true
+                default: return false
+                }
+            }) else { continue }
+            let key = asciiTrim(rawKey[...]), text = asciiTrim(rawValue[...])
+            // JVM String keys use code-unit equality, not Swift's canonical
+            // Unicode equality. Keep composed/decomposed Cookie names distinct.
+            let identity = Data(key.utf8)
+            if let position = positions[identity] { ordered[position].1 = text }
+            else { positions[identity] = ordered.count; ordered.append((key, text)) }
+        }
+        return ordered
+    }
+
+    private static func originalString(_ values: [(String, String)]) -> String {
+        values.map { "\($0.0)=\($0.1)" }.joined(separator: "; ")
+    }
+
+    private static func asciiTrim(_ value: Substring) -> String {
+        let scalars = value.unicodeScalars
+        var start = scalars.startIndex, end = scalars.endIndex
+        while start < end, scalars[start].value <= 32 { scalars.formIndex(after: &start) }
+        while start < end {
+            let previous = scalars.index(before: end)
+            guard scalars[previous].value <= 32 else { break }
+            end = previous
+        }
+        return String(scalars[start..<end])
     }
 
     func set(url: String, raw: String) throws {
@@ -289,12 +554,22 @@ actor CookiePersistenceOwner {
         }
         let identities = Set(removed.map(Self.identity))
         next.cookies = try next.cookies.filter { !identities.contains(Self.identity(try $0.native())) }
-        try accept(next) { removed.forEach(self.storage.deleteCookie) }
+        var sessions = originalSessionText
+        for (identity, row) in sessions where Self.related(row.domain, host) {
+            if let key {
+                let remaining = Self.originalMap(row.raw).filter { !$0.0.utf8.elementsEqual(key.utf8) }
+                sessions[identity] = OriginalRawDomain(domain: row.domain, raw: Self.originalString(remaining))
+            } else { sessions.removeValue(forKey: identity) }
+        }
+        try accept(next) { self.originalSessionText = sessions; removed.forEach(self.storage.deleteCookie) }
     }
 
     func clearAll() throws {
         let current = try loaded()
-        try accept(Document(webKitObserved: current.webKitObserved)) { self.storage.removeCookies(since: .distantPast) }
+        try accept(Document(webKitObserved: current.webKitObserved)) {
+            self.originalSessionText.removeAll()
+            self.storage.removeCookies(since: .distantPast)
+        }
     }
 
     private func loaded() throws -> Document {
@@ -304,11 +579,16 @@ actor CookiePersistenceOwner {
             guard let data = try Self.readFile(fileURL) else { return Document() }
             do {
                 let object = try JSONSerialization.jsonObject(with: data)
-                if let legacy = object as? [String: String] { return Document(legacyHeaders: legacy) }
+                if let legacy = object as? [String: String] {
+                    let value = Document(legacyHeaders: legacy)
+                    try Self.validateOriginalRawDomains(value, code: "STATE_IO")
+                    return value
+                }
                 let value = try JSONDecoder().decode(Document.self, from: data)
                 guard value.version == 2, value.cookies.count <= 16_384, (value.webKitObserved?.count ?? 0) <= 16_384 else {
                     throw CookieOwnerError(code: "STATE_IO", message: "Unsupported Cookie file format or size")
                 }
+                try Self.validateOriginalRawDomains(value, code: "STATE_IO")
                 _ = try Self.index(value.cookies)
                 if let observed = value.webKitObserved { _ = try Self.index(observed) }
                 return value
@@ -418,6 +698,7 @@ actor CookiePersistenceOwner {
     private func accept(_ next: Document, validate: @Sendable () throws -> Void = {}, publish: () -> Void) throws {
         try Task.checkCancellation()
         try validate()
+        try Self.validateOriginalRawDomains(next, code: "STATE_LIMIT")
         guard document != next else { publish(); return }
         guard revision < UInt64.max else { throw CookieOwnerError(code: "STATE_LIMIT", message: "Cookie owner revision space exhausted") }
         try SourcePerfTrace.span("cookie.owner.write", "cookies=\(next.cookies.count) main=\(Thread.isMainThread)") {

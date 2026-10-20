@@ -7,7 +7,8 @@ internal data class RuntimeSessionOptions(val httpTransport: String = "platform-
                                         val stateOwner: String? = null, val sourceMode: String = "existing",
                                         val cookieAccess: String = "session-jar") {
     val usesJvmHttp get() = httpTransport == "jvm-okhttp"
-    val usesAppCookieOwner get() = cookieAccess == "app-owner-read"
+    val usesAppCookieOwner get() = cookieAccess in setOf("app-owner-read", "app-owner-text")
+    val writesAppCookieOwner get() = cookieAccess == "app-owner-text"
     val usesOriginalTraditional get() = sourceMode == "original-traditional"
     companion object {
         fun parse(options: JsonObject): RuntimeSessionOptions {
@@ -26,8 +27,8 @@ internal data class RuntimeSessionOptions(val httpTransport: String = "platform-
             if (sourceMode == "original-traditional" && (mode != "jvm-okhttp" || owner == null))
                 throw RuntimeFailure("UNSUPPORTED_CAPABILITY", "Original traditional mode requires jvm-okhttp and an embedding stateOwner")
             val cookieAccess = string("cookieAccess") ?: "session-jar"
-            require(cookieAccess in setOf("session-jar", "app-owner-read")) { "Unknown Cookie access mode: $cookieAccess" }
-            if (cookieAccess == "app-owner-read" && (sourceMode != "original-traditional" || owner == null))
+            require(cookieAccess in setOf("session-jar", "app-owner-read", "app-owner-text")) { "Unknown Cookie access mode: $cookieAccess" }
+            if (cookieAccess != "session-jar" && (sourceMode != "original-traditional" || owner == null))
                 throw RuntimeFailure("UNSUPPORTED_CAPABILITY", "App Cookie owner access requires original traditional mode and an explicit owner")
             return RuntimeSessionOptions(mode, agent, owner, sourceMode, cookieAccess)
         }

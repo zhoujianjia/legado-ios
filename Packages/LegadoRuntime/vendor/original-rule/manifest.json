@@ -296,6 +296,12 @@
       "vendorPath": "sources/help/book/BookExtensions.kt",
       "bytes": 12536,
       "sha256": "bdac691b429d21ba9e5ad1d8d9b4235a4dd3d7f3b394c6a3c48b4d8a685488cd"
+    },
+    {
+      "archivePath": "legado-master/app/src/main/java/io/legado/app/help/http/CookieManager.kt",
+      "vendorPath": "sources/help/http/CookieManager.kt",
+      "bytes": 5369,
+      "sha256": "028c10cbfab578e69c3314d3e5c5cdacc3df46b692d872eb1cd955c357d6f1e0"
     }
   ],
   "retainedAlgorithms": {
@@ -331,6 +337,11 @@
     "BookContent.kt": [
       "Retained original algorithmic method bodies/ordering; explicit environment/task/response/transient-state seams and finite unsupported boundaries are listed in webBookIntegration.",
       "Online text subContent now follows the pinned first-page AnalyzeRule scope and raw append before replacement; pinned online-text predicate restores post-replacement two-ideographic-space line indentation. Non-text side channels remain unsupported."
+    ],
+    "CookieStore.kt / CookieManager.kt": [
+      "Original cookieToMap/mapToCookie/mergeCookies/mergeCookieValues pure method bodies shared by actual rule host and production request/response Cookie text path.",
+      "CookieManager.loadRequest uses each actual request header then current DB/session domain text, saved values last. Cookie.parseAll uses actual response URL and ordered Set-Cookie headers before redirects continue.",
+      "Android Room/CacheManager/WebKit calls are explicit App-owner ports; this does not claim full CookieManager/browser/clear API or Android error-recovery parity."
     ]
   },
   "platformSeams": [
@@ -632,6 +643,9 @@
     },
     {
       "path": "io/yuedu/legado/originalrule/AppCookieOwnerClient.class"
+    },
+    {
+      "path": "io/yuedu/legado/originalrule/OriginalCookieText.class"
     }
   ],
   "runtimeResources": [
@@ -699,8 +713,8 @@
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
-      "bytes": 7043,
-      "sha256": "4598e1ae5d2ebe002c2c8aa933bb9c613287aaf0613fded5d38e4ef29ba03ae8"
+      "bytes": 7565,
+      "sha256": "3a765b5bb8f0932d4b413da2de66e2ac2a9903fccd17ce73fd8a268de739ffa6"
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt",
@@ -839,13 +853,18 @@
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePersistence.kt",
-      "bytes": 5585,
-      "sha256": "0f7a764d8bb3d7ddd19f8261e29a171a0911a9082d558aacb4ddfaeda525def8"
+      "bytes": 5940,
+      "sha256": "275ef4799651057d1feac065a8f7a79dc1cf8f439ddee067e33ad1de697eee31"
     },
     {
       "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/AppCookieOwnerClient.kt",
-      "bytes": 3068,
-      "sha256": "95e16ad1b0aa373b0395308f856f0c86500b250cb90ccd482e34b6849235078e"
+      "bytes": 7485,
+      "sha256": "19451038044a69f309446399300decf2ce043c140a6b0a71e0c91ad1aa355f0b"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalCookieText.kt",
+      "bytes": 2228,
+      "sha256": "1525eb9f39ed3f7cc7c497334a549b88b7a6d8e9a15a09e66e017441646dbfa5"
     }
   ],
   "readerRouteIntegrated": false,
@@ -906,8 +925,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
-        "bytes": 7043,
-        "sha256": "4598e1ae5d2ebe002c2c8aa933bb9c613287aaf0613fded5d38e4ef29ba03ae8"
+        "bytes": 7565,
+        "sha256": "3a765b5bb8f0932d4b413da2de66e2ac2a9903fccd17ce73fd8a268de739ffa6"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleJsResult.kt",
@@ -916,8 +935,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
-        "bytes": 14300,
-        "sha256": "11cbf9fb1408732e00d0be842fcc7ee248e2b7490a89bb394381f10e66269959"
+        "bytes": 15778,
+        "sha256": "7e8bf02cf0935c9c0b9a33f2b7566583839fb26a5163a83236f1f91b4b5212d8"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalIpValidator.kt",
@@ -946,8 +965,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/ProductionHttpTransport.kt",
-        "bytes": 11462,
-        "sha256": "8625e8bcbc36c8d1b38fbc7f7b3b86b269e528c5567d0a515b4de19c97a29aab"
+        "bytes": 12709,
+        "sha256": "e3e522966ff6654dd3c875e187241d3b1aba08b5d0216fc842f938b16ca8378d"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/com/script/rhino/RhinoContext.kt",
@@ -961,8 +980,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
-        "bytes": 24988,
-        "sha256": "92e54ac2a09db223850c8a083cf3a2134997955ba40234421d33aa8ecc19a492"
+        "bytes": 25556,
+        "sha256": "0dd29a3b9cbb660c8d1381ac8bf596aaaef8533cb837f2c8651eeeaca9172dae"
       }
     ],
     "implemented": [
@@ -1217,18 +1236,18 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
-        "bytes": 24988,
-        "sha256": "92e54ac2a09db223850c8a083cf3a2134997955ba40234421d33aa8ecc19a492"
+        "bytes": 25556,
+        "sha256": "0dd29a3b9cbb660c8d1381ac8bf596aaaef8533cb837f2c8651eeeaca9172dae"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
-        "bytes": 14300,
-        "sha256": "11cbf9fb1408732e00d0be842fcc7ee248e2b7490a89bb394381f10e66269959"
+        "bytes": 15778,
+        "sha256": "7e8bf02cf0935c9c0b9a33f2b7566583839fb26a5163a83236f1f91b4b5212d8"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
-        "bytes": 7043,
-        "sha256": "4598e1ae5d2ebe002c2c8aa933bb9c613287aaf0613fded5d38e4ef29ba03ae8"
+        "bytes": 7565,
+        "sha256": "3a765b5bb8f0932d4b413da2de66e2ac2a9903fccd17ce73fd8a268de739ffa6"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt",
@@ -1293,8 +1312,8 @@
     "integrationSources": [
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePersistence.kt",
-        "bytes": 5585,
-        "sha256": "0f7a764d8bb3d7ddd19f8261e29a171a0911a9082d558aacb4ddfaeda525def8"
+        "bytes": 5940,
+        "sha256": "275ef4799651057d1feac065a8f7a79dc1cf8f439ddee067e33ad1de697eee31"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt",
@@ -1308,23 +1327,23 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
-        "bytes": 14300,
-        "sha256": "11cbf9fb1408732e00d0be842fcc7ee248e2b7490a89bb394381f10e66269959"
+        "bytes": 15778,
+        "sha256": "7e8bf02cf0935c9c0b9a33f2b7566583839fb26a5163a83236f1f91b4b5212d8"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
-        "bytes": 7043,
-        "sha256": "4598e1ae5d2ebe002c2c8aa933bb9c613287aaf0613fded5d38e4ef29ba03ae8"
+        "bytes": 7565,
+        "sha256": "3a765b5bb8f0932d4b413da2de66e2ac2a9903fccd17ce73fd8a268de739ffa6"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
-        "bytes": 24988,
-        "sha256": "92e54ac2a09db223850c8a083cf3a2134997955ba40234421d33aa8ecc19a492"
+        "bytes": 25556,
+        "sha256": "0dd29a3b9cbb660c8d1381ac8bf596aaaef8533cb837f2c8651eeeaca9172dae"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/RuntimeSessionOptions.kt",
-        "bytes": 2586,
-        "sha256": "e4826a032dc350c11792a1291d86fea64451daa5a863e570d3e660200e0f090c"
+        "bytes": 2696,
+        "sha256": "53a89246ae689e6d10ccecf361397061e3c473a50fdc8100c4fef174e1d13f8e"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/SourceHosts.kt",
@@ -1333,8 +1352,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/ProductionHttpTransport.kt",
-        "bytes": 11462,
-        "sha256": "8625e8bcbc36c8d1b38fbc7f7b3b86b269e528c5567d0a515b4de19c97a29aab"
+        "bytes": 12709,
+        "sha256": "e3e522966ff6654dd3c875e187241d3b1aba08b5d0216fc842f938b16ca8378d"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/RuntimeHttpRequestExecutor.kt",
@@ -1414,20 +1433,20 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
-        "bytes": 24988,
-        "sha256": "92e54ac2a09db223850c8a083cf3a2134997955ba40234421d33aa8ecc19a492"
+        "bytes": 25556,
+        "sha256": "0dd29a3b9cbb660c8d1381ac8bf596aaaef8533cb837f2c8651eeeaca9172dae"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/RuntimeSessionOptions.kt",
-        "bytes": 2586,
-        "sha256": "e4826a032dc350c11792a1291d86fea64451daa5a863e570d3e660200e0f090c"
+        "bytes": 2696,
+        "sha256": "53a89246ae689e6d10ccecf361397061e3c473a50fdc8100c4fef174e1d13f8e"
       }
     ],
     "apiSources": [
       {
         "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
-        "bytes": 18826,
-        "sha256": "74755c15ffc9298ab823463f42592e00967668f9e52c9f9d766701790394eaad"
+        "bytes": 19443,
+        "sha256": "83bcd02b72fd92f6f6bce2fd64e42993362f72a7962e2fd706627ea80f3ce325"
       },
       {
         "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
@@ -1529,28 +1548,28 @@
     "integrationSources": [
       {
         "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
-        "bytes": 32226,
-        "sha256": "152b28542a577294cdade7df29725879bc75d10881028736be049cc5820f3148"
+        "bytes": 41132,
+        "sha256": "ba9db4e6f8aaf796ef46e6748aef501a274b050e62d0aba265a298855ec2454d"
       },
       {
         "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
-        "bytes": 18826,
-        "sha256": "74755c15ffc9298ab823463f42592e00967668f9e52c9f9d766701790394eaad"
+        "bytes": 19443,
+        "sha256": "83bcd02b72fd92f6f6bce2fd64e42993362f72a7962e2fd706627ea80f3ce325"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/RuntimeSessionOptions.kt",
-        "bytes": 2586,
-        "sha256": "e4826a032dc350c11792a1291d86fea64451daa5a863e570d3e660200e0f090c"
+        "bytes": 2696,
+        "sha256": "53a89246ae689e6d10ccecf361397061e3c473a50fdc8100c4fef174e1d13f8e"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/AppCookieOwnerClient.kt",
-        "bytes": 3068,
-        "sha256": "95e16ad1b0aa373b0395308f856f0c86500b250cb90ccd482e34b6849235078e"
+        "bytes": 7485,
+        "sha256": "19451038044a69f309446399300decf2ce043c140a6b0a71e0c91ad1aa355f0b"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
-        "bytes": 14300,
-        "sha256": "11cbf9fb1408732e00d0be842fcc7ee248e2b7490a89bb394381f10e66269959"
+        "bytes": 15778,
+        "sha256": "7e8bf02cf0935c9c0b9a33f2b7566583839fb26a5163a83236f1f91b4b5212d8"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleCompat.kt",
@@ -1559,8 +1578,8 @@
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/smoke/java/LegadoPayloadSmoke.java",
-        "bytes": 10550,
-        "sha256": "bc2e95d5ac1f07e9402ca1483ae36c3dd8a10b0ca246027552ee71ce476c850c"
+        "bytes": 14580,
+        "sha256": "c478cb3befc9c019b39b732d4e54d81017a00135bcde7760845ff4bbf65e9340"
       },
       {
         "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/AppCookieOwnerReadTest.kt",
@@ -1609,5 +1628,114 @@
     ],
     "readerRouteIntegrated": false,
     "fullFeatureParityEstablished": false
+  },
+  "appCookieOwnerTextIntegration": {
+    "scope": "Explicit app-owner-text production mode connects original Cookie scalar text/getKey/Map utilities and original ordered response parsing to the existing App CookieStore owner. Default and read-only modes unchanged; no new transport/jar/file or App route switch.",
+    "integrationSources": [
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/CookiePersistenceOwner.swift",
+        "bytes": 40842,
+        "sha256": "5745fd8eeeeba17bd73946501c8df2872c86665558e2d46484e6dfc4f4ed2403"
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/CookieStore.swift",
+        "bytes": 10568,
+        "sha256": "999f89c81f9a4db7dbf4cea8e1bafaf5a83def9ff9be21ebbccdc79c80ecc21d"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 41132,
+        "sha256": "ba9db4e6f8aaf796ef46e6748aef501a274b050e62d0aba265a298855ec2454d"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+        "bytes": 19443,
+        "sha256": "83bcd02b72fd92f6f6bce2fd64e42993362f72a7962e2fd706627ea80f3ce325"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+        "bytes": 25556,
+        "sha256": "0dd29a3b9cbb660c8d1381ac8bf596aaaef8533cb837f2c8651eeeaca9172dae"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/ProductionHttpTransport.kt",
+        "bytes": 12709,
+        "sha256": "e3e522966ff6654dd3c875e187241d3b1aba08b5d0216fc842f938b16ca8378d"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/RuntimeSessionOptions.kt",
+        "bytes": 2696,
+        "sha256": "53a89246ae689e6d10ccecf361397061e3c473a50fdc8100c4fef174e1d13f8e"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/AppCookieOwnerClient.kt",
+        "bytes": 7485,
+        "sha256": "19451038044a69f309446399300decf2ce043c140a6b0a71e0c91ad1aa355f0b"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalCookieText.kt",
+        "bytes": 2228,
+        "sha256": "1525eb9f39ed3f7cc7c497334a549b88b7a6d8e9a15a09e66e017441646dbfa5"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+        "bytes": 15778,
+        "sha256": "7e8bf02cf0935c9c0b9a33f2b7566583839fb26a5163a83236f1f91b4b5212d8"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePersistence.kt",
+        "bytes": 5940,
+        "sha256": "275ef4799651057d1feac065a8f7a79dc1cf8f439ddee067e33ad1de697eee31"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+        "bytes": 7565,
+        "sha256": "3a765b5bb8f0932d4b413da2de66e2ac2a9903fccd17ce73fd8a268de739ffa6"
+      }
+    ],
+    "protocol": {
+      "operation": "cookie.owner.text",
+      "actions": [
+        "get",
+        "session",
+        "set",
+        "replace",
+        "remove",
+        "removeKey",
+        "response"
+      ],
+      "sameTaskAndOwner": true,
+      "response": "Known original OkHttp Cookie attributes plus actual URL and Set-Cookie header provenance. No unknown WK hostOnly is invented.",
+      "sequentialLogin": "putLoginHeader commits Cookie replace before header put; removeLoginHeader deletes header before Cookie remove. Later failure remains typed and exposes completedEffects. The existing outward atomic state.commit batch still preflights unsupported combinations before any writes."
+    },
+    "nativeOwner": "Same existing CookieStore actor/file/native storage. ASCII original DB raw text stays in legacyHeaders; byte-distinct non-ASCII raw domain keys use bounded rows in the same version2 file. Original session text uses bounded same-actor memory (256 domains/1MiB) and is not reconstructed from native rich records on restart.",
+    "stringContract": "Case-sensitive original Java map order/duplicate/empty/ASCII trim/Kotlin blank/UTF-16 length behavior retained. Native text ports use UTF8 byte identities rather than Swift canonical Unicode equality.",
+    "expiry": "Original DB raw text has no natural expiry; original process-session text has owner lifetime. Existing native RFC rich projection still filters Path/Secure/expiry. These are distinct original/App contracts, not a full RFC snapshot import.",
+    "durabilityBoundary": "Single Cookie-owner response rich/raw file replacement is checked before in-memory session/native publication; failed owner writes retain prior file/live state and return typed errors. This strict durable acknowledgement differs from Android logged DB failures and its early session-memory side effect; full Android failure recovery parity is not claimed.",
+    "validation": {
+      "runRecord": ".build/original-app-cookie-write-delta/focused-v3.json",
+      "actualUniqueMethods": 63,
+      "newMethods": 5,
+      "affectedOldMethods": 58,
+      "suites": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "newAndroidObservations": 0,
+      "newNativeAppTestDefinitions": 5,
+      "newSwiftPackageTestDefinitions": 2,
+      "SwiftSDKExecuted": false,
+      "jniExecuted": false,
+      "defaultProductRouteEnabled": false
+    },
+    "remaining": [
+      "setWebCookie/browser apply/remove and clear original OkHttp-DB subset are explicit unsupported methods until their original platform contracts are connected.",
+      "Unknown WK hostOnly remains unknown. Original text operations do not pretend to supply a full RFC Cookie CAS snapshot; foreign native mutations and cross-owner atomic login combinations remain separate capability boundaries.",
+      "Full native ingress to original CacheManager session text parity, normal JAR to JNI to actual native product-chain validation, preview mapping and C2/C3/C4 gates remain unfinished."
+    ],
+    "completeCookieContract": false,
+    "appTraditionalRouteIntegrated": false,
+    "iosValidationPassed": false,
+    "deviceValidationPassed": false
   }
 }

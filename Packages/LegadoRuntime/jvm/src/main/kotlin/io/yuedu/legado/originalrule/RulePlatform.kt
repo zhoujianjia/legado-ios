@@ -64,7 +64,12 @@ open class RulePlatform {
 open class RuleCookieHost {
     open fun getCookie(url: String): String = unsupportedRule("original CookieStore")
     open fun getCookie(url: String, key: String?): String = unsupportedRule("original CookieStore")
-    open fun setCookie(url: String, value: String): Unit = unsupportedRule("original CookieStore")
+    open fun getKey(url: String, key: String): String = getCookie(url, key)
+    open fun cookieToMap(cookie: String): MutableMap<String, String> = OriginalCookieText.cookieToMap(cookie)
+    open fun mapToCookie(cookieMap: Map<String, String>?): String? = OriginalCookieText.mapToCookie(cookieMap)
+    open fun setCookie(url: String, value: String?): Unit = unsupportedRule("original CookieStore")
+    open fun setWebCookie(url: String, value: String): Unit = unsupportedRule("original CookieStore.setWebCookie browser mutation")
+    open fun clear(): Unit = unsupportedRule("original CookieStore.clear OkHttp DB subset")
     open fun replaceCookie(url: String, value: String): Unit = unsupportedRule("original CookieStore")
     open fun removeCookie(url: String): Unit = unsupportedRule("original CookieStore")
 }
