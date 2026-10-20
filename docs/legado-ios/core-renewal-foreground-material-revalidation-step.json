@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T08:21:49.565883+00:00",
+  "status": "S5-implementation-and-S6-preparatory-bounded-foreground-revalidation-SDK-unexecuted",
+  "sourceBaselineCommit": "a3a639798632e221ce3154c5f779400b72610313",
+  "integrationBaselineCommit": "a860f35e5c07b99e24c711ee8b1bf080f540deb1",
+  "sourceBinding": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+      "bytes": 26496,
+      "sha256": "0203c5429d03863241911401512ab4acfbf64cc58f4e686dfa6a12409dd52d50"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 46088,
+      "sha256": "4dd0922c904ed0bfd7e08bd3a638f9ccc5c5e6c8fd4a620e09f9620004477e38"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "bytes": 6998,
+      "sha256": "b914f5000bc962daa5c41ccbd5c81d682c2b6aee6f8b3a305a994a7113c88f62"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalForegroundMaterialRevalidationTests.swift",
+      "bytes": 25172,
+      "sha256": "035c92b1e5d7c22a22c3dd5afd8f4546a61e9e73a7fa4d19c7ed84a5c9365745"
+    }
+  ],
+  "actualAppConnection": [
+    "The one Coordinator validates actual bounded Keychain publication/private key/certificate chain/modern profile CMS and expiry via Vault.lease before every observation early return; exact namespace/generation remains bound to the current journal.",
+    "The one Session stores only two validity dates from its actual verified connect profiles and checks them before foreground observation, detecting known connected-profile expiry even when replacement signing profiles are newer.",
+    "Any actual material observation failure immediately discards signing context before awaiting independent user-data comparison. Only the existing material-error whitelist may create an actual record-only recovery capability; typed storage/cancellation remains distinct.",
+    "Status returned after a failed replacement status write reflects retained access, never stale persisted signing access. It retains the prior timestamp and does not claim the new state was durably written.",
+    "The existing AppOwner becameActive to bootstrap to Session to Coordinator path remains the product entry; no UI, schedule, extra store, credential owner, network, upload or submit is introduced."
+  ],
+  "ownedTestBoundary": {
+    "newInitializer": "DEBUG-only root/currentApplicationRoot initializer on the existing AppOwner and Session; production initialization still uses Bundle.main.",
+    "proof": "Owned application bytes pass the actual complete ApplicationMaterialVerifier, Vault.resume, current lease and identity checks. Configuration JSON cannot select a root or construct a proof.",
+    "prohibition": "The owned root can only invoke the real limited material-validation path. Any phase requiring current-process observation throws ownedApplicationIsNotCurrentProcess; it cannot synthesize installed or process evidence.",
+    "fixtureIO": "Only public owned Package fixture bytes copied using its actual bounded ZIP plan, followed by independent real complete material verification; dynamically generated real Keychain keys remain unexported."
+  },
+  "confirmedOriginalGaps": [
+    "Coordinator nil transaction, unsubmitted phase, and same-process cached material returns occurred before the actual current Vault lease check.",
+    "A connected App session retained signing access if new material errors had no eligible remote recovery record or if a storage error was not a recovery whitelist member.",
+    "An old persisted signing status could still be returned after an access-invalidating failure when writing its replacement status failed."
+  ],
+  "independentReviewFix": {
+    "confirmedFinding": "If material and normal-user-data observations both failed and the material-only recovery factory also failed, the factory catch discarded the independent normal-user-data error.",
+    "change": "Only the Session recovery-factory catch changed. With a real normal-user-data error it now returns ObservationFailures containing that error and the original fallback error (which itself retains material and recovery-context failures); storage classification is computed from the actual fallback error.",
+    "changedFiles": [
+      "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift"
+    ],
+    "unchangedOtherSources": 3,
+    "methodDefinitionsAdded": 0,
+    "runtimeRegressionExecuted": 0,
+    "note": "No artificial proof/fake recovery or additional test-only owner is introduced merely to force this simultaneous-error branch; source narrow review is required."
+  },
+  "verification": {
+    "newNativeDefinitions": 6,
+    "suite": "SelfRenewalForegroundMaterialRevalidationTests",
+    "methods": [
+      "revalidatesActualLeaseBeforeNilAndUnsubmittedReturns",
+      "revokedUploadRetainsOnlyExistingAuthenticatedRecovery",
+      "appForegroundExpiresKnownProfileWithoutRereadingApplication",
+      "appForegroundRevocationKeepsUploadCleanupExplicit",
+      "preservesTypedKeychainFailureAndForegroundCancellation",
+      "refusesOwnedApplicationAsCurrentProcessEvidence"
+    ],
+    "nativeExecuted": 0,
+    "KeychainExecuted": 0,
+    "TLSExecuted": 0,
+    "SDKCompilation": false,
+    "grammarSourceFiles": 4,
+    "grammarDiagnostics": 0,
+    "grammarInvocations": 1
+  },
+  "remaining": [
+    "This change is not SDK compilation or execution evidence. The six methods are definitions only until an actual same-source App SDK batch runs.",
+    "No authentic current-process synthetic-package proof is fabricated to exercise the cache hit. The guard ordering is independently source-reviewed; the DEBUG owned root explicitly refuses that process-proof branch.",
+    "Offline revalidation detects locally known signed validity dates, actual local Keychain missing/revoked/changed publication, and current offline chain/profile verification. It cannot discover a new server-side revocation without an authorized online channel.",
+    "The original connected application material is not wholly reread or continuously monitored on each foreground. Only its already-verified profile date bounds are retained; unrelated post-connect on-disk mutations and installed certificate-chain temporal changes are not newly revalidated by those two dates.",
+    "A failed foreground leaves explicit recovery available only when an actual eligible existing journal record permits it. Safe cleanup remains candidateReady in recovery-only mode and never authorizes retirement, new signing, Upload or Upgrade.",
+    "Status has no newly inferred Apple/account/device/install authorization, kernel image authenticity, cold-launch proof, complete data preservation, autonomous scheduling or automatic renewal success."
+  ],
+  "stages": {
+    "S5": "implementation-in-progress-not-accepted",
+    "S6": "preparatory-only-full-step-unfinished"
+  },
+  "preserved": {
+    "deferredPackages": 17,
+    "allStepStatusesUnchanged": true,
+    "actualAcceptedEvidenceUnchanged": true
+  },
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-renewal-foreground-material-revalidation-step",
+    "manifest": "manifest.json",
+    "rawFiles": 16
+  },
+  "newCloudRunRequested": false,
+  "physicalDeviceValidationRequested": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

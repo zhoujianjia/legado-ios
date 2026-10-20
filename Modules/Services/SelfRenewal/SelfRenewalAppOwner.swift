@@ -23,6 +23,14 @@ final class SelfRenewalAppOwner {
         handoff = SelfRenewalUserDataHandoff()
         session = SelfRenewalAppSession(root: root, clock: clock)
     }
+    #if DEBUG
+    /// Only owned tests choose another verified application directory. This
+    /// parameter is absent from configuration and production initialization.
+    init(root: URL, currentApplicationRoot: URL, clock: @escaping @Sendable () -> Date = { Date() }) {
+        handoff = SelfRenewalUserDataHandoff()
+        session = SelfRenewalAppSession(root: root, currentApplicationRoot: currentApplicationRoot, clock: clock)
+    }
+    #endif
 
     func start(books: BookStore, sources: BookSourceStore, positions: any ReadingPositionStore) async {
         do { try handoff.bind(books: books, sources: sources, positions: positions) }
@@ -126,7 +134,7 @@ final class SelfRenewalAppOwner {
             case .authenticationNotConfigured: return .authenticationNotConfigured
             case .identityUnavailable: return .authenticationUnavailable
             case .storage, .commitDurabilityUnknown: return .localStorage
-            case .busy: return .operationFailed
+            case .busy, .ownedApplicationIsNotCurrentProcess: return .operationFailed
             }
         }
         if error is SelfRenewalSigningMaterialVault.Failure { return .signingMaterials }

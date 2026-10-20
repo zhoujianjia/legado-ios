@@ -1,0 +1,21 @@
+--- review-v1/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift
++++ review-v2/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift
+@@ -550,7 +550,17 @@
+             let fallback: Connection
+             do { fallback = try await recoveryConnection(configuration, materialError: materialError) }
+             catch is CancellationError { throw CancellationError() }
+-            catch { throw await unavailable(error, problem: Self.isLocalStorageFailure(error) ? .storage : .signingMaterials) }
++            catch {
++                let problem: Problem = Self.isLocalStorageFailure(error) ? .storage : .signingMaterials
++                if let userDataError {
++                    // The fallback error already keeps the material and remote
++                    // context failures. Keep the independent normal-load error
++                    // as well, without reclassifying a real storage failure.
++                    throw await unavailable(ObservationFailures(installedMaterial: error,
++                        normalUserData: userDataError), problem: problem)
++                }
++                throw await unavailable(error, problem: problem)
++            }
+             activate(fallback)
+             if let userDataError {
+                 throw await unavailable(ObservationFailures(installedMaterial: materialError, normalUserData: userDataError), problem: .observation)

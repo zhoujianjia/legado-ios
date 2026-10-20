@@ -1,0 +1,249 @@
+--- canonical-baseline/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift
++++ final-prepared/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift
+@@ -14,6 +14,7 @@
+         case invalidConfiguration, configurationInUse, storage, changedFile, limit
+         case notConfigured, authenticationNotConfigured, identityUnavailable(OSStatus), busy
+         case commitDurabilityUnknown
++        case ownedApplicationIsNotCurrentProcess
+     }
+     enum State: String, Sendable, Codable {
+         case unconfigured, ready, candidateReady, recoveryRequired, attentionRequired
+@@ -62,6 +63,27 @@
+         let coordinator: Coordinator
+         let access: Access
+         let materialFailure: SigningMaterialUnavailable?
++        let profileValidity: ConnectedProfileValidity?
++    }
++    /// Two bounds derived only from the signed profiles of the actual verified
++    /// connect input. This is not another file/material cache or a remote
++    /// revocation check; repeated foregrounds need no whole-Bundle read.
++    private struct ConnectedProfileValidity {
++        let notBefore: Date
++        let expiresAt: Date
++        init(_ material: SelfRenewalApplicationMaterialVerifier.Materials) throws {
++            let summaries = material.profiles.profiles.map(\.summary)
++            guard !summaries.isEmpty, summaries.count <= Vault.Limits.bundles,
++                  let notBefore = summaries.map(\.createdAt).max(), let expiresAt = summaries.map(\.expiresAt).min(),
++                  notBefore.timeIntervalSince1970.isFinite, expiresAt.timeIntervalSince1970.isFinite,
++                  notBefore < expiresAt else { throw SelfRenewalProvisioningProfileVerifier.Failure.invalidValidityWindow }
++            self.notBefore = notBefore; self.expiresAt = expiresAt
++        }
++        func validate(at date: Date) throws {
++            guard date.timeIntervalSince1970.isFinite else { throw Vault.Failure.clockMovedBackwards }
++            guard date >= notBefore else { throw SelfRenewalProvisioningProfileVerifier.Failure.profileNotYetValid }
++            guard date < expiresAt else { throw SelfRenewalProvisioningProfileVerifier.Failure.profileExpired }
++        }
+     }
+     struct DeviceConfiguration: Sendable, Codable, Equatable {
+         let identityPersistentReference: Data
+@@ -86,6 +108,7 @@
+         let status: Status
+     }
+     private let requestedRoot: URL?
++    private let ownedApplicationRoot: URL?
+     private let clock: @Sendable () -> Date
+     private var root: URL?
+     private var journal: Journal?
+@@ -93,6 +116,7 @@
+     private var coordinator: Coordinator?
+     private var access: Access?
+     private var materialFailure: SigningMaterialUnavailable?
++    private var profileValidity: ConnectedProfileValidity?
+     private var configuration: Configuration?
+     private var lastStatus: Status?
+     private var persistedConfiguration: Configuration?
+@@ -105,14 +129,19 @@
+     }
+     private var publicationFault: PublicationFault?
+     init(root: URL, publicationFault: PublicationFault, clock: @escaping @Sendable () -> Date = { Date() }) {
+-        requestedRoot = root; self.clock = clock; self.publicationFault = publicationFault
++        requestedRoot = root; ownedApplicationRoot = nil; self.clock = clock; self.publicationFault = publicationFault
++    }
++    /// An owned test root still goes through the real complete verifier and
++    /// Vault. It can never produce a current-process file observation.
++    init(root: URL, currentApplicationRoot: URL, clock: @escaping @Sendable () -> Date = { Date() }) {
++        requestedRoot = root; ownedApplicationRoot = currentApplicationRoot; self.clock = clock
+     }
+     #endif
+     static let maximumConfigurationBytes = 524_288
+ 
+     /// No file, Bundle, Keychain or network work happens during App.init.
+     init(root: URL? = nil, clock: @escaping @Sendable () -> Date = { Date() }) {
+-        requestedRoot = root; self.clock = clock
++        requestedRoot = root; ownedApplicationRoot = nil; self.clock = clock
+     }
+ 
+     func bootstrap(handoff: SelfRenewalUserDataHandoff) async throws -> Status {
+@@ -189,7 +218,7 @@
+             configuration = priorConfiguration
+             // A rename followed by a failed directory sync may have changed
+             // disk. Never keep using an older in-memory authorization binding.
+-            coordinator = nil; vault = nil; access = nil; configurationNeedsReload = true
++            coordinator = nil; vault = nil; access = nil; profileValidity = nil; configurationNeedsReload = true
+             throw error
+         }
+         if candidate.access == .recoveryOnly { return try await observeRecoveryOnly(candidate.coordinator, handoff: handoff) }
+@@ -233,7 +262,15 @@
+         }
+     }
+ 
+-    func status() -> Status? { lastStatus }
++    func status() -> Status? {
++        guard let lastStatus else { return nil }
++        // A failed status write may leave an older on-disk observation. Never
++        // present its old signing access as a currently retained capability.
++        guard lastStatus.access != access else { return lastStatus }
++        let storage = configurationNeedsReload || materialFailure.map { Self.isLocalStorageFailure($0.underlying) } == true
++        return Status(state: .unavailable, phase: lastStatus.phase, observedAt: lastStatus.observedAt,
++            problem: storage ? .storage : .signingMaterials, access: access)
++    }
+     func signingMaterialFailure() -> SigningMaterialUnavailable? { materialFailure }
+     func recoveryIsAvailable() -> Bool {
+         guard coordinator != nil, let phase = lastStatus?.phase else { return false }
+@@ -246,7 +283,7 @@
+         guard !busy else { throw Failure.busy }
+         busy = true; defer { busy = false }
+         if let journal { try await journal.close() }
+-        journal = nil; vault = nil; coordinator = nil; access = nil; materialFailure = nil; root = nil
++        journal = nil; vault = nil; coordinator = nil; access = nil; materialFailure = nil; profileValidity = nil; root = nil
+         configuration = nil; persistedConfiguration = nil; lastStatus = nil; configurationNeedsReload = false
+     }
+ 
+@@ -280,9 +317,9 @@
+         }
+     }
+ 
+-    private func connect(_ configuration: Configuration) async throws -> (vault: Vault, coordinator: Coordinator) {
++    private func connect(_ configuration: Configuration) async throws -> (vault: Vault, coordinator: Coordinator, profileValidity: ConnectedProfileValidity) {
+         guard let journal else { throw Failure.notConfigured }
+-        let material = try await SelfRenewalApplicationMaterialVerifier.read(unpackedApplication: Bundle.main.bundleURL,
++        let material = try await SelfRenewalApplicationMaterialVerifier.read(unpackedApplication: ownedApplicationRoot ?? Bundle.main.bundleURL,
+             codeAnchors: configuration.codeAnchors, profileAnchors: configuration.profileAnchors, at: clock())
+         try Task.checkCancellation()
+         let vault = Vault(codeAnchors: configuration.codeAnchors, profileAnchors: configuration.profileAnchors, clock: clock)
+@@ -298,18 +335,20 @@
+                 guard submission.deviceCertificateSHA256 == Data(SHA256.hash(data: device.deviceCertificateDER)) else { throw Coordinator.Failure.wrongPeer }
+             }
+         }
+-        return (vault, Coordinator(journal: journal, vault: vault, namespace: namespace, clock: clock))
++        return (vault, Coordinator(journal: journal, vault: vault, namespace: namespace, clock: clock), try ConnectedProfileValidity(material))
+     }
+ 
+     private func activate(_ connection: Connection) {
+         vault = connection.vault; coordinator = connection.coordinator
+         access = connection.access; materialFailure = connection.materialFailure
++        profileValidity = connection.profileValidity
+     }
+ 
+     private func resolve(_ configuration: Configuration) async throws -> Connection {
+         do {
+             let full = try await connect(configuration)
+-            return Connection(vault: full.vault, coordinator: full.coordinator, access: .signing, materialFailure: nil)
++            return Connection(vault: full.vault, coordinator: full.coordinator, access: .signing, materialFailure: nil,
++                profileValidity: full.profileValidity)
+         } catch is CancellationError { throw CancellationError() }
+         catch {
+             let materialError = error
+@@ -338,7 +377,7 @@
+         do {
+             let recovery = try await Coordinator.recoveryOnly(journal: journal, clock: clock)
+             return Connection(vault: nil, coordinator: recovery, access: .recoveryOnly,
+-                materialFailure: SigningMaterialUnavailable(underlying: materialError, recoveryContextError: nil))
++                materialFailure: SigningMaterialUnavailable(underlying: materialError, recoveryContextError: nil), profileValidity: nil)
+         } catch is CancellationError { throw CancellationError() }
+         catch {
+             throw SigningMaterialUnavailable(underlying: materialError, recoveryContextError: error)
+@@ -353,6 +392,9 @@
+     /// Journal, POSIX/Cocoa storage errors, read races, budgets and cancellation
+     /// retain their original failure and never select a recovery fallback.
+     static func isSigningMaterialUnavailable(_ error: Error) -> Bool {
++        if let error = error as? SelfRenewalInstalledMaterialObserver.Unavailable {
++            return isSigningMaterialUnavailable(error.underlying)
++        }
+         if error is KeychainHelper.ReadFailure { return false }
+         if let error = error as? SelfRenewalApplicationMaterialVerifier.Failure {
+             switch error {
+@@ -423,6 +465,9 @@
+     }
+ 
+     private static func isLocalStorageFailure(_ error: Error) -> Bool {
++        if let error = error as? SelfRenewalInstalledMaterialObserver.Unavailable {
++            return isLocalStorageFailure(error.underlying)
++        }
+         if error is Journal.Failure || error is POSIXError || error is CocoaError || error is KeychainHelper.ReadFailure { return true }
+         if let error = error as? SigningMaterialUnavailable, let context = error.recoveryContextError {
+             return isLocalStorageFailure(context)
+@@ -469,9 +514,30 @@
+         var materialError: Error?
+         var userDataError: Error?
+         var snapshot: Journal.Snapshot?
+-        do { _ = try await coordinator.observeCurrentProcess() }
++        do {
++            guard let profileValidity else { throw Failure.notConfigured }
++            try profileValidity.validate(at: clock())
++            #if DEBUG
++            if ownedApplicationRoot != nil {
++                let bounded = try await coordinator.revalidateSigningMaterials()
++                if let phase = bounded?.record.phase,
++                   [.upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved].contains(phase) {
++                    throw Failure.ownedApplicationIsNotCurrentProcess
++                }
++            } else { _ = try await coordinator.observeCurrentProcess() }
++            #else
++            _ = try await coordinator.observeCurrentProcess()
++            #endif
++        }
+         catch is CancellationError { throw CancellationError() }
+-        catch { materialError = error }
++        catch {
++            materialError = error
++            // Stop retaining failed signing access before another awaited
++            // observation can be cancelled. Its separate failure must not
++            // restore access already disproved by the live-material read.
++            vault = nil; self.coordinator = nil; access = nil; profileValidity = nil
++            materialFailure = SigningMaterialUnavailable(underlying: error, recoveryContextError: nil)
++        }
+         // These are independent observations. An installed-material mismatch
+         // must not suppress the real normal-load comparison of selected files.
+         do { snapshot = try await coordinator.observeUserDataAfterNormalLoad(handoff: handoff) }
+@@ -481,7 +547,20 @@
+             // A previously live signing session may expire while this App stays
+             // open. Downgrade through the same record-only factory; keep an
+             // independent normal-load failure instead of treating it as success.
+-            let fallback = try await recoveryConnection(configuration, materialError: materialError)
++            let fallback: Connection
++            do { fallback = try await recoveryConnection(configuration, materialError: materialError) }
++            catch is CancellationError { throw CancellationError() }
++            catch {
++                let problem: Problem = Self.isLocalStorageFailure(error) ? .storage : .signingMaterials
++                if let userDataError {
++                    // The fallback error already keeps the material and remote
++                    // context failures. Keep the independent normal-load error
++                    // as well, without reclassifying a real storage failure.
++                    throw await unavailable(ObservationFailures(installedMaterial: error,
++                        normalUserData: userDataError), problem: problem)
++                }
++                throw await unavailable(error, problem: problem)
++            }
+             activate(fallback)
+             if let userDataError {
+                 throw await unavailable(ObservationFailures(installedMaterial: materialError, normalUserData: userDataError), problem: .observation)
+@@ -489,7 +568,8 @@
+             return try await observeRecoveryOnly(fallback.coordinator, handoff: handoff)
+         }
+         if materialError != nil || userDataError != nil {
+-            throw await unavailable(ObservationFailures(installedMaterial: materialError, normalUserData: userDataError), problem: .observation)
++            let storage = materialError.map(Self.isLocalStorageFailure) == true
++            throw await unavailable(ObservationFailures(installedMaterial: materialError, normalUserData: userDataError), problem: storage ? .storage : .observation)
+         }
+         do {
+             let phase = snapshot?.record.phase
+@@ -541,7 +621,7 @@
+                 // Every publication uses this boundary, including bootstrap
+                 // status, observations and error status. A lost durable ACK
+                 // can never leave a prior coordinator binding usable.
+-                coordinator = nil; vault = nil; access = nil; configurationNeedsReload = true
++                coordinator = nil; vault = nil; access = nil; profileValidity = nil; configurationNeedsReload = true
+             }
+             throw error
+         }

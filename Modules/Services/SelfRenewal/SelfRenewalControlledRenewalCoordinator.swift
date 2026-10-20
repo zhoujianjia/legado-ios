@@ -265,21 +265,55 @@ actor SelfRenewalControlledRenewalCoordinator {
     }
 
     /// A timestamped file-material observation of this actual process bundle.
-    /// Repeated foreground events return this process's existing observation;
-    /// they neither synthesize a cold launch nor repeat the full bundle read.
+    /// Repeated foreground events revalidate bounded live signing materials
+    /// before reusing this process's existing file observation. They neither
+    /// synthesize a cold launch nor repeat the full bundle read.
     func observeCurrentProcess() async throws -> Journal.Snapshot? {
         guard vault != nil, namespace != nil else { throw Failure.signingMaterialsUnavailable }
         guard !busy else { throw Failure.busy }
         busy = true; defer { busy = false }
-        guard let snapshot = try await journal.load() else { return nil }
+        let context = try await validatedObservationContext()
+        guard let snapshot = context.snapshot else { return nil }
         guard [.upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved].contains(snapshot.record.phase) else { return snapshot }
         if snapshot.record.installedMaterial?.processID == SelfRenewalInstalledMaterialObserver.ProcessIdentity.current.id { return snapshot }
-        let lease = try await currentLease(snapshot)
+        let lease = context.lease
         let candidate = try await verifyCandidate(snapshot, lease: lease)
         let anchors = try Self.verificationAnchors(lease)
         let observation = try await SelfRenewalInstalledMaterialObserver.readCurrentProcess(expected: candidate,
             codeAnchors: anchors.code, profileAnchors: anchors.profiles, at: clock())
         return try await journal.noteCurrentProcessMaterial(snapshot, observation: observation, at: clock())
+    }
+
+    /// Limited material validation only, with no process/installed-image proof.
+    /// A controlled owned App fixture may exercise this same live Vault path
+    /// without ever being treated as the current process's Bundle.
+    func revalidateSigningMaterials() async throws -> Journal.Snapshot? {
+        guard vault != nil, namespace != nil else { throw Failure.signingMaterialsUnavailable }
+        guard !busy else { throw Failure.busy }
+        busy = true; defer { busy = false }
+        return try await validatedObservationContext().snapshot
+    }
+
+    private func validatedObservationContext() async throws -> (snapshot: Journal.Snapshot?, lease: Vault.Lease) {
+        guard let vault, let namespace else { throw Failure.signingMaterialsUnavailable }
+        let started = SourcePerfTrace.now
+        var bytes = 0; var profiles = 0
+        defer { SourcePerfTrace.record("renewal.signing.foreground-materials",
+            "bytes=\(bytes) profiles=\(profiles) main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
+        try Task.checkCancellation()
+        let snapshot = try await journal.load()
+        // The real bounded manifest/private-key/chain/profile verification is
+        // required even with no transaction, uploadIntent, or a cached process
+        // observation. A retained SecKey or old file observation is insufficient.
+        let lease = try await vault.lease(in: namespace)
+        profiles = lease.profileInputs.count
+        bytes = lease.profileInputs.reduce(0) { $0 + $1.bytes.count }
+        if let snapshot {
+            guard snapshot.record.materialNamespace == namespace.id else { throw Failure.leaseChanged }
+            guard snapshot.record.materialGeneration == lease.generation else { throw Vault.Failure.staleGeneration }
+        }
+        try Task.checkCancellation()
+        return (snapshot, lease)
     }
 
     func observeUserDataAfterNormalLoad(handoff: SelfRenewalUserDataHandoff) async throws -> Journal.Snapshot? {
