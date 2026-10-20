@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "planKind": "single-reader-non-device-completion-execution-plan",
   "updatedOn": "2026-10-20",
-  "activeBatchRecord": "docs/legado-ios/core-build14-a24a41e-request.json",
+  "activeBatchRecord": "docs/legado-ios/core-build14-a24a41e-preflight-repair.json",
   "timeZone": "Asia/Shanghai",
   "简体中文执行说明": {
     "目标": "以锁定的 Legado 源码为功能和书源兼容基准，保留原生阅读体验；只维护一个版本，不内置书源。",
@@ -169,8 +169,8 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Review actual a24a41e compilation/test/package results and repair concrete failures. Continue ready original-source core work in isolated staging; no per-item build tags or unchanged repeats.",
-      "alreadyRunningTasks": "Current exact source a24a41e: build14 run39451829639, currentcore run39451829856, actual Native JNI run39451829840. Initial job handles observed; not completed or accepted. Earlier terminal runs stay archived and must not be repolled.",
+      "nextPlannedCheckpoint": "Retry only build14 packaging and actual Native JNI at the corrected manifest source. Keep currentcore a24a41e running; do not repeat the expensive unchanged SDK selection for metadata-only repair.",
+      "alreadyRunningTasks": "Only currentcore a24a41e run39451829856/job118728357125 remains live. Package39451829639 and Native39451829840 failed their portable provenance preflight before JVM/Swift/JNI compilation; terminal results archived, no repoll. Reviewed three-row manifest correction is ready for package/Native retry only.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "4b6f5dca0a043d28fa1f4acc782a8f43e4c59f04",
         "sourceTag": "reader-owned-sdk-4b6f5dc",
@@ -201,17 +201,6 @@
       "onlyLiveSDKHandles": [
         {
           "sourceCommit": "a24a41eca1cb070727818deb38ef55f5b4989792",
-          "sourceTag": "reader-legado-a24a41e",
-          "runID": 39451829639,
-          "jobID": 118728355614,
-          "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39451829639",
-          "status": "queued",
-          "conclusion": null,
-          "queryAgain": true,
-          "record": "docs/legado-ios/core-build14-a24a41e-request.json"
-        },
-        {
-          "sourceCommit": "a24a41eca1cb070727818deb38ef55f5b4989792",
           "sourceTag": "reader-renewal-a24a41e",
           "runID": 39451829856,
           "jobID": 118728357125,
@@ -220,27 +209,17 @@
           "conclusion": null,
           "queryAgain": true,
           "record": "docs/legado-ios/core-build14-a24a41e-request.json"
-        },
-        {
-          "sourceCommit": "a24a41eca1cb070727818deb38ef55f5b4989792",
-          "sourceTag": "legado-native-reader-test-a24a41e",
-          "runID": 39451829840,
-          "jobID": 118728356541,
-          "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39451829840",
-          "status": "in_progress",
-          "conclusion": null,
-          "queryAgain": true,
-          "record": "docs/legado-ios/core-build14-a24a41e-request.json"
         }
       ],
       "latestDevicePackageTerminal": {
-        "sourceCommit": "4836debf2cfc46d0bc44c46df4d5cbc28d434ff2",
-        "runID": 39434362755,
-        "jobID": 118667353141,
-        "record": "docs/legado-ios/native-reader-experience-build13.json",
+        "sourceCommit": "a24a41eca1cb070727818deb38ef55f5b4989792",
+        "runID": 39451829639,
+        "jobID": 118728355614,
         "status": "completed",
-        "conclusion": "success",
-        "queryAgain": false
+        "conclusion": "failure",
+        "queryAgain": false,
+        "record": "docs/legado-ios/core-build14-a24a41e-preflight-repair.json",
+        "actualDevicePackageProduced": false
       }
     },
     "nextReadyBatch": [
@@ -1023,14 +1002,15 @@
       },
       "currentReviewedConsolidatedCheckpoint": {
         "record": "docs/legado-ios/core-build14-consolidated-sdk-checkpoint.json",
-        "status": "submitted-with-actual-source-bound-job-handles",
+        "status": "package-native-preflight-failed-reviewed-metadata-repair-ready-currentcore-live",
         "currentcoreDefinitions": 444,
         "currentcoreLeaves": 447,
         "originalNativeMethods": 8,
         "deviceBuild": 14,
         "actualAccepted": false,
         "sourceCommit": "a24a41eca1cb070727818deb38ef55f5b4989792",
-        "request": "docs/legado-ios/core-build14-a24a41e-request.json"
+        "request": "docs/legado-ios/core-build14-a24a41e-request.json",
+        "preflightRepair": "docs/legado-ios/core-build14-a24a41e-preflight-repair.json"
       }
     }
   },

@@ -1,0 +1,207 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "a24a41eca1cb070727818deb38ef55f5b4989792",
+  "status": "two-terminal-preflight-failures-currentcore-independent",
+  "terminalRuns": [
+    {
+      "runID": 39451829639,
+      "jobID": 118728355614,
+      "sourceTag": "reader-legado-a24a41e",
+      "conclusion": "failure",
+      "failedStep": "Verify the exact source tag and build the fresh ordinary JVM",
+      "portableBatches": [
+        {
+          "tests": 23,
+          "errors": 0
+        },
+        {
+          "tests": 7,
+          "errors": 0
+        },
+        {
+          "tests": 6,
+          "errors": 1
+        }
+      ],
+      "ordinaryJVMTestsExecuted": 0,
+      "AppleSDKCompilationExecuted": false
+    },
+    {
+      "runID": 39451829840,
+      "jobID": 118728356541,
+      "sourceTag": "legado-native-reader-test-a24a41e",
+      "conclusion": "failure",
+      "failedStep": "Build and audit this checkout's ordinary production runtime",
+      "portableBatches": [
+        {
+          "tests": 24,
+          "errors": 0
+        },
+        {
+          "tests": 8,
+          "errors": 0
+        },
+        {
+          "tests": 16,
+          "errors": 0
+        },
+        {
+          "tests": 6,
+          "errors": 1
+        }
+      ],
+      "ordinaryJVMTestsExecuted": 0,
+      "AppleSDKCompilationExecuted": false,
+      "nativeJNITestsExecuted": 0
+    }
+  ],
+  "observedError": {
+    "test": "OrdinaryJarGuardTests.test_legitimate_xpath_node_test_class_is_not_a_unit_test",
+    "location": "scripts/reader-experience/runtime-packaging.py:97",
+    "message": "Original-rule port source differs from its recorded bytes",
+    "cause": "The original-rule manifest still records pre-notification-adapter hashes for three reviewed Kotlin sources. The ordinary JAR audit correctly refuses the stale provenance record.",
+    "guardRemovalAllowed": false
+  },
+  "currentcoreRun": {
+    "runID": 39451829856,
+    "jobID": 118728357125,
+    "sourceTag": "reader-renewal-a24a41e",
+    "statusAtLastObservation": "in_progress",
+    "queryAgain": true,
+    "restartForThisMetadataCorrection": false
+  },
+  "evidence": {
+    "method": "Actual terminal job API states and tool-decoded full job logs reviewed; only narrow synthetic build-failure excerpts are preserved in this record.",
+    "rawUserLogsUploaded": false
+  },
+  "rawJobExcerpts": [
+    {
+      "jobID": 118728355614,
+      "lines": [
+        "2026-10-20T15:49:12.5291350Z ERROR: test_legitimate_xpath_node_test_class_is_not_a_unit_test (__main__.OrdinaryJarGuardTests.test_legitimate_xpath_node_test_class_is_not_a_unit_test)",
+        "2026-10-20T15:49:12.5292450Z ----------------------------------------------------------------------",
+        "2026-10-20T15:49:12.5292810Z Traceback (most recent call last):",
+        "2026-10-20T15:49:12.5297900Z   File \"/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/test-runtime-packaging.py\", line 74, in test_legitimate_xpath_node_test_class_is_not_a_unit_test",
+        "2026-10-20T15:49:12.5298700Z     result = packaging.inspect_jar(jar)",
+        "2026-10-20T15:49:12.5299110Z              ^^^^^^^^^^^^^^^^^^^^^^^^^^",
+        "2026-10-20T15:49:12.5299640Z   File \"/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/runtime-packaging.py\", line 97, in inspect_jar",
+        "2026-10-20T15:49:12.5300390Z     raise ValueError(\"Original-rule port source differs from its recorded bytes\")",
+        "2026-10-20T15:49:12.5301660Z ValueError: Original-rule port source differs from its recorded bytes",
+        "2026-10-20T15:49:12.5301920Z ",
+        "2026-10-20T15:49:12.5302090Z ----------------------------------------------------------------------",
+        "2026-10-20T15:49:12.5302360Z Ran 6 tests in 0.172s",
+        "2026-10-20T15:49:12.5302550Z ",
+        "2026-10-20T15:49:12.5303080Z FAILED (errors=1)",
+        "2026-10-20T15:49:12.5425760Z ##[error]Process completed with exit code 1."
+      ]
+    },
+    {
+      "jobID": 118728356541,
+      "lines": [
+        "2026-10-20T15:49:08.4765350Z ERROR: test_legitimate_xpath_node_test_class_is_not_a_unit_test (__main__.OrdinaryJarGuardTests.test_legitimate_xpath_node_test_class_is_not_a_unit_test)",
+        "2026-10-20T15:49:08.4767420Z ----------------------------------------------------------------------",
+        "2026-10-20T15:49:08.4768610Z Traceback (most recent call last):",
+        "2026-10-20T15:49:08.4785610Z   File \"/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/test-runtime-packaging.py\", line 74, in test_legitimate_xpath_node_test_class_is_not_a_unit_test",
+        "2026-10-20T15:49:08.4789600Z     result = packaging.inspect_jar(jar)",
+        "2026-10-20T15:49:08.4790730Z              ^^^^^^^^^^^^^^^^^^^^^^^^^^",
+        "2026-10-20T15:49:08.4792640Z   File \"/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/runtime-packaging.py\", line 97, in inspect_jar",
+        "2026-10-20T15:49:08.4795250Z     raise ValueError(\"Original-rule port source differs from its recorded bytes\")",
+        "2026-10-20T15:49:08.4796700Z ValueError: Original-rule port source differs from its recorded bytes",
+        "2026-10-20T15:49:08.4797740Z ",
+        "2026-10-20T15:49:08.4800130Z ----------------------------------------------------------------------",
+        "2026-10-20T15:49:08.4801410Z Ran 6 tests in 0.201s",
+        "2026-10-20T15:49:08.4801900Z ",
+        "2026-10-20T15:49:08.4802300Z FAILED (errors=1)",
+        "2026-10-20T15:49:08.5095200Z ##[error]Process completed with exit code 1."
+      ]
+    }
+  ],
+  "retryPolicy": "After reviewed manifest correction and directly affected local checks pass, retrigger only package and Native jobs at the new exact source. Keep currentcore a24a41e running and preserve its own source boundary.",
+  "queryTheseTerminalRunsAgain": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "correction": {
+    "status": "production-manifest-correction-integrated-directly-affected-local-checks-passed",
+    "baselineCommit": "d39d93627877087dfbbcbeb95736fbe31ae82aed",
+    "candidateFile": {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "baseline": {
+        "bytes": 131504,
+        "sha256": "32a25d061f3fced797c43921eb18fb4cb4c478cbbdcb77f0ca81a452c32cbd60"
+      },
+      "candidate": {
+        "bytes": 131504,
+        "sha256": "1c0688f8add71b16f2c88b9314f275246395c1ed002bcb8f9b3b18e1fbf45e2c"
+      },
+      "diffPath": "manifest.diff",
+      "diff": {
+        "bytes": 1473,
+        "sha256": "cf763a912109575f24eb73750c789228c64c2b9b5d973cdd6b3dc6b9f1493ef6"
+      }
+    },
+    "changedFields": "Only bytes and sha256 on the three existing portedSources rows already reviewed/integrated by callbacks v2",
+    "reviewedSourceChanges": [
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+        "before": {
+          "bytes": 11876,
+          "sha256": "bd5c9d246527d977ccc1f5e2b6349c2cdbd37e342c8018b69f5c1b406c446a88"
+        },
+        "after": {
+          "bytes": 12338,
+          "sha256": "dbf6c4677f6d454a3e6cec62eddbdfd5bbf94685b61a800061fc3984a2a64c61"
+        }
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+        "before": {
+          "bytes": 11818,
+          "sha256": "6e9b96148d2733edeb446954f76094db52324ca1fa0a52c4c3b4b78dd669312d"
+        },
+        "after": {
+          "bytes": 14042,
+          "sha256": "d4577f3b657fa63ceca5efd84ef88670f48e99991f6ac0ff7eaa235385e76b3b"
+        }
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalRuleDto.kt",
+        "before": {
+          "bytes": 8196,
+          "sha256": "9a38de6519328637c160c40a893c5375cf16b338ed64b81a93fda7049031262c"
+        },
+        "after": {
+          "bytes": 8648,
+          "sha256": "dd1da68c324e6a3dec473b09d79f395f499166e6f7cc147f764e6fa4853629e0"
+        }
+      }
+    ],
+    "verification": {
+      "all50PortedSourcesMatchActualBytes": true,
+      "allOtherManifestRawBytesPreserved": true,
+      "sourceProvenanceOriginalArchiveLicenseRuntimeResourcesAndCompletionFieldsUnchanged": true,
+      "existingRuntimePackagingTestsPassed": 6,
+      "existingTestSeconds": 0.254,
+      "controlledNegativeChecksPassed": 5,
+      "oldMetadataRejectedAgainstActualIntegratedSources": true,
+      "threeCorruptPortedSourcesRejected": true,
+      "packagedManifestTamperingRejected": true,
+      "restoredCandidatePasses": true,
+      "diffWhitespacePassed": true,
+      "canonicalManifestUnchanged": true,
+      "SDKExecuted": false,
+      "GitMutationPerformed": false,
+      "cloudAccessPerformed": false
+    },
+    "validation": {
+      "bytes": 2103,
+      "sha256": "a0351639e0f8cb45ff5b5decbb3d2a909b713bc0b7c5aac03c7d7056422976a7"
+    },
+    "limits": [
+      "The packaging unit tests use synthetic class headers; no actual JVM/JNI/SDK/device execution is claimed.",
+      "The running SDK run remains separate; no live or terminal workflow was queried or restarted."
+    ]
+  },
+  "nextSourceWillRetainAllProductionSwiftAndKotlinBytes": true
+}
