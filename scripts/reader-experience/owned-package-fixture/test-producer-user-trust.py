@@ -1,5 +1,5 @@
 """Portable protocol/process tests only: no macOS trust, keys or codesign execution."""
-from contextlib import redirect_stdout
+from contextlib import contextmanager, redirect_stdout
 import base64
 import importlib.util
 import io
@@ -325,7 +325,13 @@ class OwnedTemporaryAdminTrustTests(unittest.TestCase):
 
 class OwnedTemporaryUserSearchListTests(unittest.TestCase):
     """Real portable marker children; never security/search-list/codesign execution."""
-    setUp = OwnedTemporaryUserTrustTests.setUp
+    def setUp(self):
+        OwnedTemporaryUserTrustTests.setUp(self)
+        # These older process/privacy fixtures use intentionally nonexistent
+        # paths. The actual filesystem identity behavior is exercised below.
+        lookup=patch.object(producer,'owned_keychain_file_identity',
+            side_effect=lambda path:(7,11) if str(path)==self.owned else None)
+        lookup.start();self.addCleanup(lookup.stop)
     original=('/Users/private-path-canary/Library/Keychains/login.keychain-db',
               '/Library/Keychains/System.keychain')
     owned='/private/var/owned-fixture/synthetic.keychain-db'
@@ -489,6 +495,147 @@ class OwnedTemporaryUserSearchListTests(unittest.TestCase):
                 public=out.getvalue()+json.dumps(producer.RECORDS)
                 for secret in [*self.original,self.owned,*foreign,'private-list-stderr-canary','private-readback-path-canary']:
                     self.assertNotIn(secret,public)
+
+
+class OwnedUserSearchListFileIdentityTests(unittest.TestCase):
+    """Real file identities and process effects; no macOS Keychain/security execution."""
+    setUp=OwnedTemporaryUserTrustTests.setUp
+    scope=OwnedTemporaryUserSearchListTests.scope
+    route=OwnedTemporaryUserSearchListTests.route
+    original=('/private/path-canary/original.keychain-db',)
+    owned='/private/path-canary/owned/synthetic.keychain-db'
+    alias='/private/path-canary/alias/synthetic.keychain-db'
+    foreign='/private/path-canary/foreign/synthetic.keychain-db'
+
+    @contextmanager
+    def files(self):
+        with tempfile.TemporaryDirectory(prefix='owned-file-identity-') as directory:
+            base=Path(directory);real=base/'real';real.mkdir()
+            owned=real/'synthetic.keychain-db';owned.write_bytes(b'controlled surrogate file, not a Keychain')
+            other=base/'foreign';other.write_bytes(owned.read_bytes())
+            original=base/'original';original.write_bytes(b'controlled original surrogate')
+            alias=base/'alias'
+            if producer.os.name=='nt':
+                env={**producer.os.environ,'OWNED_TEST_ALIAS':str(alias),'OWNED_TEST_TARGET':str(real)}
+                producer.subprocess.run(['powershell','-NoProfile','-NonInteractive','-Command',
+                    "New-Item -ItemType Junction -Path $env:OWNED_TEST_ALIAS -Target $env:OWNED_TEST_TARGET | Out-Null"],
+                    env=env,check=True,capture_output=True,timeout=15)
+            else:alias.symlink_to(real,target_is_directory=True)
+            # Only translate the POSIX CLI protocol names for this Windows test.
+            # The production identity lookup still stats actual distinct paths;
+            # no inode values or comparison result are mocked.
+            mapping={self.owned:owned,self.alias:alias/owned.name,self.foreign:other,self.original[0]:original}
+            actual=producer.owned_keychain_file_identity
+            try:
+                self.assertEqual(actual(owned),actual(alias/owned.name))
+                self.assertNotEqual(actual(owned),actual(other))
+                with patch.object(producer,'owned_keychain_file_identity',
+                        side_effect=lambda path:actual(mapping.get(str(path),path))):
+                    yield base,owned,actual
+            finally:
+                if producer.os.name=='nt':
+                    self.assertTrue(alias.resolve().is_relative_to(base.resolve()))
+                    alias.rmdir()
+                else:alias.unlink()
+
+    def test_actual_parent_alias_is_one_owned_entry_and_restores_exact_original_order(self):
+        with self.files() as (base,owned,actual):
+            state=base/'list.json';state.write_text(json.dumps(self.original));commands=[];scope=self.scope();out=io.StringIO()
+            with patch.object(producer,'bounded_child',self.route(state,commands,append_observed=(*self.original,self.alias))),redirect_stdout(out):
+                scope.install();scope.cleanup()
+            self.assertTrue(scope.registered and scope.restored)
+            self.assertEqual(json.loads(state.read_text()),list(self.original))
+            rows=[json.loads(line.split(' ',1)[1]) for line in out.getvalue().splitlines()]
+            observed=next(row for row in rows if row.get('operation')=='verifyAfterAppend')
+            self.assertFalse(observed['ownedKeychainPresent'] or observed['observedEqualsExpected'])
+            self.assertEqual(observed['ownedFileIdentityEntryCount'],1)
+            self.assertTrue(observed['observedMatchesExpectedOwnedFile'] and observed['ownedPathIdentityUnchanged'])
+            for secret in [self.owned,self.alias,*self.original,str(base),str(actual(owned))]:
+                self.assertNotIn(secret,out.getvalue()+json.dumps(producer.RECORDS))
+
+    def test_foreign_equal_bytes_and_duplicate_alias_never_authorize_restore(self):
+        for observed in ((*self.original,self.foreign),(*self.original,self.alias,self.owned)):
+            with self.subTest(entries=len(observed)),self.files() as (base,owned,actual):
+                state=base/'list.json';state.write_text(json.dumps(self.original));commands=[];scope=self.scope()
+                with patch.object(producer,'bounded_child',self.route(state,commands,append_observed=observed)),redirect_stdout(io.StringIO()):
+                    with self.assertRaises(producer.ToolFailure) as primary:scope.install()
+                    self.assertIsNotNone(producer.finish_owned_user_search_list(scope,primary.exception))
+                self.assertEqual(json.loads(state.read_text()),list(observed))
+                self.assertEqual(len([row for row in commands if len(row)>4]),1)
+                self.assertFalse(scope.registered or scope.restored)
+
+    def test_owned_alias_already_present_refuses_before_any_write(self):
+        with self.files() as (base,owned,actual):
+            state=base/'list.json';state.write_text(json.dumps((*self.original,self.alias)));commands=[];scope=self.scope()
+            with patch.object(producer,'bounded_child',self.route(state,commands)),redirect_stdout(io.StringIO()):
+                with self.assertRaises(producer.ToolFailure):scope.install()
+            self.assertEqual(len([row for row in commands if len(row)>4]),0)
+            self.assertFalse(scope.cleanup_intent)
+
+    def test_rebound_owned_name_cannot_restore_or_claim_same_file(self):
+        with self.files() as (base,owned,actual):
+            state=base/'list.json';state.write_text(json.dumps(self.original));commands=[];scope=self.scope();out=io.StringIO()
+            with patch.object(producer,'bounded_child',self.route(state,commands)),redirect_stdout(out):
+                scope.install()
+                previous=actual(owned)
+                owned.rename(owned.with_name('previous-owned'))
+                owned.write_bytes(b'controlled replacement file')
+                self.assertNotEqual(previous,actual(owned))
+                failure=producer.finish_owned_user_search_list(scope,producer.ToolFailure('actual primary',1))
+            self.assertIsNotNone(failure);self.assertFalse(scope.restored)
+            self.assertEqual(scope.failure_stage,'identity')
+            self.assertEqual(len([row for row in commands if len(row)>4]),1)
+            self.assertEqual(json.loads(state.read_text()),[*self.original,self.owned])
+
+    def test_original_raw_tuple_rebound_to_owned_alias_never_claims_restored_absence(self):
+        for stage in ('readBeforeRestore','verifyAfterRestore'):
+            with self.subTest(stage=stage),self.files() as (base,owned,actual):
+                parent=base/'original-parent';parent.mkdir()
+                original=parent/owned.name;original.write_bytes(b'controlled original surrogate only')
+                state=base/'list.json';state.write_text(json.dumps(self.original));commands=[];out=io.StringIO()
+                previous_lookup=producer.owned_keychain_file_identity
+                lookup=lambda path:actual(original) if str(path)==self.original[0] else previous_lookup(path)
+                rebound=False
+                def rebind_original_parent():
+                    nonlocal rebound
+                    original.rename(base/'saved-original')
+                    parent.rmdir()
+                    if producer.os.name=='nt':
+                        env={**producer.os.environ,'OWNED_TEST_ALIAS':str(parent),'OWNED_TEST_TARGET':str(owned.parent)}
+                        producer.subprocess.run(['powershell','-NoProfile','-NonInteractive','-Command',
+                            "New-Item -ItemType Junction -Path $env:OWNED_TEST_ALIAS -Target $env:OWNED_TEST_TARGET | Out-Null"],
+                            env=env,check=True,capture_output=True,timeout=15)
+                    else:parent.symlink_to(owned.parent,target_is_directory=True)
+                    rebound=True
+                    self.assertEqual(actual(original),actual(owned))
+                child=self.route(state,commands)
+                def route(args,input,env,seconds):
+                    if stage=='verifyAfterRestore' and args[4:]==['-s',*self.original]:
+                        rebind_original_parent()
+                    return child(args,input,env,seconds)
+                try:
+                    with patch.object(producer,'owned_keychain_file_identity',side_effect=lookup):
+                        scope=self.scope()
+                        with patch.object(producer,'bounded_child',route),redirect_stdout(out):
+                            scope.install()
+                            if stage=='readBeforeRestore':
+                                rebind_original_parent()
+                                state.write_text(json.dumps(self.original))
+                            failure=producer.finish_owned_user_search_list(scope,producer.ToolFailure('actual primary',1))
+                        self.assertIsInstance(failure,producer.ToolFailure)
+                        self.assertEqual((scope.operation,scope.failure_stage),(stage,'conflict'))
+                        self.assertTrue(scope.cleanup_intent);self.assertFalse(scope.restored)
+                        self.assertEqual(scope.owned_file_indexes(self.original),(0,))
+                    self.assertEqual(json.loads(state.read_text()),list(self.original))
+                    expected_writes=1 if stage=='readBeforeRestore' else 2
+                    self.assertEqual(len([row for row in commands if len(row)>4]),expected_writes)
+                    self.assertNotIn('OWNED_USER_SEARCH_LIST_RESTORED',out.getvalue())
+                    self.assertIn('OWNED_USER_SEARCH_LIST_CLEANUP_FAILURE',out.getvalue())
+                    for secret in [self.owned,*self.original,str(base)]:self.assertNotIn(secret,out.getvalue())
+                finally:
+                    if rebound:
+                        self.assertTrue(parent.resolve().is_relative_to(base.resolve()))
+                        parent.rmdir() if producer.os.name=='nt' else parent.unlink()
 
 
 if __name__=='__main__':unittest.main()

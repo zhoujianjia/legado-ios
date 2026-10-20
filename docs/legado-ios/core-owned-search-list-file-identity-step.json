@@ -1,0 +1,334 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-21",
+  "status": "owned-Keychain-file-identity-and-cleanup-guards-integrated-actual-SDK-pending",
+  "actualFailure": "docs/legado-ios/core-sdk-a24a41e-terminal-result.json",
+  "preparationV1": {
+    "status": "frozen-production-and-four-related-portable-controls-awaiting-root-integration-and-real-SDK",
+    "candidateFiles": [
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "baseline": {
+          "bytes": 69709,
+          "sha256": "fc3df7ed1a0f0ec5edcb70fb1e4fdec9c5c935365dc8b36063e0b298998075bb"
+        },
+        "candidate": {
+          "bytes": 71818,
+          "sha256": "168e054a4d47ac7a4dfa5cc5fc349a52e42a515cbabe72f0ec1cf98fda4626a0"
+        },
+        "diffPath": "diffs/generate-sdk-owned-package.py.diff",
+        "diff": {
+          "bytes": 6918,
+          "sha256": "3f335059968943b0094b3660fdca2abaf19cd44b7150ccf16c418c9a0b7c07bc"
+        },
+        "baselineMatchesActualA24SDKSourceInput": true
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py",
+        "baseline": {
+          "bytes": 37995,
+          "sha256": "c9c1e9182fdbd3adf46e42c6ab3ed23a892745f7c0ade4abd533cf07aa9ff4ec"
+        },
+        "candidate": {
+          "bytes": 44722,
+          "sha256": "16c875b5d17d98133f8c13a032d6a6118206b060f9182079292521b09544ac96"
+        },
+        "diffPath": "diffs/test-producer-user-trust.py.diff",
+        "diff": {
+          "bytes": 7806,
+          "sha256": "eefa6aea1086dc5a058edad6e6d71bfc14027fa117e53ac877d566ab22b01da9"
+        },
+        "baselineMatchesActualA24SDKSourceInput": true
+      }
+    ],
+    "actualFailure": {
+      "source": "a24a41e",
+      "run": 39451829856,
+      "job": 118728357125,
+      "artifact": 12279702076,
+      "producerFirstFailure": {
+        "exitCode": 1,
+        "operation": "verifyAfterAppend",
+        "error": "owned search list append not exact",
+        "originalEntryCount": 1,
+        "expectedEntryCount": 2,
+        "observedEntryCount": 2,
+        "literalOwnedKeychainPresent": false,
+        "isExpectedPermutation": false
+      },
+      "cleanup": {
+        "operation": "readBeforeRestore",
+        "failureStage": "conflict",
+        "originalToolFailureRetained": true,
+        "ownedKeychainDeletionExitCode": 0
+      },
+      "codesignAndPublicPackageProduced": false,
+      "filesystemAliasEstablishedByThisRun": false
+    },
+    "change": [
+      "Bind the same created/reopened regular single-link owned Keychain file dev/inode before admitting a search-list scope.",
+      "Require the same original prefix, order and total count; the sole appended entry must stat as that same owned file exactly once.",
+      "Reject already-registered aliases, equal-byte foreign files, duplicates and owned path rebound; preserve conflict refusal and actual original restoration.",
+      "Emit only bounded same-file relation facts; no raw paths, hashes of paths, dev/inode numbers, credentials or Keychain data."
+    ],
+    "validation": {
+      "userTrustAndSearchListPortableTests": {
+        "passed": 27,
+        "failed": 0,
+        "seconds": 7.476,
+        "newTests": 4
+      },
+      "existingDiagnosticTests": {
+        "passed": 6,
+        "failed": 0,
+        "seconds": 0.329
+      },
+      "existingTimeoutTests": {
+        "passed": 9,
+        "failed": 0,
+        "seconds": 4.012
+      },
+      "realControlledFilesystemUsed": true,
+      "actualWindowsParentDirectoryJunctionUsed": true,
+      "actualPortableChildProcessesUsed": true,
+      "POSIXProtocolNamesTranslatedToWindowsFilesystemPathsInTests": true,
+      "macOSSecurityKeychainExecuted": false,
+      "codesignExecuted": false,
+      "SDKExecuted": false,
+      "canonicalOrGitMutations": false,
+      "cloudHandlesAccessed": false,
+      "diffWhitespacePassed": true
+    },
+    "primarySource": {
+      "url": "https://github.com/apple-oss-distributions/Security/blob/main/SecurityTool/macOS/keychain_list.c#L48-L57",
+      "fact": "The displayed entry is supplied by SecKeychainGetPath; this alone does not establish which path identity a24 observed."
+    },
+    "limits": [
+      "The actual a24 log proves a raw-path relation mismatch, not its filesystem cause. The next real SDK run must establish the appended entry identity and complete codesign/public package gates.",
+      "No trust-domain changes, permission expansion, producer skip or mandatory-SDK-fixture bypass.",
+      "Foreign search-list mutation remains refused; this public API is not an atomic cross-process compare-and-swap."
+    ]
+  },
+  "preparationV2": {
+    "schemaVersion": 2,
+    "status": "frozen-v2-targeted-cleanup-fix-awaiting-root-review-integration-and-real-SDK",
+    "frozenAtUTC": "2026-10-20T16:33:32.648484+00:00",
+    "previousPreparation": {
+      "path": "preparation.json",
+      "sha256": "d3353d9fa87e054e50994f61e59e2a10b16060f60a1138ef35e3cc98c6e4af7b",
+      "preservedUnchanged": true
+    },
+    "authorship": {
+      "agent": "/root/build_preflight_review",
+      "initialRole": "Independent reviewer of the two-file v1 producer change",
+      "v2Role": "Author of the newly identified cleanup-owned-alias guard and its regression; root independent review pending",
+      "independentReviewOfOwnV2Claimed": false
+    },
+    "candidateFiles": [
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "baseline": {
+          "bytes": 69709,
+          "sha256": "fc3df7ed1a0f0ec5edcb70fb1e4fdec9c5c935365dc8b36063e0b298998075bb"
+        },
+        "previousCandidate": {
+          "bytes": 71818,
+          "sha256": "168e054a4d47ac7a4dfa5cc5fc349a52e42a515cbabe72f0ec1cf98fda4626a0"
+        },
+        "candidate": {
+          "bytes": 72188,
+          "sha256": "562fa76eb6b4564b05a916354eb06c1cb554444b8c7b7b46f7ee7c7061b97d73"
+        },
+        "frozenPath": "frozen-v2/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "diffBaseline": "v1candidate",
+        "diffPath": "diffs-v2/generate-sdk-owned-package.py.v1-to-v2.diff",
+        "diff": {
+          "bytes": 1445,
+          "sha256": "7f15a2fdfa73bb28d03bcfde35f0d69159a61577f0d77fb09dd649514d7dd173"
+        },
+        "baselineMatchesActualA24SDKSourceInput": true
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py",
+        "baseline": {
+          "bytes": 37995,
+          "sha256": "c9c1e9182fdbd3adf46e42c6ab3ed23a892745f7c0ade4abd533cf07aa9ff4ec"
+        },
+        "previousCandidate": {
+          "bytes": 44722,
+          "sha256": "16c875b5d17d98133f8c13a032d6a6118206b060f9182079292521b09544ac96"
+        },
+        "candidate": {
+          "bytes": 48343,
+          "sha256": "d53f0702b6500418aac9bf6b60529b85a0297b5cf46f4a6c9df4351db0429ce6"
+        },
+        "frozenPath": "frozen-v2/scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py",
+        "diffBaseline": "v1candidate",
+        "diffPath": "diffs-v2/test-producer-user-trust.py.v1-to-v2.diff",
+        "diff": {
+          "bytes": 4070,
+          "sha256": "897d52dfcfc402a1483902c1fc250458a73582aff8c39399a0b9885f19c4fe24"
+        },
+        "baselineMatchesActualA24SDKSourceInput": true
+      }
+    ],
+    "actualFailure": {
+      "source": "a24a41e",
+      "run": 39451829856,
+      "job": 118728357125,
+      "artifact": 12279702076,
+      "producerFirstFailure": {
+        "exitCode": 1,
+        "operation": "verifyAfterAppend",
+        "error": "owned search list append not exact",
+        "originalEntryCount": 1,
+        "expectedEntryCount": 2,
+        "observedEntryCount": 2,
+        "literalOwnedKeychainPresent": false,
+        "isExpectedPermutation": false
+      },
+      "cleanup": {
+        "operation": "readBeforeRestore",
+        "failureStage": "conflict",
+        "originalToolFailureRetained": true,
+        "ownedKeychainDeletionExitCode": 0
+      },
+      "codesignAndPublicPackageProduced": false,
+      "filesystemAliasEstablishedByThisRun": false
+    },
+    "change": [
+      "Bind the same created/reopened regular single-link owned Keychain file dev/inode before admitting a search-list scope.",
+      "Require the same original prefix, order and total count; the sole appended entry must stat as that same owned file exactly once.",
+      "Reject already-registered aliases, equal-byte foreign files, duplicates and owned path rebound; preserve conflict refusal and actual original restoration.",
+      "Emit only bounded same-file relation facts; no raw paths, hashes of paths, dev/inode numbers, credentials or Keychain data.",
+      "When the current raw tuple equals original, require that none of its paths stat to the owned dev/inode before accepting already-restored state.",
+      "During final restoration verification, require exact original raw order and zero owned-file aliases before publishing restored/owned-absent facts.",
+      "Reject a rebound original parent path as the existing fixed cleanup conflict without an extra search-list write or restoring over observed state."
+    ],
+    "resolvedReviewFinding": {
+      "id": "exact-original-cleanup-still-contains-owned-alias",
+      "review": "independent-review.json",
+      "rootIndependentV2ReviewPending": true
+    },
+    "validation": {
+      "targetedSearchListControls": {
+        "passed": 12,
+        "failed": 0,
+        "seconds": 7.107,
+        "classes": [
+          "OwnedTemporaryUserSearchListTests",
+          "OwnedUserSearchListFileIdentityTests"
+        ],
+        "stdout": {
+          "path": "validation-v2-search-list.stdout.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "validation-v2-search-list.stderr.log",
+          "bytes": 2617,
+          "sha256": "15ae9a02e558204d9bb809ed5e8e244a2957796f9385344a0e3d917870fea39b"
+        }
+      },
+      "newRegressionMethod": {
+        "name": "test_original_raw_tuple_rebound_to_owned_alias_never_claims_restored_absence",
+        "realParentJunctionOnWindows": true,
+        "stages": [
+          "readBeforeRestore",
+          "verifyAfterRestore"
+        ],
+        "standalonePassed": 1,
+        "standaloneSeconds": 1.638
+      },
+      "v1NegativeControl": {
+        "path": "validation-v2-v1-negative-control.json",
+        "bytes": 218,
+        "sha256": "ea934975a43075ee8386a26f699ad15d3de0814f549056564f383e5084237c0b",
+        "expectedSubtestFailures": 2,
+        "unexpectedErrors": 0
+      },
+      "priorFull27MethodRun": {
+        "repeatedForV2": false,
+        "historicalRecord": "preparation.json"
+      },
+      "priorDiagnostic6AndTimeout9Runs": {
+        "repeatedForV2": false,
+        "historicalRecord": "preparation.json"
+      },
+      "currentFullUserTrustSuiteMethodCountBySource": 28,
+      "currentFullSuiteExecutionClaimed": false,
+      "twoCandidateSourcesCompileSyntaxPassed": true,
+      "realControlledFilesystemUsed": true,
+      "actualPortableChildProcessesUsed": true,
+      "macOSSecurityKeychainExecuted": false,
+      "codesignExecuted": false,
+      "SDKExecuted": false,
+      "canonicalOrGitMutations": false,
+      "cloudHandlesAccessed": false
+    },
+    "limits": [
+      "The actual a24 log proves a raw-path relation mismatch, not its filesystem cause. The next real SDK run must establish the appended entry identity and complete codesign/public package gates.",
+      "No trust-domain changes, permission expansion, producer skip or mandatory-SDK-fixture bypass.",
+      "Foreign search-list mutation remains refused; this public API is not an atomic cross-process compare-and-swap.",
+      "This v2 author check is not an independent review of the new eight-line production guard; root must review the frozen diff.",
+      "The original rawbaseline, v1 preparation/diffs and separately frozen v1candidate remain unchanged."
+    ]
+  },
+  "preservedEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/owned-search-list-identity/search-list-controls.txt",
+      "bytes": 2600,
+      "sha256": "f0ef23e19a249ded78afc3d668b54751d45499e2dd7d084c49732564402e738e",
+      "originalEvidence": {
+        "bytes": 2617,
+        "sha256": "15ae9a02e558204d9bb809ed5e8e244a2957796f9385344a0e3d917870fea39b"
+      },
+      "normalization": "CRLF to LF only where present."
+    },
+    {
+      "path": "docs/legado-ios/evidence/owned-search-list-identity/v1-negative-control.json",
+      "bytes": 218,
+      "sha256": "ea934975a43075ee8386a26f699ad15d3de0814f549056564f383e5084237c0b",
+      "originalEvidence": {
+        "bytes": 218,
+        "sha256": "ea934975a43075ee8386a26f699ad15d3de0814f549056564f383e5084237c0b"
+      },
+      "normalization": "CRLF to LF only where present."
+    },
+    {
+      "path": "docs/legado-ios/evidence/owned-search-list-identity/initial-independent-review.json",
+      "bytes": 5238,
+      "sha256": "a08afc0dc60cb77ae6587d7dcf15ec5e076368b96462404187962a823d37ff7b",
+      "originalEvidence": {
+        "bytes": 5238,
+        "sha256": "a08afc0dc60cb77ae6587d7dcf15ec5e076368b96462404187962a823d37ff7b"
+      },
+      "normalization": "CRLF to LF only where present."
+    }
+  ],
+  "rootIndependentV2Review": {
+    "acceptedAtSourceBoundary": true,
+    "reviewedProductionDelta": "Both cleanup success paths require exact original raw tuple AND zero entries resolving to the owned file identity. Current=original with a rebound parent rejects as fixed conflict without another write; final readback rejects before publishing restored/owned-absent facts.",
+    "reviewedRegression": "One new method uses actual temporary original/owned files and a real Windows directory junction (POSIX parent symlink), checks actual equal dev/inode, exercises both pre-restore and final readback, asserts no successful restore fact, fixed conflict, exact write count and no path disclosure. The same method fails twice against frozen v1 producer with zero unexpected errors.",
+    "reviewedV1Boundary": "Same-file comparison applies only to one appended item; original prefix strings/order/count remain exact. Regular single-link metadata identity is required before/after security reads and before writes; duplicates, foreign equal-content files, owned path rebound and observed foreign list changes remain rejected. No trust/sudo, second storage owner or mandatory fixture bypass."
+  },
+  "actualTestBoundary": {
+    "v1FullMethodsPassed": 27,
+    "v1DiagnosticsPassed": 6,
+    "v1TimeoutMethodsPassed": 9,
+    "v2AffectedSearchListMethodsPassed": 12,
+    "v2MethodsInSource": 28,
+    "v2FullSuiteExecuted": false,
+    "v1NegativeSubtestFailuresExpected": 2,
+    "macOSSecurityExecuted": false,
+    "codesignExecuted": false,
+    "newSDKExecutions": 0
+  },
+  "devicePackageBoundary": "This is consolidated SDK fixture tooling on main. The independent44f125b build14 package remains running and does not wait for these fixture changes.",
+  "actualA24AliasCauseEstablished": false,
+  "nextActualAcceptance": "Next actual macOS SDK producer must establish the appended entry file identity and finish real codesign/public package/import gates. Portable checks do not prove the earlier a24 path-mismatch cause.",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "reviewedOn": "2026-10-21",
+  "status": "one-reproducible-cleanup-identity-finding-reported-to-root",
+  "preparation": {
+    "path": ".build/renewal-sdk-producer-a24-fix-step/preparation.json",
+    "sha256": "d3353d9fa87e054e50994f61e59e2a10b16060f60a1138ef35e3cc98c6e4af7b",
+    "hashMatched": true
+  },
+  "reviewedFiles": [
+    {
+      "kind": "candidate",
+      "path": ".build/renewal-sdk-producer-a24-fix-step/work/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "bytes": 71818,
+      "sha256": "168e054a4d47ac7a4dfa5cc5fc349a52e42a515cbabe72f0ec1cf98fda4626a0"
+    },
+    {
+      "kind": "baseline",
+      "path": ".build/renewal-sdk-producer-a24-fix-step/rawbaseline/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "bytes": 69709,
+      "sha256": "fc3df7ed1a0f0ec5edcb70fb1e4fdec9c5c935365dc8b36063e0b298998075bb"
+    },
+    {
+      "kind": "diff",
+      "path": ".build/renewal-sdk-producer-a24-fix-step/diffs/generate-sdk-owned-package.py.diff",
+      "bytes": 6918,
+      "sha256": "3f335059968943b0094b3660fdca2abaf19cd44b7150ccf16c418c9a0b7c07bc"
+    },
+    {
+      "kind": "candidate",
+      "path": ".build/renewal-sdk-producer-a24-fix-step/work/scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py",
+      "bytes": 44722,
+      "sha256": "16c875b5d17d98133f8c13a032d6a6118206b060f9182079292521b09544ac96"
+    },
+    {
+      "kind": "baseline",
+      "path": ".build/renewal-sdk-producer-a24-fix-step/rawbaseline/scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py",
+      "bytes": 37995,
+      "sha256": "c9c1e9182fdbd3adf46e42c6ab3ed23a892745f7c0ade4abd533cf07aa9ff4ec"
+    },
+    {
+      "kind": "diff",
+      "path": ".build/renewal-sdk-producer-a24-fix-step/diffs/test-producer-user-trust.py.diff",
+      "bytes": 7806,
+      "sha256": "eefa6aea1086dc5a058edad6e6d71bfc14027fa117e53ac877d566ab22b01da9"
+    }
+  ],
+  "scope": "Only the two frozen diffs and adjoining existing owned user search-list lifecycle",
+  "canonicalGitOrCloudMutated": false,
+  "securityOrKeychainToolExecuted": false,
+  "trustMutationOrSudoExecuted": false,
+  "privateCredentialsRead": false,
+  "realCodesignOrSDKExecuted": false,
+  "existing27Plus6Plus9MethodsRepeated": false,
+  "acceptedSourceChecks": [
+    "The owned leaf must remain a single-link regular file with the same st_dev/st_ino; its contents are not read.",
+    "Only the single final appended item can have a different raw path while retaining the owned file identity.",
+    "The original raw prefix strings, order and total entry count must remain exact.",
+    "An already registered owned alias, duplicate aliases and equal-byte foreign files are rejected.",
+    "An observed owned-path rebound or missing owned file prevents search-list writes and restoration.",
+    "Observed non-original/non-expected raw mutations remain conflicts and are not overwritten.",
+    "The two diffs do not add trust-settings mutation, sudo, permission expansion or fixture bypass.",
+    "Only bounded relation booleans/counts are added to public records, without raw paths or filesystem identity values."
+  ],
+  "findings": [
+    {
+      "id": "exact-original-cleanup-still-contains-owned-alias",
+      "severity": "required-small-fix",
+      "file": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "line": 636,
+      "problem": "Cleanup treats raw tuple equality with original as sufficient and final verification only repeats raw equality. If an original parent path becomes an alias of the owned directory, the original raw tuple can still contain the owned dev/inode. Cleanup then falsely publishes ownedKeychainAbsent=true and restored=true.",
+      "reproduction": "Use controlled surrogate files, the existing portable child router and a real Windows junction. After install, move the original prefix file aside, replace its parent directory with a junction to the owned parent, and have the synthetic search-list state contain only the unchanged original raw tuple. No macOS security or real Keychain is used.",
+      "observed": {
+        "actualOwnedAliasesInOriginalRawTuple": 1,
+        "cleanupReportedRestored": true,
+        "ownedKeychainAbsentClaim": true,
+        "restoreWriteIssued": false,
+        "macOSSecurityExecuted": false
+      },
+      "necessaryFix": "Require zero owned_file_indexes whenever accepting current==original and during verifyAfterRestore. Otherwise report the existing fixed conflict/identity failure without writing over the observed list. Add this targeted synthetic regression.",
+      "boundary": "This finding concerns an observed path rebinding before cleanup and an inaccurate absence claim; it does not require atomic protection against arbitrary per-syscall concurrent filesystem mutation."
+    }
+  ],
+  "actualA24FailureCause": "not-established-by-this-review",
+  "limits": [
+    "A24 raw-path mismatch is established; a filesystem alias cause remains unproven.",
+    "Portable metadata and child-protocol checks are not macOS Security, codesign or full SDK acceptance.",
+    "The user search-list CLI remains non-atomic across external writers."
+  ]
+}

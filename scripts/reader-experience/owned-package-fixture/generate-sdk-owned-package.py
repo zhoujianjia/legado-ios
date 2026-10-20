@@ -5,7 +5,7 @@ The JSON output is an XCTest resource, not a source file mutation.
 """
 from pathlib import Path, PurePosixPath
 from datetime import datetime,timezone,timedelta
-import argparse, base64, hashlib, io, json, os, plistlib, re, secrets, shutil, struct, subprocess, sys, tempfile, zipfile, math, signal, time
+import argparse, base64, hashlib, io, json, os, plistlib, re, secrets, shutil, stat, struct, subprocess, sys, tempfile, zipfile, math, signal, time
 HERE=Path(__file__).resolve().parent
 RECORDS=[]
 OPENSSL='openssl'
@@ -536,18 +536,43 @@ def owned_user_search_list(raw):
         raise ValueError('Duplicate or oversized owned search list')
     return tuple(paths)
 
+def owned_keychain_file_identity(path):
+    # Metadata only: never open a keychain or inspect its contents. Parent path
+    # aliases are permitted, but the leaf must be the same single-link regular
+    # file created and independently reopened by the existing importer.
+    try: value=os.stat(path,follow_symlinks=False)
+    except OSError:return None
+    if not stat.S_ISREG(value.st_mode) or value.st_nlink!=1 or value.st_ino<=0:return None
+    return value.st_dev,value.st_ino
+
 class OwnedUserSearchListScope:
     def __init__(self, keychain):
         require_owned_hosted_runner()
         self.owned=str(keychain)
         if owned_user_search_list(('    "'+self.owned+'"\n').encode())!=(self.owned,):
             raise ValueError('Invalid owned keychain path')
+        self.owned_identity=owned_keychain_file_identity(self.owned)
+        if self.owned_identity is None:raise ToolFailure('owned keychain file identity unavailable',-1)
         self.original=None;self.expected=None;self.cleanup_intent=False
         self.registered=False;self.restored=False
         self.operation='admission';self.failure_stage='comparison'
+    def require_owned_identity(self):
+        self.failure_stage='identity'
+        if owned_keychain_file_identity(self.owned)!=self.owned_identity:
+            raise ToolFailure('owned keychain file identity changed',-1)
+    def owned_file_indexes(self, observed):
+        return tuple(index for index,path in enumerate(observed)
+                     if owned_keychain_file_identity(path)==self.owned_identity)
+    def matches_expected(self, observed):
+        # Keep every original representation and its order exact. Only the sole
+        # appended owned item may have the Security API's representation of the
+        # same dev/inode. No basename, realpath-string or content-hash inference.
+        return (self.expected is not None and len(observed)==len(self.expected)
+                and observed[:-1]==self.original
+                and self.owned_file_indexes(observed)==(len(self.original),))
     def report_readback(self, observed):
         # Fixed-size relation facts only. Raw paths (and dictionary-guessable
-        # hashes of them) remain private; no filesystem/alias interpretation.
+        # hashes of them) and filesystem identity numbers remain private.
         public_record('OWNED_USER_SEARCH_LIST_READBACK',{'schemaVersion':1,'operation':self.operation,
             'readChildExitCode':0,'strictPathRepresentationParsed':True,
             'originalEntryCount':None if self.original is None else len(self.original),
@@ -557,19 +582,25 @@ class OwnedUserSearchListScope:
             'observedEqualsExpected':None if self.expected is None else observed==self.expected,
             'observedIsOriginalPermutation':None if self.original is None else set(observed)==set(self.original),
             'observedIsExpectedPermutation':None if self.expected is None else set(observed)==set(self.expected),
+            'ownedFileIdentityEntryCount':len(self.owned_file_indexes(observed)),
+            'ownedPathIdentityUnchanged':owned_keychain_file_identity(self.owned)==self.owned_identity,
+            'observedMatchesExpectedOwnedFile':None if self.expected is None else self.matches_expected(observed),
             'privatePathsPublished':False,'userAdminSystemTrustChanged':False,'codesignExecutionVerified':False})
     def read(self, *, cleanup=False):
         # These paths are private metadata. They stay only in parent memory;
         # stdout/stderr and set argv are suppressed by the existing runner.
+        self.require_owned_identity()
         self.failure_stage='child'
         raw=run(['security','list-keychains','-d','user'],private=True,
             cleanup=cleanup,timeout_seconds=CLEANUP_TIMEOUT_SECONDS if cleanup else None)
         self.failure_stage='decode'
         observed=owned_user_search_list(raw)
+        self.require_owned_identity()
         self.report_readback(observed)
         self.failure_stage='comparison'
         return observed
     def write(self, paths, *, cleanup=False):
+        self.require_owned_identity()
         self.failure_stage='child'
         run(['security','list-keychains','-d','user','-s',*paths],private=True,
             cleanup=cleanup,timeout_seconds=CLEANUP_TIMEOUT_SECONDS if cleanup else None)
@@ -579,7 +610,8 @@ class OwnedUserSearchListScope:
         self.operation='readOriginal'
         self.original=self.read()
         self.operation='admission'
-        if self.owned in self.original:raise ToolFailure('owned keychain already registered',-1)
+        if self.owned in self.original or self.owned_file_indexes(self.original):
+            raise ToolFailure('owned keychain already registered',-1)
         if len(self.original)>=128:raise ToolFailure('owned search list has no append capacity',-1)
         self.expected=(*self.original,self.owned)
         # The public setter has no compare-and-swap API. Refuse every observed
@@ -591,24 +623,32 @@ class OwnedUserSearchListScope:
         self.operation='append'
         self.write(self.expected)
         self.operation='verifyAfterAppend'
-        if self.read()!=self.expected:raise ToolFailure('owned search list append not exact',-1)
+        if not self.matches_expected(self.read()):raise ToolFailure('owned search list append not exact',-1)
         self.registered=True
         public_record('OWNED_USER_SEARCH_LIST_REGISTERED',{'schemaVersion':1,'status':'passed',
             'originalEntryCount':len(self.original),'ownedKeychainEntriesAdded':1,
             'exactOrderReadbackVerified':True,'privatePathsPublished':False,
+            'ownedFileIdentityReadbackVerified':True,
             'userAdminSystemTrustChanged':False,'codesignExecutionVerified':False})
     def cleanup(self):
         if not self.cleanup_intent:return
         self.operation='readBeforeRestore'
         current=self.read(cleanup=True)
+        if current==self.original and self.owned_file_indexes(current):
+            self.failure_stage='conflict'
+            raise ToolFailure('owned search list restore conflict',-1)
         if current!=self.original:
-            if current!=self.expected:
+            if not self.matches_expected(current):
                 self.failure_stage='conflict'
                 raise ToolFailure('owned search list restore conflict',-1)
             self.operation='restore'
             self.write(self.original,cleanup=True)
         self.operation='verifyAfterRestore'
-        if self.read(cleanup=True)!=self.original:raise ToolFailure('owned search list restore not exact',-1)
+        restored=self.read(cleanup=True)
+        if restored!=self.original:raise ToolFailure('owned search list restore not exact',-1)
+        if self.owned_file_indexes(restored):
+            self.failure_stage='conflict'
+            raise ToolFailure('owned search list restore conflict',-1)
         self.restored=True;self.cleanup_intent=False
         public_record('OWNED_USER_SEARCH_LIST_RESTORED',{'schemaVersion':1,'status':'passed',
             'originalEntryCount':len(self.original),'exactOrderReadbackVerified':True,
