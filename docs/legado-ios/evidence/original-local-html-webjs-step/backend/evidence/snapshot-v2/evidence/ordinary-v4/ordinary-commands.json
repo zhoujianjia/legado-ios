@@ -1,0 +1,56 @@
+{
+  "scope": "Ordinary JAR plus independent Java consumer classes only; no JUnit/test classes or UIKit",
+  "jar": {
+    "path": "F:\\yuedu-reader\\.build\\original-local-html-webjs-step\\implementation-v1\\ordinary-v4\\legado-runtime-local-webjs.jar",
+    "bytes": 10890165,
+    "sha256": "89f77040ea6a0f4592ca00a059c25da76cece9d1520b541e144588e6b4c5003b"
+  },
+  "source": {
+    "path": "F:\\yuedu-reader\\.build\\original-local-html-webjs-step\\implementation-v1\\OrdinaryLocalWebJs.java",
+    "bytes": 22701,
+    "sha256": "5e6c6ed3d56840345622ad27b6eadbdbf69cfd3bd10f10f9a680969b539434d2"
+  },
+  "commands": [
+    {
+      "argv": [
+        "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\javac.exe",
+        "-J-Xmx64m",
+        "-classpath",
+        "F:\\yuedu-reader\\.build\\original-local-html-webjs-step\\implementation-v1\\ordinary-v4\\legado-runtime-local-webjs.jar",
+        "-d",
+        "F:\\yuedu-reader\\.build\\original-local-html-webjs-step\\implementation-v1\\ordinary-v4\\consumer-classes",
+        "F:\\yuedu-reader\\.build\\original-local-html-webjs-step\\implementation-v1\\OrdinaryLocalWebJs.java"
+      ],
+      "exitCode": 0,
+      "seconds": 0.75,
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\original-local-html-webjs-step\\implementation-v1\\ordinary-v4\\compile-consumer.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\java.exe",
+        "-Xms16m",
+        "-Xmx160m",
+        "-XX:MaxMetaspaceSize=128m",
+        "-XX:CompressedClassSpaceSize=32m",
+        "-XX:ReservedCodeCacheSize=32m",
+        "-XX:ActiveProcessorCount=2",
+        "-Xss512k",
+        "-XX:+UseSerialGC",
+        "-cp",
+        "F:\\yuedu-reader\\.build\\original-local-html-webjs-step\\implementation-v1\\ordinary-v4\\legado-runtime-local-webjs.jar;F:\\yuedu-reader\\.build\\original-local-html-webjs-step\\implementation-v1\\ordinary-v4\\consumer-classes",
+        "OrdinaryLocalWebJs"
+      ],
+      "exitCode": 0,
+      "seconds": 1.563,
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\original-local-html-webjs-step\\implementation-v1\\ordinary-v4\\execute-consumer.log",
+        "bytes": 453,
+        "sha256": "b4e873a28accb60fa35fc2828ec683491339d163f8dddef6851302a3f09c8ade"
+      }
+    }
+  ]
+}

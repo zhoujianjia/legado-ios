@@ -1,0 +1,163 @@
+--- a/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift
++++ b/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift
+@@ -2,12 +2,160 @@
+ import LegadoRuntime
+ import Network
+ import WebKit
++import UIKit
+ import XCTest
+ @testable import yuedu_app
+
+ /// Actual Zero/JNI/Rhino plus the production App credential owner. All accounts
+ /// are unique synthetic .invalid sources; no existing account is enumerated.
+ final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
++    /// Actual product service -> retained JVM page AnalyzeRule -> real WK run
++    /// Promise -> original cache consume/delete. The second phase cancels a live
++    /// awaited page child and drains the same native/JVM resources without sleep.
++    func testNativeOriginalLocalHTMLWebJSKeepsSameSessionAfterProducerAndDrainsAwaitCancellation() async throws {
++        executionTimeAllowance = 180
++        try await requireNativeRuntime()
++        let fixture = try await Task.detached { try Fixture() }.value
++        let service = await Task.detached { BookSourceFetcher.shared.mainJSService }.value
++        let html = "<html><head></head><body>synthetic-local-webjs</body></html>"
++        let literal = String(decoding: try JSONEncoder().encode(html), as: UTF8.self)
++        var source = BookSource()
++        source.bookSourceUrl = fixture.a; source.enabledCookieJar = false
++        source.loginUrl = "var originalLocalWebJSPrelude=true;"
++        let admitted = source
++        let presentedName = await SourceBrowserPresenter.originalPageDidPresent
++        let loadedName = await SourceBrowserPresenter.originalPageDidLoad
++        let childName = await SourceBrowserPresenter.originalWebJSRequestDidStart
++        var observedTasks: [String] = []
++        var sourceRegistered = false
++        var problem: Error?
++        do {
++            // Only this new UUID/source is admitted or removed. No library
++            // enumeration, existing account or unrelated source is touched.
++            await BookSourceStore.shared.waitUntilLoaded()
++            try await MainActor.run {
++                let store = BookSourceStore.shared
++                guard store.runtimeIndexedSnapshot(id: admitted.id)?.source == nil else {
++                    throw LegadoRuntimeError(code: "fixture_collision", message: "Synthetic source id already exists")
++                }
++                store.add(admitted)
++            }
++            sourceRegistered = true
++            for awaited in [false, true] {
++                if awaited {
++                    // Restore this same owned source before the second producer.
++                    await MainActor.run { BookSourceStore.shared.update(admitted) }
++                }
++                let signals = OriginalV2PageSignals()
++                let presented = expectation(description: "Actual local HTML UIKit presentation")
++                let loaded = expectation(description: "Actual local HTML WK didFinish")
++                loaded.assertForOverFulfill = false
++                let presentationObserver = NotificationCenter.default.addObserver(forName: presentedName,
++                    object: nil, queue: nil) { event in
++                    if let id = event.userInfo?["taskID"] as? String, signals.presented(id) { presented.fulfill() }
++                }
++                let loadObserver = NotificationCenter.default.addObserver(forName: loadedName,
++                    object: nil, queue: nil) { event in
++                    if let id = event.userInfo?["taskID"] as? String, signals.loaded(id) { loaded.fulfill() }
++                }
++                let action = awaited
++                    ? "java.startBrowserAwait('https://local-webjs.invalid/page','Synthetic local',false,\(literal));"
++                    : "java.startBrowser('https://local-webjs.invalid/page','Synthetic local',\(literal));"
++                let pending = Task {
++                    try await service.originalLoginAction(source: admitted, action: action, credentials: [:])
++                }
++                do {
++                    await fulfillment(of: [presented, loaded], timeout: 20)
++                    let taskID = try XCTUnwrap(signals.matchingTaskID())
++                    observedTasks.append(taskID)
++                    if !awaited {
++                        let receipt = try await pending.value
++                        XCTAssertTrue(receipt.executed)
++                        let retained = await SourceBrowserPresenter.isOriginalPageActive(taskID: taskID)
++                        XCTAssertTrue(retained)
++                        // Producer and source-gate are already complete here.
++                        // Both calls still enter the exact same page AnalyzeRule.
++                        let value = try await evaluateMountedOriginalWebJS("""
++                            const oldGet = cache.getFromMemory.bind(cache);
++                            cache.getFromMemory = function(id) { window.__observedOriginalResult = id; return oldGet(id); };
++                            const first = await run("java.setContent('42');'set'");
++                            const second = await run("java.getString('@js:result')");
++                            return JSON.stringify({first:first,second:second,
++                                consumed:oldGet(window.__observedOriginalResult) === null,
++                                callbacks:Object.keys(JSBridgeCallbacks).length});
++                            """)
++                        let facts = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(value.utf8)) as? [String: Any])
++                        XCTAssertEqual(facts["first"] as? String, "set")
++                        XCTAssertEqual(facts["second"] as? String, "42")
++                        XCTAssertEqual(facts["consumed"] as? Bool, true)
++                        XCTAssertEqual(facts["callbacks"] as? Int, 0)
++                        // External source-owner editing, rather than a manual
++                        // Presenter cancel, must invalidate the retained page.
++                        await MainActor.run {
++                            var edited = admitted
++                            edited.loginUrl += " var changedAfterProducer=true;"
++                            BookSourceStore.shared.update(edited)
++                        }
++                        await SourceBrowserPresenter.waitForOriginalPageToEnd(taskID: taskID)
++                    } else {
++                        let childStarted = expectation(description: "Same Host invocation admitted the actual WK run child")
++                        childStarted.assertForOverFulfill = false
++                        let observer = NotificationCenter.default.addObserver(forName: childName,
++                            object: nil, queue: nil) { event in
++                            if event.userInfo?["taskID"] as? String == taskID,
++                               event.userInfo?["method"] as? String == "request" { childStarted.fulfill() }
++                        }
++                        let evaluation = Task {
++                            try await self.evaluateMountedOriginalWebJS("return await run('while(true){}');")
++                        }
++                        await fulfillment(of: [childStarted], timeout: 20)
++                        pending.cancel()
++                        let outcome = await pending.result
++                        _ = await evaluation.result
++                        NotificationCenter.default.removeObserver(observer)
++                        switch outcome {
++                        case .success: XCTFail("Cancelled awaited local page must not acknowledge success")
++                        case .failure(let error):
++                            let typed = try XCTUnwrap(error as? LegadoRuntimeError)
++                            XCTAssertEqual(typed.code, "CANCELLED")
++                            XCTAssertTrue((typed.completedEffects ?? []).contains("sourceBrowserWebJsMayExecute"))
++                        }
++                    }
++                    let active = await SourceBrowserPresenter.isOriginalPageActive(taskID: taskID)
++                    XCTAssertFalse(active)
++                } catch {
++                    pending.cancel(); _ = await pending.result
++                    NotificationCenter.default.removeObserver(presentationObserver)
++                    NotificationCenter.default.removeObserver(loadObserver)
++                    throw error
++                }
++                NotificationCenter.default.removeObserver(presentationObserver)
++                NotificationCenter.default.removeObserver(loadObserver)
++            }
++            let info = try await Task.detached {
++                try fixture.login.runtimeLoginInfo(sourceUrl: fixture.a, validate: {}, recordEffect: { _ in true })
++            }.value
++            XCTAssertNil(info)
++        } catch { problem = error }
++        for taskID in observedTasks { await SourceBrowserPresenter.cancelOriginal(taskID: taskID) }
++        if sourceRegistered { _ = await MainActor.run { BookSourceStore.shared.delete(id: admitted.id) } }
++        do { try await Task.detached { try fixture.cleanup() }.value } catch { if problem == nil { problem = error } }
++        if let problem { throw problem }
++    }
++
++    @MainActor
++    private func evaluateMountedOriginalWebJS(_ script: String) async throws -> String {
++        @MainActor func find(_ view: UIView) -> WKWebView? {
++            if let web = view as? WKWebView { return web }
++            for child in view.subviews { if let web = find(child) { return web } }
++            return nil
++        }
++        let controller = try XCTUnwrap(BookSourceFormLoginView.topViewController())
++        let web = try XCTUnwrap(find(controller.view))
++        let result = try await web.callAsyncJavaScript(script, arguments: [:], in: nil, contentWorld: .page)
++        return try XCTUnwrap(result as? String)
++    }
++
+     func testNativeOriginalLoginV2BrowserUsesProductServiceAndExistingPageOwner() async throws {
+         executionTimeAllowance = 180
+         try await requireNativeRuntime()

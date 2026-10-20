@@ -1,0 +1,160 @@
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt
+@@ -32,10 +32,12 @@
+  */
+ @OptIn(InternalCoroutinesApi::class)
+ internal class ProductionRulePlatform(
+-    private val task: RuntimeTask,
++    private val initialTask: RuntimeTask,
+     dispatch: (RuntimeTask, String, JsonObject) -> JsonObject,
++    private val taskProvider: (() -> RuntimeTask)? = null,
+     private val environment: () -> RuleEnvironment,
+ ) : RulePlatform() {
++    private val task: RuntimeTask get() = taskProvider?.invoke() ?: initialTask
+     private val hostDispatch = dispatch
+     override val userAgent: String? get() = task.session.options.userAgent
+     override fun log(value: Any?): Any? = if (task.sensitiveSourceOperation) value else super.log(value)
+@@ -81,13 +83,17 @@
+         task.recordLoginUIEvent(io.yuedu.legado.jsonObject("kind" to "render", "deltaUp" to deltaUp))
+     }
+     private data class PreparedLoginBrowser(val initialURL: String, val initialHeaders: Map<String, String>,
+-        val prefetchedHTML: String?, val input: JsonObject)
+-    private fun prepareLoginBrowser(source: BaseSource, url: String, title: String): PreparedLoginBrowser {
++        val prefetchedHTML: String?, val input: JsonObject, val page: io.yuedu.legado.OriginalWebJsPages.Page?)
++    private fun prepareLoginBrowser(source: BaseSource, url: String, title: String, html: String? = null): PreparedLoginBrowser {
+         ensureOwnerOpen(); task.ensureActiveForRuntime()
+         check(source.getRuleEnvironment() === environment()) { "Browser source belongs to another environment" }
+         if (!task.sourceBrowserAllowed) unsupportedRule("original browser requires an explicit login task")
+         require(url.length < 65_536 && title.toByteArray(Charsets.UTF_8).size <= 8_192) { "Browser request text exceeds its budget" }
+         val owner = task.session.options.stateOwner ?: unsupportedRule("original browser requires the checked source owner")
++        val page = html?.let { task.session.originalPages.register(task) }
++        try {
++        // Locked explicit HTML is injected before POST can overwrite the body.
++        val preparedHTML = html?.let { page!!.prepareHTML(it) }
+         // Locked WebViewModel74-78 captures URL/headers before the same
+         // AnalyzeUrl performs POST. The initial HTML is not localHtml/WebJS.
+         val analyze = AnalyzeUrl(url, source = source, environment = environment(), coroutineContext = source.getRuleCoroutineContext())
+@@ -108,26 +114,46 @@
+                 if (body.toByteArray(Charsets.UTF_8).size > 4 * 1024 * 1024)
+                     throw io.yuedu.legado.RuntimeFailure("STATE_LIMIT", "Browser prefetch exceeds its byte budget")
+             }
+-        } else null
++        } else preparedHTML
++        if (prefetchedHTML != null && prefetchedHTML.toByteArray(Charsets.UTF_8).size > 4 * 1024 * 1024)
++            throw io.yuedu.legado.RuntimeFailure("STATE_LIMIT", "Prepared browser HTML exceeds its byte budget")
++        page?.preparedBody(prefetchedHTML.orEmpty())
+         ensureOwnerOpen(); task.ensureActiveForRuntime()
+         val input = io.yuedu.legado.jsonObject("owner" to owner, "sourceURL" to source.getKey(),
+             "url" to initialURL, "title" to title, "headers" to initialHeaders)
+         // Absent GET versus present empty POST is observable in original
+         // confirm(): only absent HTML permits the original HTTP refetch.
+         if (prefetchedHTML != null) input.addProperty("prefetchedHTML", prefetchedHTML)
+-        return PreparedLoginBrowser(initialURL, initialHeaders, prefetchedHTML, input)
++        if (page != null) input.add("localPage", page.metadata())
++        return PreparedLoginBrowser(initialURL, initialHeaders, prefetchedHTML, input, page)
++        } catch (error: Exception) {
++            if (page != null) task.session.originalPages.close(page)
++            throw error
++        }
+     }
+
+     override fun startLoginBrowser(source: BaseSource, url: String, title: String) {
+-        val input = prepareLoginBrowser(source, url, title).input
+-        val reply = hostDispatch(task, "source.browser", input)
+-        ensureOwnerOpen(); task.ensureActiveForRuntime()
+-        if (reply["presented"]?.let { it.isJsonPrimitive && it.asJsonPrimitive.isBoolean && it.asBoolean } != true)
+-            throw io.yuedu.legado.RuntimeFailure("BROWSER_NOT_PRESENTED", "The original browser was not presented")
++        startLoginBrowser(source, url, title, null)
++    }
++    override fun startLoginBrowser(source: BaseSource, url: String, title: String, html: String?) {
++        val initial = prepareLoginBrowser(source, url, title, html)
++        try {
++            val reply = hostDispatch(task, "source.browser", initial.input)
++            ensureOwnerOpen(); task.ensureActiveForRuntime()
++            if (reply["presented"]?.let { it.isJsonPrimitive && it.asJsonPrimitive.isBoolean && it.asBoolean } != true)
++                throw io.yuedu.legado.RuntimeFailure("BROWSER_NOT_PRESENTED", "The original browser was not presented")
++        } catch (error: Exception) {
++            if (initial.page != null) task.session.originalPages.close(initial.page)
++            throw error
++        }
+     }
+
+     override fun awaitLoginBrowser(source: BaseSource, url: String, title: String, refetchAfterSuccess: Boolean): StrResponse {
+-        val initial = prepareLoginBrowser(source, url, title)
++        return awaitLoginBrowser(source, url, title, refetchAfterSuccess, null)
++    }
++    override fun awaitLoginBrowser(source: BaseSource, url: String, title: String, refetchAfterSuccess: Boolean, html: String?): StrResponse {
++        val initial = prepareLoginBrowser(source, url, title, html)
++        try {
+         val input = initial.input
+         input.addProperty("awaitsResult", true)
+         input.addProperty("refetchAfterSuccess", refetchAfterSuccess)
+@@ -172,9 +198,18 @@
+             catch (_: IllegalArgumentException) { Request.Builder().url("http://localhost/").build() }
+         val raw = Response.Builder().request(request).code(200).message("OK").protocol(Protocol.HTTP_1_1).build()
+         return StrResponse(raw.request.url.toString(), 200, body, emptyMap(), raw)
+-    }
+-    private val appCookieOwner = if (task.session.options.usesAppCookieOwner) AppCookieOwnerClient(task, dispatch) else null
+-    init { if (appCookieOwner != null) task.appCookieOwner = appCookieOwner }
++        } finally {
++            if (initial.page != null) task.session.originalPages.close(initial.page)
++        }
++    }
++    private val fixedAppCookieOwner = if (initialTask.session.options.usesAppCookieOwner && taskProvider == null) AppCookieOwnerClient(initialTask, dispatch) else null
++    private val appCookieOwner: AppCookieOwnerClient? get() {
++        if (taskProvider == null) return fixedAppCookieOwner
++        val current = task
++        if (!current.session.options.usesAppCookieOwner) return null
++        return current.appCookieOwner ?: AppCookieOwnerClient(current, hostDispatch).also { current.appCookieOwner = it }
++    }
++    init { if (fixedAppCookieOwner != null) initialTask.appCookieOwner = fixedAppCookieOwner }
+     override val cookie: RuleCookieHost = object : RuleCookieHost() {
+         override fun getCookie(url: String): String = readCookie(url)
+         override fun getCookie(url: String, key: String?): String = readCookie(url, key)
+@@ -223,13 +258,13 @@
+             unsupportedRule("App owner did not authorize the actual batch chapter generations")
+     }
+
+-    private val http = RuntimeHttpRequestExecutor(task) { current, operation, input ->
++    private val http get() = RuntimeHttpRequestExecutor(task) { current, operation, input ->
+         check(current === task && operation == "http.request") { "Unexpected original-rule host operation" }
+         ensureOwnerOpen()
+         // Never fall back to a native/Swift transport after session shutdown.
+         check(!task.session.closed.get()) { "Session is closed" }
+         check(task.session.http != null) { "Original-rule requests require the JVM HTTP transport" }
+-        dispatch(current, operation, input)
++        hostDispatch(current, operation, input)
+     }
+
+     override suspend fun <T> runWebBook(context: CoroutineContext, action: suspend () -> T): T {
+@@ -281,7 +316,8 @@
+         val changes = environment().cache.textChange(cacheKey, value)
+         val headers = GSON.fromJsonObject<Map<String, String>>(value).getOrNull()
+         val cookie = headers?.get("Cookie") ?: headers?.get("cookie")
+-        if (appCookieOwner != null && task.session.options.writesAppCookieOwner) {
++        val headerCookieOwner = appCookieOwner
++        if (headerCookieOwner != null && task.session.options.writesAppCookieOwner) {
+             // Locked BaseSource.kt:235-246 has immediate sequential effects,
+             // with different order for put and remove. This is deliberately not
+             // the outward state.commit atomic batch API.
+@@ -291,9 +327,9 @@
+                 // Host facts describe an actual changed header. An already
+                 // absent header must not manufacture a removal-write effect
+                 // merely because the later Cookie owner fails.
+-                appCookieOwner.mutate("remove", source.getKey())
++                headerCookieOwner.mutate("remove", source.getKey())
+             } else {
+-                cookie?.let { appCookieOwner.mutate("replace", source.getKey(), it) }
++                cookie?.let { headerCookieOwner.mutate("replace", source.getKey(), it) }
+                 try {
+                     commitAppLoginHeader(source, value)
+                     environment().cache.publishText(cacheKey, value)
+@@ -488,7 +524,8 @@
+     }
+     private fun cookieWrite(action: String, url: String, value: String? = null, body: () -> Unit) {
+         ensureOwnerOpen(); task.ensureActiveForRuntime()
+-        if (appCookieOwner != null) { appCookieOwner.mutate(action, url, value); return }
++        val owner = appCookieOwner
++        if (owner != null) { owner.mutate(action, url, value); return }
+         cookieOperation(true, body)
+     }

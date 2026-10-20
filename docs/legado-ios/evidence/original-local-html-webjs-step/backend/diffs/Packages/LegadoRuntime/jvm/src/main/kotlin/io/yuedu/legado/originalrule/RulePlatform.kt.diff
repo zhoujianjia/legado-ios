@@ -1,0 +1,17 @@
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt
+@@ -62,6 +62,14 @@
+         unsupportedRule("original login browser presentation")
+     open fun awaitLoginBrowser(source: BaseSource, url: String, title: String, refetchAfterSuccess: Boolean): StrResponse =
+         unsupportedRule("original awaited login browser")
++    open fun startLoginBrowser(source: BaseSource, url: String, title: String, html: String?) {
++        if (html != null) unsupportedRule("original local HTML WebJS browser")
++        startLoginBrowser(source, url, title)
++    }
++    open fun awaitLoginBrowser(source: BaseSource, url: String, title: String, refetchAfterSuccess: Boolean, html: String?): StrResponse {
++        if (html != null) unsupportedRule("original local HTML WebJS browser")
++        return awaitLoginBrowser(source, url, title, refetchAfterSuccess)
++    }
+     /** Existing parser/URL diagnostic sink; production may protect the current login task. */
+     open fun ruleDiagnostic(error: Throwable, loggerName: String = "io.yuedu.legado.originalrule",
+                             message: String = "Original rule evaluation diagnostic") {

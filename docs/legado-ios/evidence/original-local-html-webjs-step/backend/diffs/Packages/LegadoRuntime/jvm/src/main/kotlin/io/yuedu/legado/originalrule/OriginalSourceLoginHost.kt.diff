@@ -1,0 +1,19 @@
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt
+@@ -27,14 +27,10 @@
+     fun getElement(rule: String) = analyzeRule.getElement(rule)
+     fun getElements(rule: String) = analyzeRule.getElements(rule)
+     @JvmOverloads fun startBrowser(url: String, title: String, html: String? = null) {
+-        // Explicit local HTML installs WebJsExtensions in the locked Activity;
+-        // a plain WK page must not silently pretend to provide that host.
+-        if (html != null) unsupportedRule("original local HTML WebJS browser")
+-        getRuleEnvironment().platform.startLoginBrowser(source, url, title)
++        getRuleEnvironment().platform.startLoginBrowser(source, url, title, html)
+     }
+     @JvmOverloads fun startBrowserAwait(url: String, title: String, refetchAfterSuccess: Boolean = true, html: String? = null): StrResponse {
+-        if (html != null) unsupportedRule("original local HTML WebJS browser")
+-        return getRuleEnvironment().platform.awaitLoginBrowser(source, url, title, refetchAfterSuccess)
++        return getRuleEnvironment().platform.awaitLoginBrowser(source, url, title, refetchAfterSuccess, html)
+     }
+     @JvmOverloads fun showBrowser(url: String, html: String? = null, preloadJs: String? = null, config: String? = null): Nothing = unsupportedRule("form login browser presentation")
+     fun upLoginData(data: Map<String, Any?>?) = getRuleEnvironment().platform.updateLoginUI(source, data)

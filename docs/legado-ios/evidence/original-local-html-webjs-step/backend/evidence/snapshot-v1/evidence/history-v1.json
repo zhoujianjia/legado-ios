@@ -1,0 +1,51 @@
+[
+  {
+    "kind": "Actual production compile",
+    "attempt": 1,
+    "exitCode": 1,
+    "diagnostics": 4,
+    "testExecution": 0,
+    "reason": "Non-property constructor dispatch access plus dynamic Cookie owner getter smart casts; fixed before attempt2."
+  },
+  {
+    "kind": "Pre-compile shell preparation",
+    "exitCode": 1,
+    "testExecution": 0,
+    "reason": "PowerShell/python -c quoting syntax error generating attempt3 script; compiler was not invoked. Replaced by explicit Python source file."
+  },
+  {
+    "kind": "Assembly assertion",
+    "attempt": 1,
+    "testExecution": 0,
+    "reason": "Verifier reused ZipInfo objects mutated by output writestr, invalidating source archive offsets in that in-memory ZipFile. Immutable base JAR remained exact; assembly-v2 uses independent verification ZipFile. No JVM tests ran in failed assembly."
+  },
+  {
+    "kind": "Successful intermediate compiles",
+    "attempts": [
+      2,
+      3,
+      4
+    ],
+    "supersededBy": 5,
+    "reason": "Final adds producer-worker nonawait cancellation drain before terminal effects snapshot. All actual logs/hashes retained."
+  },
+  {
+    "kind": "Successful progressively strengthened ordinary consumers",
+    "passes": [
+      {
+        "publicCalls": 60,
+        "realHTTP": 3
+      },
+      {
+        "publicCalls": 63,
+        "realHTTP": 3
+      },
+      {
+        "publicCalls": 69,
+        "realHTTP": 5
+      }
+    ],
+    "supersededBy": "Final72-call consumer on final072f JAR",
+    "legacyLogLabel": "browserWireACK in those three logs is the count of source.browser Host invocations, NOT accepted UIKit presentations or UIKit evidence."
+  }
+]

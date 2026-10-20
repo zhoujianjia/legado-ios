@@ -16,6 +16,7 @@ enum SourceBrowserPresenter {
     /// State-only signal from actual UIKit completion; no page text or secrets.
     static let originalPageDidPresent = Notification.Name("YueduOriginalBrowserPageDidPresent")
     /// Observation only: actual WK didFinish does not complete an awaited page.
+    static let originalWebJSRequestDidStart = Notification.Name("YueduOriginalWebJSRequestDidStart")
     static let originalPageDidLoad = Notification.Name("YueduOriginalBrowserPageDidLoad")
     /// Installs this as `LegadoJSBridge.sharedBrowserPresenter` and
     /// `sharedCaptchaPresenter`. Called once at launch.
@@ -102,6 +103,13 @@ enum SourceBrowserPresenter {
         for ticket in tickets { await ticket.waitUntilEnded() }
     }
 
+    /// An observation only: unlike cancelOriginal this never starts a close.
+    /// It waits for the existing ticket's actual UIKit/child terminal signal.
+    static func waitForOriginalPageToEnd(taskID: String) async {
+        guard let ticket = activeOriginal, ticket.presentation.taskID == taskID else { return }
+        await ticket.waitUntilEnded()
+    }
+
     /// Presentation-lifetime fact only; no source data or credential authority.
     static func isOriginalPageActive(taskID: String) -> Bool {
         guard let ticket = activeOriginal, ticket.presentation.taskID == taskID else { return false }
@@ -184,8 +192,8 @@ enum SourceBrowserPresenter {
         }), case .originalPage(let ticket) = waiting.remove(at: index).content {
             ticket.cancelled = true
             ticket.cookieCancellation.cancel()
-            ticket.resolve(.failure(CancellationError()))
-            ticket.end()
+            ticket.setTerminal(.failure(CancellationError()))
+            finishOriginal(ticket)
             return
         }
         guard let ticket = activeOriginal, ticket.id == id, !ticket.ended else { return }
@@ -215,6 +223,25 @@ enum SourceBrowserPresenter {
         // completion callback. Release the shared queue only after both owners end.
         ticket.drain = Task { @MainActor in
             await controls?.cancelAndDrain()
+            // The page's own children are drained before closing its JVM scope;
+            // that close never waits for the parent blocked in source.browser.
+            if let page = ticket.presentation.localPage {
+                do { try await page.close() }
+                catch {
+                    let cleanup = error as? LegadoRuntimeError
+                    if case .failure(let primary)? = ticket.terminal {
+                        let typed = primary as? LegadoRuntimeError
+                        ticket.terminal = .failure(LegadoRuntimeError(
+                            code: typed?.code ?? (primary is CancellationError ? "CANCELLED" : "STATE_IO"),
+                            message: "Original page ended with a cleanup failure",
+                            completedEffects: typed?.completedEffects,
+                            secondaryFailures: (typed?.secondaryFailures ?? []) + [.init(
+                                code: cleanup?.code ?? "STATE_IO", message: "Original page scope cleanup did not complete")]))
+                    } else { ticket.terminal = .failure(error) }
+                    AppLogger.error("Original page scope cleanup failed", error: LegadoRuntimeError(
+                        code: cleanup?.code ?? "STATE_IO", message: "Original page scope cleanup did not complete"))
+                }
+            }
             ticket.end()
             if let terminal = ticket.terminal { ticket.resolve(terminal) }
             else {
@@ -305,6 +332,9 @@ enum SourceBrowserPresenter {
                     userAgent: userAgent?.isEmpty == false ? userAgent : nil,
                     finishesWhenChallengeClears: packet.awaitsResult,
                     originalAwaitPolicy: awaitPolicy,
+                    // Original Activity installs native interfaces only inside
+                    // the nonempty final HTML branch. Empty POST still loadUrls.
+                    originalWebPage: packet.prefetchedHTML?.isEmpty == false ? packet.localPage : nil,
                     originalPageLoadCheck: {
                         // Normal nonawait producer cleanup does not revoke the
                         // accepted page; only its explicit UI lifetime cancels it.

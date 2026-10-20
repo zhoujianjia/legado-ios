@@ -24,6 +24,16 @@ actor LegadoRuntimeProcess {
         try await persistentHost().bind(sourceURL: sourceURL, sourceRevision: sourceRevision)
     }
 
+    func attachOriginalInvocation(owner: String, runtime: LegadoRuntime,
+                                  session: LegadoSourceSession, taskID: String, sourceID: UUID?) async throws {
+        try await persistentHost().attachOriginalInvocation(owner: owner, runtime: runtime,
+            session: session, taskID: taskID, sourceID: sourceID)
+    }
+
+    func finishOriginalInvocation(owner: String, taskID: String, cancelPages: Bool) async throws {
+        try await persistentHost().finishOriginalInvocation(owner: owner, taskID: taskID, cancelPages: cancelPages)
+    }
+
     func revokePersistentSource(owner: String) async {
         await persistentHost().revoke(owner: owner)
     }

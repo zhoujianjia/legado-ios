@@ -274,12 +274,10 @@ class BookSource(
     /** V2 binds java to this source, inheriting the original JsExtensions API.
      * The existing platform admits only the current explicit login task. */
     @JvmOverloads fun startBrowser(url: String, title: String, html: String? = null) {
-        if (html != null) unsupportedRule("original local HTML WebJS browser")
-        environment.platform.startLoginBrowser(this, url, title)
+        environment.platform.startLoginBrowser(this, url, title, html)
     }
     @JvmOverloads fun startBrowserAwait(url: String, title: String, refetchAfterSuccess: Boolean = true, html: String? = null): StrResponse {
-        if (html != null) unsupportedRule("original local HTML WebJS browser")
-        return environment.platform.awaitLoginBrowser(this, url, title, refetchAfterSuccess)
+        return environment.platform.awaitLoginBrowser(this, url, title, refetchAfterSuccess, html)
     }
     fun isLoginUiV2(): Boolean {
         val text = loginUi?.trim() ?: return false

@@ -146,6 +146,19 @@ class BookSourceStore: ObservableObject {
         return current[position]
     }
 
+    /// A transient runtime lease checks this existing owner's single indexed
+    /// record. It never forces a library read or copies/scans the whole library.
+    @MainActor
+    func runtimeIndexedSnapshot(id: UUID) -> (revision: Int, source: BookSource?)? {
+        guard isLoaded, loadError == nil else { return nil }
+        let position = index.withLock { $0[id] }
+        let value = position.flatMap { position -> BookSource? in
+            guard library.indices.contains(position), library[position].id == id else { return nil }
+            return library[position]
+        }
+        return (mutationRevision, value)
+    }
+
     /// Every source, in display order.
     ///
     /// The file is read on `loadQueue` as soon as the store exists: at 50 000 sources it is

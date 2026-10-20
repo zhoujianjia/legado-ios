@@ -1,0 +1,294 @@
+--- a/Modules/Features/BookSource/JsBridgeBrowserView.swift
++++ b/Modules/Features/BookSource/JsBridgeBrowserView.swift
+@@ -88,6 +88,7 @@
+     /// a Cloudflare challenge on the page clears, the page finishes as if ✓ were tapped.
+     let finishesWhenChallengeClears: Bool
+     let originalAwaitPolicy: OriginalBrowserAwaitPolicy?
++    let originalWebPage: LegadoOriginalWebPageLease?
+     let originalPageLoadCheck: (@Sendable () throws -> Void)?
+     let onOriginalAwaitCompletion: ((Result<LegadoOriginalBrowserCompletion, any Error>) -> Void)?
+     let onOriginalPageReady: ((OriginalBrowserPageControls) -> Void)?
+@@ -105,6 +106,7 @@
+         userAgent: String? = nil,
+         finishesWhenChallengeClears: Bool = false,
+         originalAwaitPolicy: OriginalBrowserAwaitPolicy? = nil,
++        originalWebPage: LegadoOriginalWebPageLease? = nil,
+         originalPageLoadCheck: (@Sendable () throws -> Void)? = nil,
+         onOriginalAwaitCompletion: ((Result<LegadoOriginalBrowserCompletion, any Error>) -> Void)? = nil,
+         onOriginalPageReady: ((OriginalBrowserPageControls) -> Void)? = nil,
+@@ -122,6 +124,7 @@
+         self.userAgent = userAgent
+         self.finishesWhenChallengeClears = finishesWhenChallengeClears
+         self.originalAwaitPolicy = originalAwaitPolicy
++        self.originalWebPage = originalWebPage
+         self.originalPageLoadCheck = originalPageLoadCheck
+         self.onOriginalAwaitCompletion = onOriginalAwaitCompletion
+         self.onOriginalPageReady = onOriginalPageReady
+@@ -235,6 +238,7 @@
+                 userAgent: userAgent,
+                 finishesWhenChallengeClears: finishesWhenChallengeClears,
+                 originalAwaitPolicy: originalAwaitPolicy,
++                originalWebPage: originalWebPage,
+                 originalPageLoadCheck: originalPageLoadCheck,
+                 onOriginalAwaitCompletion: onOriginalAwaitCompletion,
+                 onOriginalPageReady: onOriginalPageReady,
+@@ -401,6 +405,7 @@
+     var userAgent: String? = nil
+     var finishesWhenChallengeClears = false
+     var originalAwaitPolicy: OriginalBrowserAwaitPolicy? = nil
++    var originalWebPage: LegadoOriginalWebPageLease? = nil
+     var originalPageLoadCheck: (@Sendable () throws -> Void)? = nil
+     var onOriginalAwaitCompletion: ((Result<LegadoOriginalBrowserCompletion, any Error>) -> Void)? = nil
+     var onOriginalPageReady: ((OriginalBrowserPageControls) -> Void)? = nil
+@@ -442,6 +447,81 @@
+                 .postMessage(String(script == null ? '' : script));
+         };
+         \(injectedJavaScript)
++        """
++    }
++
++    /// The original prepared HTML owns JS_INJECTION2/run/callback storage. This
++    /// shim supplies only its two native interfaces, at document start, under
++    /// the JVM-generated names; it creates no second JS runtime/result store.
++    static func originalPageBootstrap(_ page: LegadoOriginalWebPageDescriptor) -> String {
++        let java = javaScriptStringLiteral(page.javaName)
++        let cache = javaScriptStringLiteral(page.cacheName)
++        let result = javaScriptStringLiteral(page.resultName)
++        let prompt = javaScriptStringLiteral(sourceJavaPromptName)
++        return """
++        (function() {
++            function params(args) { return Array.from(args, v => v == null ? null : String(v)); }
++            function sync(method, args) {
++                const raw = window.prompt(\(prompt), JSON.stringify({method:method,params:params(args)}));
++                if (raw === null) throw new Error('BROWSER_CANCELLED');
++                const reply = JSON.parse(raw);
++                if (reply.error) throw new Error(reply.error);
++                if (reply.kind === 'void') return undefined;
++                if (reply.kind === 'stringList') return reply.values == null ? null : reply.values;
++                return reply.value == null ? null : reply.value;
++            }
++            const cache = {};
++            ['put','putMemory','get','getFromMemory','delete','deleteMemory'].forEach(function(name) {
++                cache[name] = function() { return sync('cache.' + name, arguments); };
++            });
++            const java = {};
++            ['put','get','ajax','connect','getString','getStringList','upConfig'].forEach(function(name) {
++                java[name] = function() { return sync('java.' + name, arguments); };
++            });
++            java.request = function(fn, values, id) {
++                const requestId = String(id);
++                // Returning from the native reply releases its child before the
++                // original callback synchronously reenters cache prompt methods.
++                void window.webkit.messageHandlers.\(Coordinator.originalWebJSMessageName)
++                    .postMessage(JSON.stringify({method:'request',function:String(fn),params:params(values),requestId:requestId}))
++                    .then(function(raw) {
++                        const reply = JSON.parse(raw);
++                        if (reply.error) throw new Error(reply.error);
++                        if (reply.kind !== 'callback' || reply.requestId !== requestId || typeof reply.success !== 'boolean') {
++                            throw new Error('INVALID_RESULT');
++                        }
++                        const complete = window[\(result)];
++                        if (typeof complete === 'function') complete(requestId, reply.success);
++                    }).catch(function(error) {
++                        // The existing cache remains the sole result channel,
++                        // including a transport refusal before JVM registration.
++                        try {
++                            cache.putMemory(requestId, String(error));
++                            const complete = window[\(result)];
++                            if (typeof complete === 'function') complete(requestId, false);
++                        } catch (_) {
++                            // A failed/closed channel cannot write a fallback
++                            // result. Reject/remove the original pending callback
++                            // with its primary error; no replacement store exists.
++                            if (typeof JSBridgeCallbacks !== 'undefined') {
++                                const pending = JSBridgeCallbacks[requestId];
++                                if (pending) { pending.reject(error && typeof error.message === 'string' ? error.message : String(error)); delete JSBridgeCallbacks[requestId]; }
++                            }
++                        }
++                    });
++            };
++            function nativeSurface(target, prefix) {
++                return new Proxy(target, { get: function(object, name) {
++                    if (typeof name !== 'string' || name === 'then') return undefined;
++                    if (Object.prototype.hasOwnProperty.call(object, name)) return object[name];
++                    // Unported methods reach the exact typed JVM refusal;
++                    // no generic HTTP, JS evaluator or successful stub exists.
++                    return function() { return sync(prefix + '.' + name, arguments); };
++                }});
++            }
++            window[\(java)] = nativeSurface(java, 'java');
++            window[\(cache)] = nativeSurface(cache, 'cache');
++        })();
+         """
+     }
+
+@@ -586,6 +666,18 @@
+             )
+         }
+
++        context.coordinator.originalWebPage = originalWebPage
++        if let page = originalWebPage {
++            context.coordinator.uiDelegate.sourceBridgePromptHandler = { [weak coordinator = context.coordinator] payload, completion in
++                guard let coordinator else { completion(nil); return }
++                coordinator.handleOriginalWebJS(payload, completion: completion)
++            }
++            config.userContentController.addScriptMessageHandler(context.coordinator,
++                contentWorld: .page, name: Coordinator.originalWebJSMessageName)
++            config.userContentController.addUserScript(WKUserScript(
++                source: Self.originalPageBootstrap(page.descriptor), injectionTime: .atDocumentStart, forMainFrameOnly: true))
++        }
++
+         let wv = WKWebView(frame: .zero, configuration: config)
+         SourceWebIdentity.apply(desktop: false, to: wv)
+         if let userAgent {
+@@ -596,12 +688,12 @@
+         context.coordinator.originalPageLoadCheck = originalPageLoadCheck
+         context.coordinator.onOriginalAwaitCompletion = onOriginalAwaitCompletion
+         context.coordinator.onOriginalPageLoaded = onOriginalPageLoaded
+-        if originalAwaitPolicy != nil {
++        if originalAwaitPolicy != nil || originalWebPage != nil {
+             context.coordinator.uiDelegate.onCloseRequested = { [weak coordinator = context.coordinator] in
+                 coordinator?.requestOriginalPageClose()
+             }
+             // Locked basicJs overrides only the page's close function here.
+-            // This finite signal installs no source Java/cache/run evaluator.
++            // The close signal is separate from any original local-page bridge.
+             config.userContentController.addScriptMessageHandler(context.coordinator,
+                 contentWorld: .page, name: Coordinator.originalCloseMessageName)
+             config.userContentController.addUserScript(WKUserScript(source: """
+@@ -667,12 +759,15 @@
+         )
+         uiView.configuration.userContentController.removeScriptMessageHandler(
+             forName: Coordinator.originalCloseMessageName, contentWorld: .page)
++        uiView.configuration.userContentController.removeScriptMessageHandler(
++            forName: Coordinator.originalWebJSMessageName, contentWorld: .page)
+         coordinator.clipboardBridge.remove(from: uiView.configuration.userContentController)
+     }
+
+     final class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandlerWithReply {
+         static let sourceRunMessageName = "yueduSourceRun"
+         static let originalCloseMessageName = "yueduOriginalBrowserClose"
++        static let originalWebJSMessageName = "yueduOriginalWebJS"
+
+         weak var webView: WKWebView?
+         weak var bridge: JsBridgeBrowserBridge?
+@@ -681,6 +776,8 @@
+         var sourceConfigurationUpdateHandler: ((String) -> Void)?
+         var finishesWhenChallengeClears = false
+         var originalAwaitPolicy: OriginalBrowserAwaitPolicy?
++        var originalWebPage: LegadoOriginalWebPageLease?
++        private var originalWebJSWork: [UUID: Task<Void, Never>] = [:]
+         var originalPageLoadCheck: (@Sendable () throws -> Void)?
+         var onOriginalAwaitCompletion: ((Result<LegadoOriginalBrowserCompletion, any Error>) -> Void)?
+         var onOriginalPageLoaded: (() -> Void)?
+@@ -885,6 +982,7 @@
+             webView?.stopLoading()
+             initialLoadWork?.cancel()
+             originalAwaitWork?.cancel()
++            for child in originalWebJSWork.values { child.cancel() }
+         }
+
+         @MainActor
+@@ -895,9 +993,12 @@
+                     guard let self else { return }
+                     let initial = self.initialLoadWork
+                     let confirmation = self.originalAwaitWork
++                    let children = Array(self.originalWebJSWork.values)
+                     self.stopPageLoading()
+                     if let initial { await initial.value }
+                     if let confirmation { await confirmation.value }
++                    for child in children { await child.value }
++                    self.originalWebJSWork.removeAll()
+                     self.initialLoadWork = nil
+                     self.originalAwaitWork = nil
+                 })
+@@ -912,12 +1013,22 @@
+             replyHandler: @escaping @MainActor (Any?, String?) -> Void
+         ) {
+             if message.name == Self.originalCloseMessageName {
+-                guard originalAwaitPolicy != nil, message.frameInfo.isMainFrame else {
++                guard originalAwaitPolicy != nil || originalWebPage != nil, message.frameInfo.isMainFrame else {
+                     replyHandler(nil, "BROWSER_CLOSE_UNAVAILABLE")
+                     return
+                 }
+                 requestOriginalPageClose()
+                 replyHandler(nil, nil)
++                return
++            }
++            if message.name == Self.originalWebJSMessageName {
++                guard message.frameInfo.isMainFrame, let payload = message.body as? String else {
++                    replyHandler(nil, "INVALID_STATE_REQUEST"); return
++                }
++                handleOriginalWebJS(payload) { value in
++                    if let value { replyHandler(value, nil) }
++                    else { replyHandler(nil, "BROWSER_CANCELLED") }
++                }
+                 return
+             }
+             guard message.name == Self.sourceRunMessageName,
+@@ -933,6 +1044,57 @@
+                     replyHandler(nil, error.localizedDescription)
+                 }
+             }
++        }
++
++        /// Prompt and Promise calls have separate owned tasks. In particular a
++        /// Promise reply never holds a serial lane while its JSBridgeResult
++        /// synchronously calls the original cache prompt methods.
++        @MainActor
++        func handleOriginalWebJS(_ payload: String, completion: @escaping @MainActor (String?) -> Void) {
++            guard let page = originalWebPage, !pageLoadStopped else { completion(nil); return }
++            guard originalWebJSWork.count < 32 else { completion("{\"error\":\"STATE_LIMIT\"}"); return }
++            let id = UUID()
++            originalWebJSWork[id] = Task { @MainActor [weak self] in
++                guard let self else { completion(nil); return }
++                defer { self.originalWebJSWork.removeValue(forKey: id) }
++                do {
++                    let call = try await Self.decodeOriginalWebJS(payload)
++                    try Task.checkCancellation()
++                    guard !self.pageLoadStopped else { throw CancellationError() }
++                    let reply = try await page.request(call)
++                    let encoded = try await Self.encodeOriginalWebJS(reply)
++                    try Task.checkCancellation()
++                    guard !self.pageLoadStopped else { throw CancellationError() }
++                    completion(encoded)
++                } catch {
++                    if self.pageLoadStopped || Task.isCancelled { completion(nil) }
++                    else {
++                        let code = (error as? LegadoRuntimeError)?.code ?? "STATE_IO"
++                        completion(await Self.originalWebJSError(code))
++                    }
++                }
++            }
++        }
++
++        nonisolated private static func decodeOriginalWebJS(_ payload: String) async throws -> LegadoOriginalWebJSCall {
++            try SourcePerfTrace.span("legado.original.webjs.decode", "main=\(Thread.isMainThread) bytes=\(payload.utf8.count)") {
++                guard payload.utf8.count <= 6 * 4 * 1024 * 1024 + 65_536 else {
++                    throw LegadoRuntimeError(code: "STATE_LIMIT", message: "Original page message exceeds its budget")
++                }
++                do { return try JSONDecoder().decode(LegadoOriginalWebJSCall.self, from: Data(payload.utf8)) }
++                catch { throw LegadoRuntimeError(code: "INVALID_STATE_REQUEST", message: "Original page message is incompatible") }
++            }
++        }
++
++        nonisolated private static func encodeOriginalWebJS(_ reply: LegadoOriginalWebJSReply) async throws -> String {
++            try SourcePerfTrace.span("legado.original.webjs.encode", "main=\(Thread.isMainThread) values=\(reply.values?.count ?? 0)") {
++                String(decoding: try JSONEncoder().encode(reply), as: UTF8.self)
++            }
++        }
++
++        nonisolated private static func originalWebJSError(_ code: String) async -> String {
++            do { return String(decoding: try JSONEncoder().encode(["error": code]), as: UTF8.self) }
++            catch { return "{\"error\":\"STATE_IO\"}" }
+         }
+
+         func handleSourceJavaPrompt(
+@@ -1067,7 +1229,7 @@
+         func requestOriginalPageClose() {
+             // Locked Activity.close ignores page-authored close while the
+             // current page remains a challenge. User Cancel is separate.
+-            guard originalAwaitPolicy != nil, !sawChallenge else { return }
++            guard originalAwaitPolicy != nil || originalWebPage != nil, !sawChallenge else { return }
+             bridge?.originalCloseRequested = true
+         }

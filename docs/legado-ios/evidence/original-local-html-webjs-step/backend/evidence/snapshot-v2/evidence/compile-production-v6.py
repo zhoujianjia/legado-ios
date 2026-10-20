@@ -1,0 +1,4 @@
+from pathlib import Path
+source=Path(__file__).with_name('compile-production-v2.py').read_text(encoding='utf-8')
+source=source.replace("E=S/'compile-attempt2'","E=S/'compile-attempt6'").replace("base=R/'.build/consolidated-header-v2-browser-source-step/snapshot-v1/legado-runtime.jar'","base=S/'snapshot-v1/legado-runtime.jar'").replace('df6f572adfd6c18ca67d98573be86dcf9e65f0c0d8b603eae60f054e8c29eac3','072fef8be6ec7aa6bd9fdc186447535db058e68e19960819449d15272d329dab').replace("sources=sorted(W.rglob('*.kt'));assert len(sources)==7","sources=[W/'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt'];assert len(sources)==1").replace('Seven-source bounded exact K2 incremental compile','One-source review-P2 bounded exact K2 incremental compile')
+exec(compile(source,__file__,'exec'))

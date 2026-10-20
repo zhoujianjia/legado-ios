@@ -77,7 +77,7 @@ object LegadoRuntime {
             val timeoutMs = input["timeoutMs"]?.asLong ?: 30_000L
             require(timeoutMs in 1..300_000) { "timeoutMs must be between 1 and 300000" }
             task = RuntimeTask(taskId, session, Job(), System.currentTimeMillis() + timeoutMs)
-            task.sensitiveSourceOperation = session.options.usesOriginalTraditional && operation in setOf("formLogin", "loginUi", "loginAction", "persistLoginInfo", "loginV2UI", "loginV2Action")
+            task.sensitiveSourceOperation = session.options.usesOriginalTraditional && operation in setOf("formLogin", "loginUi", "loginAction", "persistLoginInfo", "loginV2UI", "loginV2Action", "webJsRequest", "webJsPageClose")
             task.sourceBrowserAllowed = session.options.usesOriginalTraditional && operation in setOf("formLogin", "loginUi", "loginAction", "loginV2UI", "loginV2Action")
             task.loginUIEventsEnabled = session.options.usesOriginalTraditional && operation in setOf("formLogin", "loginAction")
             synchronized(session) {
@@ -117,6 +117,9 @@ object LegadoRuntime {
             if (!loginUIEvents.isEmpty) response.add("loginUIEvents", loginUIEvents)
             return response.toString()
         } catch (error: Exception) {
+            // Drain cancelled page children before taking the terminal effect
+            // snapshot; an already issued owner ACK can arrive during drain.
+            task?.let { if (it.job.isCancelled) it.session.originalPages.closeCancelledProducer(it) }
             val hostFailure = generateSequence(error as Throwable?) { it.cause }
                 .filterIsInstance<RuntimeFailure>().firstOrNull()
             val stateFailure = generateSequence(error as Throwable?) { it.cause }.filterIsInstance<RulePersistenceException>().firstOrNull()
@@ -132,7 +135,7 @@ object LegadoRuntime {
             }
             val completedEffects = (generateSequence(error as Throwable?) { it.cause }.take(32)
                 .filterIsInstance<RulePersistenceException>().mapNotNull { it.completedEffect }.toList() + hostFailure?.completedEffects.orEmpty() + task?.hostEffectsSnapshot().orEmpty()).distinct()
-            val message = if (operation in setOf("formLogin", "loginUi", "loginAction", "persistLoginInfo", "loginV2UI", "loginV2Action") || task?.sensitiveSourceOperation == true) "Original form login did not complete ($code)"
+            val message = if (operation in setOf("formLogin", "loginUi", "loginAction", "persistLoginInfo", "loginV2UI", "loginV2Action", "webJsRequest", "webJsPageClose") || task?.sensitiveSourceOperation == true) "Original form login did not complete ($code)"
                 else if (stateFailure?.completedEffect != null) stateFailure.message else hostFailure?.message ?: error.message ?: error.javaClass.simpleName
             val detail = jsonObject("code" to code, "message" to message)
             if (completedEffects.isNotEmpty()) detail.add("completedEffects", gson.toJsonTree(completedEffects))
@@ -144,6 +147,9 @@ object LegadoRuntime {
             return response
         } finally {
             timeout?.cancel(false)
+            // The cancellation handler only seals on the single timer thread.
+            // The producer's worker owns the actual child/native drain.
+            task?.let { if (it.job.isCancelled) it.session.originalPages.closeCancelledProducer(it) }
             task?.let { taskTrace.event(TaskTraceStage.EXECUTE_FINISHED, it) }
             task?.let { if (tasks.remove(taskId, it)) { it.rawHttpResponses.clear(); it.releasePersistentEnvironment(); it.job.complete(); it.session.taskFinished() } }
         }
@@ -170,9 +176,24 @@ object LegadoRuntime {
         val session = sessions.remove(sessionId) ?: return jsonObject("ok" to true).toString()
         synchronized(session) { session.closed.set(true) }
         tasks.values.filter { it.session === session }.forEach { cancel(it.id) }
+        session.originalPages.closeAll()
         session.http?.close()
         val active = session.releaseIfIdle()
         return jsonObject("ok" to true, "drained" to (active == 0), "activeTasks" to active).toString()
+    }
+
+    /** Explicit page/session close runs on its worker, never the one deadline
+     * scheduler. Wake native work before waiting for its JVM child to finish. */
+    internal fun cancelOriginalPageChild(child: RuntimeTask) {
+        child.job.cancel(CancellationException("Local source page closed"))
+        if (tasks[child.id] === child) cancelHost(child.id)
+    }
+
+    /** A completed producer is immutable. While it is still registered, retain
+     * accepted child facts in its existing bounded receipt as well. */
+    internal fun mergeOriginalPageEffects(session: RuntimeSession, parentTaskId: String, effects: List<String>) {
+        val parent = tasks[parentTaskId] ?: return
+        if (parent.session === session) effects.forEach(parent::recordHostEffect)
     }
 
     private fun executeOperation(task: RuntimeTask, operation: String, input: JsonObject): JsonElement {
@@ -298,6 +319,30 @@ object LegadoRuntime {
         return environment
     }
 
+    /** The page keeps parser state, while each admitted child supplies its own
+     * cancellation/deadline. Persistence/HTTP/cache use the existing session. */
+    internal fun originalPageEnvironment(initial: RuntimeTask, current: () -> RuntimeTask): RuleEnvironment {
+        initial.ensureActiveForRuntime()
+        val session = initial.session
+        require(session.options.usesOriginalTraditional && session.options.usesJvmHttp)
+        val owner = session.options.stateOwner ?: throw RuntimeFailure("UNSUPPORTED_CAPABILITY", "Local source page requires its existing App owner")
+        val sourceKey = session.source["bookSourceUrl"].asString
+        val persistence = RulePersistenceBinding(HostRulePersistenceAdapter { operation, input ->
+            val child = current()
+            check(child.session === session)
+            try { dispatchHost(child, operation, input) }
+            catch (error: CancellationException) { throw error }
+            catch (error: RuntimeFailure) {
+                if (error.code in setOf("UNSUPPORTED_CAPABILITY", "unsupported_host")) throw UnsupportedRuleCapability(error.message.orEmpty())
+                throw RulePersistenceException("Persistent page owner $operation failed", error)
+            }
+        }, owner, sourceKey) { current().ensureActiveForRuntime(); check(!session.closed.get()) }
+        lateinit var environment: RuleEnvironment
+        environment = RuleEnvironment(ProductionRulePlatform(initial, ::dispatchHost, current) { environment },
+            persistence = persistence, cacheMemory = session.persistentCacheMemory)
+        return environment
+    }
+
     /** Stable owner is an embedding option, never an imported source path. */
     internal fun originalPersistence(task: RuntimeTask): RulePersistenceBinding? = task.session.options.stateOwner?.let { owner ->
         val sourceKey = task.session.source["bookSourceUrl"]?.asString.orEmpty()
@@ -378,6 +423,7 @@ internal class RuntimeSession(val id: String, val source: JsonObject,
     val cache = SessionCache()
     val cookies = SessionCookies()
     internal val persistentCacheMemory = RuleCacheMemory()
+    internal val originalPages = OriginalWebJsPages(this)
     private val currentTask = ThreadLocal<RuntimeTask>()
     internal fun <T> withCurrentTask(task: RuntimeTask, action: () -> T): T {
         check(task.session === this)

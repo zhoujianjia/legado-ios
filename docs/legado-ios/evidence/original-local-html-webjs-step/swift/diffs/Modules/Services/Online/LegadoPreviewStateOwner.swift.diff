@@ -1,0 +1,92 @@
+--- a/Modules/Services/Online/LegadoPreviewStateOwner.swift
++++ b/Modules/Services/Online/LegadoPreviewStateOwner.swift
+@@ -357,6 +357,8 @@
+         let owner: String
+         if let grant { owner = try await process.bindPersistentPreview(grant: grant) }
+         else { owner = try await process.bindPersistentSource(sourceURL: sourceURL, sourceRevision: sourceRevision) }
++        let taskID = grant?.taskID ?? UUID().uuidString
++        var attached = false
+         let reportedEffects = OSAllocatedUnfairLock(initialState: [String]())
+         let observeEffects: @Sendable ([String]) -> Void = { effects in reportedEffects.withLock { $0 = effects } }
+         let reportedLoginUIEvents = OSAllocatedUnfairLock(initialState: [LegadoOriginalLoginUIEvent]())
+@@ -369,10 +371,30 @@
+             let runtime = try await process.executor()
+             try check(deadline)
+             let session = try await runtime.createSession(sourceJSON: sourceJSON, options: Self.embeddingOptions(owner: owner))
++            do {
++                let sourceID: UUID?
++                switch operation {
++                case .loginAction, .formLogin, .loginUI, .loginV2UI, .loginV2Action:
++                    struct Identity: Decodable { let id: UUID }
++                    sourceID = try SourcePerfTrace.span("legado.original.invocation.identity",
++                        "main=\(Thread.isMainThread) bytes=\(sourceJSON.utf8.count)") {
++                        try JSONDecoder().decode(Identity.self, from: Data(sourceJSON.utf8)).id
++                    }
++                default: sourceID = nil
++                }
++                try await process.attachOriginalInvocation(owner: owner, runtime: runtime, session: session,
++                    taskID: taskID, sourceID: sourceID)
++                attached = true
++            } catch {
++                do { try await runtime.close(session: session) }
++                catch { AppLogger.error("Unattached original session cleanup failed", error:
++                    LegadoRuntimeError(code: (error as? LegadoRuntimeError)?.code ?? "STATE_IO",
++                        message: "Unattached original session cleanup did not complete")) }
++                throw error
++            }
+             let result: LegadoOriginalPreviewResult
+             do {
+                 try check(deadline)
+-                let taskID = grant?.taskID ?? UUID().uuidString
+                 let remaining = Int64(min(300_000, max(1, deadline.timeIntervalSinceNow * 1000)))
+                 switch operation {
+                 case .loginAction(let action, let credentials, let isLongClick, let inputBindingFailed):
+@@ -435,8 +457,10 @@
+                     result = .content(value.book, value.chapter, value.content)
+                 }
+             } catch let executionError {
+-                do { try await runtime.close(session: session) }
+-                catch let cleanupError {
++                do {
++                    try await process.finishOriginalInvocation(owner: owner, taskID: taskID,
++                        cancelPages: mustCancelPages(executionError, deadline: deadline))
++                } catch let cleanupError {
+                     if loginOperation {
+                         throw terminalFailure(executionError,
+                             effects: reportedEffects.withLock { $0 },
+@@ -446,14 +470,20 @@
+                 }
+                 throw executionError
+             }
+-            try await runtime.close(session: session)
++            try await process.finishOriginalInvocation(owner: owner, taskID: taskID,
++                cancelPages: Task.isCancelled || deadline.timeIntervalSinceNow <= 0)
+             try check(deadline)
+             try grant?.sealExecution(deadline: deadline)
+-            await process.revokePersistentSource(owner: owner)
+             grant?.revoke()
+             return result
+         } catch {
+-            await process.revokePersistentSource(owner: owner)
++            if !attached { await process.revokePersistentSource(owner: owner) }
++            else if mustCancelPages(error, deadline: deadline) {
++                do { try await process.finishOriginalInvocation(owner: owner, taskID: taskID, cancelPages: true) }
++                catch { AppLogger.error("Original invocation cancellation cleanup failed", error:
++                    LegadoRuntimeError(code: (error as? LegadoRuntimeError)?.code ?? "STATE_IO",
++                        message: "Original invocation cancellation cleanup did not complete")) }
++            }
+             grant?.revoke()
+             let failure = error as? LegadoRuntimeError
+             let events = failure?.loginUIEvents?.isEmpty == false
+@@ -464,6 +494,11 @@
+             }
+             throw error
+         }
++    }
++    private func mustCancelPages(_ error: Error, deadline: Date) -> Bool {
++        let code = (error as? LegadoRuntimeError)?.code
++        return Task.isCancelled || error is CancellationError || deadline.timeIntervalSinceNow <= 0
++            || code == "CANCELLED" || code == "TIMEOUT" || code == "STATE_TIMEOUT"
+     }
+     private func terminalFailure(_ error: Error, effects: [String], events: [LegadoOriginalLoginUIEvent],
+                                  cleanupError: Error? = nil) -> LegadoRuntimeError {

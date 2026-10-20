@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-20T22:38:16.162656+00:00",
+  "status": "Concrete production interface before JVM implementation; Swift owner integration assigned separately by root",
+  "contractParent": {
+    "path": ".build/original-local-html-webjs-step/final-v1.json",
+    "sha256": "4c40a0c8b387272f79546474b08301d0be1e31994bb3a365e529deeb26365f0f"
+  },
+  "sameResources": {
+    "JVM": "Existing process LegadoRuntime only",
+    "session": "Existing RuntimeSession instance from parent login invocation",
+    "sourceOwner": "Existing session.options.stateOwner/binding, same source snapshot/revision; no new owner identifier or credential store",
+    "http": "Existing RuntimeSession.http and same App Cookie owner",
+    "cache": "Existing RuntimeSession.persistentCacheMemory/RuleCache backing, no new result-value store"
+  },
+  "wire": {
+    "sourceBrowserAddedFields": {
+      "localHTML": "Optional explicit String, present empty remains present before original JS_INJECTION2 preparation",
+      "localPage": "Optional {pageId:String,sessionId:String,parentTaskId:String}; emitted only by trusted current login producer after page scope registration"
+    },
+    "webJsRequest": {
+      "operation": "webJsRequest",
+      "input": "{pageId:String,method:String,params:[String?],timeoutMs:Int<=30000,function:String?=nil,requestId:String?=nil}",
+      "reply": "{kind:string|stringList|void|callback,value:String?,values:[String]?,requestId:String?,success:Bool?}; callback carries no payload store of its own",
+      "authority": "pageId must exist in this same RuntimeSession and be live; source task provenance/owner are minted by existing producer, never imported script JSON",
+      "asynchronousJavaRequest": "method=request requires original function name and requestId. Execute on retained AnalyzeRule, place actual String result/error in the existing RuleCache memory, then return callback identity+success. Existing WK handler invokes the generated JSBridgeResult only after this operation completes. Generated JS_INJECTION2 callback synchronously obtains cache.getFromMemory(id), then cache.deleteMemory(id), then resolves/rejects and removes JS callback.",
+      "directCacheCalls": "method=cache.getFromMemory/deleteMemory/putMemory/get/put/delete go to same existing cache owner; original return null/String/void preserved. No cache request payload copied into a second Swift store."
+    },
+    "webJsPageClose": {
+      "operation": "webJsPageClose",
+      "input": "{pageId:String,timeoutMs:Int<=30000}",
+      "reply": "{closed:true}; stop admission, cancel all page child jobs, await drain, close AnalyzeRule/environment and remove same-session transient page entry"
+    },
+    "callerAPI": "Package calls same LegadoRuntime.execute(session:operation:) on existing regular worker; no MainJSSourceService acquire or old BookSourceSession/JSC handler"
+  },
+  "runtimeLifecycle": {
+    "register": "prepareLoginBrowser admits explicit localHTML under current task.sourceBrowserAllowed, records random pageId in same RuntimeSession transient page-scope map before Host dispatch",
+    "analysis": "One retained page AnalyzeRule(source=same snapshot,nullBook,nullChapter); serialize requests with cancellable coroutine Mutex, enter original Rhino from child worker context only",
+    "taskRouting": "Each page operation uses its normal current RuntimeTask/deadline/job. Retained page environment routes ProductionRulePlatform/persistence dispatch to the sole admitted current child task while page mutex is held; no use of the parent actively executing Rhino Context. Session HTTP/cache/persistence owner stay identical.",
+    "parentAwait": "Parent remains blocked in source.browser. Page request executes under page lease on another existing JVM worker without reacquiring the parent source gate. Parent cancellation/deadline closes page and cancels/drains children.",
+    "parentNonawait": "Host retains same original invocation session/source-binding lease before presented ACK. Parent normal completion releases producer reference only; actual page close drains children then permits existing Preview owner final close(session)/revoke(owner). Ordinary script error after an accepted nonawait presentation follows same accepted-page lifetime; explicit cancellation/source revision invalidation still closes.",
+    "sessionClose": "Explicit close(session) seals/removes page entries and cancels child work before underlying session resources release. No page can survive an explicit session close or source invalidation.",
+    "perRequestTaskAdmission": "Each admitted page operation is task.sensitiveSourceOperation=true for diagnostics but sourceBrowserAllowed=false; a page must not borrow parent login admission to create nested browser UI."
+  },
+  "SwiftOwnerIntegration": {
+    "LegadoPreviewStateOwner": "Attach current runtime+session to its existing persistent source Binding before producer execution. Keep existing invocation resource lifetime until producer completed AND all accepted localPage leases ended; no replacement session/owner.",
+    "LegadoPersistentStateHost": "On localPage source.browser validate exact current binding/session/parent/page metadata, attach original page request/close closures. Each request validates current source revision and request-local deadline/cancellation using same Binding, then calls Package direct runtime operation.",
+    "SourceBrowserPresenter": "Existing ticket retains page lease and original-only run/cache/java callback; successful nonawait presentation retains it until actual close/drain. Use same UIKit/Cookie/seed lifecycle.",
+    "JsBridgeBrowserView": "Install correct JS_INJECTION2 run/java/cache surface with owned WK message/prompt tasks. Callback results resolve/reject once and consume/delete existing cache result ids; no old sourceRunHandler fallback. Keep challenge/confirm/DOM/cookie/dismiss terminal semantics.",
+    "valueConversion": "Use typed finite string/null/string-list/void result envelope; never coerce nullable result to empty String or expose raw live JVM object.",
+    "configuration": "Activity upConfig callback=nil still dedups but does not resize a sheet; showBrowser remains separate."
+  },
+  "ordering": {
+    "GET": "Prepare explicit HTML by locked head insertion before browser load, even empty input. Await true returns same prepared HTML, false returns actual DOM/URL.",
+    "POST": "Original AnalyzeUrl prefetch once overrides prepared HTML while localHtml flag stays true; do not reinject replacement or duplicate POST.",
+    "cancellation": "After prefetch and before native admission recheck; stop late initial loads, pending page requests and future publication; issued effects retained, no rollback claim."
+  },
+  "finiteCapabilities": {
+    "completeInitialChain": [
+      "Explicit HTML original preparation and actual page host registration",
+      "run Promise -> original AnalyzeRule java binding -> typed String result/error -> existing cache consume/delete",
+      "same owner cache basic String get/put/memory/delete",
+      "same page analysis mutable content/baseURL across requests"
+    ],
+    "remainingTypedUnsupported": [
+      "Unported WebView/file/download/crypto/extra inherited UI operations must reject by exact method; no helper-only success claim.",
+      "General showBrowser sheet/fullWebJS and verification-flight coalescing remain separate."
+    ]
+  },
+  "productionFilesExpected": [
+    "LegadoRuntime.kt",
+    "OriginalWebJsPageRuntime.kt(new)",
+    "originalrule/ProductionRulePlatform.kt",
+    "originalrule/RulePlatform.kt",
+    "originalrule/OriginalSourceLoginHost.kt",
+    "RuleModels.kt",
+    "original-rule/manifest.json"
+  ],
+  "newVM": false,
+  "newSourceOrCredentialOwner": false,
+  "oldJSCFallback": false,
+  "productionStarted": false,
+  "SDKorUIKitExecuted": 0,
+  "supersedes": "interface-v1.json (immutable retained)"
+}

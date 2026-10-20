@@ -1,0 +1,19 @@
+--- a/Modules/Services/Online/LegadoMainJSSourceService.swift
++++ b/Modules/Services/Online/LegadoMainJSSourceService.swift
+@@ -22,6 +22,16 @@
+     /// or infer the UUID of a shelf book from a URL.
+     func bindPersistentSource(sourceURL: String, sourceRevision: String) async throws -> String {
+         try await persistentHost().bind(sourceURL: sourceURL, sourceRevision: sourceRevision)
++    }
++
++    func attachOriginalInvocation(owner: String, runtime: LegadoRuntime,
++                                  session: LegadoSourceSession, taskID: String, sourceID: UUID?) async throws {
++        try await persistentHost().attachOriginalInvocation(owner: owner, runtime: runtime,
++            session: session, taskID: taskID, sourceID: sourceID)
++    }
++
++    func finishOriginalInvocation(owner: String, taskID: String, cancelPages: Bool) async throws {
++        try await persistentHost().finishOriginalInvocation(owner: owner, taskID: taskID, cancelPages: cancelPages)
+     }
+
+     func revokePersistentSource(owner: String) async {

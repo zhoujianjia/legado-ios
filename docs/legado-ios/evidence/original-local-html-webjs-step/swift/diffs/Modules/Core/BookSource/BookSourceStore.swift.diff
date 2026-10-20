@@ -1,0 +1,22 @@
+--- a/Modules/Core/BookSource/BookSourceStore.swift
++++ b/Modules/Core/BookSource/BookSourceStore.swift
+@@ -144,6 +144,19 @@
+         guard let position = index.withLock({ $0[id] }), current.indices.contains(position),
+               current[position].id == id else { return nil }
+         return current[position]
++    }
++
++    /// A transient runtime lease checks this existing owner's single indexed
++    /// record. It never forces a library read or copies/scans the whole library.
++    @MainActor
++    func runtimeIndexedSnapshot(id: UUID) -> (revision: Int, source: BookSource?)? {
++        guard isLoaded, loadError == nil else { return nil }
++        let position = index.withLock { $0[id] }
++        let value = position.flatMap { position -> BookSource? in
++            guard library.indices.contains(position), library[position].id == id else { return nil }
++            return library[position]
++        }
++        return (mutationRevision, value)
+     }
+
+     /// Every source, in display order.
