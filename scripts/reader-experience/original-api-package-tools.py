@@ -56,11 +56,21 @@ EFFECTS_EXTRA = {"LegadoRuntimeTests.LegadoRuntimeTests/testCancelledExecutePres
 EFFECTS_EXPECTED = PUBLICBATCH_EXPECTED | EFFECTS_EXTRA
 assert len(EFFECTS_EXPECTED) == 18 and not (EFFECTS_EXTRA & PUBLICBATCH_EXPECTED)
 
+LOGINUI_EXTRA = {
+    "LegadoRuntimeTests.LegadoOriginalAPITests/testOriginalLoginUIEventsPreserveOrderNullResetAndFailureFacts",
+    "LegadoRuntimeTests.LegadoOriginalAPITests/testLoginUIEventsRejectWrongTaskOrSequenceBeforePublicationAndKeepDtoFailureFacts",
+    "LegadoRuntimeTests.LegadoOriginalAPITests/testCallbackOnlyFactsSurviveCancellationAfterTerminalResponseWithoutBecomingPlainCancellation",
+    "LegadoRuntimeTests.LegadoOriginalAPITests/testDismissPersistenceUsesPureOperationAndKeepsRejectedAndCommittedFactsDistinct",
+}
+LOGINUI_EXPECTED = EFFECTS_EXPECTED | LOGINUI_EXTRA
+assert len(LOGINUI_EXTRA) == 4 and not (LOGINUI_EXTRA & EFFECTS_EXPECTED)
+assert len(LOGINUI_EXPECTED) == 22
+
 def publicbatch_selected():
     value = os.environ.get("YUEDU_RENEWAL_PACKAGE_SELECTION", "")
-    if value not in ("", "publicbatch", "effects"):
+    if value not in ("", "publicbatch", "effects", "loginui"):
         raise ValueError("Unknown independent Package selection")
-    if value in ("publicbatch", "effects") and os.environ.get("YUEDU_RENEWAL_SELECTION") != "currentcore":
+    if value in ("publicbatch", "effects", "loginui") and os.environ.get("YUEDU_RENEWAL_SELECTION") != "currentcore":
         raise ValueError("Explicit Package selection requires the currentcore native boundary")
     return value == "publicbatch"
 
@@ -69,7 +79,13 @@ def effects_selected():
     return os.environ.get("YUEDU_RENEWAL_PACKAGE_SELECTION", "") == "effects"
 
 
+def loginui_selected():
+    publicbatch_selected()  # Strict flag and currentcore boundary validation.
+    return os.environ.get("YUEDU_RENEWAL_PACKAGE_SELECTION", "") == "loginui"
+
+
 def expected_cases():
+    if loginui_selected(): return LOGINUI_EXPECTED
     if effects_selected(): return EFFECTS_EXPECTED
     if publicbatch_selected(): return PUBLICBATCH_EXPECTED
     return CURRENTCORE_EXPECTED if os.environ.get("YUEDU_RENEWAL_SELECTION") == "currentcore" else EXPECTED
@@ -78,6 +94,7 @@ def selected_filter():
     return "^(" + "|".join(re.escape(case) for case in sorted(expected_cases())) + ")$"
 
 def selected_mode():
+    if loginui_selected(): return "original-api-package-currentcore-loginui"
     if effects_selected(): return "original-api-package-currentcore-effects"
     if publicbatch_selected(): return "original-api-package-currentcore-publicbatch"
     return "original-api-package-currentcore" if os.environ.get("YUEDU_RENEWAL_SELECTION") == "currentcore" else MODE
@@ -301,7 +318,7 @@ def result(work):
             "evidenceSHA256": {name: hashlib.sha256(value).hexdigest() for name, value in raw.items()},
             "appSimulatorCaseCount": 0, "jvmExecuted": False, "physicalDeviceValidationPassed": False,
             "selfRenewalVerified": False, "unattendedRenewalVerified": False,
-            "limitations": ["Exactly the selected10 historical-mode,16 unflagged currentcore or17 explicit publicbatch macOS package XCTest cases; current source closure15+7 is independently bound and App Simulator results remain independent.",
+            "limitations": ["Exactly the selected10 historical-mode,16 unflagged currentcore,17 explicit publicbatch,18 effects or22 loginui macOS package XCTest cases; unchanged source closure15+7 is independently bound and App Simulator results remain independent.",
                             "Injected transport and owned DTO cases do not execute the original Kotlin WebBook or JVM/JNI runtime.",
                             "No Apple account, private pairing material, device, App install, package signing or renewal is used.",
                             "XML and actual verbose XCTest case outcomes are required together; process/log summaries alone never establish passing tests."]}

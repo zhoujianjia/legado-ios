@@ -45,7 +45,9 @@ NATIVE_GROUPS = {
             "LegadoNativeOriginalLoginInfoTests/testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners",
             'LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIUsesProductSourceServiceAndStoredMap',
             'LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave',
-            'LegadoNativeOriginalLoginInfoTests/testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite')},
+            'LegadoNativeOriginalLoginInfoTests/testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite',
+            'LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIEventsReachExistingFormProjectionAfterServiceGateRelease',
+            'LegadoNativeOriginalLoginInfoTests/testNativeOriginalDismissPersistenceUsesCheckedOwnerWithoutExecutingLoginJS')},
 }
 SOURCE_INPUTS = (
     ".github/workflows/legado-native-reader-test.yml", "scripts/reader-experience/native-smoke-tools.py",
@@ -224,6 +226,39 @@ ORIGINAL_ROW_ACTION_INPUTS = (
 )
 SOURCE_INPUTS += tuple(path for path in ORIGINAL_ROW_ACTION_INPUTS if path not in SOURCE_INPUTS)
 assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 107
+LOGIN_EVENTS_DISMISS_LIFECYCLE_INPUTS = (
+    'Modules/Features/BookSource/BookSourceFormLoginView.swift',
+    'Modules/Services/Online/LegadoMainJSSourceService.swift',
+    'Modules/Services/Online/LegadoOriginalLoginUIForm.swift',
+    'Modules/Services/Online/LegadoPreviewStateOwner.swift',
+    'Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift',
+    'Modules/Services/SelfRenewal/SelfRenewalBackgroundTaskBridge.swift',
+    'Modules/SharedUI/Components/LoginFormGrid.swift',
+    'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift',
+    'Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift',
+    'Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalLoginUIRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginActionTest.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginUIEventsTest.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginUITest.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourcePersistLoginInfoTest.kt',
+    'Packages/LegadoRuntime/vendor/original-rule/manifest.json',
+    'Targets/Yuedu/SharedApp/yuedu_appApp.swift',
+    'Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift',
+    'Tests/iOS/yuedu appTests/BookSourceLoginTests.swift',
+    'Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift',
+    'Tests/iOS/yuedu appTests/SelfRenewalAppExecutionTests.swift',
+    'Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift',
+    'Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift',
+    'Tests/iOS/yuedu appTests/SelfRenewalForegroundMaterialRevalidationTests.swift',
+)
+SOURCE_INPUTS += tuple(path for path in LOGIN_EVENTS_DISMISS_LIFECYCLE_INPUTS if path not in SOURCE_INPUTS)
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 113
 
 
 def _fact(path):

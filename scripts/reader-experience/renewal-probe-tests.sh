@@ -32,7 +32,7 @@ export LEGADO_RUNTIME_SOURCE_ONLY=1
 python3 "$SCRIPT_DIR/renewal-probe-tools.py" prepare --work "$WORK" > "$WORK/prepare.log"
 xcodebuild -version > "$WORK/xcode-version.log"
 if [[ $YUEDU_RENEWAL_SELECTION == currentcore ]]; then
-  # 459 definitions,462 argument leaves: one cold3600-second invocation/xcresult.
+  # 463 definitions,466 argument leaves: one cold3600-second invocation/xcresult.
   # First failure never gets overwritten; all mandatory producer/fixture gates remain.
   python3 "$SCRIPT_DIR/renewal-probe-tools.py" run-currentcore --work "$WORK"
   exit $?
