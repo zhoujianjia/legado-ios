@@ -1,0 +1,93 @@
+name: Local Reader Renewal Probe Tests
+
+on:
+  push:
+    tags:
+      - 'reader-renewal-*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reader-renewal-probe-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  probe:
+    runs-on: macos-15
+    timeout-minutes: 95
+    env:
+      LEGADO_RUNTIME_SOURCE_ONLY: '1'
+      YUEDU_RENEWAL_SELECTION: controlledsigning
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Verify the exact source tag and portable evidence guards
+        run: |
+          mkdir -p .build/ci-logs
+          python -B scripts/reader-experience/renewal-probe-tools.py validate-tag
+          python -B scripts/reader-experience/test-smoke-tools.py -v 2>&1 | tee .build/ci-logs/reader-renewal-existing-guards.log
+          python -B scripts/reader-experience/test-renewal-probe-tools.py -v 2>&1 | tee .build/ci-logs/reader-renewal-guards.log
+          python -B scripts/reader-experience/test-inspect-renewal-report.py -v 2>&1 | tee .build/ci-logs/reader-renewal-report-inspector-guards.log
+          python -B scripts/reader-experience/test-original-api-package-tools.py -v 2>&1 | tee .build/ci-logs/reader-renewal-original-api-guards.log
+          ruby scripts/check_localizations.rb
+          bash -n scripts/reader-experience/renewal-probe-tests.sh
+          bash -n scripts/reader-experience/original-api-package-tests.sh
+      - name: Select the installed toolchain and Simulator
+        id: toolchain
+        run: |
+          export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
+          export YUEDU_DEST="$(bash scripts/sim.sh dest)"
+          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+          echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
+          xcodebuild -version 2>&1 | tee .build/ci-logs/reader-renewal-xcode.log
+      - name: Execute 23 owned archive vault and signer fixture cases
+        run: bash scripts/reader-experience/renewal-probe-tests.sh 2>&1 | tee .build/ci-logs/reader-renewal.log
+      - name: Execute ten independent source-only macOS package XCTest cases
+        if: ${{ !cancelled() && steps.toolchain.outcome == 'success' }}
+        run: bash scripts/reader-experience/original-api-package-tests.sh 2>&1 | tee .build/ci-logs/reader-renewal-original-api.log
+      - name: Preserve independent package XCTest evidence without build products
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: reader-renewal-original-api-evidence
+          path: |
+            .build/reader-renewal-original-api/
+            .build/ci-logs/reader-renewal-original-api*.log
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
+      - name: Preserve probe test evidence without application binaries
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: reader-renewal-probe-evidence
+          path: |
+            .build/reader-renewal-probe/
+            .build/ci-logs/reader-renewal*.log
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
+      - name: State the limited acceptance boundary
+        if: always()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
+          This source-only Debug Simulator workflow fixes YUEDU_RENEWAL_SELECTION=controlledsigning and executes exactly 23 cases in one independently checked xcresult bundle: nine SelfRenewalIPAUnpackerTests, seven SelfRenewalSigningMaterialVaultTests and seven SelfRenewalControlledMachOSignerTests. Exact qualified method identities, zero failures and zero skips are required. Historical all, replacement, implementation, signature, cryptography, sealedmaterials and boundmaterials selections retain their previous method sets and budgets. They are not rerun or accepted by this new group. One 2700-second cold shared App/test-target compilation limit is retained; a timeout, missing result or compilation alone never establishes passing methods.
+
+          Owned archive fixtures check actual stored/deflate bytes, layout/CRC/budget boundaries, linked or ambiguous paths, cancellation and staged whole-material rechecks. Vault fixtures use owned Keychain namespaces and actual software key handles with signed public material, generation/CAS checks, recovery and revocation. Test keys are unrelated to an Apple account, and private key bytes are never exported into artifacts.
+          The controlled signer supports already-signed terminal thin64 little-endian arm64 MH_EXECUTE bytes with a supported load-command layout. It rebuilds actual CodeDirectory page and special hashes, generates detached CMS with SecKey, preserves identifier/team/entitlement bytes, separately authenticates old and replacement CodeResources, and invokes the existing code verifiers after signing. Fat or other architectures, unsupported layouts and digest combinations remain typed unsupported. Package-wide bottom-up signing/profile/resource orchestration is a separate unfinished stage and is not claimed by these substrate fixtures. Generic explicit anchors do not establish Apple signing/provisioning authority, full entitlement authorization, device/account eligibility or installation permission.
+
+          Independently, ten macOS Swift Package XCTest cases cover five LegadoOriginalAPITests and five existing LegadoRuntimeTests, including the background-worker and cancellation methods. They use the same source tag and selected DEVELOPER_DIR with LEGADO_RUNTIME_SOURCE_ONLY=1. SwiftPM runs with --parallel --num-workers 1 --verbose --disable-swift-testing and an exact qualified filter. Both actual xUnit XML and the ten actual qualified verbose XCTest passed outcomes are required, with zero failures or skips; a missing XML file or only a passed summary cannot establish success. Twelve package/CLegadoJNI source inputs plus seven reviewed runner/control inputs are hashed before and after execution. Actual Swift version/help, XML, log and source-bound result are retained in a separate artifact, and these ten methods never count toward the App Simulator group. No package binaries or JVM payload are uploaded or executed.
+          Source-only package cases use owned DTOs and injected transport. They do not execute the original Kotlin WebBook/JVM flow, and no delivered App persistence migration is established. The package evidence and native xcresult are independently validated and remain independent when either step fails.
+
+          No unchanged transport, discovery, replacement or diagnostic UI suite runs. No QueryType listener, RemotePairing browsing, diagnostic TCP probe, real Apple account, pairing record or user IPA is used. iPhone transport, automatic renewal, computer-powered-off and absence-of-companion-app conditions remain unverified or unmeasured; no trusted replacement adapter or installer is constructed.
+          Exact source hashes, audited local-mode Info/project overlays, synthetic cloud configuration, final build settings, logs and xcresult bundles are retained. The actual built Info.plist must preserve Calibre and declare exactly one RemotePairing Bonjour service; its privacy fallback must match both source build configurations, and all five built privacy localizations must match their corresponding source values. LEGADO_RUNTIME_SOURCE_ONLY=1 excludes the experimental JVM. No device archive, distribution IPA or main-app binary is uploaded.
+          TEXT

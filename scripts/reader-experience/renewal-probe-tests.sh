@@ -6,8 +6,8 @@ REPO_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
 WORK="$REPO_DIR/.build/reader-renewal-probe"
 export YUEDU_RENEWAL_SELECTION=${YUEDU_RENEWAL_SELECTION-all}
 case "$YUEDU_RENEWAL_SELECTION" in
-  all|replacement|implementation|signature|cryptography|sealedmaterials|boundmaterials) ;;
-  *) echo 'YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature, cryptography, sealedmaterials or boundmaterials.' >&2; exit 2 ;;
+  all|replacement|implementation|signature|cryptography|sealedmaterials|boundmaterials|controlledsigning) ;;
+  *) echo 'YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature, cryptography, sealedmaterials, boundmaterials or controlledsigning.' >&2; exit 2 ;;
 esac
 [[ $(uname -s) == Darwin ]] || { echo 'Renewal probe tests require macOS/Xcode.' >&2; exit 2; }
 mkdir -p "$WORK"
@@ -51,7 +51,7 @@ fi
 # source-bound 4ada44e failure reached ongoing cold compilation at the old 900s
 # cap without a test verdict. Match the existing first unit invocation budget;
 # all mode already paid that cold-build cost and keeps its 900s warm limit.
-if [[ $YUEDU_RENEWAL_SELECTION != signature && $YUEDU_RENEWAL_SELECTION != cryptography && $YUEDU_RENEWAL_SELECTION != sealedmaterials && $YUEDU_RENEWAL_SELECTION != boundmaterials ]]; then
+if [[ $YUEDU_RENEWAL_SELECTION != signature && $YUEDU_RENEWAL_SELECTION != cryptography && $YUEDU_RENEWAL_SELECTION != sealedmaterials && $YUEDU_RENEWAL_SELECTION != boundmaterials && $YUEDU_RENEWAL_SELECTION != controlledsigning ]]; then
   REPLACEMENT_TIMEOUT=2700
   if [[ $YUEDU_RENEWAL_SELECTION == all ]]; then REPLACEMENT_TIMEOUT=900; fi
   bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/replacement-tests.log" -t "$REPLACEMENT_TIMEOUT" -- \
@@ -133,6 +133,18 @@ if [[ $YUEDU_RENEWAL_SELECTION == boundmaterials ]]; then
   xcrun xcresulttool get test-results tests --path "$WORK/boundmaterials.xcresult" > "$WORK/boundmaterials-tests.json"
   python3 "$SCRIPT_DIR/renewal-probe-tools.py" verify-tests --group boundmaterials \
     --summary "$WORK/boundmaterials-summary.json" --tests "$WORK/boundmaterials-tests.json"
+fi
+if [[ $YUEDU_RENEWAL_SELECTION == controlledsigning ]]; then
+  # New owned cases only, independently of historical native and package groups.
+  bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/controlledsigning-tests.log" -t 2700 -- \
+    "${ARGS[@]}" -resultBundlePath "$WORK/controlledsigning.xcresult" \
+    -only-testing:'yuedu appTests/SelfRenewalIPAUnpackerTests' \
+    -only-testing:'yuedu appTests/SelfRenewalSigningMaterialVaultTests' \
+    -only-testing:'yuedu appTests/SelfRenewalControlledMachOSignerTests'
+  xcrun xcresulttool get test-results summary --path "$WORK/controlledsigning.xcresult" > "$WORK/controlledsigning-summary.json"
+  xcrun xcresulttool get test-results tests --path "$WORK/controlledsigning.xcresult" > "$WORK/controlledsigning-tests.json"
+  python3 "$SCRIPT_DIR/renewal-probe-tools.py" verify-tests --group controlledsigning \
+    --summary "$WORK/controlledsigning-summary.json" --tests "$WORK/controlledsigning-tests.json"
 fi
 if [[ $YUEDU_RENEWAL_SELECTION == all ]]; then
   bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/ui-tests.log" -t 1200 -- \

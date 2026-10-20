@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Audit the isolated, source-only Simulator self-renewal transport probe tests.
+"""Audit the fixed, source-only Simulator diagnostic/material fixture groups.
 
-Passing this protocol proves the bounded diagnostic and its UI, not iPhone
-service reachability, installation, signing, or unattended self-renewal.
+Selected owned fixture evidence does not establish iPhone service reachability,
+installation or unattended self-renewal. Package XCTest evidence is independent.
 """
 import argparse
 import hashlib
@@ -35,6 +35,9 @@ NESTED_SUITE = "SelfRenewalNestedCodeRequirementsVerifierTests"
 MODERN_PROFILE_SUITE = "SelfRenewalModernProfileVerifierTests"
 APPLICATION_MATERIAL_SUITE = "SelfRenewalApplicationMaterialVerifierTests"
 PERSISTENT_STATE_SUITE = "LegadoPersistentStateHostTests"
+IPA_SUITE = "SelfRenewalIPAUnpackerTests"
+VAULT_SUITE = "SelfRenewalSigningMaterialVaultTests"
+CONTROLLED_SIGNER_SUITE = "SelfRenewalControlledMachOSignerTests"
 LANGUAGES = ("zh-Hant", "zh-Hans", "en", "ja", "ko")
 BONJOUR_SERVICES = ("_calibresmartdeviceapp._tcp", "_remotepairing._tcp")
 USAGE_KEY = "NSLocalNetworkUsageDescription"
@@ -188,6 +191,39 @@ EXPECTED_CASES["boundmaterials"] = EXPECTED_CASES["sealedmaterials"] | {
         "preservesExplicitOptionsAndRawLoginPayloads",
     )
 }
+EXPECTED_CASES["controlledsigning"] = {
+    IPA_SUITE + "/" + name for name in (
+        "verifiesOwnedStoredIPAThroughSealedMaterials",
+        "verifiesDeflateAndBothDataDescriptorForms",
+        "rejectsTraversalAndAmbiguousPaths",
+        "rejectsLinksTypesDuplicatesAndEncodingOverrides",
+        "rejectsHeaderLayoutAndDescriptorDisagreements",
+        "enforcesCompressedExpandedAndEntryBudgets",
+        "rejectsCRCDeflateTailTruncationAndActualExpansion",
+        "rejectsSourceLinksAndPropagatesCancellation",
+        "cleansOwnedStagingOnArchiveAndMaterialFailure",
+    )
+} | {
+    VAULT_SUITE + "/" + name for name in (
+        "publishesReloadsSignsAndRevokesOwnedKeychainMaterial",
+        "rejectsSignedIdentityAndKeyChangesWithoutReplacingOldMaterial",
+        "rejectsStaleCASAndCancellationBeforePublication",
+        "preservesPublicationWhenManifestSaveFails",
+        "recoversPendingKeyJournalWithoutDeletingPublishedKey",
+        "rejectsExpiredProfilesAndLocallyRevokedLeases",
+        "boundsLifetimeAndPreservesUnrelatedKeychainItems",
+    )
+} | {
+    CONTROLLED_SIGNER_SUITE + "/" + name for name in (
+        "signsRealRSAAndECDSAAndAuthenticatesActualLeaf",
+        "rebuildsAllDigestKindsAndAgileCodeDirectories",
+        "preservesIdentityAndEverySpecialBlobByte",
+        "allocatesBeforeHashingAndErasesOldSignatureTail",
+        "refusesWrongKeysAnchorsAndTamperedOriginal",
+        "rejectsUnsupportedLayoutAndUnboundInputs",
+        "cancelsAndEnforcesReadAndCapacityBudgets",
+    )
+}
 SELECTION_GROUPS = {
     # Preserve the historical all-mode contract; new implementation tests have
     # an explicit independent selection rather than silently widening it.
@@ -198,6 +234,7 @@ SELECTION_GROUPS = {
     "cryptography": ("cryptography",),
     "sealedmaterials": ("sealedmaterials",),
     "boundmaterials": ("boundmaterials",),
+    "controlledsigning": ("controlledsigning",),
 }
 SOURCE_INPUTS = (
     "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
@@ -245,6 +282,18 @@ SOURCE_INPUTS = (
     "Modules/Services/Online/LegadoMainJSSourceService.swift",
     "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
     "Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift",
+    "Modules/Services/SelfRenewal/SelfRenewalIPAArchiveValidator.swift",
+    "Modules/Services/SelfRenewal/SelfRenewalIPAUnpacker.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalIPAArchiveFixture.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalIPAUnpackerTests.swift",
+    "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+    "Modules/Services/SelfRenewal/SelfRenewalControlledMachOSigner.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalControlledMachOSignerTests.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalControlledSigningFixture.swift",
+    "Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift",
+    "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
     "Tests/iOS-UI/SelfRenewalProbeUITests.swift",
     "Info.plist",
     "Yuedu-Reader.xcodeproj/project.pbxproj",
@@ -270,7 +319,7 @@ def validate_tag():
 def selection_mode():
     mode = os.environ.get("YUEDU_RENEWAL_SELECTION", "all")
     if mode not in SELECTION_GROUPS:
-        raise ValueError("YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature, cryptography, sealedmaterials or boundmaterials")
+        raise ValueError("YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature, cryptography, sealedmaterials, boundmaterials or controlledsigning")
     return mode
 
 
@@ -467,8 +516,15 @@ def result(work):
             "selfRenewalVerified": False, "unattendedRenewalVerified": False,
             "computerPoweredOff": "notMeasured", "companionAppsAbsent": "notMeasured",
             "limitations": ["Only the selected Simulator groups are accepted; not a delivered IPA or iPhone test.",
-                            "No Apple login, pairing, signing, installation or renewal operation is performed."] + (
-                           ["This selection executes exactly 78 cases in one boundmaterials xcresult: the original sealed-material 48 plus eight nested-requirement, eight modern-profile, five whole-application identity and nine Swift persistent-state host cases.",
+                            "No Apple login, real pairing, installation or renewal operation is performed."] + (
+                           ["This selection executes exactly 23 owned cases in one controlledsigning xcresult: nine IPA validation/unpack, seven signing-material vault and seven controlled Mach-O signer cases.",
+                              "Historical native selections retain their exact method sets and budgets; no prior native group is accepted or rerun by this selection. The independent ten package XCTest methods have a separate result and never enter this count.",
+                              "Owned archives exercise bounded stored/deflate bytes and staged whole-material rechecks. Keychain fixtures use owned namespaces, actual software key handles and signed public material with CAS, cancellation, recovery and revocation checks.",
+                              "The signer handles supported already-signed thin64 arm64 MH_EXECUTE bytes. It rebuilds real page/special hashes, uses actual SecKey detached CMS, preserves identity/entitlement bytes, separately authenticates old and new CodeResources, and invokes existing code verifiers after signing.",
+                              "Generic explicit anchors do not establish Apple authority. Full architecture/load-command coverage, package-wide bottom-up signing/profile/resource orchestration, trusted replacement/install and unattended renewal remain unverified.",
+                              "Transport, discovery, replacement and diagnostic UI suites are not executed; no QueryType listener, RemotePairing browsing or diagnostic TCP probe is invoked."]
+                             if mode == "controlledsigning" else [
+                              "This selection executes exactly 78 cases in one boundmaterials xcresult: the original sealed-material 48 plus eight nested-requirement, eight modern-profile, five whole-application identity and nine Swift persistent-state host cases.",
                              "Historical artifact groups are not accepted independently; their qualified method identities are rechecked inside this one group because shared verification inputs changed.",
                              "Actual CodeDirectory CMS, recursive resource digests, supported nested expressions and every fat slice are checked against bounded owned material. Unavailable Apple/system-policy predicates and named fragments remain explicitly unresolved.",
                              "Modern profiles require both actual CMS layers; fields come from the inner DER source, not unrelated legacy XML. Actual signer certificate, prefix, team, App ID and selected groups are compared, and later profile bytes must match any earlier verified resource seal.",

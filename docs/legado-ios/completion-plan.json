@@ -163,7 +163,7 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "固定源码478b69d已集中提交78项材料/状态宿主SDK；收取对应结果并先修实际失败。继续独立开发，不反复轮询、不制作IPA或请求真机。",
+      "nextPlannedCheckpoint": "本阶段受控IPA/Keychain/重签23项与独立Swift接口10项集中提交；逐项实际结果验收，旧478/78项保留原源码边界。开发继续，不为等待结果暂停可执行任务。",
       "alreadyRunningTasks": "C renewal source1a87f6d passed its actual8/13/UI1 job; A build12 separately audited/delivered and now has a user report stopping before TCP at its old endpoint cap. D sourcef3e0b15 smoke39289697059 and measurements39289697993 are saved completed/failure: duplicate UMD resource outputs, actual Swift/iOS0. Those failures and original artifacts are preserved; initial in-progress receipts remain historical. New source 5f543a1 was submitted as renewal8/16/UI1, smoke and independent measurements. docs/legado-ios/stage-checkpoint-5f543a1-initial.json saves three initial API reads only; it does not establish passing native executions. Original D failures remain preserved."
     },
     "nextReadyBatch": [
@@ -677,7 +677,8 @@
       "controlledIPAImplementation": "docs/legado-ios/core-renewal-controlled-ipa-step.json",
       "originalPublicRuntimePreparation": "docs/legado-ios/core-original-public-runtime-step.json",
       "controlledSigningImplementation": "docs/legado-ios/core-renewal-controlled-signing-step.json",
-      "originalSearchOwnerCorrection": "docs/legado-ios/core-original-search-owner-correction.json"
+      "originalSearchOwnerCorrection": "docs/legado-ios/core-original-search-owner-correction.json",
+      "controlledSigningSDKCheckpoint": "docs/legado-ios/core-controlled-signing-sdk-checkpoint.json"
     }
   },
   "stages": [
@@ -4612,6 +4613,10 @@
     "original-search-owner-correction": {
       "path": "docs/legado-ios/core-original-search-owner-correction.json",
       "scope": "Real public search stops constructing a persistent Book before App ownership exists. 31 affected unique JVM methods and ordinary four-stage JAR smoke accepted; App owner/JNI/iOS integration unverified."
+    },
+    "controlled-signing-sdk-checkpoint": {
+      "path": "docs/legado-ios/core-controlled-signing-sdk-checkpoint.json",
+      "scope": "47 actual portable Python methods plus Bash/actionlint accepted; 23 native cases and ten independent macOS package XCTest methods are prepared, zero SDK acceptance."
     }
   },
   "retainedExistingWork": [
