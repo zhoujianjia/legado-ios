@@ -465,14 +465,16 @@
             "Mach-O结构读取器已接到原材料清单读取，支持有界thin/fat 32/64、load commands、SuperBlob、CodeDirectory与CMS槽结构。新增9个测试定义、2文件grammar通过；SDK执行为0，页面哈希、CMS/profile/证书链、资源封印及可信替换适配仍未完成。",
             "已接入真实CodeDirectory页/特殊槽摘要计算与profile CMS签名、显式根证书链校验；hash7、CMS7、profile2共16新增方法已定义，连同变更reader的结构9共25待SDK执行。10组Python摘要fixture审计与OpenSSL6正/1篡改样本验证通过；不算Swift通过或Apple/profile安装授权。",
             "已接通实际raw CodeDirectory CMS与V1/V2 signed agility、每目录认证事实及CodeResources规则/真实文件流式摘要；新增17项Swift方法，选中48项相关方法，实际SDK尚未验收。嵌套requirement、Apple授权及实际签名安装仍未完成。",
-            "已接通嵌套代码requirement、实际CD绑定Info/DER权限/签名证书、现代profile双CMS及三包材料身份与资源字节一致性。新增21项签名材料方法连同48项受影响方法，共69项；另9项状态宿主检查集中提交SDK，尚未执行验收。系统策略/Apple授权、IPA与真实签名安装仍未完成。"
+            "已接通嵌套代码requirement、实际CD绑定Info/DER权限/签名证书、现代profile双CMS及三包材料身份与资源字节一致性。新增21项签名材料方法连同48项受影响方法，共69项；另9项状态宿主检查集中提交SDK，尚未执行验收。系统策略/Apple授权、IPA与真实签名安装仍未完成。",
+            "已接通受控classic ZIP单Payload IPA的固定副本、头/路径/链接/预算与raw-deflate/CRC预检、既有Readium consumer及openat独占文件提取，再调用真实三包材料校验；成功/失败只清理本次owned inode，不导出安装路径。9项原生方法待SDK，3个自有ZIP样本Python字节审计不算Swift通过。ZIP64/额外根/真实安装权限及Apple授权仍未完成。"
           ],
           "implementationEvidence": [
             "docs/legado-ios/core-renewal-sequence-first-step.json",
             "docs/legado-ios/core-renewal-url-signature-step.json",
             "docs/legado-ios/core-renewal-request-crypto-step.json",
             "docs/legado-ios/core-renewal-signed-resource-step.json",
-            "docs/legado-ios/core-renewal-bound-material-step.json"
+            "docs/legado-ios/core-renewal-bound-material-step.json",
+            "docs/legado-ios/core-renewal-controlled-ipa-step.json"
           ],
           "nextActionZh": "收取本阶段固定源码SDK结果并先修实际失败；补齐受控IPA读取、明确Apple授权/系统策略边界，继续账号材料生命周期与真实受控重签底层。"
         },
@@ -639,7 +641,8 @@
       "boundMaterialImplementation": "docs/legado-ios/core-renewal-bound-material-step.json",
       "boundMaterialSDKSubmission": "docs/legado-ios/core-renewal-478b69d-initial.json",
       "ownedStatePersistencePreparation": "docs/legado-ios/core-original-state-persistence-step.json",
-      "sealedMaterialSDKResult": "docs/legado-ios/core-renewal-c8d899b-result.json"
+      "sealedMaterialSDKResult": "docs/legado-ios/core-renewal-c8d899b-result.json",
+      "controlledIPAImplementation": "docs/legado-ios/core-renewal-controlled-ipa-step.json"
     }
   },
   "stages": [
@@ -4558,6 +4561,10 @@
     "sealed-material-SDK-compile-failure": {
       "path": "docs/legado-ios/core-renewal-c8d899b-result.json",
       "scope": "Exact historical c8d899b source; test target compilation failed, zero of the 48 planned methods executed. The already submitted 478b69d includes the fix; no new-source verdict is inferred."
+    },
+    "controlled-IPA-to-sealed-materials": {
+      "path": "docs/legado-ios/core-renewal-controlled-ipa-step.json",
+      "scope": "Production path and nine source-bound native test definitions; four grammar inputs and independently read owned ZIP fixtures, zero Swift SDK executions."
     }
   },
   "retainedExistingWork": [

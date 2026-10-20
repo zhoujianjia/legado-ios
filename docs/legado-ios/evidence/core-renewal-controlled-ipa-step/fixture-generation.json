@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "kind": "independent-owned-IPA-fixtures-and-stdlib-ZIP-validation",
+  "swiftExecution": false,
+  "sdkTestsExecuted": 0,
+  "publicCMSFixtureSource": {
+    "path": "Tests/iOS/yuedu appTests/SelfRenewalApplicationMaterialFixture.swift",
+    "bytes": 140748,
+    "sha256": "eb9b966c9843518796926c5df2b932f571c88c8549e24531281eab1aa42f11f7"
+  },
+  "archives": [
+    {
+      "path": "owned-fixtures/owned-stored.ipa",
+      "bytes": 37382,
+      "sha256": "e886010665a86c82386433022a9c7958ed287c00b7c4d75cac3c38b421b1e94b",
+      "entries": 15,
+      "compressedBytes": 34892,
+      "expandedBytes": 34892,
+      "descriptorCounts": {
+        "signed": 0,
+        "unsigned": 0,
+        "absent": 15
+      },
+      "standardLibraryZipCRCAndReadsPassed": true,
+      "strictRawDeflateEndAndNoTailPassed": true
+    },
+    {
+      "path": "owned-fixtures/owned-deflate-signed-descriptor.ipa",
+      "bytes": 27975,
+      "sha256": "d4cd0bda83abb4646ca1db3d08a577897056091bdbd631e23c7663c0b76dc616",
+      "entries": 15,
+      "compressedBytes": 25245,
+      "expandedBytes": 34892,
+      "descriptorCounts": {
+        "signed": 15,
+        "unsigned": 0,
+        "absent": 0
+      },
+      "standardLibraryZipCRCAndReadsPassed": true,
+      "strictRawDeflateEndAndNoTailPassed": true
+    },
+    {
+      "path": "owned-fixtures/owned-deflate-unsigned-descriptor.ipa",
+      "bytes": 27915,
+      "sha256": "824a34e29333db97e1a731fd0f6ea753c93cae3cb1905d67895dce186d1b3a8a",
+      "entries": 15,
+      "compressedBytes": 25245,
+      "expandedBytes": 34892,
+      "descriptorCounts": {
+        "signed": 0,
+        "unsigned": 15,
+        "absent": 0
+      },
+      "standardLibraryZipCRCAndReadsPassed": true,
+      "strictRawDeflateEndAndNoTailPassed": true
+    }
+  ],
+  "negativeRawDeflateBoundaries": [
+    {
+      "kind": "trailing-compressed-data",
+      "compressedBase64": "yy/PS01RyMxLSS1IBRJ5JQpFieW6KalpOYklqQplqckl+UUAAA==",
+      "inputFullyConsumedAndEnded": false,
+      "rejectedByStrictBoundary": true
+    },
+    {
+      "kind": "truncated-compressed-data",
+      "compressedBase64": "yy/PS01RyMxLSS1IBRJ5JQpFieW6KalpOYklqQplqckl+UU=",
+      "inputFullyConsumedAndEnded": false,
+      "rejectedByStrictBoundary": true
+    }
+  ],
+  "notClaimed": [
+    "Swift validator execution",
+    "Swift ZIP extraction execution",
+    "new CMS verification",
+    "Apple signing authority",
+    "installation or replacement authorization"
+  ],
+  "privateKeysOrUserArchivesRead": false
+}

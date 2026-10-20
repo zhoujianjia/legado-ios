@@ -1,0 +1,220 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T03:55:20.003148+00:00",
+  "status": "S1-controlled-classic-IPA-to-real-material-verifiers-production-connected-SDK-pending",
+  "canonicalPlan": {
+    "path": "docs/legado-ios/completion-plan.json",
+    "jsonPointer": "/execution/stepByStep"
+  },
+  "sourceBinding": {
+    "files": [
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalIPAArchiveValidator.swift",
+        "bytes": 14905,
+        "sha256": "b963fd28cb91d89cccfa7ee9bf235cdf885c925f10f3c64fc82bcaeefbfe44bb",
+        "grammarErrors": []
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalIPAUnpacker.swift",
+        "bytes": 24598,
+        "sha256": "ff2ca8e4492243861b733b591b88f5ed69c0a01b5ce2551c923a4b1e4fc9ef1b",
+        "grammarErrors": []
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalIPAArchiveFixture.swift",
+        "bytes": 6349,
+        "sha256": "da73a61e141a964ce81ee52d58e197ad8c62829de2be7d05f32d27630b8364dd",
+        "grammarErrors": []
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalIPAUnpackerTests.swift",
+        "bytes": 14845,
+        "sha256": "37ac273c2ceb41bdfdad3c1688cead40acdb030463645dfa796fe2a6b5af9150",
+        "grammarErrors": []
+      }
+    ],
+    "count": 4,
+    "snapshots": "sources/"
+  },
+  "reusedInputs": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalMaterialInventory.swift",
+      "bytes": 20349,
+      "sha256": "01089bc66d6dda4552733991d604a1d6a8871ab04ae12761624ee3c1b0446ec9",
+      "modifiedInThisStep": false
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalApplicationMaterialVerifier.swift",
+      "bytes": 12873,
+      "sha256": "395fb5baf2b0f0c093cc0d2eb8ac0526a1e0080f0f3b8ada06aa3996b69913f1",
+      "modifiedInThisStep": false
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalApplicationMaterialFixture.swift",
+      "bytes": 140748,
+      "sha256": "eb9b966c9843518796926c5df2b932f571c88c8549e24531281eab1aa42f11f7",
+      "modifiedInThisStep": false
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalCMSFixture.swift",
+      "bytes": 42388,
+      "sha256": "a1ea510648fd0f0a748ad83b9f6ec0253bde44360e1d6fcf5e288525f6bd562e",
+      "modifiedInThisStep": false
+    }
+  ],
+  "productionConnection": "fixed source FD -> private copied/unlinked snapshot -> bounded classic ZIP/raw-deflate validation -> existing Readium consumer extraction into owned FD tree -> actual ApplicationMaterialVerifier -> cleanup -> sealed material result",
+  "limits": {
+    "archiveBytes": 268435456,
+    "entries": 8192,
+    "heldDirectoryDescriptorsIncludingStagingRoot": 128,
+    "centralDirectoryBytes": 8388608,
+    "compressedEntryBytes": 67108864,
+    "expandedEntryBytes": 134217728,
+    "totalExpandedBytes": 536870912,
+    "pathBytes": 1024,
+    "pathDepth": 24,
+    "pathComponentBytes": 255,
+    "extraBytes": 4096,
+    "entryAndArchiveCommentBytes": 4096,
+    "chunkBytes": 65536,
+    "compressionRatio": "expanded <= max(1,compressed)*200 + 65536",
+    "snapshotReadCalls": 500000,
+    "snapshotReadBytes": "archiveBytes*4 + centralDirectoryByteLimit*8 + chunkByteLimit*2"
+  },
+  "existingDependency": {
+    "identity": "zipfoundation",
+    "location": "https://github.com/readium/ZIPFoundation.git",
+    "revision": "adb49c8bfe060cc187370b12fa081012a6440b86",
+    "version": "3.0.1",
+    "module": "ReadiumZIPFoundation",
+    "otherExistingModule": "zlib",
+    "newDependencies": 0,
+    "primarySources": [
+      {
+        "url": "https://raw.githubusercontent.com/readium/ZIPFoundation/adb49c8bfe060cc187370b12fa081012a6440b86/Sources/ZIPFoundation/Archive.swift",
+        "path": "Archive.swift",
+        "bytes": 19954,
+        "sha256": "09910880913311c9f2abd735ad9e60eda0c35090d3bc173a4177696afd639e6e"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/readium/ZIPFoundation/adb49c8bfe060cc187370b12fa081012a6440b86/Sources/ZIPFoundation/Archive+Reading.swift",
+        "path": "Archive+Reading.swift",
+        "bytes": 11836,
+        "sha256": "4ebd9ed738bb29c93fb4f4a2474eaf523bd9a3fb818d22b5e2eae22666922c0b"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/readium/ZIPFoundation/adb49c8bfe060cc187370b12fa081012a6440b86/Sources/ZIPFoundation/Entry.swift",
+        "path": "Entry.swift",
+        "bytes": 14238,
+        "sha256": "0d0c0b5d4cc262610310f1f47078983ac3459eac22b373a52d671be384abc987"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/readium/ZIPFoundation/adb49c8bfe060cc187370b12fa081012a6440b86/Sources/ZIPFoundation/DataSource.swift",
+        "path": "DataSource.swift",
+        "bytes": 2814,
+        "sha256": "7d87cfb7ba3a3d21384f9f40130fed091e195a0a5cb2e2788ef46e3f6861f75d"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/readium/ZIPFoundation/adb49c8bfe060cc187370b12fa081012a6440b86/Sources/ZIPFoundation/Archive+BackingConfiguration.swift",
+        "path": "Archive+BackingConfiguration.swift",
+        "bytes": 2509,
+        "sha256": "6fc2d3e957b3115840c6b25c610a056cf4ee3547e085c03ac48aeca138537421"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/readium/ZIPFoundation/adb49c8bfe060cc187370b12fa081012a6440b86/Sources/ZIPFoundation/Data+Compression.swift",
+        "path": "Data+Compression.swift",
+        "bytes": 16719,
+        "sha256": "af567f839a80c4c77b18a91c5642af876ee6db1f9f2d0aed26a3b5f4bf93243b"
+      },
+      {
+        "url": "https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT",
+        "path": "APPNOTE.TXT",
+        "bytes": 174585,
+        "sha256": "0b993022a7d320a0bf704e6980bea36fafd17a6066ab994db0a0c16278a50cd6"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/readium/ZIPFoundation/adb49c8bfe060cc187370b12fa081012a6440b86/Sources/ZIPFoundation/Archive+Helpers.swift",
+        "path": "Archive+Helpers.swift",
+        "bytes": 16181,
+        "sha256": "bb3d7737f5ebbb385c5783191b5ad46d751a09a39c19148e21b88881077fbc5b"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/readium/ZIPFoundation/adb49c8bfe060cc187370b12fa081012a6440b86/Sources/ZIPFoundation/Data+Serialization.swift",
+        "path": "Data+Serialization.swift",
+        "bytes": 4934,
+        "sha256": "8a83750a36ed1341b5d48c70383aca97f54354c973cf0bff7fa3ce468f8d4cc8"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/readium/ZIPFoundation/adb49c8bfe060cc187370b12fa081012a6440b86/Sources/ZIPFoundation/Entry+Serialization.swift",
+        "path": "Entry+Serialization.swift",
+        "bytes": 10548,
+        "sha256": "cf3ce89b6a97d9e60ef49579283c18cae2f1e5f88113218422bdf5dce26497a8"
+      }
+    ]
+  },
+  "productionImplemented": [
+    "Read-only O_NOFOLLOW source FD, single-link regular file, stable device/inode/size/mode/mtime/ctime before and after copy and path identity comparison.",
+    "Fresh private 0700 staging directory; archive copied once, hashed, reopened read-only and unlinked, then accessed through pinned custom Readium DataSource.",
+    "Classic EOCD, central and local fields, descriptors, unique raw paths, normalized/casefold collision and parent-file conflict checks precede entry extraction.",
+    "All compressed entry streams are independently checked for exact raw-deflate end/no tail, declared output size and CRC before creating extracted files.",
+    "Readium entries must exactly match the preflight plan; only its consumer API is used, never extract(to:). Returned extraction CRC and actual sink length are compared.",
+    "Directories and files use parent FDs plus mkdirat/openat/O_EXCL/O_NOFOLLOW and fixed private modes. Archive owner/permissions/timestamps are never applied.",
+    "Explicit cancellation propagation, bounded reader operations/bytes and actual output checks, worker execution and SourcePerfTrace bytes/main details.",
+    "Actual SelfRenewalApplicationMaterialVerifier.read calls the existing inventory, CMS, resources, nested requirements and modern profile identity path.",
+    "Success returns a fileprivate-initialized result containing real sealed materials plus source archive digest. No mutable staging URL is exported.",
+    "Success and failure clean only recorded owned names/inodes using pinned parent FDs and unlinkat, never caller directories or recursive arbitrary paths."
+  ],
+  "remainingUnsupportedOrUnfinished": [
+    "Only one Payload/<name>.app subtree is accepted; unrelated IPA roots, ZIP64, split archives, encryption, other compression methods and unknown creator OS are rejected.",
+    "Non-ASCII names require UTF-8 flag; CP437 non-ASCII, alternate path extra fields, special files, links and unselected extra fields are rejected.",
+    "Accepted extras are only 0x5455, 0x7875, 0x5855 and 0x000a; ignored metadata never affects the output tree.",
+    "Directory count is deliberately limited to 127 archive directories plus staging root, rather than holding an unbounded number of FDs.",
+    "Four new files are not in earlier 478b69d source or its pending 78-method SDK result. All nine new native methods remain definitions pending a later centralized SDK run.",
+    "Python fixture checks prove only their own ZIP bytes/decompression; they do not run the Swift implementation or repeat cryptographic verifier acceptance.",
+    "This endpoint returns checked read-only materials and removes staging. No signing mutation, transport, installation, account, device eligibility or replacement authorization is established.",
+    "No integration or changes to existing verifier interfaces, CI, canonical docs or Git were made in this stage."
+  ],
+  "preparedNativeTests": {
+    "suite": "SelfRenewalIPAUnpackerTests",
+    "methodCount": 9,
+    "methods": [
+      "verifiesOwnedStoredIPAThroughSealedMaterials()",
+      "verifiesDeflateAndBothDataDescriptorForms()",
+      "rejectsTraversalAndAmbiguousPaths()",
+      "rejectsLinksTypesDuplicatesAndEncodingOverrides()",
+      "rejectsHeaderLayoutAndDescriptorDisagreements()",
+      "enforcesCompressedExpandedAndEntryBudgets()",
+      "rejectsCRCDeflateTailTruncationAndActualExpansion()",
+      "rejectsSourceLinksAndPropagatesCancellation()",
+      "cleansOwnedStagingOnArchiveAndMaterialFailure()"
+    ],
+    "executedSDKMethods": 0,
+    "acceptedSDKMethods": 0
+  },
+  "actualNativeSDKMethodsAccepted": 0,
+  "independentFixtureValidation": {
+    "swiftGrammarFiles": 4,
+    "swiftGrammarErrors": 0,
+    "swiftTypecheck": false,
+    "ownedIPAsActuallyReadWithPythonZipfileAndRawZlib": 3,
+    "membersPerIPA": 15,
+    "negativeRawDeflateBoundariesActuallyCheckedWithPython": 2,
+    "swiftBuildOrExecution": false,
+    "simulatorTests": false,
+    "deviceTests": false
+  },
+  "reviewFix": "Explicit implicit-directory/held-FD limit 128, checked before extraction and before mkdir/open; unknown user paths never recursively deleted",
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-renewal-controlled-ipa-step",
+    "manifest": "manifest.json",
+    "rawFiles": 10
+  },
+  "newCloudBuildRequested": false,
+  "earlierSDKSourceExcludesThisImplementation": "478b69d6a1074e9a1d82c2b55e522b0d39e23f8a",
+  "controlledReadOnlyMaterialsOnly": true,
+  "mutableInstallationCapabilityExported": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}
