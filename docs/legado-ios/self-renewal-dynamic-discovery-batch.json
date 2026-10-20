@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "recordedOn": "2026-10-19",
   "sourceCommit": "6b3a3bdb28a29aee3d3d721fafb2215454096f31",
-  "status": "actual-C-diagnostics-passed-A-build12-narrow-handoff-delivered",
+  "status": "build12-report-pre-TCP-budget-stop-new-selection-repair-awaiting-SDK",
   "trigger": "Build10 fixed-loopback report timed out before TCP; user separately reports computer on, USB connected, no VPN and no SideStore.",
   "implementation": {
     "service": "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
@@ -56,7 +56,10 @@
       "legacyUnit": 8,
       "discovery": 13,
       "UI": 1
-    }
+    },
+    "physicalDeviceDynamicDiscoveryReported": true,
+    "physicalDeviceExecutionIndependentlyEstablished": false,
+    "physicalDeviceEvidenceMeaning": "User-provided manifest-bound declarations; no cryptographic device attestation, TCP attempt or service identity proof."
   },
   "retainedReviews": [
     {
@@ -248,5 +251,11 @@
     "expectedFailures": 0,
     "platform": "Debug iOS Simulator",
     "ReleaseIPAExecuted": false
-  }
+  },
+  "receivedBuild12DeviceReport": {
+    "path": "docs/legado-ios/self-renewal-device-discovery-build12.json",
+    "bytes": 8094,
+    "sha256": "049b7d0970cf4d0c6ee4ef9cd659cf9c72bcde7c986bb7277e8af0b07e264325"
+  },
+  "candidateSelectionRepair": "docs/legado-ios/self-renewal-candidate-selection-batch.json"
 }

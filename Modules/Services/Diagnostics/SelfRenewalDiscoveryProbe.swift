@@ -48,7 +48,7 @@ extension SelfRenewalTransportProbe {
     ) async -> SelfRenewalTransportProbeReport {
         let startedAt = Date()
         let result = await SourcePerfTrace.spanAsync(
-            "diagnostic.selfRenewalDiscovery", "main=\(Thread.isMainThread) servicesMax=8 endpointsMax=4"
+            "diagnostic.selfRenewalDiscovery", "main=\(Thread.isMainThread) servicesMax=8 addressCallbacksMax=32 selectedMax=4"
         ) {
             await SelfRenewalDiscoveryOperation(dependencies: dependencies, timeout: timeout).run()
         }
@@ -84,6 +84,9 @@ private actor SelfRenewalDiscoveryOperation {
     private var resolved = 0
     private var rejected = 0
     private var approved = 0
+    private var eligible: Int?
+    private var skipped: Int?
+    private var selectionLimit: Int?
     private var attemptsStarted = 0
     private var attempts: [SelfRenewalDiscoveryTCPAttempt] = []
     private var networkError: SelfRenewalTransportNetworkError?
@@ -190,15 +193,9 @@ private actor SelfRenewalDiscoveryOperation {
                 }
             }
         }
-        guard unique.count <= 4 else { finish(.limitExceeded); return }
-        approved = unique.count
-        guard !unique.isEmpty else {
-            if networkError != nil { finish(.resolutionFailed) }
-            else if resolved > 0 { finish(.noLocalCandidate) }
-            else if waitingError != nil { finish(.discoveryUnavailable) }
-            else { finish(.discoveryTimedOut) }
-            return
-        }
+        // This does not relax the discovery budget: all callbacks must have fit
+        // its 32-address cap and the producer must have closed normally above.
+        guard unique.count <= 32 else { finish(.limitExceeded); return }
         // A stable numeric ordering makes bounded attempts reproducible without exporting destinations.
         unique.sort {
             if $0.address.family != $1.address.family { return $0.address.family == .ipv4 }
@@ -206,7 +203,22 @@ private actor SelfRenewalDiscoveryOperation {
             if $0.address.scopeID != $1.address.scopeID { return $0.address.scopeID < $1.address.scopeID }
             return $0.port < $1.port
         }
-        for endpoint in unique {
+        // More than four eligible destinations is selection, not an incomplete
+        // discovery. Preserve the existing order and authorize at most four TCP
+        // attempts; never refill this prefix after expiry or a topology change.
+        let selected = Array(unique.prefix(4))
+        eligible = unique.count
+        approved = selected.count
+        skipped = unique.count - selected.count
+        selectionLimit = 4
+        guard !selected.isEmpty else {
+            if networkError != nil { finish(.resolutionFailed) }
+            else if resolved > 0 { finish(.noLocalCandidate) }
+            else if waitingError != nil { finish(.discoveryUnavailable) }
+            else { finish(.discoveryTimedOut) }
+            return
+        }
+        for endpoint in selected {
             phase = .checkingOwnership
             guard let current = await dependencies.snapshot() else {
                 if !finished { finish(.internalError) }
@@ -246,6 +258,7 @@ private actor SelfRenewalDiscoveryOperation {
             elapsedMilliseconds: elapsed.isFinite ? max(0, elapsed * 1_000) : 0,
             discoveredServiceCount: services.count, resolvedAddressCount: resolved,
             rejectedAddressCount: rejected, approvedEndpointCount: approved,
+            eligibleEndpointCount: eligible, skippedEndpointCount: skipped, endpointSelectionLimit: selectionLimit,
             tcpConnectionAttemptsStarted: attemptsStarted, tcpAttempts: attempts,
             networkError: networkError, lastWaitingError: waitingError,
             tcpApplicationPayloadBytesSent: 0, serviceIdentityVerified: false

@@ -135,8 +135,13 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             smoke.require_source_stamp(plistlib.loads((self.root / smoke.INFO).read_bytes()), SOURCE)
             self.assertEqual(record["sourceCommit"], SOURCE)
             self.assertEqual(len(record["intendedTests"]["unit"]), 8)
-            self.assertEqual(len(record["intendedTests"]["discovery"]), 13)
+            self.assertEqual(len(record["intendedTests"]["discovery"]), 16)
             self.assertEqual(len(record["intendedTests"]["ui"]), 1)
+            paths = {item["path"] for item in record["sourceInputs"]}
+            self.assertEqual(len(record["sourceInputs"]), 32)
+            self.assertTrue({"scripts/reader-experience/inspect-renewal-report.py",
+                             "scripts/reader-experience/renewal-report-schema1.py",
+                             "scripts/reader-experience/test-inspect-renewal-report.py"} <= paths)
             self.assertEqual(record["sourceInputs"][0]["sha256"], hashlib.sha256(self.originals[probe.SOURCE_INPUTS[0]]).hexdigest())
 
     def test_prepare_rejects_runtime_payload_mode_before_mutation(self):
@@ -189,7 +194,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             result = probe.result(self.work)
             self.assertEqual(result["status"], "passed")
             self.assertEqual(result["targetedTests"]["unit"]["totalTestCount"], 8)
-            self.assertEqual(result["targetedTests"]["discovery"]["totalTestCount"], 13)
+            self.assertEqual(result["targetedTests"]["discovery"]["totalTestCount"], 16)
             self.assertEqual(result["targetedTests"]["ui"]["totalTestCount"], 1)
             self.assertEqual(result["executionPlatform"], "ios-simulator")
             for key in ("iphoneTransportVerified", "selfRenewalVerified", "unattendedRenewalVerified",

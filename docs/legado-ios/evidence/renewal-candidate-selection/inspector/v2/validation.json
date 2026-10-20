@@ -1,0 +1,98 @@
+{
+  "kind": "final-portable-inspector-and-closed-leaf-validation",
+  "commands": [
+    {
+      "name": "inspector-tests",
+      "command": [
+        "C:\\Python312\\python.exe",
+        "-B",
+        "scripts/reader-experience/test-inspect-renewal-report.py",
+        "-v"
+      ],
+      "exitCode": 0,
+      "methodsExpected": 32,
+      "logs": [
+        {
+          "path": ".build/renewal-candidate-inspector-validation/v2/inspector-tests.stdout.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".build/renewal-candidate-inspector-validation/v2/inspector-tests.stderr.txt",
+          "bytes": 5824,
+          "sha256": "c5b9d4fcecbcce6822716cd50e2347baa4308f638d7192bc3f5e106afba667b1"
+        }
+      ]
+    },
+    {
+      "name": "renewal-probe-tools-tests",
+      "command": [
+        "C:\\Python312\\python.exe",
+        "-B",
+        "scripts/reader-experience/test-renewal-probe-tools.py",
+        "-v"
+      ],
+      "exitCode": 0,
+      "methodsExpected": 16,
+      "logs": [
+        {
+          "path": ".build/renewal-candidate-inspector-validation/v2/renewal-probe-tools-tests.stdout.txt",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": ".build/renewal-candidate-inspector-validation/v2/renewal-probe-tools-tests.stderr.txt",
+          "bytes": 2982,
+          "sha256": "950b871d083c35e9ce87ee0ccd018a03cd5dde8246933dc6ad1ea36734229fc1"
+        }
+      ]
+    }
+  ],
+  "files": [
+    {
+      "path": "scripts/reader-experience/inspect-renewal-report.py",
+      "bytes": 23173,
+      "sha256": "c163c643583218d46088a3bbe84b01b8bb9337c5e0ad872a7682aadb3f41e26f"
+    },
+    {
+      "path": "scripts/reader-experience/renewal-report-schema1.py",
+      "bytes": 13187,
+      "sha256": "fcc1d82ec99af4ce4a576cce9e2992f0099b7da0f3c7f8933dd018178890bd8b"
+    },
+    {
+      "path": "scripts/reader-experience/test-inspect-renewal-report.py",
+      "bytes": 28632,
+      "sha256": "4a0f315319320527ecd5e775044d15bab08ec69ed6fd0763918d747740c72641"
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "bytes": 16922,
+      "sha256": "ab5544a14cb2c1c52ca9f3117b25ee8e677ea200507cd15c42638992a346a4bd"
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "bytes": 21826,
+      "sha256": "4faa6967b067b281aeb7dccaec3dd274e290645d63cfd2059735dd8c3134c087"
+    },
+    {
+      "path": ".github/workflows/reader-renewal-probe.yml",
+      "bytes": 4432,
+      "sha256": "96940cc952df137f2d843be0656c21830b093f3b555c436d131f4c00db0fda03"
+    }
+  ],
+  "sourceInputCount": 32,
+  "targetedSwiftMethods": {
+    "fixedPort": 8,
+    "discovery": 16,
+    "UI": 1
+  },
+  "swiftDiscoveryInventoryMatchesExactGate": true,
+  "oldFrozenInspectorToolBytesUnchanged": true,
+  "schema1BytesIdentical": true,
+  "actualSwiftTypechecks": 0,
+  "actualSDKBuilds": 0,
+  "actualIOSTests": 0,
+  "CITriggered": false,
+  "userReportUsedAsTestFixture": false,
+  "previousValidationPreserved": true
+}

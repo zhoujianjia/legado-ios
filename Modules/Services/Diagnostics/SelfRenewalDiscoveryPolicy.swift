@@ -117,6 +117,11 @@ struct SelfRenewalRemotePairingDiscoveryReport: Codable, Sendable {
     let resolvedAddressCount: Int
     let rejectedAddressCount: Int
     let approvedEndpointCount: Int
+    /// Nil before selection, including incomplete/overflowed discovery. Optional
+    /// mutable defaults preserve synthesized Codable decoding of older schema 2.
+    var eligibleEndpointCount: Int? = nil
+    var skippedEndpointCount: Int? = nil
+    var endpointSelectionLimit: Int? = nil
     let tcpConnectionAttemptsStarted: Int
     let tcpAttempts: [SelfRenewalDiscoveryTCPAttempt]
     let networkError: SelfRenewalTransportNetworkError?

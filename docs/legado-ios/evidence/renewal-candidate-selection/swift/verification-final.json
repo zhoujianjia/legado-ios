@@ -1,0 +1,62 @@
+{
+  "status": "grammar-screen-passed",
+  "files": [
+    {
+      "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
+      "bytes": 17886,
+      "sha256": "7b7e0f66dd218ea4bf406a7b978a46a387260e6e15f2d0e34f2ed0150fcc8459",
+      "beforeSHA256": "7c46967d7e9c1d4330abbb98dd9383610597eeb1cca9b3807127445fb9394bf0",
+      "grammarErrors": []
+    },
+    {
+      "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryPolicy.swift",
+      "bytes": 5954,
+      "sha256": "b46dc66a783217a91b60c3d3bf1233c758bd4d64ecdea72feee0428783e529d2",
+      "beforeSHA256": "6f6e2728040c6327b96d2ef948e562937dcf356753ecdbbd0a72dbfd3296dc0c",
+      "grammarErrors": []
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift",
+      "bytes": 38418,
+      "sha256": "722b974ddbdb9ecf8045b3edd9627c85f21fd31faf60fd5ba2555c78c1721132",
+      "beforeSHA256": "7a7a873a30db6ea7933fdaaea89dc724ca24522cde138830f9a7e75c0cb67400",
+      "grammarErrors": []
+    }
+  ],
+  "patchBytes": 24828,
+  "patchSHA256": "30d61cb55b84f493dbf11f6c7fa46fb25f8024fb9af57574d0fa8b51dabcb75f",
+  "old13MethodIdentitiesPreserved": true,
+  "plannedMethods": 16,
+  "plannedExecutions": 16,
+  "methodIdentities": [
+    "SelfRenewalDiscoveryProbeTests/acceptsOnlyOwnedAddresses",
+    "SelfRenewalDiscoveryProbeTests/rejectsNonUnicastAndMalformedAddresses",
+    "SelfRenewalDiscoveryProbeTests/scopedIPv6NeedsExactInterface",
+    "SelfRenewalDiscoveryProbeTests/rejectsBroadcastAndExcludedInterfaces",
+    "SelfRenewalDiscoveryProbeTests/snapshotsDetectRelevantTopologyChanges",
+    "SelfRenewalDiscoveryProbeTests/connectsOnlyAfterClosedWindowAndKeepsReportRedacted",
+    "SelfRenewalDiscoveryProbeTests/removalsAndExpiredRecordsCannotConnect",
+    "SelfRenewalDiscoveryProbeTests/incompleteOrOverflowedDiscoveryNeverConnects",
+    "SelfRenewalDiscoveryProbeTests/revalidatesOwnershipAndTTLBeforeEachConnection",
+    "SelfRenewalDiscoveryProbeTests/cancellationAndGlobalDeadlineCloseAllWork",
+    "SelfRenewalDiscoveryProbeTests/enforcesBudgetsAndPreservesDistinctFailures",
+    "SelfRenewalDiscoveryProbeTests/selectsFourOwnedEndpointsFromReportedAddressShape",
+    "SelfRenewalDiscoveryProbeTests/selectionIsStableAcrossOrderAndUsesShorterDuplicateTTL",
+    "SelfRenewalDiscoveryProbeTests/selectionPreservesHardLimitsCancellationAndSnapshotChecks",
+    "SelfRenewalDiscoveryProbeTests/retainsSchemaOneReportCompatibility",
+    "SelfRenewalDiscoveryProbeTests/tcpAdapterConnectsAndClosesWithoutSendingPayload"
+  ],
+  "newMethods": [
+    "selectionIsStableAcrossOrderAndUsesShorterDuplicateTTL",
+    "selectionPreservesHardLimitsCancellationAndSnapshotChecks",
+    "selectsFourOwnedEndpointsFromReportedAddressShape"
+  ],
+  "method": "tree-sitter grammar screen and source inventory only",
+  "SwiftTypecheckPerformed": false,
+  "AppleSDKCompilationPerformed": false,
+  "actualSwiftOrIOSTestExecutions": 0,
+  "actualDeviceNetworkValidation": false,
+  "CIQueriesOrTriggers": 0,
+  "GitOperations": 0,
+  "privateInputsRead": false
+}

@@ -51,6 +51,9 @@ EXPECTED_CASES = {
         "enforcesBudgetsAndPreservesDistinctFailures",
         "retainsSchemaOneReportCompatibility",
         "tcpAdapterConnectsAndClosesWithoutSendingPayload",
+        "selectsFourOwnedEndpointsFromReportedAddressShape",
+        "selectionIsStableAcrossOrderAndUsesShorterDuplicateTTL",
+        "selectionPreservesHardLimitsCancellationAndSnapshotChecks",
     )},
     "ui": {UI_SUITE + "/testReadOnlyConnectionProbeCanExportWithoutClaimingRenewal"},
 }
@@ -68,6 +71,9 @@ SOURCE_INPUTS = (
     "Info.plist",
     "Yuedu-Reader.xcodeproj/project.pbxproj",
     "scripts/reader-experience/renewal-probe-tools.py",
+    "scripts/reader-experience/inspect-renewal-report.py",
+    "scripts/reader-experience/renewal-report-schema1.py",
+    "scripts/reader-experience/test-inspect-renewal-report.py",
     "scripts/reader-experience/renewal-probe-tests.sh",
     "scripts/reader-experience/smoke-tools.py",
     "scripts/reader-experience/stage-config.py",
@@ -264,7 +270,7 @@ def result(work):
             "limitations": ["Simulator tests of a read-only diagnostic, not a delivered IPA or iPhone test.",
                             "Unit network responses come from owned temporary loopback fixture listeners.",
                             "The explicit UI operation browses only RemotePairing, filters numeric local ownership, opens TCP and closes without an application payload.",
-                            "The existing eight QueryType fixture cases remain separate from thirteen discovery cases and one UI case.",
+                            "The existing eight QueryType fixture cases remain separate from sixteen discovery cases and one UI case.",
                             "A bare TCP connection does not establish service identity or an authenticated usable transport.",
                             "No Apple login, pairing, signing, installation or renewal operation is performed.",
                             "The previous fixed-loopback experiment does not exclude alternate transports; discovery fixtures and Simulator UI do not establish iPhone reachability."]}

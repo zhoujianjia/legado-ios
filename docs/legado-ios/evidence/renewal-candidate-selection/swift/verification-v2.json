@@ -1,0 +1,56 @@
+{
+  "status": "grammar-screen-passed",
+  "revision": 2,
+  "files": [
+    {
+      "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
+      "bytes": 17886,
+      "sha256": "7b7e0f66dd218ea4bf406a7b978a46a387260e6e15f2d0e34f2ed0150fcc8459"
+    },
+    {
+      "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryPolicy.swift",
+      "bytes": 5954,
+      "sha256": "b46dc66a783217a91b60c3d3bf1233c758bd4d64ecdea72feee0428783e529d2"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift",
+      "bytes": 38717,
+      "sha256": "5abd8c20b26220f59971f22c02f23b78addc74fc3d98a248a99cc3a33e4aecc1"
+    }
+  ],
+  "grammarFilesChecked": [
+    "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift"
+  ],
+  "grammarErrors": [],
+  "productionFilesByteHashesUnchanged": true,
+  "fix": "Only mock transportFailed attempts now carry normalized posix ECONNREFUSED. The reported-address-shape test asserts error domain/code for every returned attempt.",
+  "priorFixtureContractViolationPreservedInV1Records": true,
+  "plannedMethods": 16,
+  "plannedExecutions": 16,
+  "methodIdentities": [
+    "SelfRenewalDiscoveryProbeTests/acceptsOnlyOwnedAddresses",
+    "SelfRenewalDiscoveryProbeTests/rejectsNonUnicastAndMalformedAddresses",
+    "SelfRenewalDiscoveryProbeTests/scopedIPv6NeedsExactInterface",
+    "SelfRenewalDiscoveryProbeTests/rejectsBroadcastAndExcludedInterfaces",
+    "SelfRenewalDiscoveryProbeTests/snapshotsDetectRelevantTopologyChanges",
+    "SelfRenewalDiscoveryProbeTests/connectsOnlyAfterClosedWindowAndKeepsReportRedacted",
+    "SelfRenewalDiscoveryProbeTests/removalsAndExpiredRecordsCannotConnect",
+    "SelfRenewalDiscoveryProbeTests/incompleteOrOverflowedDiscoveryNeverConnects",
+    "SelfRenewalDiscoveryProbeTests/revalidatesOwnershipAndTTLBeforeEachConnection",
+    "SelfRenewalDiscoveryProbeTests/cancellationAndGlobalDeadlineCloseAllWork",
+    "SelfRenewalDiscoveryProbeTests/enforcesBudgetsAndPreservesDistinctFailures",
+    "SelfRenewalDiscoveryProbeTests/selectsFourOwnedEndpointsFromReportedAddressShape",
+    "SelfRenewalDiscoveryProbeTests/selectionIsStableAcrossOrderAndUsesShorterDuplicateTTL",
+    "SelfRenewalDiscoveryProbeTests/selectionPreservesHardLimitsCancellationAndSnapshotChecks",
+    "SelfRenewalDiscoveryProbeTests/retainsSchemaOneReportCompatibility",
+    "SelfRenewalDiscoveryProbeTests/tcpAdapterConnectsAndClosesWithoutSendingPayload"
+  ],
+  "patchBytes": 25133,
+  "patchSHA256": "25d64d1c739f87ff0304593604b7924a9d04a4305683760c8cbdb4f4827871d2",
+  "SwiftTypecheckPerformed": false,
+  "AppleSDKCompilationPerformed": false,
+  "actualSwiftOrIOSTestExecutions": 0,
+  "otherPortableSuitesRerun": 0,
+  "CIQueriesOrTriggers": 0,
+  "GitOperations": 0
+}

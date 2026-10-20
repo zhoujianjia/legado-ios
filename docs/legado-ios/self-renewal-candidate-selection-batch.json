@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-20",
+  "status": "reviewed-candidate-selection-and-resource-packaging-repair-awaiting-SDK",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "triggeringUserReport": {
+    "path": "docs/legado-ios/self-renewal-device-discovery-build12.json",
+    "bytes": 8094,
+    "sha256": "049b7d0970cf4d0c6ee4ef9cd659cf9c72bcde7c986bb7277e8af0b07e264325"
+  },
+  "originalUserReportUploaded": false,
+  "sourceBinding": {
+    "preRepairCommit": "60e8bde5d3f52c2b905672eeaae08058dfcfd00f",
+    "files": [
+      {
+        "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryPolicy.swift",
+        "bytes": 5954,
+        "sha256": "b46dc66a783217a91b60c3d3bf1233c758bd4d64ecdea72feee0428783e529d2"
+      },
+      {
+        "path": "Modules/Services/Diagnostics/SelfRenewalDiscoveryProbe.swift",
+        "bytes": 17886,
+        "sha256": "7b7e0f66dd218ea4bf406a7b978a46a387260e6e15f2d0e34f2ed0150fcc8459"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalDiscoveryProbeTests.swift",
+        "bytes": 38717,
+        "sha256": "5abd8c20b26220f59971f22c02f23b78addc74fc3d98a248a99cc3a33e4aecc1"
+      },
+      {
+        "path": "Modules/Features/Settings/SelfRenewalProbeView.swift",
+        "bytes": 11995,
+        "sha256": "377e3913aa64ba4e18bd1f1cec4af58264505bd351648c8cdcbbb00c4e66403c"
+      },
+      {
+        "path": "scripts/reader-experience/inspect-renewal-report.py",
+        "bytes": 23173,
+        "sha256": "c163c643583218d46088a3bbe84b01b8bb9337c5e0ad872a7682aadb3f41e26f"
+      },
+      {
+        "path": "scripts/reader-experience/renewal-report-schema1.py",
+        "bytes": 13187,
+        "sha256": "fcc1d82ec99af4ce4a576cce9e2992f0099b7da0f3c7f8933dd018178890bd8b"
+      },
+      {
+        "path": "scripts/reader-experience/test-inspect-renewal-report.py",
+        "bytes": 28632,
+        "sha256": "4a0f315319320527ecd5e775044d15bab08ec69ed6fd0763918d747740c72641"
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 16921,
+        "sha256": "2b410d9c01a83768f77147d70005a32dee2334ca29dd857d04e6fd419b39dbda"
+      },
+      {
+        "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 21826,
+        "sha256": "4faa6967b067b281aeb7dccaec3dd274e290645d63cfd2059735dd8c3134c087"
+      },
+      {
+        "path": ".github/workflows/reader-renewal-probe.yml",
+        "bytes": 4432,
+        "sha256": "96940cc952df137f2d843be0656c21830b093f3b555c436d131f4c00db0fda03"
+      },
+      {
+        "path": "Yuedu-Reader.xcodeproj/project.pbxproj",
+        "bytes": 55843,
+        "sha256": "51dc69ae13c60bb330d1f61222c7b36e5e5c5e2576fe900061121f913920871e"
+      },
+      {
+        "path": "Resources/en.lproj/Localizable.strings",
+        "bytes": 262488,
+        "sha256": "18dcce0bcc51c3e6921255ae106fc8cbb0559d51ae1ac2f11a650b98a1d764b5"
+      },
+      {
+        "path": "Resources/ja.lproj/Localizable.strings",
+        "bytes": 318658,
+        "sha256": "2605387b9f0427c22c6594a9a1c0dfd90ffbdcc3f764dfd42d1370c90ed94c3b"
+      },
+      {
+        "path": "Resources/ko.lproj/Localizable.strings",
+        "bytes": 295460,
+        "sha256": "18d908b9d46c947290ffa9185b67cecf3fb60ace2cfbb2c70ef227a08d829d64"
+      },
+      {
+        "path": "Resources/zh-Hans.lproj/Localizable.strings",
+        "bytes": 249786,
+        "sha256": "5892c6636a9277b9093b86d1223eed5bdc52f6f89a7b5fce87e574eb077651ec"
+      },
+      {
+        "path": "Resources/zh-Hant.lproj/Localizable.strings",
+        "bytes": 247585,
+        "sha256": "c032f2f1b5ba98472d781d8a807001d1538ce22e7dae6a676c4d89b909f12516"
+      }
+    ],
+    "uncommittedHashesAreNotAnAcceptanceCommit": true
+  },
+  "candidatePolicy": {
+    "discoveryMustCloseNormally": true,
+    "servicesHardLimit": 8,
+    "addressCallbacksHardLimit": 32,
+    "nativeCallbacksHardLimit": 128,
+    "maximumSelectedEndpointsAndTCPAttempts": 4,
+    "overallSeconds": 8,
+    "maximumPerTCPSeconds": 2,
+    "sortBeforeSelection": "IPv4, binary address, scope, port",
+    "crossServiceDuplicateTTL": "shorter unexpired TTL",
+    "allHardDiscoveryOverflowsRemainFailClosed": true,
+    "snapshotAndTTLRevalidatedBeforeEveryAttempt": true,
+    "expiredSelectedEndpointRefilledFromSkipped": false,
+    "TCPApplicationPayloadBytesSent": 0,
+    "serviceIdentityVerified": false
+  },
+  "coverageReporting": {
+    "schema": 2,
+    "optionalAllOrNoneFields": [
+      "eligibleEndpointCount",
+      "skippedEndpointCount",
+      "endpointSelectionLimit"
+    ],
+    "preSelectionFieldsOmitted": true,
+    "oldSchema1And2DecodeRetained": true,
+    "unselectedCandidatesNeverDeclaredUnreachable": true,
+    "UIFiveLanguagesAndExportExplainSubset": true
+  },
+  "preparedSwiftSelections": {
+    "legacy": 8,
+    "discovery": 16,
+    "UI": 1
+  },
+  "portableChecks": {
+    "inspectorMethods": 32,
+    "renewalEvidenceGuardMethods": 16,
+    "sourceInputs": 32,
+    "SwiftGrammarDistinctFiles": 4,
+    "localizationLanguages": 5,
+    "localizationKeysPerLanguage": 3731,
+    "repeatedVersionsNotAddedToCounts": true
+  },
+  "actualAppleSDKTypechecks": 0,
+  "actualNewSwiftOrIOSTestExecutions": 0,
+  "priorDResourceGraphFailure": {
+    "manifest": {
+      "path": "docs/legado-ios/evidence/stage-checkpoint-f3e0b15-failure/manifest.json",
+      "bytes": 49026,
+      "sha256": "588f852d86b02f1b48f8c7527b1b2588ac3fec13e82365388a16f65573f1f598"
+    },
+    "source": "f3e0b15aae3b74e820f2ee86e5468c05a6c1d842",
+    "runs": [
+      39289697059,
+      39289697993
+    ],
+    "actualIOSTests": 0,
+    "failure": "Duplicate fixture.umd and reader-output.json flattened from five UMD resource directories",
+    "repair": "Tests/iOS synchronized root declares yuedu appTests/Fixtures/UMD as an explicit folder",
+    "fixtureAndLoaderBytesPreserved": true,
+    "SDKFixEstablished": false
+  },
+  "retainedReviewAndValidationDirectory": "docs/legado-ios/evidence/renewal-candidate-selection",
+  "currentDeviceCandidateStillBuild12": true,
+  "newIPAProduced": false,
+  "cloudSubmission": {
+    "submitted": false,
+    "sourceCommit": null,
+    "runs": []
+  },
+  "nativeRuntimeAndDeviceEvidenceRequired": true
+}

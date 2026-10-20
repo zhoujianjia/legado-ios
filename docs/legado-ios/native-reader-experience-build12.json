@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "recordKind": "audited-build12-read-only-diagnostic-device-handoff",
   "recordedAtUTC": "2026-10-19T16:53:06.872391+00:00",
-  "status": "delivered-unsigned-awaiting-user-dynamic-discovery-report",
+  "status": "user-report-received-old-endpoint-cap-stopped-before-TCP",
   "version": "3.0.0",
   "build": "12",
   "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
@@ -117,7 +117,7 @@
   "instructionsZh": "沿用原签名方式与同一账号／团队、主 App 及扩展 Bundle ID 映射覆盖安装，保留书籍、书源及进度，不要卸载。电脑关机、拔 USB，手机 Wi-Fi 开、VPN 关；设置 → 高级 → 自续签验证 → 开始连接验证 → 导出验证报告。无需安装 SideStore。",
   "requestMeaning": "Only a bounded RemotePairing discovery and same-device TCP diagnostic; no authentication, signing or replacement installation implementation.",
   "oldReportPreserved": "docs/legado-ios/self-renewal-device-transport-build10.json",
-  "newDeviceReportReceived": false,
+  "newDeviceReportReceived": true,
   "builtInSources": false,
   "privateSourcesReadOrUploaded": false,
   "temporaryPublicDiagnosticPolicy": {
@@ -130,5 +130,11 @@
     "docs/legado-ios/evidence/reader-build12-delivery/self-renewal-dynamic-discovery-batch.json.before",
     "docs/legado-ios/evidence/reader-build12-delivery/self-renewal-research.json.before",
     "docs/legado-ios/evidence/reader-build12-delivery/build12-release-audit-a76d380.json.before"
-  ]
+  ],
+  "receivedDeviceReport": {
+    "path": "docs/legado-ios/self-renewal-device-discovery-build12.json",
+    "bytes": 8094,
+    "sha256": "049b7d0970cf4d0c6ee4ef9cd659cf9c72bcde7c986bb7277e8af0b07e264325"
+  },
+  "handoffSignedInstalledFieldsAreOriginalAgentDeliverySnapshot": true
 }

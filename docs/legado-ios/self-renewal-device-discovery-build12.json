@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-20",
+  "status": "device-report-contract-checked-old-candidate-cap-stopped-before-tcp",
+  "说明": "build12 的这次导出在旧四端点 guard 处停止，尚未尝试 TCP。5 个去重候选由固定源码分支和报告计数联合推得，不是报告直接输出；这不是网络失败或权限拒绝的判定。修复已在工作树准备，尚无对应 Swift/SDK 或真机执行证据。",
+  "originalReport": {
+    "localIgnoredPath": ".build/renewal-delivery/device-report-build12/SelfRenewalProbe-report-original.json",
+    "bytes": 1567,
+    "sha256": "d683c6ab63d0edfac98429dae998a3172d39acc4a71b76c17352d333e9cbb658",
+    "originalUploaded": false,
+    "rawCopiedToEvidence": false,
+    "rawUserContextSidecarCopiedToEvidence": false,
+    "usedAsTestFixture": false,
+    "digestBasis": "root 已检查的 inspection sidecar；本次仅归纳 sidecar，不复制用户原始报告或原始 context JSON。"
+  },
+  "inspectionInputsKeptLocal": [
+    {
+      "path": ".build/renewal-delivery/device-report-build12/inspection-record.json",
+      "bytes": 2998,
+      "sha256": "93b61b508688f7ef1ccd162806b02df35e131024ec1ada6dbfc201dc04f7ba5b"
+    },
+    {
+      "path": ".build/renewal-delivery/device-report-build12/inspection.stdout.json",
+      "bytes": 2602,
+      "sha256": "c1b043060220d878147d68c4a14a2ed0fe590bd39244bde9c859a924a23f7f8b"
+    }
+  ],
+  "declaredRun": {
+    "platform": "ios-device",
+    "appBuild": "12",
+    "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
+    "OSVersion": "27.0.1",
+    "reportedTimeWindowUTC": "00:20:41–00:20:44",
+    "reportedTimeWindowAsiaShanghai": "08:20:41–08:20:44",
+    "timeConversion": "UTC+08:00；秒级归纳，不构成设备时钟校准或真实性证明。",
+    "testTransportInjected": false,
+    "inspectionExitCode": 0,
+    "manifestSHA256": "eaed0ed9e2510164bd615d1e8d398631be7aef2c6b5d024c2560036a46e29f82",
+    "manifestDigestMatched": true,
+    "manifestBuildSourcePairMatched": true,
+    "inspectorBuiltInKnownBuildSourcePairMatched": false,
+    "cryptographicDeviceAttestationEstablished": false,
+    "deviceAuthenticityAttested": false,
+    "manifestDeliveryOrDeviceInstallationAttested": false,
+    "boundary": "匹配的是显式 JSON 内的 build/source 声明与提供的 manifest 摘要，不能证明该文件确由这份已安装应用产生。"
+  },
+  "userReportedContext": {
+    "reportedOn": "2026-10-20",
+    "computerPoweredOn": true,
+    "USBConnected": false,
+    "VPNActive": false,
+    "companionAppsAbsent": true,
+    "source": "用户对本次运行的补充说明，非探针自动测量。"
+  },
+  "reportEnvironmentMeasurementsUnchanged": {
+    "computerPoweredOff": "notMeasured",
+    "companionAppsAbsent": "notMeasured"
+  },
+  "factsSummarizedFromReport": {
+    "schemaVersion": 2,
+    "outcome": "limitExceeded",
+    "phase": "checkingOwnership",
+    "elapsedMilliseconds": 3004.4934999968973,
+    "discoveredServices": 2,
+    "resolvedAddressCount": 6,
+    "rejectedAddressCount": 1,
+    "approvedEndpointCount": 0,
+    "tcpConnectionAttemptsStarted": 0,
+    "tcpApplicationPayloadBytesSent": 0,
+    "networkError": null,
+    "lastWaitingError": null,
+    "serviceIdentityVerified": false,
+    "tlsAttempted": false,
+    "sessionStarted": false,
+    "pairingAttempted": false,
+    "accountAccessed": false,
+    "signingAttempted": false,
+    "installationAttempted": false,
+    "renewalProven": false
+  },
+  "fixedSourceInterpretation": {
+    "sourceComparisonBasis": "inspection-record 的四个固定 A 文件均与修复前基线字节一致；仅解释该分支，不外推整应用或二进制等价。",
+    "terminalBranch": "正常关闭发现窗口后，unique.count > 4，且尚未给 approved 赋值。",
+    "derivedDistinctUnexpiredEligibleEndpoints": 5,
+    "derivedNotDirectlyReported": true,
+    "derivation": "6 个已报告 resolved 中有 1 个被拒绝，余下去重且未过期候选至多 5；固定源码在此阶段唯一对应的旧 guard 要求 unique 大于 4，因此恰为 5。不能只用 resolved 减 rejected 直接断言去重数。",
+    "oldSelectionGuard": 4,
+    "approvedZeroMeaning": "approved=0 是 guard 失败前的初值，不是零合格候选。",
+    "hardServiceOrCallbackOverflowIndicated": false,
+    "TCPOrAuthenticatedServiceEvidenceEstablished": false
+  },
+  "boundedFixPreparation": {
+    "implementationPresentInWorkingTree": true,
+    "rule": "完整正常关闭发现窗口后，保留原归属/TTL/跨 service 较短 TTL 去重与 IPv4 优先数值排序，再选前 4 个；跳过数只表示预算排除，不随成功早停或 TTL 过期增加，不从跳过项补位。",
+    "unchangedHardLimits": {"services": 8, "addressCallbacks": 32, "selectedTCPDestinations": 4, "overallSeconds": 8, "perTCPSeconds": 2},
+    "reportExtension": "三个可选计数字段在完成选择前为 nil 且不输出；旧 schema2 缺字段可解码。选择后记录 eligible、skipped=eligible-approved、limit=4。",
+    "newDiscoveryMethodsDefined": 16,
+    "original13MethodIdentitiesRetained": true,
+    "actualSwiftOrIOSTestExecutions": 0,
+    "actualSDKBuilds": 0,
+    "v1MockContractIssue": "v1 假 transportFailed attempt 缺 normalized networkError；grammar 通过不证明该 mock 符合导出契约，原 v1 记录与 patch 保留。",
+    "v2Correction": "仅修测试 helper：transportFailed 带 posix ECONNREFUSED，其他 outcome 保持 nil；新增场景断言错误域/代码。没有新增方法，16 个精确身份保持。",
+    "initialGrammarRecord": "初次 tree-sitter 对 yield(()) 发出 missing !，改为 Bool 真实信号后通过；初次记录保留，不当作实际 Swift 编译失败。",
+    "pendingOwnerBatch": {"recordCreated": false, "recordPath": null, "owner": "root"},
+    "notPartOfExistingBuild12Binary": true
+  },
+  "existingLocalEvidenceOnly": {
+    "SwiftGrammar": "v1 最终三个文件通过，v2 仅重查受影响测试文件通过；这些均不是 Swift typecheck。",
+    "portableInspectorMethodsPassed": 32,
+    "portableRenewalToolMethodsPassed": 16,
+    "v3WordingOnlyChange": "helper scope 的 thirteen 更正为 sixteen；v3 实际重跑同一 16 个 guards，32 个 inspector 的逻辑和原 raw 复用，不累计执行数。",
+    "UIAndLocalizations": "初始检查为五语每语 3731 键、零重复及 UI 一文件 grammar；追加英文导出 interpretation 后另存最终 UI grammar/hash，五语文件未再变化。",
+    "finalUIFileSHA256": "377e3913aa64ba4e18bd1f1cec4af58264505bd351648c8cdcbbb00c4e66403c",
+    "sourceInventoryFiles": 32,
+    "CIHeadBindingPrepared": false,
+    "testsRerunForThisArchive": false
+  },
+  "evidenceArchive": {
+    "directory": "docs/legado-ios/evidence/renewal-candidate-selection",
+    "catalog": "docs/legado-ios/evidence/renewal-candidate-selection/catalog.json",
+    "catalogSHA256": "1dcc5492548c9612a4b3299e732e24659e342cb18b4372f76e136d22f81b9f45",
+    "filesIncludingCatalog": 35,
+    "totalBytes": 248874,
+    "containsUserRawReportOrContext": false,
+    "containsOriginalAndCorrectedPublicPreparationRecords": true,
+    "UIRecordOrder": ["ui/result.json", "ui/result-export-interpretation.json"],
+    "latestInspectorPreparation": "inspector/v3/validation.json"
+  },
+  "limits": [
+    "零 TCP 表示本次没有连接尝试，不能认定网络失败、权限拒绝，也不能确认任何设备服务身份。DNS-SD 发现可发送查询；TCP 应用载荷仍为零。",
+    "电脑当时仍开机，USB 拔除和无伴侣 App 的用户说明不能证明脱离电脑独立运行。报告自身的 notMeasured 不由这些说明覆盖。",
+    "未认证、未配对、未签名、未安装，renewal=false；自动自续签、无人值守与到期调度仍未证明。",
+    "此文档只归纳已有输入并归档公开准备证据，不重跑测试、不查或触发 CI、不改 canonical 或旧 build12 成品历史。"
+  ],
+  "automaticSelfRenewalImplemented": false,
+  "automaticSelfRenewalVerified": false,
+  "newNetworkOrCIOrGitOperations": 0
+}

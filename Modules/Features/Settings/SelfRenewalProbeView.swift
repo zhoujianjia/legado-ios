@@ -72,14 +72,22 @@ struct SelfRenewalProbeView: View {
 
             if let discovery = model.report?.remotePairingDiscovery {
                 Section {
-                    ThemedLabeledContent(localized("探索結果"), value: localized(outcomeKey(discovery.outcome)))
+                    ThemedLabeledContent(localized("探索結果"), value: localized(outcomeKey(discovery)))
                         .accessibilityIdentifier("self_renewal_discovery_outcome")
                     ThemedLabeledContent(localized("探索階段"), value: localized(phaseKey(discovery.phase)))
                         .accessibilityIdentifier("self_renewal_discovery_phase")
                     ThemedLabeledContent(localized("發現的服務"), value: discovery.discoveredServiceCount.formatted())
                     ThemedLabeledContent(localized("解析的位址"), value: discovery.resolvedAddressCount.formatted())
                     ThemedLabeledContent(localized("排除的位址"), value: discovery.rejectedAddressCount.formatted())
+                    if let eligible = discovery.eligibleEndpointCount {
+                        ThemedLabeledContent(localized("候選入口總數"), value: eligible.formatted())
+                            .accessibilityIdentifier("self_renewal_eligible_endpoints")
+                    }
                     ThemedLabeledContent(localized("核准的本機入口"), value: discovery.approvedEndpointCount.formatted())
+                    if let skipped = discovery.skippedEndpointCount {
+                        ThemedLabeledContent(localized("本輪未選擇的入口"), value: skipped.formatted())
+                            .accessibilityIdentifier("self_renewal_skipped_endpoints")
+                    }
                     ThemedLabeledContent(localized("TCP 連線嘗試"), value: discovery.tcpConnectionAttemptsStarted.formatted())
                     if mayNeedLocalNetworkAccess(discovery) {
                         Button {
@@ -92,10 +100,15 @@ struct SelfRenewalProbeView: View {
                 } header: {
                     Text(localized("本機連線結果"))
                 } footer: {
-                    Text(localized(mayNeedLocalNetworkAccess(discovery)
-                                   ? "本機網路存取可能受限，可在系統設定中檢查權限。TCP 連通仍不能確認設備服務或自續簽。"
-                                   : "TCP 連通僅代表本機入口可連線，仍不能確認設備服務或自續簽；沒有結果也不能排除其他通道。"))
-                        .dsSectionFooter()
+                    if (discovery.skippedEndpointCount ?? 0) > 0 {
+                        Text(localized("本輪只會嘗試選中的部分入口，其餘候選未檢查。TCP 連通不能確認設備服務或自續簽。"))
+                            .dsSectionFooter()
+                    } else {
+                        Text(localized(mayNeedLocalNetworkAccess(discovery)
+                                       ? "本機網路存取可能受限，可在系統設定中檢查權限。TCP 連通仍不能確認設備服務或自續簽。"
+                                       : "TCP 連通僅代表本機入口可連線，仍不能確認設備服務或自續簽；沒有結果也不能排除其他通道。"))
+                            .dsSectionFooter()
+                    }
                 }
                 .interfaceSectionSurface()
             }
@@ -137,8 +150,11 @@ struct SelfRenewalProbeView: View {
         }
     }
 
-    private func outcomeKey(_ outcome: SelfRenewalDiscoveryOutcome) -> String {
-        switch outcome {
+    private func outcomeKey(_ discovery: SelfRenewalRemotePairingDiscoveryReport) -> String {
+        if (discovery.skippedEndpointCount ?? 0) > 0, discovery.outcome == .noLocalCandidate {
+            return "本輪選中的入口已失效"
+        }
+        switch discovery.outcome {
         case .tcpConnected: return "TCP 已連通，服務尚未確認"
         case .noLocalCandidate: return "未找到屬於本機的入口"
         case .discoveryTimedOut: return "服務探索逾時"
@@ -177,7 +193,7 @@ private enum SelfRenewalProbeExport {
         let computerPoweredOff = "notMeasured"
         let companionAppsAbsent = "notMeasured"
         let dynamicRemotePairingDiscoveryAttempted: Bool
-        let interpretation = "Opt-in dynamic remote-pairing discovery, same-device address ownership checks, and TCP connection only. DNS-SD queries may be sent; no application frames are sent on TCP. Device service identity, automatic renewal, and installation remain unverified."
+        let interpretation = "Opt-in dynamic remote-pairing discovery, same-device address ownership checks, and TCP connection only. DNS-SD queries may be sent; no application frames are sent on TCP. Device service identity, automatic renewal, and installation remain unverified. At most four selected endpoints may be attempted; unselected candidates remain untested."
     }
 
     /// Encoding and file I/O stay off the main actor in the app's Swift 5 mode.

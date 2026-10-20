@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "dynamic-discovery-Simulator-verified-build12-delivered-device-report-pending",
+  "status": "build12-report-pre-TCP-budget-stop-new-selection-repair-awaiting-SDK",
   "product": "single-reader",
   "requiredConditions": {
     "freeApplePersonalTeam": true,
@@ -143,8 +143,9 @@
     "https://support.apple.com/en-us/guide/deployment/depce7cefc4d/web"
   ],
   "nextGates": [
-    "Inspect device discovery, local-network access and same-device TCP evidence before a separately bounded authenticated transport implementation.",
-    "Prove profile renewal, signing, same-identity replacement, preserved data, background retry and expiry recovery before claiming automatic self-renewal."
+    "Validate the revised bounded selection with actual source-bound8/16/UI1; early hard discovery overflow must still stop without TCP.",
+    "After SDK and package audits, inspect a changed diagnostic report before authenticated transport work.",
+    "Prove authentication, fresh profile/signature, same-identity replacement, data preservation and allowed unattended recovery separately."
   ],
   "completedGates": [
     "Exact eight service and one UI cases passed in iOS Simulator; downloaded evidence, source identities and UI attachments reviewed.",
@@ -152,7 +153,7 @@
   ],
   "nextDeviceCandidate": {
     "build": "12",
-    "status": "delivered-unsigned-awaiting-user-dynamic-discovery-report",
+    "status": "user-report-received-old-endpoint-cap-stopped-before-TCP",
     "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
     "record": "native-reader-experience-build12.json",
     "builtInSources": false,
@@ -160,27 +161,22 @@
     "localIPAPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build12-a76d380-unsigned.ipa",
     "ipaSHA256": "a86638a12c62166b564d32193b7d7b9bb161422fbe4212336cc8760963c08f34",
     "signedOrInstalled": false,
-    "automaticSelfRenewalImplemented": false
+    "automaticSelfRenewalImplemented": false,
+    "deviceReport": "self-renewal-device-discovery-build12.json"
   },
   "latestDeviceReport": {
-    "record": "self-renewal-device-transport-build10.json",
-    "outcome": "Both fixed loopback endpoints timed out in connecting, TCP not established, zero response bytes.",
-    "lastWaitingError": {
-      "domain": "posix",
-      "code": 1
-    },
-    "specificDenialMechanismEstablished": false,
-    "computerUSBVPNAndCompanionContext": "Original report did not measure these conditions. User reports computer on, USB connected, no active VPN and no SideStore; other companion apps not established.",
-    "unchangedBuild11ProbeMustNotBeTreatedAsFix": true,
-    "automaticSelfRenewalVerified": false,
+    "record": "self-renewal-device-discovery-build12.json",
+    "build": "12",
+    "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
+    "outcome": "Five unique unexpired candidates exceeded the old cap of four; zero TCP attempts.",
     "userReportedRunContext": {
-      "source": "User reply on 2026-10-19; not automatically measured by the app.",
       "computerPoweredOn": true,
-      "USBConnected": true,
+      "USBConnected": false,
       "VPNActive": false,
-      "SideStorePresent": false,
-      "otherCompanionApps": "notEstablished"
-    }
+      "companionAppsAbsent": true
+    },
+    "contextAutomaticallyMeasured": false,
+    "automaticSelfRenewalVerified": false
   },
   "nextTransportSlice": {
     "record": "self-renewal-alternate-transport-followup.json",
@@ -404,7 +400,7 @@
   },
   "nextDevelopmentCandidate": {
     "build": "12",
-    "status": "delivered-unsigned-awaiting-user-dynamic-discovery-report",
+    "status": "user-report-received-old-endpoint-cap-stopped-before-TCP",
     "sourceCommit": "a76d380fdc108db83be68961905ee49edd209571",
     "record": "native-reader-experience-build12.json",
     "builtInSources": false,
@@ -412,7 +408,8 @@
     "localIPAPath": "C:\\Users\\ZJJ\\Downloads\\LocalBookshelf-build12-a76d380-unsigned.ipa",
     "ipaSHA256": "a86638a12c62166b564d32193b7d7b9bb161422fbe4212336cc8760963c08f34",
     "signedOrInstalled": false,
-    "automaticSelfRenewalImplemented": false
+    "automaticSelfRenewalImplemented": false,
+    "deviceReport": "self-renewal-device-discovery-build12.json"
   },
   "currentDiscoveryCloudCheckpoint": {
     "sourceCommit": "1a87f6d57b2e3f215b86930fdfa75fdd52ce2e06",
@@ -452,5 +449,27 @@
     "newProductionFilesChangedByRepair": false,
     "mainAppDebugSimulatorCompiledAndLinked": true,
     "automaticSelfRenewalVerified": false
-  }
+  },
+  "previousDeviceReports": [
+    {
+      "record": "self-renewal-device-transport-build10.json",
+      "outcome": "Both fixed loopback endpoints timed out in connecting, TCP not established, zero response bytes.",
+      "lastWaitingError": {
+        "domain": "posix",
+        "code": 1
+      },
+      "specificDenialMechanismEstablished": false,
+      "computerUSBVPNAndCompanionContext": "Original report did not measure these conditions. User reports computer on, USB connected, no active VPN and no SideStore; other companion apps not established.",
+      "unchangedBuild11ProbeMustNotBeTreatedAsFix": true,
+      "automaticSelfRenewalVerified": false,
+      "userReportedRunContext": {
+        "source": "User reply on 2026-10-19; not automatically measured by the app.",
+        "computerPoweredOn": true,
+        "USBConnected": true,
+        "VPNActive": false,
+        "SideStorePresent": false,
+        "otherCompanionApps": "notEstablished"
+      }
+    }
+  ]
 }

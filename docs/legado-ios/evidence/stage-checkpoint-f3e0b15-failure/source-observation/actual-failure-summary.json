@@ -1,0 +1,482 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T00:26:47.384600+00:00",
+  "sourceCommit": "f3e0b15aae3b74e820f2ee86e5468c05a6c1d842",
+  "scope": "Saved single bounded observation plus SHA/size-verified small failure artifacts; no new CI or native execution.",
+  "observation": {
+    "path": "F:\\yuedu-reader\\.build\\renewal-discovery\\D-after-build12-report-20261020T002448Z-fba330\\observation.json",
+    "bytes": 11581,
+    "sha256": "6cde033f0a0a8aa0e7105f1896e9c314a2127bc06ef280d3d3af83198f5f09bd"
+  },
+  "statusAndJobsReads": 4,
+  "artifactListReads": 2,
+  "artifactDownloads": 2,
+  "polling": false,
+  "runs": [
+    {
+      "runID": 39289697059,
+      "URL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39289697059",
+      "status": "completed",
+      "conclusion": "failure",
+      "failedSteps": [
+        {
+          "jobID": 118186811900,
+          "step": 7,
+          "name": "Execute existing smoke groups and the batch-end reader experience checks"
+        }
+      ]
+    },
+    {
+      "runID": 39289697993,
+      "URL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39289697993",
+      "status": "completed",
+      "conclusion": "failure",
+      "failedSteps": [
+        {
+          "jobID": 118186813413,
+          "step": 6,
+          "name": "Run three independent selections and retain every group before gating"
+        }
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "runID": 39289697059,
+      "artifactID": 12204378975,
+      "name": "reader-smoke-evidence",
+      "archive": "F:\\yuedu-reader\\.build\\renewal-discovery\\D-after-build12-report-20261020T002448Z-fba330\\smoke-artifact.zip",
+      "bytes": 36937,
+      "sha256": "3bd6d68c73dbd41fb8d3bacf21b13ad73f1e69b0b1202271b98df5e7774791d9",
+      "githubDigest": "sha256:3bd6d68c73dbd41fb8d3bacf21b13ad73f1e69b0b1202271b98df5e7774791d9",
+      "githubSizeAndDigestMatched": true,
+      "extractedRoot": "F:\\yuedu-reader\\.build\\D12-fba330\\smoke"
+    },
+    {
+      "runID": 39289697993,
+      "artifactID": 12204538652,
+      "name": "reader-measurements-evidence",
+      "archive": "F:\\yuedu-reader\\.build\\renewal-discovery\\D-after-build12-report-20261020T002448Z-fba330\\measurements-artifact.zip",
+      "bytes": 136363,
+      "sha256": "4e95d00d075218b8772d26f308d1b426ae43e58b3454f6e839dbde8874e7868f",
+      "githubDigest": "sha256:4e95d00d075218b8772d26f308d1b426ae43e58b3454f6e839dbde8874e7868f",
+      "githubSizeAndDigestMatched": true,
+      "extractedRoot": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements"
+    }
+  ],
+  "actualCause": "The synchronized app-test resource phase flattens five UMD fixture directories; five fixture.umd sources collide at one root output, as do five reader-output.json sources. This is the observed build-system failure, not a Swift type-check diagnostic.",
+  "groups": [
+    {
+      "group": "smoke/cloudkit",
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\smoke\\reader-smoke\\cloudkit-tests.log",
+        "bytes": 65996,
+        "sha256": "a2d7791a0fd03d5bfc25d2fc413c1cbb9832440965f752dad53e7ae59fdcbb03"
+      },
+      "uniqueBuildSystemDiagnostics": [
+        {
+          "line": 685,
+          "text": "error: Multiple commands produce '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'"
+        },
+        {
+          "line": 691,
+          "text": "error: Multiple commands produce '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'"
+        }
+      ],
+      "copyCollisions": [
+        {
+          "outputBasename": "fixture.umd",
+          "sourceCopies": [
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/chinese-two-chapters/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/cross-compression-blocks/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/multi-chapter-optional-metadata/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/non-bmp-utf16/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/paragraph-separators/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'"
+          ]
+        },
+        {
+          "outputBasename": "reader-output.json",
+          "sourceCopies": [
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/chinese-two-chapters/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/cross-compression-blocks/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/multi-chapter-optional-metadata/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/non-bmp-utf16/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/paragraph-separators/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'"
+          ]
+        }
+      ],
+      "compilationSucceededEstablished": false,
+      "SwiftCompileOrLinkTaskLines": [],
+      "testsCancelledBecauseBuildFailed": true,
+      "actualTestExecutionEstablished": false,
+      "exportedSummaryPresent": false,
+      "actualTestCount": 0,
+      "countEvidence": "Build-system failure and explicit Testing cancelled because the build failed; no test-start or executed-test lines. No exported smoke summary was retained."
+    },
+    {
+      "group": "measurements/memory",
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\reader-measurements\\memory-tests.log",
+        "bytes": 66044,
+        "sha256": "6e6c9b04dca4d40a25eb30652e3523954263c634b8af8e26bfea9d28458bdbdb"
+      },
+      "uniqueBuildSystemDiagnostics": [
+        {
+          "line": 685,
+          "text": "error: Multiple commands produce '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'"
+        },
+        {
+          "line": 691,
+          "text": "error: Multiple commands produce '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'"
+        }
+      ],
+      "copyCollisions": [
+        {
+          "outputBasename": "fixture.umd",
+          "sourceCopies": [
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/chinese-two-chapters/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/cross-compression-blocks/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/multi-chapter-optional-metadata/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/non-bmp-utf16/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/paragraph-separators/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'"
+          ]
+        },
+        {
+          "outputBasename": "reader-output.json",
+          "sourceCopies": [
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/chinese-two-chapters/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/cross-compression-blocks/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/multi-chapter-optional-metadata/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/non-bmp-utf16/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/paragraph-separators/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'"
+          ]
+        }
+      ],
+      "compilationSucceededEstablished": false,
+      "SwiftCompileOrLinkTaskLines": [],
+      "testsCancelledBecauseBuildFailed": true,
+      "actualTestExecutionEstablished": false,
+      "exportedSummary": {
+        "file": {
+          "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\reader-measurements\\memory-summary.json",
+          "bytes": 430,
+          "sha256": "a0db140695f066682c349fa54bf64125aff10d3520a4daac5f3f2b8b950e650b"
+        },
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "result": "unknown"
+      },
+      "status": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\reader-measurements\\memory-status.json",
+        "bytes": 103,
+        "sha256": "bc26b975bf47891e797e46eacc1b04bf54b3b48d5575d5fb6f34a41b16dd44a3"
+      },
+      "result": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\reader-measurements\\memory-result.json",
+        "bytes": 1460,
+        "sha256": "01691e6587461f37cd30d71a1ee35e1a282a5bb8fbfa47293f190a4cc29addbe"
+      },
+      "rawRows": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\reader-measurements\\memory-raw.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "actualTestCount": 0,
+      "selectedXCTestExecutionValidated": false,
+      "measurementSamplesValidated": false
+    },
+    {
+      "group": "measurements/launch",
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\reader-measurements\\launch-tests.log",
+        "bytes": 65362,
+        "sha256": "b1e94ebfb1ee804b6b9f82a9bda3ac94b0a27e7353c2680779bfd254fec4b189"
+      },
+      "uniqueBuildSystemDiagnostics": [
+        {
+          "line": 685,
+          "text": "error: Multiple commands produce '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'"
+        },
+        {
+          "line": 691,
+          "text": "error: Multiple commands produce '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'"
+        }
+      ],
+      "copyCollisions": [
+        {
+          "outputBasename": "fixture.umd",
+          "sourceCopies": [
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/chinese-two-chapters/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/cross-compression-blocks/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/multi-chapter-optional-metadata/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/non-bmp-utf16/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/paragraph-separators/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'"
+          ]
+        },
+        {
+          "outputBasename": "reader-output.json",
+          "sourceCopies": [
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/chinese-two-chapters/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/cross-compression-blocks/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/multi-chapter-optional-metadata/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/non-bmp-utf16/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/paragraph-separators/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'"
+          ]
+        }
+      ],
+      "compilationSucceededEstablished": false,
+      "SwiftCompileOrLinkTaskLines": [],
+      "testsCancelledBecauseBuildFailed": true,
+      "actualTestExecutionEstablished": false,
+      "exportedSummary": {
+        "file": {
+          "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\reader-measurements\\launch-summary.json",
+          "bytes": 430,
+          "sha256": "6d1af15730ce883e9703dde096a0ae7afd4d61b4a9d0ee222e54781bfeee5cbd"
+        },
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "result": "unknown"
+      },
+      "status": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\reader-measurements\\launch-status.json",
+        "bytes": 103,
+        "sha256": "afc01523fb01bd7ab71b75b8b7edf1f75e294f338ed3fe73ea2212552c8158dc"
+      },
+      "result": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\reader-measurements\\launch-result.json",
+        "bytes": 1460,
+        "sha256": "141ac9a1e19cf208a3b9b56d4f7cc83db22c75fa675ecce7d50e83fa1d001714"
+      },
+      "rawRows": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\reader-measurements\\launch-raw.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "actualTestCount": 0,
+      "selectedXCTestExecutionValidated": false,
+      "measurementSamplesValidated": false
+    },
+    {
+      "group": "measurements/umd",
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\reader-measurements\\umd-tests.log",
+        "bytes": 65280,
+        "sha256": "80df083c1da3158e35c65908fec6d2d3295f190dbdad65ba82b362cd1a039e5e"
+      },
+      "uniqueBuildSystemDiagnostics": [
+        {
+          "line": 685,
+          "text": "error: Multiple commands produce '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'"
+        },
+        {
+          "line": 691,
+          "text": "error: Multiple commands produce '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'"
+        }
+      ],
+      "copyCollisions": [
+        {
+          "outputBasename": "fixture.umd",
+          "sourceCopies": [
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/chinese-two-chapters/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/cross-compression-blocks/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/multi-chapter-optional-metadata/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/non-bmp-utf16/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/paragraph-separators/fixture.umd' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/fixture.umd'"
+          ]
+        },
+        {
+          "outputBasename": "reader-output.json",
+          "sourceCopies": [
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/chinese-two-chapters/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/cross-compression-blocks/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/multi-chapter-optional-metadata/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/non-bmp-utf16/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'",
+            "    note: Target 'yuedu appTests' (project 'Yuedu-Reader') has copy command from '/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/Fixtures/UMD/paragraph-separators/reader-output.json' to '/Users/runner/Library/Developer/Xcode/DerivedData/Yuedu-Reader-fqgqvrwyxnmzcwfdmsgqvbfwlebx/Build/Products/Debug-iphonesimulator/YueduReader.app/PlugIns/yuedu appTests.xctest/reader-output.json'"
+          ]
+        }
+      ],
+      "compilationSucceededEstablished": false,
+      "SwiftCompileOrLinkTaskLines": [],
+      "testsCancelledBecauseBuildFailed": true,
+      "actualTestExecutionEstablished": false,
+      "exportedSummary": {
+        "file": {
+          "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\reader-measurements\\umd-summary.json",
+          "bytes": 430,
+          "sha256": "eb5e793b000ab4ce967683ebb7bb50315378d29bfdd4047b07a8369e5831fe38"
+        },
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0,
+        "result": "unknown"
+      },
+      "status": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\reader-measurements\\umd-status.json",
+        "bytes": 100,
+        "sha256": "876f59c594a5040a850d26256f05918b55fda6858efc60a4fd7238ffea5772f9"
+      },
+      "result": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\reader-measurements\\umd-result.json",
+        "bytes": 1451,
+        "sha256": "7a3deb167fa0132a7958668f7a9eae3f7d607bf94fa6eb67b0c11e9c397e7efd"
+      },
+      "rawRows": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\reader-measurements\\umd-raw.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "actualTestCount": 0,
+      "selectedXCTestExecutionValidated": false,
+      "measurementSamplesValidated": false
+    }
+  ],
+  "portableActualLogs": [
+    {
+      "workflow": "smoke",
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\smoke\\ci-logs\\completion-plan-tools.log",
+        "bytes": 1575,
+        "sha256": "0cee5d35044e376d7108cd988d27141923d4ce85c82aa21110c0a40637053981"
+      },
+      "executed": 9,
+      "verdict": "OK"
+    },
+    {
+      "workflow": "smoke",
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\smoke\\ci-logs\\reader-online-fixture.log",
+        "bytes": 2050,
+        "sha256": "58970daebb5f64b340649fcad8cd2a1226e8fb6dd21b614e8ad3c3cb53b4bfe1"
+      },
+      "executed": 12,
+      "verdict": "OK"
+    },
+    {
+      "workflow": "smoke",
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\smoke\\ci-logs\\reader-online-tools.log",
+        "bytes": 1362,
+        "sha256": "8eed7a3a62e045b35949d6a01da595e6d0d1d392690505bfdda794e742c5728d"
+      },
+      "executed": 7,
+      "verdict": "OK"
+    },
+    {
+      "workflow": "smoke",
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\smoke\\ci-logs\\reader-smoke-tools.log",
+        "bytes": 4221,
+        "sha256": "772a137b632f722942c74332e5cf1dec676ff67faa44d5a05dca30247570259b"
+      },
+      "executed": 24,
+      "verdict": "OK"
+    },
+    {
+      "workflow": "smoke",
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\smoke\\ci-logs\\reader-stage-baseline-tools.log",
+        "bytes": 3387,
+        "sha256": "718482c50f5ad7d25ba09550b99351c6df3fa2f1a3a9cce695dda886247146fd"
+      },
+      "executed": 20,
+      "verdict": "OK"
+    },
+    {
+      "workflow": "smoke",
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\smoke\\ci-logs\\rule-defaults-collection-tools.log",
+        "bytes": 3378,
+        "sha256": "70f4693fc5a84ef6da723c093473818e2013934770eea2bf017a643c93a42e0f"
+      },
+      "executed": 19,
+      "verdict": "OK"
+    },
+    {
+      "workflow": "smoke",
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\smoke\\ci-logs\\rule-defaults-reference-tools.log",
+        "bytes": 1416,
+        "sha256": "3b7e27ca909def09f04e000e45231ef7bf39c219795fbf33a8d6f38fb099ef82"
+      },
+      "executed": 8,
+      "verdict": "OK"
+    },
+    {
+      "workflow": "measurements",
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\ci-logs\\measurement-binding-tools.log",
+        "bytes": 6007,
+        "sha256": "22130601447ac2ce445c167f8d508cfd3dafe3a608fa0c085342beddc89731ef"
+      },
+      "executed": 22,
+      "verdict": "OK"
+    },
+    {
+      "workflow": "measurements",
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\ci-logs\\measurement-shapes.log",
+        "bytes": 2599,
+        "sha256": "f2201f2e0adbff27678445984b958effde54f62a3978bc892c4b5d9389319562"
+      },
+      "executed": 15,
+      "verdict": "OK"
+    },
+    {
+      "workflow": "measurements",
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\ci-logs\\shared-smoke-tools.log",
+        "bytes": 4221,
+        "sha256": "990548cdfc461bcbbdfaadd7d6e4355b7c766cd7f8b5b613c73ea0520757c0a6"
+      },
+      "executed": 24,
+      "verdict": "OK"
+    },
+    {
+      "workflow": "measurements",
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\ci-logs\\shared-stage-tools.log",
+        "bytes": 3387,
+        "sha256": "451608e9f220435caab711af0325de1b2df30451296a7a9d77b3097a88ce65ce"
+      },
+      "executed": 20,
+      "verdict": "OK"
+    },
+    {
+      "workflow": "measurements",
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\D12-fba330\\measurements\\ci-logs\\umd-fixture-tools.log",
+        "bytes": 1627,
+        "sha256": "10cbfe124761636d4a0cc7c5238f8653d41fb614af73e3caf5224d84ffe64143"
+      },
+      "executed": 12,
+      "verdict": "OK"
+    }
+  ],
+  "portableCountsAreSeparateNotSummed": true,
+  "nativeBoundary": {
+    "xcodeBuildTestAttempts": 4,
+    "successfulCompilationEstablished": false,
+    "actualIOSTestExecutions": 0,
+    "measurementRawRows": 0,
+    "memoryOrLaunchSamplesAccepted": 0,
+    "UMD11PassingLeaves": 0,
+    "noSwiftCompileOrLinkTaskLinesInFourRetainedLogs": true,
+    "note": "Xcode/SDK tooling was invoked, but this resource build graph failed. No app/test compilation, test pass, measured sample or source-independent compatibility is established."
+  },
+  "actions": {
+    "networkReadsForThisSummary": 0,
+    "GitCommands": 0,
+    "trackedEdits": 0,
+    "CITriggered": false,
+    "allNonDeviceWorkComplete": false,
+    "automaticSelfRenewalImplemented": false,
+    "fullLegadoCompatibilityEstablished": false,
+    "legalRedistributionClearanceEstablished": false
+  }
+}
