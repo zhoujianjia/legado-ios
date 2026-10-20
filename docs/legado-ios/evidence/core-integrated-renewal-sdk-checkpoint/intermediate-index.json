@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "countedAsFinalAcceptance": false,
+  "initialExecution": {
+    "path": ".build/renewal-discovery/integrated-renewal-selection-gates/portable-v1.json",
+    "bytes": 3983,
+    "sha256": "eb82ab3fb986db348cb44db79d1727dfea59cf25fa8fb88d1628971877d87b47"
+  },
+  "rawLog": {
+    "path": ".build/renewal-discovery/integrated-renewal-selection-gates/renewal-guards-v1.log",
+    "bytes": 10363,
+    "sha256": "4570eee1d8c03a62deb874d5151978348531526b5c22ab550aceb144ec29c1b1"
+  },
+  "actualOutcome": {
+    "portableMethods": 41,
+    "failedAssertions": 1,
+    "errors": 1
+  },
+  "diagnosis": [
+    "New guard branch regex sliced 100 characters before INTEGRATED_TESTS and missed the if-line; the focused branch now comes from full matching if-blocks.",
+    "Duplicate immutable phase evidence raises FileExistsError from the existing exclusive JSON writer; the guard now expects that actual exception."
+  ],
+  "productionFailure": false,
+  "supersededBy": {
+    "path": ".build/renewal-discovery/integrated-renewal-selection-gates/portable-v2.json",
+    "bytes": 1621,
+    "sha256": "dfeec679a8d15daae2d7bd92983f1f2950ac30c784cbc5ed715edf0d2555f28c"
+  }
+}

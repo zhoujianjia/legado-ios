@@ -1,0 +1,93 @@
+name: Local Reader Renewal Probe Tests
+
+on:
+  push:
+    tags:
+      - 'reader-renewal-*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reader-renewal-probe-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  probe:
+    runs-on: macos-15
+    timeout-minutes: 95
+    env:
+      LEGADO_RUNTIME_SOURCE_ONLY: '1'
+      YUEDU_RENEWAL_SELECTION: integratedrenewal
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Verify the exact source tag and portable evidence guards
+        run: |
+          mkdir -p .build/ci-logs
+          python -B scripts/reader-experience/renewal-probe-tools.py validate-tag
+          python -B scripts/reader-experience/test-smoke-tools.py -v 2>&1 | tee .build/ci-logs/reader-renewal-existing-guards.log
+          python -B scripts/reader-experience/test-renewal-probe-tools.py -v 2>&1 | tee .build/ci-logs/reader-renewal-guards.log
+          python -B scripts/reader-experience/test-inspect-renewal-report.py -v 2>&1 | tee .build/ci-logs/reader-renewal-report-inspector-guards.log
+          python -B scripts/reader-experience/test-original-api-package-tools.py -v 2>&1 | tee .build/ci-logs/reader-renewal-original-api-guards.log
+          ruby scripts/check_localizations.rb
+          bash -n scripts/reader-experience/renewal-probe-tests.sh
+          bash -n scripts/reader-experience/original-api-package-tests.sh
+      - name: Select the installed toolchain and Simulator
+        id: toolchain
+        run: |
+          export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
+          export YUEDU_DEST="$(bash scripts/sim.sh dest)"
+          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+          echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
+          xcodebuild -version 2>&1 | tee .build/ci-logs/reader-renewal-xcode.log
+      - name: Execute 140 integrated owned native fixture methods
+        run: bash scripts/reader-experience/renewal-probe-tests.sh 2>&1 | tee .build/ci-logs/reader-renewal.log
+      - name: Execute ten independent source-only macOS package XCTest cases
+        if: ${{ !cancelled() && steps.toolchain.outcome == 'success' && env.YUEDU_RENEWAL_SELECTION == 'controlledsigning' }}
+        run: bash scripts/reader-experience/original-api-package-tests.sh 2>&1 | tee .build/ci-logs/reader-renewal-original-api.log
+      - name: Preserve independent package XCTest evidence without build products
+        if: ${{ always() && env.YUEDU_RENEWAL_SELECTION == 'controlledsigning' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: reader-renewal-original-api-evidence
+          path: |
+            .build/reader-renewal-original-api/
+            .build/ci-logs/reader-renewal-original-api*.log
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
+      - name: Preserve native evidence and allowlisted public SDK fixture outputs
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: reader-renewal-probe-evidence
+          path: |
+            .build/reader-renewal-probe/
+            .build/ci-logs/reader-renewal*.log
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
+      - name: State the limited acceptance boundary
+        if: always()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
+          This source-only Debug Simulator workflow fixes YUEDU_RENEWAL_SELECTION=integratedrenewal and executes exactly 140 unique qualified native methods in one independently checked xcresult: boundmaterials78 union controlledsigning23 plus nine App owner, twelve BookChapterStorage methods excluding its benchmark, eleven controlled whole-package and seven authenticated-installation methods. Exact qualified identities, zero failures and zero skips are required. Historical all, replacement, implementation, signature, cryptography, sealedmaterials, boundmaterials and controlledsigning mode contracts and budgets remain unchanged; overlaps count once in this selected union, not as additional acceptances. One 2700-second cold shared App/test-target limit and one xcresult are used. Compilation, a timeout or missing results never establish passing methods.
+
+          After selecting the installed DEVELOPER_DIR and before xcodebuild, the fixed source-bound producer actually invokes xcrun clang for owned device arm64 main/extensions/framework binaries and codesign with a short-lived synthetic certificate identity in one temporary Keychain. Actual original CodeDirectory CMS is independently checked against the explicit owned root. Ad-hoc signatures cannot satisfy the original CMS gate. Private keys and PKCS12 bytes remain in memory or that temporary Keychain and never enter artifacts. No Apple account, real pairing record, user IPA or private source is used.
+          The generated public JSON becomes one fixed untracked XCTest resource without modifying Swift sources. Producer sources/commands, actual public output lengths/SHA256s, source-resource hashes before/after execution, the built XCTest resource hash and the actual loader's public runtime hash marker must all agree. The selected SDK-produced package method must actually pass within the exact 140. Producer output alone or a fixture definition cannot establish platform acceptance. Raw output stays outside the always-uploaded work directory; only allowlisted, hash-checked public Mach-O/CMS/certificate/owned-IPA outputs are copied into the evidence artifact. No delivered App binary or distribution IPA is uploaded.
+
+          The native union rechecks affected cryptography/resource/profile/inventory inputs, the actual software-Keychain lifecycle, scoped owned archive cancellation/drain, complete controlled profile/resource/nested/Mach-O package composition, App book/chapter persistence owners and authenticated local TLS/AFC/installation fixture protocols. Typed unsupported layouts and unresolved system/Apple policy remain explicit. Generic explicit anchors do not establish Apple signing/provisioning authority, full entitlement authorization, device/account eligibility or installation permission. Same-job owned SDK fixture generation is separate from delivered App acceptance.
+          App state fixtures and chapter regressions do not execute the original Kotlin/JNI WebBook route or establish a delivered persistence migration. The eleven whole-package methods and seven local authenticated-installation methods do not establish an iPhone installation, retained user data, cold launch, unattended renewal or companion-free operation. Real installation authorization and package-wide architecture/policy coverage remain unfinished. No unchanged diagnostic unit/discovery/replacement/UI suite runs and no diagnostic QueryType/RemotePairing operation is invoked.
+
+          No SwiftPM run is triggered by integratedrenewal. The earlier ten macOS Swift Package XCTest cases belong to their separate source-bound checkpoint and result; they never enter the 140 native count. The historical controlledsigning workflow condition keeps that independent runner available for its original mode without replaying it in this stage. No JVM payload is built, uploaded or executed.
+          Exact source hashes, approved Info/project overlays, synthetic cloud configuration, built local-mode metadata, logs and xcresult are retained. The actual built Info.plist still preserves Calibre and exactly one RemotePairing Bonjour service; privacy metadata/localizations remain source-matched. Computer-powered-off and absent-companion conditions remain unmeasured. A package helper, JSON journal, TLS fixture or version Lookup never proves automatic self-renewal.
+          TEXT

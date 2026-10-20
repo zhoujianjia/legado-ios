@@ -25,6 +25,8 @@ enum SelfRenewalSDKOwnedPackageFixture {
               Data(SHA256.hash(data: payload.archive)).map({ String(format: "%02x", $0) }).joined() == payload.archiveSHA256 else {
             throw CocoaError(.coderInvalidValue)
         }
+        let resourceSHA256 = Data(SHA256.hash(data: raw)).map({ String(format: "%02x", $0) }).joined()
+        print("YUEDU_SDK_OWNED_FIXTURE resourceSHA256=\(resourceSHA256) resourceBytes=\(raw.count) archiveSHA256=\(payload.archiveSHA256) archiveBytes=\(payload.archive.count)")
         return Input(archive: payload.archive, anchor: payload.anchor, date: Date(timeIntervalSince1970: TimeInterval(payload.verificationEpochSeconds)))
     }
 }

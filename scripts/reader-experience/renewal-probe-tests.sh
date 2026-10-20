@@ -6,8 +6,8 @@ REPO_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
 WORK="$REPO_DIR/.build/reader-renewal-probe"
 export YUEDU_RENEWAL_SELECTION=${YUEDU_RENEWAL_SELECTION-all}
 case "$YUEDU_RENEWAL_SELECTION" in
-  all|replacement|implementation|signature|cryptography|sealedmaterials|boundmaterials|controlledsigning) ;;
-  *) echo 'YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature, cryptography, sealedmaterials, boundmaterials or controlledsigning.' >&2; exit 2 ;;
+  all|replacement|implementation|signature|cryptography|sealedmaterials|boundmaterials|controlledsigning|integratedrenewal) ;;
+  *) echo 'YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature, cryptography, sealedmaterials, boundmaterials, controlledsigning or integratedrenewal.' >&2; exit 2 ;;
 esac
 [[ $(uname -s) == Darwin ]] || { echo 'Renewal probe tests require macOS/Xcode.' >&2; exit 2; }
 mkdir -p "$WORK"
@@ -16,6 +16,14 @@ export YUEDU_DEST=${YUEDU_DEST:-$(bash "$REPO_DIR/scripts/sim.sh" dest)}
 export LEGADO_RUNTIME_SOURCE_ONLY=1
 python3 "$SCRIPT_DIR/renewal-probe-tools.py" prepare --work "$WORK" > "$WORK/prepare.log"
 xcodebuild -version > "$WORK/xcode-version.log"
+if [[ $YUEDU_RENEWAL_SELECTION == integratedrenewal ]]; then
+  # Raw producer output stays outside the always-uploaded evidence directory.
+  # Only the verified allowlisted public outputs enter the artifact.
+  SDK_PRODUCED="$REPO_DIR/.build/reader-renewal-sdk-produced-public"
+  python3 "$SCRIPT_DIR/owned-package-fixture/generate-sdk-owned-package.py" --output "$SDK_PRODUCED" > "$WORK/sdk-producer.log"
+  python3 "$SCRIPT_DIR/renewal-probe-tools.py" stage-sdk-fixture --work "$WORK" --produced "$SDK_PRODUCED" > "$WORK/sdk-stage.log"
+  python3 "$SCRIPT_DIR/renewal-probe-tools.py" verify-sdk-fixture --work "$WORK" --phase before-build > "$WORK/sdk-before-build.log"
+fi
 xcrun simctl bootstatus "${YUEDU_DEST#id=}" -b > "$WORK/boot-status.log" 2>&1
 ARGS=(
   -configuration Debug -onlyUsePackageVersionsFromResolvedFile
@@ -51,7 +59,7 @@ fi
 # source-bound 4ada44e failure reached ongoing cold compilation at the old 900s
 # cap without a test verdict. Match the existing first unit invocation budget;
 # all mode already paid that cold-build cost and keeps its 900s warm limit.
-if [[ $YUEDU_RENEWAL_SELECTION != signature && $YUEDU_RENEWAL_SELECTION != cryptography && $YUEDU_RENEWAL_SELECTION != sealedmaterials && $YUEDU_RENEWAL_SELECTION != boundmaterials && $YUEDU_RENEWAL_SELECTION != controlledsigning ]]; then
+if [[ $YUEDU_RENEWAL_SELECTION != signature && $YUEDU_RENEWAL_SELECTION != cryptography && $YUEDU_RENEWAL_SELECTION != sealedmaterials && $YUEDU_RENEWAL_SELECTION != boundmaterials && $YUEDU_RENEWAL_SELECTION != controlledsigning && $YUEDU_RENEWAL_SELECTION != integratedrenewal ]]; then
   REPLACEMENT_TIMEOUT=2700
   if [[ $YUEDU_RENEWAL_SELECTION == all ]]; then REPLACEMENT_TIMEOUT=900; fi
   bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/replacement-tests.log" -t "$REPLACEMENT_TIMEOUT" -- \
@@ -146,6 +154,49 @@ if [[ $YUEDU_RENEWAL_SELECTION == controlledsigning ]]; then
   python3 "$SCRIPT_DIR/renewal-probe-tools.py" verify-tests --group controlledsigning \
     --summary "$WORK/controlledsigning-summary.json" --tests "$WORK/controlledsigning-tests.json"
 fi
+if [[ $YUEDU_RENEWAL_SELECTION == integratedrenewal ]]; then
+  # Exact affected union, one cold build/result; no historical replay or SPM.
+  INTEGRATED_TESTS=(
+    -only-testing:'yuedu appTests/BookChapterStorageTests/audiobookPlayerSeesTheTableOfContents'
+    -only-testing:'yuedu appTests/BookChapterStorageTests/cachedChapterMarkRewritesOnlyItsBook'
+    -only-testing:'yuedu appTests/BookChapterStorageTests/deletingBookDeletesItsTableOfContents'
+    -only-testing:'yuedu appTests/BookChapterStorageTests/inlineListFromOlderBuildWinsOverStaleFile'
+    -only-testing:'yuedu appTests/BookChapterStorageTests/inlineShelfOpensCompleteAndMovesListsOut'
+    -only-testing:'yuedu appTests/BookChapterStorageTests/positionSaveLeavesTablesOfContentsUntouched'
+    -only-testing:'yuedu appTests/BookChapterStorageTests/readingRecordKeepsItsListOutsideItsFile'
+    -only-testing:'yuedu appTests/BookChapterStorageTests/recordsCarrySummaryAndOpenedBookCarriesList'
+    -only-testing:'yuedu appTests/BookChapterStorageTests/restoredShelfRegainsSummaryFromStoredLists'
+    -only-testing:'yuedu appTests/BookChapterStorageTests/shelfFileCarriesNoTableOfContents'
+    -only-testing:'yuedu appTests/BookChapterStorageTests/syncLeavesTableOfContentsLocal'
+    -only-testing:'yuedu appTests/BookChapterStorageTests/unreadableShelfLeavesTablesOfContentsAlone'
+    -only-testing:'yuedu appTests/LegadoBookStateOwnerTests'
+    -only-testing:'yuedu appTests/LegadoChapterOwnerPersistenceTests'
+    -only-testing:'yuedu appTests/LegadoPersistentStateHostTests'
+    -only-testing:'yuedu appTests/SelfRenewalApplicationMaterialVerifierTests'
+    -only-testing:'yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests'
+    -only-testing:'yuedu appTests/SelfRenewalCMSVerifierTests'
+    -only-testing:'yuedu appTests/SelfRenewalCodeDirectoryHashVerifierTests'
+    -only-testing:'yuedu appTests/SelfRenewalControlledMachOSignerTests'
+    -only-testing:'yuedu appTests/SelfRenewalControlledPackageSignerTests'
+    -only-testing:'yuedu appTests/SelfRenewalIPAUnpackerTests'
+    -only-testing:'yuedu appTests/SelfRenewalMachOSignatureReaderTests'
+    -only-testing:'yuedu appTests/SelfRenewalMaterialInventoryTests'
+    -only-testing:'yuedu appTests/SelfRenewalModernProfileVerifierTests'
+    -only-testing:'yuedu appTests/SelfRenewalNestedCodeRequirementsVerifierTests'
+    -only-testing:'yuedu appTests/SelfRenewalProvisioningProfileVerifierTests'
+    -only-testing:'yuedu appTests/SelfRenewalResourceSealVerifierTests'
+    -only-testing:'yuedu appTests/SelfRenewalSignedCodeVerifierTests'
+    -only-testing:'yuedu appTests/SelfRenewalSigningMaterialVaultTests'
+  )
+  bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/integratedrenewal-tests.log" -t 2700 -- "${ARGS[@]}" -resultBundlePath "$WORK/integratedrenewal.xcresult" "${INTEGRATED_TESTS[@]}"
+  xcrun xcresulttool get test-results summary --path "$WORK/integratedrenewal.xcresult" > "$WORK/integratedrenewal-summary.json"
+  xcrun xcresulttool get test-results tests --path "$WORK/integratedrenewal.xcresult" > "$WORK/integratedrenewal-tests.json"
+  python3 "$SCRIPT_DIR/renewal-probe-tools.py" verify-tests --group integratedrenewal --summary "$WORK/integratedrenewal-summary.json" --tests "$WORK/integratedrenewal-tests.json"
+  # Test-action build settings only: no second test or compile invocation.
+  xcodebuild -project "$REPO_DIR/Yuedu-Reader.xcodeproj" -scheme Yuedu-Reader -destination "$YUEDU_DEST" "${ARGS[@]}" -showBuildSettings -json test > "$WORK/sdk-test-build-settings.json"
+  python3 "$SCRIPT_DIR/renewal-probe-tools.py" verify-sdk-fixture --work "$WORK" --phase after-tests > "$WORK/sdk-after-tests.log"
+fi
+
 if [[ $YUEDU_RENEWAL_SELECTION == all ]]; then
   bash "$REPO_DIR/scripts/xctest.sh" -l "$WORK/ui-tests.log" -t 1200 -- \
     "${ARGS[@]}" -resultBundlePath "$WORK/ui.xcresult" \

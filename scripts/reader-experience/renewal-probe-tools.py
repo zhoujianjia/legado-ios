@@ -5,6 +5,7 @@ Selected owned fixture evidence does not establish iPhone service reachability,
 installation or unattended self-renewal. Package XCTest evidence is independent.
 """
 import argparse
+import base64
 import hashlib
 import importlib.util
 import json
@@ -13,6 +14,7 @@ from pathlib import Path
 import plistlib
 import re
 import sys
+import struct
 
 
 HERE = Path(__file__).resolve().parent
@@ -38,6 +40,16 @@ PERSISTENT_STATE_SUITE = "LegadoPersistentStateHostTests"
 IPA_SUITE = "SelfRenewalIPAUnpackerTests"
 VAULT_SUITE = "SelfRenewalSigningMaterialVaultTests"
 CONTROLLED_SIGNER_SUITE = "SelfRenewalControlledMachOSignerTests"
+PACKAGE_SIGNER_SUITE = "SelfRenewalControlledPackageSignerTests"
+AUTH_INSTALL_SUITE = "SelfRenewalAuthenticatedInstallationClientTests"
+BOOK_OWNER_SUITE = "LegadoBookStateOwnerTests"
+CHAPTER_OWNER_SUITE = "LegadoChapterOwnerPersistenceTests"
+BOOK_STORAGE_SUITE = "BookChapterStorageTests"
+SDK_REQUIRED_CASE = PACKAGE_SIGNER_SUITE + "/signsSDKProducedMainExtensionsAndFrameworkInSameJob"
+SDK_RESOURCE = "Tests/iOS/yuedu appTests/owned-sdk-package.json"
+SDK_TOOL_ROOT = "scripts/reader-experience/owned-package-fixture/"
+SDK_TOOL_NAMES = ("generate-sdk-owned-package.py", "ImportOwnedIdentity.swift", "main.c", "extension.c", "framework.c")
+SDK_MARKER = "YUEDU_SDK_OWNED_FIXTURE"
 LANGUAGES = ("zh-Hant", "zh-Hans", "en", "ja", "ko")
 BONJOUR_SERVICES = ("_calibresmartdeviceapp._tcp", "_remotepairing._tcp")
 USAGE_KEY = "NSLocalNetworkUsageDescription"
@@ -224,6 +236,63 @@ EXPECTED_CASES["controlledsigning"] = {
         "cancelsAndEnforcesReadAndCapacityBudgets",
     )
 }
+# One exact native union: old overlapping groups are not separate acceptances.
+INTEGRATED_ADDITIONAL_CASES = {
+    'LegadoChapterOwnerPersistenceTests': (
+        'concurrentChapterMutationUsesOnePersistenceOwner',
+        'chapterVariableCasIsDurableAndKeepsFailedWritesInvisible',
+        'strictFlushFailurePreservesPreviousFileAndCanRetry',
+        'strictFlushTargetsOnlyTheBoundBook',
+    ),
+    'LegadoBookStateOwnerTests': (
+        'hostCommitUsesOriginalChapterFileAndRestart',
+        'staleTocAndTaskCancellationRejectOldHostProofs',
+        'rejectsUnmappedIdentityAndUnsupportedTransactions',
+        'corruptAndUnreadableChapterOwnersRemainErrors',
+        'hostWriteFailureAndGenerationRevocationPreserveOldState',
+    ),
+    'BookChapterStorageTests': (
+        'shelfFileCarriesNoTableOfContents',
+        'positionSaveLeavesTablesOfContentsUntouched',
+        'cachedChapterMarkRewritesOnlyItsBook',
+        'inlineShelfOpensCompleteAndMovesListsOut',
+        'inlineListFromOlderBuildWinsOverStaleFile',
+        'deletingBookDeletesItsTableOfContents',
+        'recordsCarrySummaryAndOpenedBookCarriesList',
+        'readingRecordKeepsItsListOutsideItsFile',
+        'syncLeavesTableOfContentsLocal',
+        'restoredShelfRegainsSummaryFromStoredLists',
+        'unreadableShelfLeavesTablesOfContentsAlone',
+        'audiobookPlayerSeesTheTableOfContents',
+    ),
+    'SelfRenewalControlledPackageSignerTests': (
+        'signsOwnedThreeBundlePackageAndReverifiesActualArchiveBytes',
+        'bindsExactRawCMSProfileBytesToReopenedLease',
+        'rejectsRevokedAndStaleLeasesWithoutChangingInput',
+        'rejectsCancelledPackageWithoutChangingInput',
+        'rejectsFalseAndUnresolvedOriginalNestedRequirements',
+        'rejectsDifferentActualGroupsWithinSameVerifiedProfileAllowance',
+        'preservesOwnedFilesOnWrongPreimageAndInvalidatesEscapedScope',
+        'updatesVerifiedResourceSealsWithoutWideningRulesOrRequirements',
+        'signsSDKProducedMainExtensionsAndFrameworkInSameJob',
+        'resignsDynamicSymbolTablesAndDylibAtStableOffsets',
+        'rejectsDynamicSymbolTableBoundsAndMissingSymbolTable',
+    ),
+    'SelfRenewalAuthenticatedInstallationClientTests': (
+        'uploadsRealTLSChunksAndRequiresCompleteLookupCleanupAndStop',
+        'rejectsActualWrongDeviceHostAndExpiredTLSCertificates',
+        'rejectsInvalidSessionServicePortsAndPlaintextDowngrades',
+        'rejectsActualAFCSequenceTruncationErrorsAndChangedArchiveDigest',
+        'requiresTerminalCompleteAndExactPostUpgradeLookupIdentity',
+        'cancellationWakesActualStalledTLSHandshakeWithoutLateWrites',
+        'enforcesActualFrameProgressDeadlineAndArchiveBudgets',
+    ),
+}
+EXPECTED_CASES["integratedrenewal"] = EXPECTED_CASES["boundmaterials"] | EXPECTED_CASES["controlledsigning"] | {
+    suite + "/" + method for suite, methods in INTEGRATED_ADDITIONAL_CASES.items() for method in methods
+}
+assert len(EXPECTED_CASES["integratedrenewal"]) == 140
+
 SELECTION_GROUPS = {
     # Preserve the historical all-mode contract; new implementation tests have
     # an explicit independent selection rather than silently widening it.
@@ -235,6 +304,7 @@ SELECTION_GROUPS = {
     "sealedmaterials": ("sealedmaterials",),
     "boundmaterials": ("boundmaterials",),
     "controlledsigning": ("controlledsigning",),
+    "integratedrenewal": ("integratedrenewal",),
 }
 SOURCE_INPUTS = (
     "Modules/Services/Diagnostics/SelfRenewalTransportProbe.swift",
@@ -294,6 +364,36 @@ SOURCE_INPUTS = (
     "Tests/iOS/yuedu appTests/SelfRenewalControlledSigningFixture.swift",
     "Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift",
     "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+    'Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift',
+    'Modules/Services/SelfRenewal/SelfRenewalPackageResourceUpdater.swift',
+    'Tests/iOS/yuedu appTests/SelfRenewalControlledPackageSignerTests.swift',
+    'Tests/iOS/yuedu appTests/SelfRenewalControlledPackageFixture.swift',
+    'Tests/iOS/yuedu appTests/SelfRenewalSDKOwnedPackageFixture.swift',
+    'Modules/Services/SelfRenewal/SelfRenewalAuthenticatedDeviceStream.swift',
+    'Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift',
+    'Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift',
+    'Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift',
+    'Modules/Services/LibraryStore/BookChapterStore.swift',
+    'Modules/Services/LibraryStore/BookStore.swift',
+    'Modules/Services/LibraryStore/OriginalRuntimeCommitCancellation.swift',
+    'Modules/Services/Online/LegadoBookStateOwner.swift',
+    'Modules/Services/Online/OnlineReadingPipeline.swift',
+    'Tests/iOS/yuedu appTests/LegadoChapterOwnerPersistenceTests.swift',
+    'Tests/iOS/yuedu appTests/LegadoBookStateOwnerTests.swift',
+    'Tests/iOS/yuedu appTests/BookChapterStorageTests.swift',
+    'Modules/Services/LibraryStore/Models.swift',
+    'Modules/Core/BookSource/BookSource.swift',
+    'Modules/Core/BookSource/SourcePerfTrace.swift',
+    'Modules/Core/TTS/AudiobookPlayer.swift',
+    'Modules/Services/Online/ChapterCacheRepository.swift',
+    'Yuedu-Reader.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved',
+    'scripts/reader-experience/test-renewal-probe-tools.py',
+    'scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py',
+    'scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift',
+    'scripts/reader-experience/owned-package-fixture/main.c',
+    'scripts/reader-experience/owned-package-fixture/extension.c',
+    'scripts/reader-experience/owned-package-fixture/framework.c',
+    'scripts/reader-experience/owned-package-fixture/generate-independent-package-fixtures.py',
     "Tests/iOS-UI/SelfRenewalProbeUITests.swift",
     "Info.plist",
     "Yuedu-Reader.xcodeproj/project.pbxproj",
@@ -319,7 +419,7 @@ def validate_tag():
 def selection_mode():
     mode = os.environ.get("YUEDU_RENEWAL_SELECTION", "all")
     if mode not in SELECTION_GROUPS:
-        raise ValueError("YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature, cryptography, sealedmaterials, boundmaterials or controlledsigning")
+        raise ValueError("YUEDU_RENEWAL_SELECTION must be all, replacement, implementation, signature, cryptography, sealedmaterials, boundmaterials, controlledsigning or integratedrenewal")
     return mode
 
 
@@ -349,6 +449,242 @@ def source_inputs(overlays=None):
                 raise ValueError("Probe source input differs from checked-out HEAD: " + path)
         records.append({"path": path, "sha256": hashlib.sha256(original).hexdigest(), "bytes": len(original)})
     return records
+
+
+def _sdk_output_names():
+    names = {"openssl-version.log", "xcode-version.log", "clang-version.log",
+             "root.cert.der", "root.cert.pem", "leaf.cert.der", "leaf.cert.pem",
+             "owned-certificate-chain.log", "import-tool-compile.log", "framework-clang.log",
+             "owned-sdk-package.ipa", "owned-sdk-package.json"}
+    for identifier in ("test.owned.reader", "test.owned.reader.share", "test.owned.reader.widget", "test.owned.reader.framework"):
+        names.add(identifier + ".codesign.log")
+        if not identifier.endswith(".framework"): names.add(identifier + ".clang.log")
+    for role in ("main", "share", "widget", "framework"):
+        names.update(role + suffix for suffix in (".macho", ".primary.cd", ".detached.cms", ".verified.cd", ".otool.log", ".original-cms.log"))
+    return names
+
+
+def _bounded_fact(path, maximum=67_108_864):
+    path = smoke.config.checked_path(path)
+    if not path.is_file() or path.is_symlink() or path.stat().st_nlink != 1:
+        raise ValueError("SDK fixture input must be one regular owned file")
+    if path.stat().st_size > maximum:
+        raise ValueError("SDK fixture file exceeds fixed budget")
+    raw = path.read_bytes()
+    if len(raw) > maximum:
+        raise ValueError("SDK fixture file exceeds fixed budget")
+    return raw, {"bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}
+
+
+def _read_sdk_json(path):
+    raw, fact = _bounded_fact(path, 8_388_608)
+    value = json.loads(raw)
+    if not isinstance(value, dict): raise ValueError("SDK fixture JSON must be an object")
+    return value, fact
+
+
+def _sdk_macho(raw, role):
+    if len(raw) < 32 or len(raw) > 67_108_864:
+        raise ValueError("Invalid SDK Mach-O byte count")
+    magic, cpu, subtype, kind, count, commands_size, _, _ = struct.unpack_from("<8I", raw)
+    if (magic, cpu, subtype, kind) != (0xFEEDFACF, 0x100000C, 0, 6 if role == "framework" else 2):
+        raise ValueError("SDK fixture architecture/file type mismatch")
+    if not 0 < count <= 2048 or commands_size > min(len(raw) - 32, 1_048_576):
+        raise ValueError("SDK fixture command budget")
+    cursor = 32; commands = []; signature = None
+    for _ in range(count):
+        if cursor + 8 > 32 + commands_size: raise ValueError("Truncated SDK command")
+        command, size = struct.unpack_from("<II", raw, cursor)
+        if size < 8 or size > 32 + commands_size - cursor: raise ValueError("Malformed SDK command")
+        commands.append(command)
+        if command == 0xB and size != 80: raise ValueError("Malformed SDK DYSYMTAB")
+        if command == 0x1D:
+            if size != 16 or signature is not None: raise ValueError("Duplicate/malformed SDK signature")
+            signature = struct.unpack_from("<II", raw, cursor + 8)
+        cursor += size
+    if cursor != 32 + commands_size or 0xB not in commands or signature is None:
+        raise ValueError("Actual SDK fixture must contain DYSYMTAB and a signature")
+    offset, size = signature
+    if offset < cursor or size < 12 or offset + size != len(raw):
+        raise ValueError("Actual SDK fixture signature must be terminal")
+    magic, total, count = struct.unpack_from(">III", raw, offset)
+    if magic != 0xFADE0CC0 or not 0 < count <= 64 or 12 + 8 * count > total or total > size:
+        raise ValueError("Malformed SDK SuperBlob")
+    blobs = {}
+    for index in range(count):
+        slot, at = struct.unpack_from(">II", raw, offset + 12 + 8 * index)
+        if slot in blobs or at < 12 + 8 * count or at + 8 > total: raise ValueError("Invalid SDK blob index")
+        blob_size = struct.unpack_from(">I", raw, offset + at + 4)[0]
+        if blob_size < 8 or blob_size > total - at: raise ValueError("Invalid SDK blob range")
+        blobs[slot] = raw[offset + at:offset + at + blob_size]
+    primary, wrapper = blobs.get(0), blobs.get(0x10000)
+    if (primary is None or len(primary) < 44 or struct.unpack_from(">I", primary)[0] != 0xFADE0C02
+            or struct.unpack_from(">I", primary, 12)[0] & 2 or wrapper is None or len(wrapper) <= 8
+            or struct.unpack_from(">I", wrapper)[0] != 0xFADE0B01):
+        raise ValueError("Actual SDK original must carry non-adHoc CodeDirectory and CMS")
+    return commands, kind, primary, wrapper[8:]
+
+
+def _verify_sdk_public(directory, inputs):
+    directory = smoke.config.checked_path(directory)
+    manifest, manifest_fact = _read_sdk_json(directory / "sdk-produced-fixture-manifest.json")
+    names = _sdk_output_names()
+    if {path.name for path in directory.iterdir()} != names | {"sdk-produced-fixture-manifest.json"}:
+        raise ValueError("SDK artifact directory contains undeclared/non-public files")
+    if (type(manifest.get("schema")) is not int or manifest["schema"] != 1
+            or type(manifest.get("privateKeyFilesOutsideKeychain")) is not int or manifest["privateKeyFilesOutsideKeychain"] != 0
+            or type(manifest.get("privateMaterialArtifacts")) is not int or manifest["privateMaterialArtifacts"] != 0 or manifest.get("temporaryOwnedKeychainDeleted") is not True
+            or manifest.get("realAppleAccountUsed") is not False):
+        raise ValueError("SDK producer private/owned scope is not established")
+    expected_sources = []
+    for name in SDK_TOOL_NAMES:
+        entry = next((item for item in inputs if item["path"] == SDK_TOOL_ROOT + name), None)
+        if entry is None: raise ValueError("SDK producer source missing from source binding")
+        expected_sources.append({"path": name, "bytes": entry["bytes"], "sha256": entry["sha256"]})
+    if manifest.get("sourceInputs") != expected_sources:
+        raise ValueError("SDK producer source closure differs from this source tag")
+    outputs = manifest.get("publicOutputs")
+    if not isinstance(outputs, list) or len(outputs) != len(names):
+        raise ValueError("SDK public output inventory differs")
+    declared = {}
+    for entry in outputs:
+        if not isinstance(entry, dict) or entry.get("path") not in names or entry["path"] in declared:
+            raise ValueError("SDK public output path must be unique and allowlisted")
+        raw, fact = _bounded_fact(directory / entry["path"])
+        if entry != {"path": entry["path"], **fact}: raise ValueError("SDK generated output hash/length differs")
+        if b"-----BEGIN PRIVATE KEY-----" in raw or b"-----BEGIN RSA PRIVATE KEY-----" in raw or b"-----BEGIN ENCRYPTED PRIVATE KEY-----" in raw:
+            raise ValueError("Private material cannot enter SDK fixture artifacts")
+        declared[entry["path"]] = fact
+    if sum(fact["bytes"] for fact in declared.values()) > 134_217_728:
+        raise ValueError("SDK public output total budget")
+    commands = manifest.get("commands")
+    if not isinstance(commands, list) or not commands: raise ValueError("Missing actual SDK command evidence")
+    for command in commands:
+        if not isinstance(command, dict) or type(command.get("exitCode")) is not int or command["exitCode"] != 0:
+            raise ValueError("SDK command did not actually finish successfully")
+        argv = command.get("argv")
+        if not isinstance(argv, list) or not argv or any(not isinstance(part, str) for part in argv):
+            raise ValueError("Malformed SDK command evidence")
+        if "set-key-partition-list" in argv and ("-k" not in argv or argv.index("-k") + 1 >= len(argv) or argv[argv.index("-k") + 1] != "<random-owned-password>"):
+            raise ValueError("SDK command evidence exposed an owned password")
+    has = lambda predicate: sum(predicate(command["argv"]) for command in commands)
+    if (has(lambda argv: "clang" in argv) < 4 or has(lambda argv: argv[0] == "codesign" and "--sign" in argv) != 4
+            or has(lambda argv: "cms" in argv and "-verify" in argv) != 4
+            or has(lambda argv: argv[0] == "security" and "delete-keychain" in argv) != 1):
+        raise ValueError("Actual clang/codesign/CMS/Keychain cleanup command evidence is incomplete")
+    rows = manifest.get("actualSDKProducedMachOs")
+    if not isinstance(rows, list) or len(rows) != 4 or {row.get("role") for row in rows if isinstance(row, dict)} != {"main", "share", "widget", "framework"}:
+        raise ValueError("Actual SDK main/extension/framework set differs")
+    for row in rows:
+        role = row["role"]; raw, fact = _bounded_fact(directory / (role + ".macho"))
+        actual_commands, kind, primary, cms = _sdk_macho(raw, role)
+        if (row.get("bytes") != fact["bytes"] or row.get("sha256") != fact["sha256"]
+                or row.get("loadCommands") != actual_commands or row.get("fileType") != kind
+                or row.get("originalDetachedCMSActuallyVerified") is not True
+                or (directory / (role + ".primary.cd")).read_bytes() != primary
+                or (directory / (role + ".verified.cd")).read_bytes() != primary
+                or (directory / (role + ".detached.cms")).read_bytes() != cms):
+            raise ValueError("Actual SDK raw Mach-O/CD/CMS and verifier output differ")
+    payload, resource_fact = _read_sdk_json(directory / "owned-sdk-package.json")
+    try:
+        archive = base64.b64decode(payload["archive"], validate=True)
+        anchor = base64.b64decode(payload["anchor"], validate=True)
+    except (KeyError, ValueError, TypeError) as error:
+        raise ValueError("Malformed generated SDK resource") from error
+    archive_fact = {"bytes": len(archive), "sha256": hashlib.sha256(archive).hexdigest()}
+    if (payload.get("schema") != 1 or not 0 < len(archive) <= 4_194_304 or not 0 < len(anchor) <= 65_536
+            or type(payload.get("verificationEpochSeconds")) is not int
+            or payload.get("archiveSHA256") != archive_fact["sha256"]
+            or payload.get("actualSDKProducedMachOs") != rows
+            or declared["owned-sdk-package.ipa"] != archive_fact
+            or manifest.get("archiveSHA256") != archive_fact["sha256"] or manifest.get("archiveBytes") != len(archive)
+            or anchor != (directory / "root.cert.der").read_bytes()
+            or archive != (directory / "owned-sdk-package.ipa").read_bytes()):
+        raise ValueError("Generated SDK resource is not bound to actual public IPA bytes")
+    return {"manifest": manifest_fact, "publicOutputs": declared, "producerSourceInputs": expected_sources,
+            "resource": {"path": SDK_RESOURCE, **resource_fact}, "archive": archive_fact,
+            "actualSDKProducedMachOs": rows}
+
+
+def stage_sdk_fixture(work, produced):
+    if selection_mode() != "integratedrenewal": raise ValueError("SDK fixture generation belongs only to integratedrenewal")
+    require_source_only()
+    inputs = smoke.read_json(work / "source-inputs.json")
+    if inputs.get("selectionMode") != "integratedrenewal" or inputs.get("sourceCommit") != validate_tag():
+        raise ValueError("SDK fixture preparation source/mode mismatch")
+    developer = os.environ.get("DEVELOPER_DIR")
+    if not isinstance(developer, str) or not developer: raise ValueError("SDK producer must use selected DEVELOPER_DIR")
+    verified = _verify_sdk_public(produced, inputs["sourceInputs"])
+    target = smoke.config.checked_path(smoke.REPO / SDK_RESOURCE)
+    if target.exists(): raise ValueError("Refusing to replace existing SDK test resource")
+    artifact = smoke.config.checked_path(work / "sdk-produced-public")
+    if artifact.exists(): raise ValueError("Refusing to overwrite previous public SDK evidence")
+    artifact.mkdir(parents=True)
+    for name in sorted(_sdk_output_names() | {"sdk-produced-fixture-manifest.json"}):
+        with (artifact / name).open("xb") as stream: stream.write((produced / name).read_bytes())
+    _verify_sdk_public(artifact, inputs["sourceInputs"])
+    with target.open("xb") as stream: stream.write((artifact / "owned-sdk-package.json").read_bytes())
+    target.chmod(0o444)
+    record = {"schemaVersion": 1, "sourceCommit": inputs["sourceCommit"], "selectionMode": "integratedrenewal",
+              "developerDirectory": developer, **verified}
+    smoke.config.write_new_json(work / "sdk-fixture-binding.json", record)
+    return record
+
+
+def _sdk_runtime_markers(path):
+    if path.stat().st_size > 268_435_456: raise ValueError("SDK native log budget")
+    expression = re.compile(re.escape(SDK_MARKER) + r" resourceSHA256=([0-9a-f]{64}) resourceBytes=([0-9]+) archiveSHA256=([0-9a-f]{64}) archiveBytes=([0-9]+)")
+    values = []
+    with path.open(encoding="utf-8", errors="replace") as stream:
+        for line in stream:
+            if SDK_MARKER not in line: continue
+            match = expression.search(line)
+            if match is None: raise ValueError("Malformed actual SDK fixture loader marker")
+            values.append({"resourceSHA256": match[1], "resourceBytes": int(match[2]),
+                           "archiveSHA256": match[3], "archiveBytes": int(match[4])})
+            if len(values) > 16: raise ValueError("SDK fixture marker count budget")
+    if not values: raise ValueError("Missing actual SDK fixture loader marker")
+    return values
+
+
+def verify_sdk_fixture(work, phase, save=True):
+    if selection_mode() != "integratedrenewal" or phase not in ("before-build", "after-tests"):
+        raise ValueError("Invalid SDK runtime resource phase")
+    inputs = smoke.read_json(work / "source-inputs.json")
+    binding = smoke.read_json(work / "sdk-fixture-binding.json")
+    verified = _verify_sdk_public(work / "sdk-produced-public", inputs["sourceInputs"])
+    if (binding.get("sourceCommit") != validate_tag() or binding.get("selectionMode") != "integratedrenewal"
+            or binding.get("developerDirectory") != os.environ.get("DEVELOPER_DIR")
+            or any(binding.get(key) != value for key, value in verified.items())):
+        raise ValueError("SDK fixture source/generator/output binding changed")
+    _, actual = _bounded_fact(smoke.REPO / SDK_RESOURCE, 8_388_608)
+    if actual != {key: verified["resource"][key] for key in ("bytes", "sha256")}:
+        raise ValueError("SDK source resource hash changed before/after native execution")
+    record = {"schemaVersion": 1, "phase": phase, "sourceCommit": binding["sourceCommit"],
+              "bindingSHA256": smoke.config.digest(work / "sdk-fixture-binding.json"),
+              "resourceSHA256": actual["sha256"], "resourceBytes": actual["bytes"]}
+    if phase == "after-tests":
+        summary = smoke.verify_summary(smoke.read_json(work / "integratedrenewal-summary.json"), 140)
+        actual_cases = verify_cases(smoke.read_json(work / "integratedrenewal-tests.json"), "integratedrenewal")
+        if SDK_REQUIRED_CASE not in actual_cases["passedCaseIdentifiers"]: raise ValueError("Actual SDK method did not pass")
+        entries = smoke.read_json(work / "sdk-test-build-settings.json")
+        matches = [entry["buildSettings"] for entry in entries if entry.get("target") == "yuedu appTests"]
+        if len(matches) != 1: raise ValueError("Expected exactly one actual XCTest bundle build setting")
+        settings = matches[0]
+        if settings.get("CONFIGURATION") != "Debug" or settings.get("PLATFORM_NAME") != "iphonesimulator":
+            raise ValueError("SDK fixture test bundle must be actual Debug Simulator output")
+        bundle = smoke.config.checked_path(Path(settings["TARGET_BUILD_DIR"]) / settings["FULL_PRODUCT_NAME"])
+        if bundle.suffix != ".xctest": raise ValueError("Expected actual built XCTest bundle")
+        _, built = _bounded_fact(bundle / "owned-sdk-package.json", 8_388_608)
+        if built != actual: raise ValueError("Built SDK fixture resource hash differs")
+        markers = _sdk_runtime_markers(work / "integratedrenewal-tests.log")
+        expected = {"resourceSHA256": actual["sha256"], "resourceBytes": actual["bytes"],
+                    "archiveSHA256": verified["archive"]["sha256"], "archiveBytes": verified["archive"]["bytes"]}
+        if any(value != expected for value in markers): raise ValueError("Actual runtime loader read a different SDK fixture")
+        record.update({"builtResource": built, "runtimeLoaderMarkers": markers,
+                       "requiredSDKCasePassed": SDK_REQUIRED_CASE, "nativeCount": summary["totalTestCount"]})
+    if save: smoke.config.write_new_json(work / ("sdk-fixture-" + phase + ".json"), record)
+    return record
 
 
 def decoded_strings_value(path, key):
@@ -495,9 +831,18 @@ def result(work):
             **smoke.verify_summary(smoke.read_json(work / (group + "-summary.json")), len(EXPECTED_CASES[group])),
             **verify_cases(smoke.read_json(work / (group + "-tests.json")), group),
         }
+    sdk_evidence = None
+    if mode == "integratedrenewal":
+        for phase in ("before-build", "after-tests"):
+            stored = smoke.read_json(work / ("sdk-fixture-" + phase + ".json"))
+            current = verify_sdk_fixture(work, phase, save=False)
+            if stored != current: raise ValueError("SDK runtime resource audit changed after execution")
+        sdk_evidence = smoke.read_json(work / "sdk-fixture-after-tests.json")
     evidence = {}
     evidence_names = ["build-settings.json", "source-inputs.json", "overlays.json", "project-overlay.json", "info-overlay.json"]
     evidence_names += [group + suffix for group in cases for suffix in ("-summary.json", "-tests.json")]
+    if mode == "integratedrenewal":
+        evidence_names += ["sdk-fixture-binding.json", "sdk-fixture-before-build.json", "sdk-fixture-after-tests.json", "sdk-test-build-settings.json"]
     for name in evidence_names:
         evidence[name] = smoke.config.digest(work / name)
     return {"schemaVersion": 2, "sourceCommit": source, "sourceTag": TAG_PREFIX + source[:7],
@@ -509,7 +854,9 @@ def result(work):
             "testedInfoSHA256": smoke.config.digest(app / "Info.plist"),
             "sourceOverlays": audit, "sourceInputs": inputs["sourceInputs"], "evidenceSHA256": evidence,
             "builtDiscoveryMetadata": metadata,
-            "runtimeSourceOnly": True, "ipaGenerated": False, "ipaUploaded": False,
+            "runtimeSourceOnly": True, "ipaGenerated": mode == "integratedrenewal", "ipaUploaded": mode == "integratedrenewal",
+            "ipaKind": "owned-sdk-fixture-only" if mode == "integratedrenewal" else "none",
+            "distributionIPAGenerated": False, "sdkFixtureRuntimeEvidence": sdk_evidence,
             "appleAccountUsed": False, "pairingRecordUsed": False,
             "iphoneTransportVerified": False, "physicalDeviceValidationPassed": False,
             "serviceIdentityVerified": False,
@@ -517,7 +864,16 @@ def result(work):
             "computerPoweredOff": "notMeasured", "companionAppsAbsent": "notMeasured",
             "limitations": ["Only the selected Simulator groups are accepted; not a delivered IPA or iPhone test.",
                             "No Apple login, real pairing, installation or renewal operation is performed."] + (
-                           ["This selection executes exactly 23 owned cases in one controlledsigning xcresult: nine IPA validation/unpack, seven signing-material vault and seven controlled Mach-O signer cases.",
+                           ["This selection executes exactly 140 unique qualified native methods in one integratedrenewal xcresult: bound78 union controlled23 plus nine App owner, twelve BookChapterStorage methods excluding the benchmark, eleven whole-package and seven authenticated-installation cases.",
+                            "Historical modes retain their exact leaf sets and cold/warm budgets; overlaps count once in this selected union and never become additional acceptances.",
+                            "The same job executes the fixed xcrun clang/codesign producer with a short-lived owned Keychain identity. Source/commands/public raw Mach-O and generated IPA hashes are bound, the generated JSON is copied as an untracked XCTest resource, and both built bytes and the actual loader's runtime SHA marker must match before acceptance.",
+                            "The IPA flags refer only to that synthetic public SDK fixture; no delivered app/distribution IPA or user archive is generated or uploaded. Private keys/P12 stay in memory or the one temporary Keychain and never enter artifacts.",
+                            "Owned whole-package tests exercise actual profile/resource/nested/Mach-O signing and final raw archive verification. Authenticated-installation cases use owned local TLS/AFC/installation fixtures, not an iPhone or real pairing record.",
+                            "App owner fixtures and selected chapter storage regressions do not establish Kotlin/JNI App routing, delivered persistence migration or unattended operation.",
+                            "Generic explicit anchors do not establish Apple authority, real account/device/profile authorization, installation permission, cold launch, user data preservation or automatic self-renewal.",
+                            "No independent package XCTest run is triggered or accepted by this selection; the earlier ten-method package checkpoint has its own result. No unchanged diagnostic network/UI or replacement-policy suite executes."]
+                             if mode == "integratedrenewal" else [
+                              "This selection executes exactly 23 owned cases in one controlledsigning xcresult: nine IPA validation/unpack, seven signing-material vault and seven controlled Mach-O signer cases.",
                               "Historical native selections retain their exact method sets and budgets; no prior native group is accepted or rerun by this selection. The independent ten package XCTest methods have a separate result and never enter this count.",
                               "Owned archives exercise bounded stored/deflate bytes and staged whole-material rechecks. Keychain fixtures use owned namespaces, actual software key handles and signed public material with CAS, cancellation, recovery and revocation checks.",
                               "The signer handles supported already-signed thin64 arm64 MH_EXECUTE bytes. It rebuilds real page/special hashes, uses actual SecKey detached CMS, preserves identity/entitlement bytes, separately authenticates old and new CodeResources, and invokes existing code verifiers after signing.",
@@ -572,6 +928,12 @@ def main():
     for phase in ("prepare", "result"):
         item = commands.add_parser(phase)
         item.add_argument("--work", type=Path, required=True)
+    stage = commands.add_parser("stage-sdk-fixture")
+    stage.add_argument("--work", type=Path, required=True)
+    stage.add_argument("--produced", type=Path, required=True)
+    sdk = commands.add_parser("verify-sdk-fixture")
+    sdk.add_argument("--work", type=Path, required=True)
+    sdk.add_argument("--phase", dest="sdk_phase", choices=("before-build", "after-tests"), required=True)
     verify = commands.add_parser("verify-tests")
     verify.add_argument("--tests", type=Path, required=True)
     verify.add_argument("--summary", type=Path, required=True)
@@ -582,6 +944,10 @@ def main():
             record = {"sourceCommit": validate_tag()}
         elif args.phase == "prepare":
             record = prepare(smoke.config.checked_path(args.work))
+        elif args.phase == "stage-sdk-fixture":
+            record = stage_sdk_fixture(smoke.config.checked_path(args.work), smoke.config.checked_path(args.produced))
+        elif args.phase == "verify-sdk-fixture":
+            record = verify_sdk_fixture(smoke.config.checked_path(args.work), args.sdk_phase)
         elif args.phase == "verify-tests":
             if args.group not in selected_cases():
                 raise ValueError("Test group is not part of YUEDU_RENEWAL_SELECTION")

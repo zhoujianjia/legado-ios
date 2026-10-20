@@ -1,0 +1,461 @@
+{
+  "schemaVersion": 1,
+  "stage": "integrated-renewal-selection-gates",
+  "status": "prepared-portable-checked-sdk-unexecuted",
+  "canonicalDependencies": {
+    "wholePackage": "d73033912f597e255bfdf3b855d6c9bff86a957e",
+    "authenticatedInstallation": "4505bcc907b4076adaa11d5df7692467e72e50eb",
+    "appOwners": "85f1f590 (full source hashes in inventory)"
+  },
+  "sourceBinding": {
+    "ownedFileCount": 5,
+    "files": [
+      {
+        "path": ".github/workflows/reader-renewal-probe.yml",
+        "bytes": 8048,
+        "sha256": "eca5c4680e22b7370b511b3aba56b1446b89f8ad258c6e0298c8e7f32a0a8471"
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 63709,
+        "sha256": "f28382650b404caaa9776bc93fd07953ef53eeab7af154b675f6193d6c08b3bc"
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tests.sh",
+        "bytes": 16109,
+        "sha256": "948d13eb17df34bd0aa8feb327f34378fdfec636d848818e5e473fb3ddb9f156"
+      },
+      {
+        "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 89387,
+        "sha256": "2dbb6e4b1b8e06bbf415f9697f54c559591c0fca7c99ce24f678976ddac96e16"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalSDKOwnedPackageFixture.swift",
+        "bytes": 2177,
+        "sha256": "a74dcba19485897625b560fb4ec4b4424a278b0d6d58e58ac4c2acf95ceb4461"
+      }
+    ],
+    "sourceInputCount": 110,
+    "sourceInputInventory": {
+      "path": ".build/renewal-discovery/integrated-renewal-selection-gates/source-selection-inventory.json",
+      "bytes": 35874,
+      "sha256": "6e60d6cd3df33d9627345a7cd6c37e26ca799c7e3fb257401d5ff655089e06e7"
+    },
+    "sameBytesAsFinalPortableSnapshot": true
+  },
+  "selectedExecution": {
+    "mode": "integratedrenewal",
+    "uniqueQualifiedMethods": 140,
+    "composition": {
+      "boundmaterials": 78,
+      "controlledsigning": 23,
+      "appOwners": 9,
+      "bookChapterStorageExcludingBenchmark": 12,
+      "wholePackage": 11,
+      "authenticatedInstallation": 7
+    },
+    "methods": [
+      "BookChapterStorageTests/audiobookPlayerSeesTheTableOfContents",
+      "BookChapterStorageTests/cachedChapterMarkRewritesOnlyItsBook",
+      "BookChapterStorageTests/deletingBookDeletesItsTableOfContents",
+      "BookChapterStorageTests/inlineListFromOlderBuildWinsOverStaleFile",
+      "BookChapterStorageTests/inlineShelfOpensCompleteAndMovesListsOut",
+      "BookChapterStorageTests/positionSaveLeavesTablesOfContentsUntouched",
+      "BookChapterStorageTests/readingRecordKeepsItsListOutsideItsFile",
+      "BookChapterStorageTests/recordsCarrySummaryAndOpenedBookCarriesList",
+      "BookChapterStorageTests/restoredShelfRegainsSummaryFromStoredLists",
+      "BookChapterStorageTests/shelfFileCarriesNoTableOfContents",
+      "BookChapterStorageTests/syncLeavesTableOfContentsLocal",
+      "BookChapterStorageTests/unreadableShelfLeavesTablesOfContentsAlone",
+      "LegadoBookStateOwnerTests/corruptAndUnreadableChapterOwnersRemainErrors",
+      "LegadoBookStateOwnerTests/hostCommitUsesOriginalChapterFileAndRestart",
+      "LegadoBookStateOwnerTests/hostWriteFailureAndGenerationRevocationPreserveOldState",
+      "LegadoBookStateOwnerTests/rejectsUnmappedIdentityAndUnsupportedTransactions",
+      "LegadoBookStateOwnerTests/staleTocAndTaskCancellationRejectOldHostProofs",
+      "LegadoChapterOwnerPersistenceTests/chapterVariableCasIsDurableAndKeepsFailedWritesInvisible",
+      "LegadoChapterOwnerPersistenceTests/concurrentChapterMutationUsesOnePersistenceOwner",
+      "LegadoChapterOwnerPersistenceTests/strictFlushFailurePreservesPreviousFileAndCanRetry",
+      "LegadoChapterOwnerPersistenceTests/strictFlushTargetsOnlyTheBoundBook",
+      "LegadoPersistentStateHostTests/commitsSameOwnerAtomicallyAndSkipsUnchangedWrites",
+      "LegadoPersistentStateHostTests/enforcesCancellationDeadlineAndBoundedLeases",
+      "LegadoPersistentStateHostTests/isolatesSourcesAndPreservesVerbatimValues",
+      "LegadoPersistentStateHostTests/preservesExplicitOptionsAndRawLoginPayloads",
+      "LegadoPersistentStateHostTests/preservesOldStateWhenOwnerWritesFail",
+      "LegadoPersistentStateHostTests/rejectsStaleSourceLoginAndBindingRevisions",
+      "LegadoPersistentStateHostTests/rejectsUnsupportedTransactionsBeforeAnyWrite",
+      "LegadoPersistentStateHostTests/reusesLegacyCacheAndPreservesTTL",
+      "LegadoPersistentStateHostTests/sourceBridgeRemovalPreservesCredentials",
+      "SelfRenewalApplicationMaterialVerifierTests/acceptsNewProfileUUIDWithPreservedBundleGroupsAndIdentity",
+      "SelfRenewalApplicationMaterialVerifierTests/bindsRereadProfileBytesToEarlierResourceSeals",
+      "SelfRenewalApplicationMaterialVerifierTests/rejectsSignedButInconsistentProfileAndEntitlementIdentities",
+      "SelfRenewalApplicationMaterialVerifierTests/rejectsWholeChainResourceTamperingExpiryAndCancellation",
+      "SelfRenewalApplicationMaterialVerifierTests/verifiesActualThreeBundleChainWithoutClaimingAppleAuthority",
+      "SelfRenewalAuthenticatedInstallationClientTests/cancellationWakesActualStalledTLSHandshakeWithoutLateWrites",
+      "SelfRenewalAuthenticatedInstallationClientTests/enforcesActualFrameProgressDeadlineAndArchiveBudgets",
+      "SelfRenewalAuthenticatedInstallationClientTests/rejectsActualAFCSequenceTruncationErrorsAndChangedArchiveDigest",
+      "SelfRenewalAuthenticatedInstallationClientTests/rejectsActualWrongDeviceHostAndExpiredTLSCertificates",
+      "SelfRenewalAuthenticatedInstallationClientTests/rejectsInvalidSessionServicePortsAndPlaintextDowngrades",
+      "SelfRenewalAuthenticatedInstallationClientTests/requiresTerminalCompleteAndExactPostUpgradeLookupIdentity",
+      "SelfRenewalAuthenticatedInstallationClientTests/uploadsRealTLSChunksAndRequiresCompleteLookupCleanupAndStop",
+      "SelfRenewalCMSVerifierTests/rejectsCancelledVerification",
+      "SelfRenewalCMSVerifierTests/rejectsChangedContentAndSignatures",
+      "SelfRenewalCMSVerifierTests/rejectsMalformedDERAndOversizedInputs",
+      "SelfRenewalCMSVerifierTests/rejectsMissingAndAmbiguousContent",
+      "SelfRenewalCMSVerifierTests/rejectsUntrustedAndExpiredChains",
+      "SelfRenewalCMSVerifierTests/verifiesECDSAAndEverySigner",
+      "SelfRenewalCMSVerifierTests/verifiesIndependentRSAAndDetachedVectors",
+      "SelfRenewalCodeDirectoryHashVerifierTests/matchesIndependentDigestVectors",
+      "SelfRenewalCodeDirectoryHashVerifierTests/readsOwnedApplicationAndUsesBoundedMaterialIO",
+      "SelfRenewalCodeDirectoryHashVerifierTests/rejectsBudgetsTruncatedReadsAndCancellation",
+      "SelfRenewalCodeDirectoryHashVerifierTests/rejectsChangedPagesDigestsAndSpecialMaterials",
+      "SelfRenewalCodeDirectoryHashVerifierTests/rejectsMissingExtraAndUnsupportedSpecialSlots",
+      "SelfRenewalCodeDirectoryHashVerifierTests/verifiesFatAlternateAndUnpagedContentWithBoundedChunks",
+      "SelfRenewalCodeDirectoryHashVerifierTests/verifiesFourAlgorithmsAndAllKnownSpecialMaterials",
+      "SelfRenewalControlledMachOSignerTests/allocatesBeforeHashingAndErasesOldSignatureTail",
+      "SelfRenewalControlledMachOSignerTests/cancelsAndEnforcesReadAndCapacityBudgets",
+      "SelfRenewalControlledMachOSignerTests/preservesIdentityAndEverySpecialBlobByte",
+      "SelfRenewalControlledMachOSignerTests/rebuildsAllDigestKindsAndAgileCodeDirectories",
+      "SelfRenewalControlledMachOSignerTests/refusesWrongKeysAnchorsAndTamperedOriginal",
+      "SelfRenewalControlledMachOSignerTests/rejectsUnsupportedLayoutAndUnboundInputs",
+      "SelfRenewalControlledMachOSignerTests/signsRealRSAAndECDSAAndAuthenticatesActualLeaf",
+      "SelfRenewalControlledPackageSignerTests/bindsExactRawCMSProfileBytesToReopenedLease",
+      "SelfRenewalControlledPackageSignerTests/preservesOwnedFilesOnWrongPreimageAndInvalidatesEscapedScope",
+      "SelfRenewalControlledPackageSignerTests/rejectsCancelledPackageWithoutChangingInput",
+      "SelfRenewalControlledPackageSignerTests/rejectsDifferentActualGroupsWithinSameVerifiedProfileAllowance",
+      "SelfRenewalControlledPackageSignerTests/rejectsDynamicSymbolTableBoundsAndMissingSymbolTable",
+      "SelfRenewalControlledPackageSignerTests/rejectsFalseAndUnresolvedOriginalNestedRequirements",
+      "SelfRenewalControlledPackageSignerTests/rejectsRevokedAndStaleLeasesWithoutChangingInput",
+      "SelfRenewalControlledPackageSignerTests/resignsDynamicSymbolTablesAndDylibAtStableOffsets",
+      "SelfRenewalControlledPackageSignerTests/signsOwnedThreeBundlePackageAndReverifiesActualArchiveBytes",
+      "SelfRenewalControlledPackageSignerTests/signsSDKProducedMainExtensionsAndFrameworkInSameJob",
+      "SelfRenewalControlledPackageSignerTests/updatesVerifiedResourceSealsWithoutWideningRulesOrRequirements",
+      "SelfRenewalIPAUnpackerTests/cleansOwnedStagingOnArchiveAndMaterialFailure",
+      "SelfRenewalIPAUnpackerTests/enforcesCompressedExpandedAndEntryBudgets",
+      "SelfRenewalIPAUnpackerTests/rejectsCRCDeflateTailTruncationAndActualExpansion",
+      "SelfRenewalIPAUnpackerTests/rejectsHeaderLayoutAndDescriptorDisagreements",
+      "SelfRenewalIPAUnpackerTests/rejectsLinksTypesDuplicatesAndEncodingOverrides",
+      "SelfRenewalIPAUnpackerTests/rejectsSourceLinksAndPropagatesCancellation",
+      "SelfRenewalIPAUnpackerTests/rejectsTraversalAndAmbiguousPaths",
+      "SelfRenewalIPAUnpackerTests/verifiesDeflateAndBothDataDescriptorForms",
+      "SelfRenewalIPAUnpackerTests/verifiesOwnedStoredIPAThroughSealedMaterials",
+      "SelfRenewalMachOSignatureReaderTests/handlesUnsignedTruncatedAndCancelledInputs",
+      "SelfRenewalMachOSignatureReaderTests/readsFat32And64InBothByteOrders",
+      "SelfRenewalMachOSignatureReaderTests/readsKnownDirectoryVersionsAndEmptyCMSWithoutAssumingTrust",
+      "SelfRenewalMachOSignatureReaderTests/readsOwnedUnpackedAppThroughInventoryAndRejectsLinkedCode",
+      "SelfRenewalMachOSignatureReaderTests/readsThinSignaturesWithoutReadingExecutableBodiesOrClaimingTrust",
+      "SelfRenewalMachOSignatureReaderTests/rejectsDamagedEmbeddedSignatureStructures",
+      "SelfRenewalMachOSignatureReaderTests/rejectsInvalidCodeDirectoryOffsetsAndUnsupportedLayouts",
+      "SelfRenewalMachOSignatureReaderTests/rejectsMalformedAndUnknownRequiredLoadCommands",
+      "SelfRenewalMachOSignatureReaderTests/rejectsMalformedFatTablesAndOverlappingSlices",
+      "SelfRenewalMaterialInventoryTests/enforcesDirectoryAndByteLimits",
+      "SelfRenewalMaterialInventoryTests/parsesBoundedMetadataAndRejectsDamagedOrUnsafeValues",
+      "SelfRenewalMaterialInventoryTests/readsThreeBundleFactsWithoutTrustAssertion",
+      "SelfRenewalMaterialInventoryTests/rejectsLinkedMaterials",
+      "SelfRenewalMaterialInventoryTests/reportsIncompleteAndConflictingRoleStructure",
+      "SelfRenewalMaterialInventoryTests/retainsAdditionalPotentialSignedComponents",
+      "SelfRenewalModernProfileVerifierTests/authenticatesBothCMSLayersAndUsesModernSourceOfTruth",
+      "SelfRenewalModernProfileVerifierTests/decodesCanonicalDatesAndRejectsInvalidCalendarValues",
+      "SelfRenewalModernProfileVerifierTests/decodesIndependentTypedPropertyValues",
+      "SelfRenewalModernProfileVerifierTests/decodesVersionedCoreEntitlementsAndRejectsUnknownVersion",
+      "SelfRenewalModernProfileVerifierTests/enforcesPropertyBudgetsAndCancellation",
+      "SelfRenewalModernProfileVerifierTests/readsModernProfileFromSameInventoryAndRejectsReplacedLinks",
+      "SelfRenewalModernProfileVerifierTests/rejectsAmbiguousAndMalformedProperties",
+      "SelfRenewalModernProfileVerifierTests/rejectsInvalidInnerCMSAndAuthoritativeValidity",
+      "SelfRenewalNestedCodeRequirementsVerifierTests/evaluatesBooleanCertificateAndAttributeGrammar",
+      "SelfRenewalNestedCodeRequirementsVerifierTests/preservesHintAndLegacyAuthenticationMeaning",
+      "SelfRenewalNestedCodeRequirementsVerifierTests/preservesUnresolvedPolicyWithoutRejectingComplexSupportedExpressions",
+      "SelfRenewalNestedCodeRequirementsVerifierTests/rejectsChangedBoundAttributesAndCancellation",
+      "SelfRenewalNestedCodeRequirementsVerifierTests/rejectsFalseRequirementAndWrongSelectedOrUniversalIdentity",
+      "SelfRenewalNestedCodeRequirementsVerifierTests/rejectsNestedResourceAndCMSTampering",
+      "SelfRenewalNestedCodeRequirementsVerifierTests/retainsActualSystemPolicyAsUnresolved",
+      "SelfRenewalNestedCodeRequirementsVerifierTests/verifiesActualNestedBundlesAndPublishesBoundDERAttributes",
+      "SelfRenewalProvisioningProfileVerifierTests/readsSignedSummaryAndRejectsValidityFailures",
+      "SelfRenewalProvisioningProfileVerifierTests/verifiesOwnedProfileThroughInventory",
+      "SelfRenewalResourceSealVerifierTests/appliesPOSIXWeightedRules",
+      "SelfRenewalResourceSealVerifierTests/hashesIndependentVectorsWithBoundedChunks",
+      "SelfRenewalResourceSealVerifierTests/preservesOptionalSealSemantics",
+      "SelfRenewalResourceSealVerifierTests/rejectsChangedAddedMissingAndWrongTypes",
+      "SelfRenewalResourceSealVerifierTests/rejectsEnvelopeOrCodeDirectoryChangedAfterHashPass",
+      "SelfRenewalResourceSealVerifierTests/rejectsMalformedEnvelopeAndLimits",
+      "SelfRenewalResourceSealVerifierTests/rejectsShortReadsAndCancellation",
+      "SelfRenewalResourceSealVerifierTests/selectsEnvelopeVersionAndLegacyHashFallback",
+      "SelfRenewalResourceSealVerifierTests/traversesNestedAndOmittedDirectoriesWithoutTrustClaims",
+      "SelfRenewalResourceSealVerifierTests/verifiesOwnedApplicationAndRejectsResourceChanges",
+      "SelfRenewalSignedCodeVerifierTests/authenticatesDetachedPrimaryAndPreservesLegacyUnboundAlternate",
+      "SelfRenewalSignedCodeVerifierTests/bindsOriginalHashAgilityEncodingsAndRejectsWrongValues",
+      "SelfRenewalSignedCodeVerifierTests/enforcesSharedOwnedFileReadBoundaryIncludingEmptyFiles",
+      "SelfRenewalSignedCodeVerifierTests/preservesOriginalAlternateOrderAndAdHocSemantics",
+      "SelfRenewalSignedCodeVerifierTests/readsOwnedAppAndKeepsGenericAnchorsSeparateFromAppleAuthority",
+      "SelfRenewalSignedCodeVerifierTests/rejectsChangedReadBudgetsAndCancellationAcrossSlices",
+      "SelfRenewalSignedCodeVerifierTests/supportsOriginalTruncatedCDHashAndRejectsAgilityOIDCollisions",
+      "SelfRenewalSigningMaterialVaultTests/boundsLifetimeAndPreservesUnrelatedKeychainItems",
+      "SelfRenewalSigningMaterialVaultTests/preservesPublicationWhenManifestSaveFails",
+      "SelfRenewalSigningMaterialVaultTests/publishesReloadsSignsAndRevokesOwnedKeychainMaterial",
+      "SelfRenewalSigningMaterialVaultTests/recoversPendingKeyJournalWithoutDeletingPublishedKey",
+      "SelfRenewalSigningMaterialVaultTests/rejectsExpiredProfilesAndLocallyRevokedLeases",
+      "SelfRenewalSigningMaterialVaultTests/rejectsSignedIdentityAndKeyChangesWithoutReplacingOldMaterial",
+      "SelfRenewalSigningMaterialVaultTests/rejectsStaleCASAndCancellationBeforePublication"
+    ],
+    "xcresultCount": 1,
+    "coldTimeoutSeconds": 2700,
+    "legacyModesUnchanged": {
+      "all": 30,
+      "replacement": 5,
+      "implementation": 11,
+      "signature": 9,
+      "cryptography": 25,
+      "sealedmaterials": 48,
+      "boundmaterials": 78,
+      "controlledsigning": 23,
+      "integratedrenewal": 140
+    },
+    "SPMReplayed": false
+  },
+  "sdkProducer": {
+    "executedLocally": false,
+    "generationAfterSelectedDeveloperDir": true,
+    "generationBeforeXcodebuild": true,
+    "sourceInputPaths": [
+      "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+      "scripts/reader-experience/owned-package-fixture/main.c",
+      "scripts/reader-experience/owned-package-fixture/extension.c",
+      "scripts/reader-experience/owned-package-fixture/framework.c"
+    ],
+    "rawDirectory": ".build/reader-renewal-sdk-produced-public",
+    "auditedArtifactDirectory": ".build/reader-renewal-probe/sdk-produced-public",
+    "allowlistedOutputCount": 43,
+    "allowlistedPublicOutputs": [
+      "clang-version.log",
+      "framework-clang.log",
+      "framework.detached.cms",
+      "framework.macho",
+      "framework.original-cms.log",
+      "framework.otool.log",
+      "framework.primary.cd",
+      "framework.verified.cd",
+      "import-tool-compile.log",
+      "leaf.cert.der",
+      "leaf.cert.pem",
+      "main.detached.cms",
+      "main.macho",
+      "main.original-cms.log",
+      "main.otool.log",
+      "main.primary.cd",
+      "main.verified.cd",
+      "openssl-version.log",
+      "owned-certificate-chain.log",
+      "owned-sdk-package.ipa",
+      "owned-sdk-package.json",
+      "root.cert.der",
+      "root.cert.pem",
+      "share.detached.cms",
+      "share.macho",
+      "share.original-cms.log",
+      "share.otool.log",
+      "share.primary.cd",
+      "share.verified.cd",
+      "test.owned.reader.clang.log",
+      "test.owned.reader.codesign.log",
+      "test.owned.reader.framework.codesign.log",
+      "test.owned.reader.share.clang.log",
+      "test.owned.reader.share.codesign.log",
+      "test.owned.reader.widget.clang.log",
+      "test.owned.reader.widget.codesign.log",
+      "widget.detached.cms",
+      "widget.macho",
+      "widget.original-cms.log",
+      "widget.otool.log",
+      "widget.primary.cd",
+      "widget.verified.cd",
+      "xcode-version.log"
+    ],
+    "fixedUntrackedTestResource": "Tests/iOS/yuedu appTests/owned-sdk-package.json",
+    "fixedResourceMustBeAbsentBeforeStage": true,
+    "resourceCopiedWithoutSwiftSourceMutation": true,
+    "acceptanceRequires": [
+      "tag/source/producer inputs exact",
+      "actual successful clang/codesign/detached CMS verification and Keychain cleanup commands",
+      "allowlisted public bytes lengths and SHA256s",
+      "original non-adHoc arm64 MH_EXECUTE main/extensions and MH_DYLIB framework with DYSYMTAB",
+      "source resource hash before and after test execution",
+      "built XCTest resource hash",
+      "actual loader marker matching JSON and IPA hashes and byte counts",
+      "exact 140 qualified passing methods with zero skip/failure and required SDK-produced case"
+    ],
+    "privateArtifactsAllowed": false,
+    "usesRealAccountOrPrivateIPA": false
+  },
+  "validation": {
+    "portableMethods": [
+      {
+        "name": "renewal-guards",
+        "passed": 41,
+        "failed": 0,
+        "errors": 0,
+        "raw": ".build/renewal-discovery/integrated-renewal-selection-gates/renewal-guards-v2.log",
+        "sha256": "64a729865bca05aec0e8bc1667f2644c7898c8cda75c435e74e76d9ba94f5939"
+      },
+      {
+        "name": "existing-smoke-guards",
+        "passed": 24,
+        "failed": 0,
+        "errors": 0,
+        "raw": ".build/renewal-discovery/integrated-renewal-selection-gates/existing-smoke-guards-v1.log",
+        "sha256": "35ed36e828baf04b842aacc52d4c75f6ebf2616a0483ef4d209cea02e566bbd6"
+      },
+      {
+        "name": "report-inspector-guards",
+        "passed": 32,
+        "failed": 0,
+        "errors": 0,
+        "raw": ".build/renewal-discovery/integrated-renewal-selection-gates/report-inspector-guards-v1.log",
+        "sha256": "310cbdbe6dbaf97130e03f4250d920b2e7751a50370f50330911455032e0e80b"
+      },
+      {
+        "name": "original-api-guards",
+        "passed": 12,
+        "failed": 0,
+        "errors": 0,
+        "raw": ".build/renewal-discovery/integrated-renewal-selection-gates/original-api-guards-v1.log",
+        "sha256": "4357ae5c22e03f971fc7f582e3f0b5c47698c89eae8393b5ed5778a83c5ed9d1"
+      }
+    ],
+    "totalUniqueFinalPortableMethods": 109,
+    "shellAndWorkflow": [
+      {
+        "name": "bash-syntax",
+        "argv": [
+          "D:/app/Git/bin/bash.exe",
+          "-n",
+          "scripts/reader-experience/renewal-probe-tests.sh"
+        ],
+        "exitCode": 0,
+        "elapsedSeconds": 0.062,
+        "log": ".build/renewal-discovery/integrated-renewal-selection-gates/bash-syntax-v1.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "workflow-actionlint",
+        "argv": [
+          "F:\\yuedu-reader\\.tools\\actionlint\\actionlint.exe",
+          "-color",
+          ".github/workflows/reader-renewal-probe.yml"
+        ],
+        "exitCode": 0,
+        "elapsedSeconds": 0.141,
+        "log": ".build/renewal-discovery/integrated-renewal-selection-gates/workflow-actionlint-v1.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "swiftGrammar": {
+      "schemaVersion": 1,
+      "file": "Tests/iOS/yuedu appTests/SelfRenewalSDKOwnedPackageFixture.swift",
+      "bytes": 2177,
+      "sha256": "a74dcba19485897625b560fb4ec4b4424a278b0d6d58e58ac4c2acf95ceb4461",
+      "grammarErrors": [],
+      "SwiftSDKExecuted": false,
+      "SwiftTypechecked": false,
+      "meaning": "Swift grammar only, no SDK or runtime acceptance."
+    },
+    "SwiftSDKExecuted": false,
+    "SwiftTypechecked": false,
+    "JVMExecuted": false,
+    "SwiftPMExecuted": false,
+    "cloudQueries": 0,
+    "countsDoNotIncludeInternalVectorsOrSupersededRuns": true
+  },
+  "intermediateFailures": {
+    "path": ".build/renewal-discovery/integrated-renewal-selection-gates/intermediate-index.json",
+    "bytes": 1203,
+    "sha256": "fb3e344cd914528c33aa8b27052ea38a063dd7f7e6e1ef058f65d3236b83f6bd"
+  },
+  "acceptance": {
+    "iphoneTransportVerified": false,
+    "physicalDeviceValidationPassed": false,
+    "selfRenewalVerified": false,
+    "unattendedRenewalVerified": false
+  },
+  "limits": [
+    "This is CI selection/tooling preparation with hermetic portable guard tests; no Swift, codesign, Keychain, Xcode-produced binary or Simulator method executed locally.",
+    "Hermetic public guard fixtures in test-renewal-probe-tools.py are mock evidence inputs and do not establish SDK producer execution.",
+    "The earlier ten-method package checkpoint is independent and is not rerun or counted in integratedrenewal.",
+    "The only IPA to be uploaded is the same-job synthetic public fixture; no distribution/user IPA or private material is permitted.",
+    "Controlled whole-package and local TLS fixtures do not establish Apple/account/device authorization, real iPhone installation, user data retention, cold launch or unattended renewal."
+  ],
+  "rawEvidence": [
+    {
+      "path": ".build/renewal-discovery/integrated-renewal-selection-gates/bash-syntax-v1.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".build/renewal-discovery/integrated-renewal-selection-gates/existing-smoke-guards-v1.log",
+      "bytes": 4250,
+      "sha256": "35ed36e828baf04b842aacc52d4c75f6ebf2616a0483ef4d209cea02e566bbd6"
+    },
+    {
+      "path": ".build/renewal-discovery/integrated-renewal-selection-gates/intermediate-index.json",
+      "bytes": 1203,
+      "sha256": "fb3e344cd914528c33aa8b27052ea38a063dd7f7e6e1ef058f65d3236b83f6bd"
+    },
+    {
+      "path": ".build/renewal-discovery/integrated-renewal-selection-gates/loader-grammar.json",
+      "bytes": 357,
+      "sha256": "273c4244c7476db6e995788cdffc8e401dec75cd52d4c8c9a90702cc38afeb51"
+    },
+    {
+      "path": ".build/renewal-discovery/integrated-renewal-selection-gates/original-api-guards-v1.log",
+      "bytes": 2520,
+      "sha256": "4357ae5c22e03f971fc7f582e3f0b5c47698c89eae8393b5ed5778a83c5ed9d1"
+    },
+    {
+      "path": ".build/renewal-discovery/integrated-renewal-selection-gates/portable-v1.json",
+      "bytes": 3983,
+      "sha256": "eb82ab3fb986db348cb44db79d1727dfea59cf25fa8fb88d1628971877d87b47"
+    },
+    {
+      "path": ".build/renewal-discovery/integrated-renewal-selection-gates/portable-v2.json",
+      "bytes": 1621,
+      "sha256": "dfeec679a8d15daae2d7bd92983f1f2950ac30c784cbc5ed715edf0d2555f28c"
+    },
+    {
+      "path": ".build/renewal-discovery/integrated-renewal-selection-gates/renewal-guards-v1.log",
+      "bytes": 10363,
+      "sha256": "4570eee1d8c03a62deb874d5151978348531526b5c22ab550aceb144ec29c1b1"
+    },
+    {
+      "path": ".build/renewal-discovery/integrated-renewal-selection-gates/renewal-guards-v2.log",
+      "bytes": 8122,
+      "sha256": "64a729865bca05aec0e8bc1667f2644c7898c8cda75c435e74e76d9ba94f5939"
+    },
+    {
+      "path": ".build/renewal-discovery/integrated-renewal-selection-gates/report-inspector-guards-v1.log",
+      "bytes": 5824,
+      "sha256": "310cbdbe6dbaf97130e03f4250d920b2e7751a50370f50330911455032e0e80b"
+    },
+    {
+      "path": ".build/renewal-discovery/integrated-renewal-selection-gates/run-portable-v1.py",
+      "bytes": 2343,
+      "sha256": "aac2a72e675f7a9b76eba9efb6f7bd472c775219dc377f3ae2499813b4ba2e2b"
+    },
+    {
+      "path": ".build/renewal-discovery/integrated-renewal-selection-gates/run-portable-v2.py",
+      "bytes": 1789,
+      "sha256": "245078c93c78184288b6c7c975d3d72b2044720837b1af01f0f2b861bc49fae9"
+    },
+    {
+      "path": ".build/renewal-discovery/integrated-renewal-selection-gates/source-selection-inventory.json",
+      "bytes": 35874,
+      "sha256": "6e60d6cd3df33d9627345a7cd6c37e26ca799c7e3fb257401d5ff655089e06e7"
+    },
+    {
+      "path": ".build/renewal-discovery/integrated-renewal-selection-gates/workflow-actionlint-v1.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}
