@@ -1,0 +1,329 @@
+{
+  "scope": "Independent existing Windows OpenSSL cryptography reference, not macOS codesign, Keychain, Swift SDK, Mach-O or full producer acceptance.",
+  "openssl": {
+    "path": "D:\\app\\Git\\usr\\bin\\openssl.exe",
+    "version": "OpenSSL 1.1.1o  3 May 2022"
+  },
+  "productionStillRequiresOpenSSL3": true,
+  "referenceOnlyWindowsStdinAdapter": true,
+  "referenceOnlyWindowsInheritedEnvironmentAdapter": true,
+  "source": {
+    "path": ".build/renewal-discovery/owned-codesign-identity-step/work/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+    "bytes": 36558,
+    "sha256": "f8556e4857236e06478dc3e52818aeb6f87322d6eeb559399ddbaaa0a453fb41"
+  },
+  "status": "failed",
+  "errorType": "ToolFailure",
+  "toolExitCode": 1,
+  "commands": [
+    {
+      "argv": [
+        "D:\\app\\Git\\usr\\bin\\openssl.exe",
+        "version"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.03200000000651926,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "D:\\app\\Git\\usr\\bin\\openssl.exe",
+        "genpkey",
+        "-algorithm",
+        "RSA",
+        "-pkeyopt",
+        "rsa_keygen_bits:2048"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.03100000007543713,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "D:\\app\\Git\\usr\\bin\\openssl.exe",
+        "req",
+        "-new",
+        "-x509",
+        "-sha256",
+        "-config",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\owned-codesign-identity-step\\openssl-reference-final-v2\\public-self-signed-code-signing.cnf",
+        "-extensions",
+        "owned_code_signing",
+        "-key",
+        "-",
+        "-days",
+        "30",
+        "-subj",
+        "/CN=Owned SDK Fixture Code/OU=FIXTURE123",
+        "-outform",
+        "DER"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.030999999959021807,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "D:\\app\\Git\\usr\\bin\\openssl.exe",
+        "x509",
+        "-inform",
+        "DER",
+        "-outform",
+        "PEM"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.030999999959021807,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "D:\\app\\Git\\usr\\bin\\openssl.exe",
+        "x509",
+        "-inform",
+        "DER",
+        "-text",
+        "-noout"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.0470000000204891,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "D:\\app\\Git\\usr\\bin\\openssl.exe",
+        "x509",
+        "-inform",
+        "DER",
+        "-subject",
+        "-noout"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.03200000000651926,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "D:\\app\\Git\\usr\\bin\\openssl.exe",
+        "x509",
+        "-inform",
+        "DER",
+        "-issuer",
+        "-noout"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.030999999959021807,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "D:\\app\\Git\\usr\\bin\\openssl.exe",
+        "verify",
+        "-check_ss_sig",
+        "-purpose",
+        "any",
+        "-CAfile",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\owned-codesign-identity-step\\openssl-reference-final-v2\\owned-public.cert.pem",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\owned-codesign-identity-step\\openssl-reference-final-v2\\owned-public.cert.pem"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.03100000007543713,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "D:\\app\\Git\\usr\\bin\\openssl.exe",
+        "pkey",
+        "-pubout",
+        "-outform",
+        "DER"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.015999999945051968,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "D:\\app\\Git\\usr\\bin\\openssl.exe",
+        "x509",
+        "-inform",
+        "DER",
+        "-pubkey",
+        "-noout"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.0470000000204891,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "D:\\app\\Git\\usr\\bin\\openssl.exe",
+        "pkey",
+        "-pubin",
+        "-outform",
+        "DER"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.030999999959021807,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "D:\\app\\Git\\usr\\bin\\openssl.exe",
+        "pkcs12",
+        "-export",
+        "-inkey",
+        "-",
+        "-in",
+        "F:\\yuedu-reader\\.build\\renewal-discovery\\owned-codesign-identity-step\\openssl-reference-final-v2\\owned-public.cert.pem",
+        "-passout",
+        "env:OWNED_SYNTHETIC_P12_PASSWORD",
+        "-keypbe",
+        "PBE-SHA1-3DES",
+        "-certpbe",
+        "PBE-SHA1-3DES",
+        "-macalg",
+        "SHA1",
+        "-iter",
+        "2048"
+      ],
+      "exitCode": 1,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.03100000007543713,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    }
+  ],
+  "publicFiles": [
+    {
+      "path": "owned-public.cert.der",
+      "bytes": 883,
+      "sha256": "df2699739f6e6d1c623e581f68d985c3bf1e2715aa93be84a707442996f37461"
+    },
+    {
+      "path": "owned-public.cert.pem",
+      "bytes": 1253,
+      "sha256": "4f1eaa1bdbe526f6833dc98238e11c86525f1e1aa6ca7b6583b84f85eda57109"
+    },
+    {
+      "path": "owned-public.certificate.txt",
+      "bytes": 3229,
+      "sha256": "bba2f4012e005d391f1eac70232d243e1fbb3f688a0537f617278dfa20094211"
+    },
+    {
+      "path": "public-self-signed-code-signing.cnf",
+      "bytes": 277,
+      "sha256": "65710d4705d4ae1ff84114eace59efbb86542757e8322eb709ca8231fa6b2b5a"
+    },
+    {
+      "path": "self-signature-verify.log",
+      "bytes": 124,
+      "sha256": "6ee42bf34362e23c17db9a879adc1ad270ac6778a1cae6c995ef7b56a6b585ed"
+    }
+  ]
+}

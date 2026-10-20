@@ -1,0 +1,81 @@
+--- canonical/scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py
++++ owned-delta/scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py
+@@ -161,6 +161,78 @@
+         self.assertIn('owned swiftc public compiler boundary',output.getvalue())
+         self.assertIn('owned swiftc public compiler boundary',(public/'import-tool-compile.log').read_text())
+ 
++    def signing_identity_fixture(self, certificate_exit=0):
++        # Actual portable child processes exercise the private data/command
++        # boundary only. Their markers are not certificates, C or codesign.
++        directory=tempfile.TemporaryDirectory(); self.addCleanup(directory.cleanup)
++        tool=Path(directory.name)/'identity-boundary.py'
++        tool.write_text('''
++import os,sys
++args=sys.argv[1:]; operation=args[0]
++if operation=='genpkey':sys.stdout.buffer.write(b'owned-private-identity-key-canary')
++elif operation=='req':
++    if sys.stdin.buffer.read()!=b'owned-private-identity-key-canary':sys.exit(79)
++    if int(args[-1]):
++        sys.stdout.buffer.write(b'owned-private-identity-key-canary')
++        sys.stderr.buffer.write(b'owned-private-identity-key-canary');sys.exit(int(args[-1]))
++    sys.stdout.buffer.write(b'owned-public-self-signed-certificate-marker')
++elif operation=='pkcs12':
++    if sys.stdin.buffer.read()!=b'owned-private-identity-key-canary':sys.exit(80)
++    if os.environ.get('OWNED_SYNTHETIC_P12_PASSWORD')!='owned-p12-password-canary':sys.exit(81)
++    if '-certfile' in args:sys.exit(82)
++    sys.stdout.buffer.write(b'owned-private-p12-marker')
++else:sys.exit(83)
++''',encoding='utf-8')
++        original=producer.run; commands=[]
++        def child(argv,**kwargs):
++            commands.append(([str(v) for v in argv],dict(kwargs)))
++            return original([sys.executable,tool,*argv[1:],str(certificate_exit)],**kwargs)
++        return commands,child,Path(directory.name)
++
++    def test_actual_owned_identity_children_use_one_key_and_self_signed_code_signing_constraints(self):
++        commands,child,owned=self.signing_identity_fixture(); output=io.StringIO()
++        with redirect_stdout(output),patch.object(producer,'run',side_effect=child):
++            key,certificate=producer.create_owned_signing_identity(owned)
++        self.assertEqual(key,b'owned-private-identity-key-canary')
++        self.assertEqual(certificate,b'owned-public-self-signed-certificate-marker')
++        self.assertEqual(output.getvalue(),'')
++        self.assertEqual([argv[1] for argv,_ in commands],['genpkey','req'])
++        argv,options=commands[1]
++        for argument in ('-x509','-sha256','-config','-extensions','owned_code_signing'):
++            self.assertIn(argument,argv)
++        configuration=Path(argv[argv.index('-config')+1]).read_bytes()
++        for declaration in (b'basicConstraints=critical,CA:FALSE',b'keyUsage=critical,digitalSignature',b'extendedKeyUsage=codeSigning'):
++            self.assertEqual(configuration.count(declaration),1)
++        self.assertNotIn(b'CA:TRUE',configuration)
++        self.assertNotIn('-addext',argv)
++        self.assertNotIn('-CAkey',argv)
++        self.assertEqual(options['input'],key)
++        self.assertTrue(all(kwargs.get('private') is True for _,kwargs in commands))
++
++    def test_actual_self_signed_identity_failure_stays_nonzero_without_an_alternative_shape(self):
++        commands,child,owned=self.signing_identity_fixture(certificate_exit=8); output=io.StringIO()
++        with redirect_stdout(output),patch.object(producer,'run',side_effect=child),self.assertRaises(producer.ToolFailure) as failed:
++            producer.create_owned_signing_identity(owned)
++        self.assertEqual(failed.exception.code,8)
++        self.assertEqual(len(commands),2)
++        self.assertEqual(output.getvalue(),'')
++        self.assertFalse(producer.RECORDS[-1]['privateInputBytesRetained'])
++
++    def test_actual_self_signed_pkcs12_child_binds_the_same_key_and_only_one_certificate(self):
++        commands,child,_=self.signing_identity_fixture(); output=io.StringIO()
++        with redirect_stdout(output),patch.object(producer,'run',side_effect=child):
++            result=producer.export_owned_signing_identity(b'owned-private-identity-key-canary',
++                Path('owned-public-certificate.pem'),'owned-p12-password-canary')
++        self.assertEqual(result,b'owned-private-p12-marker')
++        self.assertEqual(output.getvalue(),'')
++        self.assertEqual(len(commands),1)
++        argv,options=commands[0]
++        self.assertIn('owned-public-certificate.pem',argv)
++        self.assertNotIn('-certfile',argv)
++        self.assertNotIn('owned-p12-password-canary',argv)
++        self.assertTrue(options['private'])
++        self.assertEqual(options['input'],b'owned-private-identity-key-canary')
++
+ 
+ if __name__ == '__main__':
+     unittest.main(verbosity=2)

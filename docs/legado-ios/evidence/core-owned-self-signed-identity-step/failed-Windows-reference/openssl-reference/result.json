@@ -1,0 +1,96 @@
+{
+  "scope": "Independent existing Windows OpenSSL cryptography reference, not macOS codesign, Keychain, Swift SDK, Mach-O or full producer acceptance.",
+  "openssl": {
+    "path": "D:\\app\\Git\\usr\\bin\\openssl.exe",
+    "version": "OpenSSL 1.1.1o  3 May 2022"
+  },
+  "productionStillRequiresOpenSSL3": true,
+  "source": {
+    "path": ".build/renewal-discovery/owned-codesign-identity-step/work/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+    "bytes": 36095,
+    "sha256": "91d55274b5c09fdbac7d13ec0ca323404d5aa3afd4d042905560f1fb6c168f08"
+  },
+  "status": "failed",
+  "errorType": "ToolFailure",
+  "toolExitCode": 1,
+  "commands": [
+    {
+      "argv": [
+        "D:\\app\\Git\\usr\\bin\\openssl.exe",
+        "version"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.03100000007543713,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "D:\\app\\Git\\usr\\bin\\openssl.exe",
+        "genpkey",
+        "-algorithm",
+        "RSA",
+        "-pkeyopt",
+        "rsa_keygen_bits:2048"
+      ],
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.0470000000204891,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "argv": [
+        "D:\\app\\Git\\usr\\bin\\openssl.exe",
+        "req",
+        "-new",
+        "-x509",
+        "-sha256",
+        "-key",
+        "/dev/stdin",
+        "-days",
+        "30",
+        "-subj",
+        "/CN=Owned SDK Fixture Code/OU=FIXTURE123",
+        "-addext",
+        "basicConstraints=critical,CA:FALSE",
+        "-addext",
+        "keyUsage=critical,digitalSignature",
+        "-addext",
+        "extendedKeyUsage=codeSigning",
+        "-addext",
+        "subjectKeyIdentifier=hash",
+        "-outform",
+        "DER"
+      ],
+      "exitCode": 1,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.030999999959021807,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    }
+  ],
+  "publicFiles": []
+}

@@ -1,0 +1,458 @@
+{
+  "schemaVersion": 1,
+  "preparedAtUTC": "2026-10-20T08:56:01.965479+00:00",
+  "stage": "Owned platform producer: one explicit self-signed Code Signing identity, no global trust/search-list change",
+  "status": "actual-two-source-repair-prepared-portable11-Mac-unexecuted",
+  "sourceBinding": {
+    "failureSourceCommit": "5edbdeaf57ff901a2cd7c0f21db1c33939b391ea",
+    "files": [
+      {
+        "intendedPath": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "workPath": ".build/renewal-discovery/owned-codesign-identity-step/work/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "snapshotPath": ".build/renewal-discovery/owned-codesign-identity-step/final-sources/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "bytes": 36558,
+        "sha256": "f8556e4857236e06478dc3e52818aeb6f87322d6eeb559399ddbaaa0a453fb41",
+        "baseline": {
+          "bytes": 35201,
+          "sha256": "74a69d37bc2a505369fdc0e7bc6335def72a350637ad18c907bf3e0cef18b3ac"
+        },
+        "diff": {
+          "path": ".build/renewal-discovery/owned-codesign-identity-step/diffs/generate-sdk-owned-package.py.diff",
+          "bytes": 6814,
+          "sha256": "45fa6f9205bfc411d5f753a240431fa60861fda3de0ad2ea30e9711790b02c5b"
+        }
+      },
+      {
+        "intendedPath": "scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py",
+        "workPath": ".build/renewal-discovery/owned-codesign-identity-step/work/scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py",
+        "snapshotPath": ".build/renewal-discovery/owned-codesign-identity-step/final-sources/scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py",
+        "bytes": 14184,
+        "sha256": "77068560f48c55143cd6b7835395d7cf6e1423f208e9be676400c02492373f92",
+        "baseline": {
+          "bytes": 9829,
+          "sha256": "4eac052157f4e979d38374693e918bcb1f61a0402aa71b57c097ebe6b5eb9df0"
+        },
+        "diff": {
+          "path": ".build/renewal-discovery/owned-codesign-identity-step/diffs/test-producer-keychain-reopen.py.diff",
+          "bytes": 4897,
+          "sha256": "7a1e0b8ae52b0b3bdea892a7bb905a3ba74c1d020d7d1fc60595b771e1cc5461"
+        }
+      }
+    ],
+    "unchangedOwnedImporterBridgeAndProgramInputs": [
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+        "bytes": 12871,
+        "sha256": "6a8d652c533ad12c36d6fbab69437cfa46ac3f8a67b365ad719050dd545c840e"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h",
+        "bytes": 710,
+        "sha256": "f025bb68da98e714f9d169e509920cd8439326141d47571325c504d9dd9dc982"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c",
+        "bytes": 2733,
+        "sha256": "790ae6d122fdce1e3c278b7ea159b27994d62cfb6d822700c97bf83c65aef534"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/main.c",
+        "bytes": 180,
+        "sha256": "0f1f097060993b3b25b4da50f31a4ef5a1d8077084d64ca561dbfc3a743a86f7"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/extension.c",
+        "bytes": 186,
+        "sha256": "79636265b4cdbf74aff701991aa425a6454fe6cd9049a9652c094b767eba7609"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/framework.c",
+        "bytes": 156,
+        "sha256": "4d6d77e995c1740eeb510f39830683aa31e050e0ebd97881f3e68643970b79ef"
+      }
+    ],
+    "referencedRuntimeAndGateAPIs": [
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift",
+        "bytes": 25565,
+        "sha256": "d835a75bdeb280173b388a943a018a672476898d50b309b1c21a04aaa28c9c57"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalApplicationMaterialVerifier.swift",
+        "bytes": 12873,
+        "sha256": "395fb5baf2b0f0c093cc0d2eb8ac0526a1e0080f0f3b8ada06aa3996b69913f1"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalProvisioningProfileVerifier.swift",
+        "bytes": 16456,
+        "sha256": "e7fc2366b6149ff5a5b1dde04e3f0c854cc3a8205135a8ed4dd60c42c934b8d2"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+        "bytes": 30881,
+        "sha256": "8a7b27556a87c9a7feb3f6472f7992c8bc5c50d1665c0d33428db4c3ffe0d72c"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalSDKOwnedPackageFixture.swift",
+        "bytes": 2177,
+        "sha256": "a74dcba19485897625b560fb4ec4b4424a278b0d6d58e58ac4c2acf95ceb4461"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalControlledPackageSignerTests.swift",
+        "bytes": 27606,
+        "sha256": "4c7203df3802cb9280fe3652ceb41ef5f936db033b1a9ec9e7dcb65d5ae72abc"
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 142987,
+        "sha256": "967f0d77e96c86a1ae105e56f776b0c8fb8bd07ce7ffab2fcf141d0fba68d5de"
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tests.sh",
+        "bytes": 41563,
+        "sha256": "afefd355fd9984662e3caf2c9e59d9a6d8c183967cad1ca803dcb21fa02faa0e"
+      },
+      {
+        "path": "scripts/reader-experience/owned-sdk-producer-check.py",
+        "bytes": 14191,
+        "sha256": "62434d613e07ce98f1f1fd646f4630a08a42d240263835b183c3b9cfe31d2cdb"
+      },
+      {
+        "path": ".github/workflows/reader-owned-sdk-producer.yml",
+        "bytes": 3846,
+        "sha256": "c8a3f8b952674e233100344db7cfac3ca8da76b329ae20b89d902de2c6df719e"
+      },
+      {
+        "path": ".github/workflows/reader-renewal-probe.yml",
+        "bytes": 7095,
+        "sha256": "c7afcbc010ab74fc2a1bd92d4803f8de0ea22e0adf5be09ecaa997db2df853c9"
+      }
+    ],
+    "baseline": {
+      "path": ".build/renewal-discovery/owned-codesign-identity-step/baseline.json",
+      "bytes": 8458,
+      "sha256": "605df03e023087724c80d6a3243071fe23a18dfb14a5f32350e68a829f6df6d8"
+    }
+  },
+  "actualPreviousFailure": {
+    "raw": [
+      {
+        "originalPath": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-check/phase-producer.log",
+        "path": ".build/renewal-discovery/owned-codesign-identity-step/actual-5edbdea/phase-producer.log",
+        "bytes": 2836,
+        "sha256": "241bb838cff590145019f512a5f6a0c5fffdd95e89b70f3ecb7438481d0a4e9c"
+      },
+      {
+        "originalPath": ".build/sdk-evidence/5edbdea/finite/owned-sdk-producer-check/phase-producer.log.stderr.log",
+        "path": ".build/renewal-discovery/owned-codesign-identity-step/actual-5edbdea/phase-producer.log.stderr.log",
+        "bytes": 927,
+        "sha256": "a5cfeaaf309fd1ca947e51efb52c379153c0320c76d080dae5a7e58981a42772"
+      }
+    ],
+    "confirmed": "Actual 5ed Mac C/Swift compile, import, same owned Keychain reopen/unlock/read/write, legacy exact identity count1 and persisted private-key challenge passed. The requested full SHA1 equals the found identity, yet first framework codesign still returned item-not-found. Default valid0/not-trusted and explicit-anchor policy0 are distinct facts.",
+    "causalLimit": "The private current codesign failing call is not identified. Neither valid0 alone nor old open-source policy-lite/nonfatal-trust behavior proves the cause. This delta does not relabel that CA+leaf failure as solved."
+  },
+  "primarySources": [
+    {
+      "url": "https://developer.apple.com/documentation/technotes/tn3161-inside-code-signing-certificates",
+      "path": ".build/renewal-discovery/owned-codesign-identity-step/primary/tn3161.json",
+      "bytes": 65750,
+      "sha256": "6e5a6a1e753afda17856fd99dbd296fa67d4d25366e9c8e91c1ef12c23063dfa",
+      "scope": "Current Apple overview says identity search checks chain trust, date and code-signing EKU; it does not expose the exact failing current codesign implementation call."
+    },
+    {
+      "url": "https://developer.apple.com/library/archive/technotes/tn2206/_index.html",
+      "path": ".build/renewal-discovery/owned-codesign-identity-step/primary/tn2206-index.html",
+      "bytes": 107662,
+      "sha256": "5b6dd8f97a0f1e15f98e4fd07b8b0401dcece8f90c2cd156c0fefe657519cfa5",
+      "scope": "Historical official macOS guidance describes self-signed OpenSSL code signing with a named Keychain and distinguishes designated requirements from anchor trusted; it explicitly is not iOS deployment guidance."
+    },
+    {
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_keychain/lib/IdentityCursor.cpp#L154-L214",
+      "path": ".build/renewal-discovery/owned-codesign-identity-step/primary/IdentityCursor.cpp",
+      "bytes": 11965,
+      "sha256": "4120f4c67b5a4005e4f9b6733ad5d8b08068fdad853795797ba174663e5f1f6c",
+      "scope": "Policy-lite filtering and full-trust filtering are separate. Full trust is required only by returnOnlyValidIdentities=true."
+    },
+    {
+      "url": "https://github.com/apple-oss-distributions/security_systemkeychain/blob/2b4c65b1074521e9c1dd2c8dc7fbf45dd775ec70/src/cs_utils.cpp#L199-L251",
+      "path": ".build/renewal-discovery/owned-codesign-identity-step/primary/cs_utils.cpp",
+      "bytes": 21388,
+      "sha256": "a0ebc6f31fda06331fa336384d97c811c7af8390da47f7181c293d843bba0ebb",
+      "scope": "Published tool identity helper uses policy search with returnOnlyValidIdentities=false, resolves exact certificate SHA-1, and has no ordinary global-anchor install operation."
+    },
+    {
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/signerutils.cpp#L367-L398",
+      "path": ".build/renewal-discovery/owned-codesign-identity-step/primary/signerutils.cpp",
+      "bytes": 14378,
+      "sha256": "2f352abf90941bca654b31bee3a44a75499abc22da4362601920c0ff6301c699",
+      "scope": "Published framework pre-sign context logs SecTrust evaluation failure as not fatal and still copies the certificate chain. This code cannot prove a strict-trust-only cause for the observed current CLI item-not-found."
+    },
+    {
+      "url": "https://github.com/apple-oss-distributions/SecurityTool/blob/ebd4c26c71bc4508b5394a44628796ce32b367d3/identity_find.c#L345-L376",
+      "path": ".build/renewal-discovery/owned-codesign-identity-step/primary/identity_find.c",
+      "bytes": 17651,
+      "sha256": "49f915e5bb310b82bff7e5ff0a799467d0372e0df5a94072774974a7632edbda",
+      "scope": "find-identity prints separate matching(false) and valid(true) searches; its trust annotation comes from a distinct SecTrust/CSSM result evaluation."
+    }
+  ],
+  "actualRepair": [
+    "One existing producer owner now creates exactly one ephemeral RSA2048/SHA256 self-signed Code Signing identity, the documented owned-testing form in Apple TN2206. It is the sole generation path, not a fallback after any failure.",
+    "The helper writes a fixed 277-byte public request configuration in the already-owned temporary directory and selects its exact extension section. It does not inherit host v3_ca defaults or add duplicate critical OIDs; no real/user certificate shape or policy changes.",
+    "The same actual certificate bytes are the leaf and explicit code/profile test anchor. The same private key signs actual codesign output and both real embedded profile CMS layers; all profiles still name SHA256 of that actual code certificate. Original prefixes, teams, application identifiers, resource seals and entitlements are unchanged.",
+    "PKCS12 includes this one certificate and its matching private key in memory; no duplicate certfile bag. Existing stdin privacy, same owned Keychain importer/C bridge, fresh unlock/search/challenge, actual codesign command and exact detached CodeDirectory CMS checks remain required.",
+    "Original platform main/extensions/framework compile/sign, profile/DER, exact raw CMS checks and output/archive tail are byte-identical. No alternate signing backend, ad-hoc signature, global trust/search list, source-only bypass, missing-fixture skip or private-key file is added."
+  ],
+  "hypothesisAndCoverage": {
+    "supportedChoice": "A self-signed identity is publicly documented for testing signing machinery and needs no separate issuer certificate lookup. The prior CA-issued identity required a separate issuer; current codesign identity selection and later chain construction are not equivalent to raw key-use enumeration or an explicit-anchor trust call.",
+    "notProven": "The exact deployed codesign filtering/chain/ACL cause of the prior item-not-found remains unproved. A self-signed form may still be rejected by the actual next platform run.",
+    "preservedCoverage": "Existing independent owned CA+leaf fixtures, generic anchor-chain verification, production Apple authorization limitations and strict verifier algorithms are unchanged. The same-job platform fixture alone changes to a one-certificate explicit-anchor shape.",
+    "chainContract": "Generic CMS permits a nonempty verified leaf-to-explicit-anchor chain of length1..16; it checks actual SecKey signature, date, networkfalse and exact last anchor. The loader passes its one real anchor to both code/profile verification. No production trust-policy change is needed to represent a length1 owned chain.",
+    "gateInputs": "SDK producer remains7 existing sources; finite runner remains19 inputs. Only existing generator and portable test bytes change. Root owns the next immutable tag/full-currentcore binding; this delta changes no selection identity, budget, native test or artifact allowlist."
+  },
+  "validation": {
+    "portable": {
+      "path": ".build/renewal-discovery/owned-codesign-identity-step/portable-v1.json",
+      "bytes": 6564,
+      "sha256": "5fde7ce91d9c4a7611a5e9e8663611d231de1470382862468f4b27db9e89e39e",
+      "passedUniqueMethods": 11,
+      "newMethods": 3,
+      "relatedExistingMethods": 8,
+      "log": {
+        "path": ".build/renewal-discovery/owned-codesign-identity-step/portable-v1.log",
+        "bytes": 2298,
+        "sha256": "781e47f0b04fc9628083582adc7cf7f9b48a2865693d144d32793a50b28262c6"
+      },
+      "methods": [
+        "__main__.OwnedKeychainReopenReportTests.test_actual_c_compile_failure_remains_nonzero_and_never_starts_swift",
+        "__main__.OwnedKeychainReopenReportTests.test_actual_child_failure_cannot_be_accepted_from_a_passed_report",
+        "__main__.OwnedKeychainReopenReportTests.test_actual_compile_children_require_public_c_then_formal_header_and_object_link",
+        "__main__.OwnedKeychainReopenReportTests.test_actual_malformed_private_report_suppresses_all_unknown_data",
+        "__main__.OwnedKeychainReopenReportTests.test_actual_owned_identity_children_use_one_key_and_self_signed_code_signing_constraints",
+        "__main__.OwnedKeychainReopenReportTests.test_actual_private_reporter_has_separate_reopen_schema_and_no_codesign_claim",
+        "__main__.OwnedKeychainReopenReportTests.test_actual_self_signed_identity_failure_stays_nonzero_without_an_alternative_shape",
+        "__main__.OwnedKeychainReopenReportTests.test_actual_self_signed_pkcs12_child_binds_the_same_key_and_only_one_certificate",
+        "__main__.OwnedKeychainReopenReportTests.test_actual_swift_compile_failure_preserves_its_exit_and_public_diagnostic",
+        "__main__.OwnedKeychainReopenReportTests.test_actual_unlock_failure_retains_only_the_typed_osstatus",
+        "__main__.OwnedKeychainReopenReportTests.test_reopen_success_rejects_missing_extra_ambiguous_and_false_proof_fields"
+      ],
+      "scope": "Actual portable Python child/command/private-input boundary only; no actual OpenSSL in this suite, C/Swift compiler, Mac Keychain, codesign, SDK or native execution."
+    },
+    "preservedGeneratorFunctions": {
+      "process_issue": {
+        "bytes": 535,
+        "sha256": "cde29db9e0fa0f612b417051d836bcbadcab9b564bed180844e2b539d3844f3d"
+      },
+      "tool_timeout": {
+        "bytes": 557,
+        "sha256": "0245872a1af7db4b2499d137e788504076e4aa1e3581ad0b3c8c5db775c8a4a4"
+      },
+      "terminate_owned_group": {
+        "bytes": 331,
+        "sha256": "1d87b1f2ca84eb2107a523d7ab00c9e04583a847f204ddde539f7e20e59270d0"
+      },
+      "bounded_child": {
+        "bytes": 3385,
+        "sha256": "50553e6246b2867489aa43b86cb5bbd0d51d630785b0f3e4c38940995d0227ad"
+      },
+      "compile_owned_importer": {
+        "bytes": 1233,
+        "sha256": "3ed107d5cc60bfa02c0688164c6623dae7f77a2b2b5652c27edda336f73e1d90"
+      },
+      "public_text": {
+        "bytes": 313,
+        "sha256": "9d70634ba5056bd0b4e5ef30c0d89e007735ea2a7bc97c56718f2ce6c7c7e575"
+      },
+      "public_record": {
+        "bytes": 254,
+        "sha256": "f964a8a0e77ad0f999c1be696e45ec2fa7ba4c2e81ca88a1164c74703ebc0bce"
+      },
+      "identity_status": {
+        "bytes": 2344,
+        "sha256": "d3f907fc33b558fe16bfc5649b6b7f7e87ed23c2a859473be83e7bf7c09bb5ae"
+      },
+      "reopened_identity_status": {
+        "bytes": 2404,
+        "sha256": "af060e81342e6f84cd8413772c958a7b668b6043324b3d801a8dcdf686c3863d"
+      },
+      "run": {
+        "bytes": 5158,
+        "sha256": "ed1fc8b45dd79e6563b1dc49d26da646d2c5f942079bf7de241de8098a99fd16"
+      },
+      "tlv": {
+        "bytes": 136,
+        "sha256": "b0c3f1e255a2ebb6331f50c1484d6b45da5d5213d01d270d9f6ac2128baa6143"
+      },
+      "integer": {
+        "bytes": 113,
+        "sha256": "1095130f965b93583d8c19be866935923085a20eb39377dcc0aea93c772bcb4c"
+      },
+      "seq": {
+        "bytes": 40,
+        "sha256": "2355e2f1e5bea72cfd923baa78355c1cb5dfae96f5887913a06f4b258361e6cd"
+      },
+      "der": {
+        "bytes": 497,
+        "sha256": "a0ebf756b59b750f2fa32efd57ef40b8482d44d757b360b141807d8fb44b133b"
+      },
+      "fingerprint": {
+        "bytes": 59,
+        "sha256": "e5c2d0c8c327e110bce1d158470856a23fdc1d95621e7ba8ed4c7c36a956dea9"
+      }
+    },
+    "originalPlatformCMSAndArchiveTailExact": true,
+    "MacCCompilerExecutions": 0,
+    "SwiftGrammarExecutions": 0,
+    "SwiftSDKExecutions": 0,
+    "MacKeychainExecutions": 0,
+    "codesignExecutions": 0,
+    "nativeExecutions": 0
+  },
+  "WindowsReferenceAttempts": {
+    "attempts": [
+      {
+        "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference/result.json",
+        "bytes": 2664,
+        "sha256": "48a17701311add34b2602e004ee9f3f9638444565a104c08821fd5754fb243be",
+        "status": "failed",
+        "files": [
+          {
+            "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference/result.json",
+            "bytes": 2664,
+            "sha256": "48a17701311add34b2602e004ee9f3f9638444565a104c08821fd5754fb243be"
+          }
+        ]
+      },
+      {
+        "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-windows-stdin/result.json",
+        "bytes": 6290,
+        "sha256": "28f19e6665dadc868df724eaffb6fdb2d926712e1a4d3d1281a821cc03e55d03",
+        "status": "failed",
+        "files": [
+          {
+            "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-windows-stdin/owned-public.cert.der",
+            "bytes": 933,
+            "sha256": "938b639c0c7e25cfbc4eaee57b5cd6b91203c6b53980ea98605cf72807ff82f6"
+          },
+          {
+            "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-windows-stdin/owned-public.cert.pem",
+            "bytes": 1318,
+            "sha256": "ccbcf1318f84ed202af418be413ac3599f8dbdaa7e2fa60004c82eee67946ad5"
+          },
+          {
+            "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-windows-stdin/owned-public.certificate.txt",
+            "bytes": 3420,
+            "sha256": "2c5547a2dc6583eea461d11280c1805ab25eff1f2808a0e53b3bbdc499f23b76"
+          },
+          {
+            "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-windows-stdin/result.json",
+            "bytes": 6290,
+            "sha256": "28f19e6665dadc868df724eaffb6fdb2d926712e1a4d3d1281a821cc03e55d03"
+          },
+          {
+            "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-windows-stdin/self-signature-verify.log",
+            "bytes": 266,
+            "sha256": "5167e21d136fd8c91f3b4863d7c427011e2e269b25b733a7d1e4b51b0949a258"
+          }
+        ]
+      },
+      {
+        "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-final/result.json",
+        "bytes": 8856,
+        "sha256": "569643f19379f36792c75dbe552a5e7e93051328f4a442d7c099c412735891a3",
+        "status": "failed",
+        "files": [
+          {
+            "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-final/owned-public.cert.der",
+            "bytes": 883,
+            "sha256": "2951bd691d44da75e945c5a17b29aecf643398b5d3e589d2b23291b313861a8a"
+          },
+          {
+            "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-final/owned-public.cert.pem",
+            "bytes": 1253,
+            "sha256": "52d1e4255718737455555779508004eee99f5067cecf00448e112638b87691fb"
+          },
+          {
+            "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-final/owned-public.certificate.txt",
+            "bytes": 3229,
+            "sha256": "809af33f5beafeaad6de148f5ef8fc926d0f32452ea130ebe1796720338a29ef"
+          },
+          {
+            "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-final/public-self-signed-code-signing.cnf",
+            "bytes": 277,
+            "sha256": "65710d4705d4ae1ff84114eace59efbb86542757e8322eb709ca8231fa6b2b5a"
+          },
+          {
+            "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-final/result.json",
+            "bytes": 8856,
+            "sha256": "569643f19379f36792c75dbe552a5e7e93051328f4a442d7c099c412735891a3"
+          },
+          {
+            "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-final/self-signature-verify.log",
+            "bytes": 121,
+            "sha256": "5b7e33d86f8a1bf5ea72a9b822b58ebfaac6af2b54bd6eabadf1e789b6a5857d"
+          }
+        ]
+      },
+      {
+        "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-final-v2/result.json",
+        "bytes": 8926,
+        "sha256": "1cb312f7018b2831745dc84ecc9685f9f3241fd6a3f4fbd108a41a54a4abad08",
+        "status": "failed",
+        "files": [
+          {
+            "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-final-v2/owned-public.cert.der",
+            "bytes": 883,
+            "sha256": "df2699739f6e6d1c623e581f68d985c3bf1e2715aa93be84a707442996f37461"
+          },
+          {
+            "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-final-v2/owned-public.cert.pem",
+            "bytes": 1253,
+            "sha256": "4f1eaa1bdbe526f6833dc98238e11c86525f1e1aa6ca7b6583b84f85eda57109"
+          },
+          {
+            "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-final-v2/owned-public.certificate.txt",
+            "bytes": 3229,
+            "sha256": "bba2f4012e005d391f1eac70232d243e1fbb3f688a0537f617278dfa20094211"
+          },
+          {
+            "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-final-v2/public-self-signed-code-signing.cnf",
+            "bytes": 277,
+            "sha256": "65710d4705d4ae1ff84114eace59efbb86542757e8322eb709ca8231fa6b2b5a"
+          },
+          {
+            "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-final-v2/result.json",
+            "bytes": 8926,
+            "sha256": "1cb312f7018b2831745dc84ecc9685f9f3241fd6a3f4fbd108a41a54a4abad08"
+          },
+          {
+            "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-final-v2/self-signature-verify.log",
+            "bytes": 124,
+            "sha256": "6ee42bf34362e23c17db9a879adc1ad270ac6778a1cae6c995ef7b56a6b585ed"
+          }
+        ]
+      }
+    ],
+    "fullReferencePasses": 0,
+    "environment": "Only existing Windows OpenSSL1.1.1o was available; production still requires existing Mac OpenSSL3. No software installed.",
+    "facts": "First original dev/stdin attempt failed. A reference-only stdin adapter then exposed duplicate v3_ca/addext OIDs in the draft certificate, and that real defect was fixed with the unique explicit public config. Two subsequent certificates passed check_ss_sig, had one of each required extension and reached the matching-SPKI assertion, but both references later failed PKCS12 on the old Windows environment. No full PKCS12/CMS reference success is claimed.",
+    "limits": "Reference-only stdin/environment adapters were never applied to production. Private error streams remain suppressed, all failed reference records remain intact, and no 1.1.1 result is Mac/production3 evidence."
+  },
+  "remaining": [
+    "Actual new Mac finite execution must compile the unchanged importer/C bridge, import/reopen this exact one-certificate P12, codesign all four genuine SDK Mach-Os, verify every actual detached primary-CD CMS against the same explicit owned anchor and complete Keychain cleanup. No stage is assumed passed.",
+    "The actual public certificate shape and all profile/resource/entitlement/identity bindings must still pass the unchanged Swift verifier and real App SDK method in the subsequent same-source full batch.",
+    "Current macOS identity filtering, trust/ACL behavior and the prior CA+leaf item-not-found cause are not proven fixed by portable guards or the self-signed design.",
+    "No Apple account, signing-enrollment, true device install, permission, automatic renewal, cold launch, all-user-data or redistribution clearance is established."
+  ],
+  "canonicalGitCloudModified": false,
+  "newCloudRunTriggered": false,
+  "automaticSelfRenewalImplemented": false,
+  "allNonDeviceWorkComplete": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "publicRequestConfigurationReference": {
+    "path": ".build/renewal-discovery/owned-codesign-identity-step/openssl-reference-final-v2/public-self-signed-code-signing.cnf",
+    "bytes": 277,
+    "sha256": "65710d4705d4ae1ff84114eace59efbb86542757e8322eb709ca8231fa6b2b5a"
+  }
+}

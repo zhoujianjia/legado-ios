@@ -1,0 +1,12 @@
+[req]
+distinguished_name=owned_dn
+prompt=no
+[owned_dn]
+CN=Owned SDK Fixture Code
+OU=FIXTURE123
+[owned_code_signing]
+basicConstraints=critical,CA:FALSE
+keyUsage=critical,digitalSignature
+extendedKeyUsage=codeSigning
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always

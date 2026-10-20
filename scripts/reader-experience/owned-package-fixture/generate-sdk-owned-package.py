@@ -290,6 +290,35 @@ def der(v):
     if isinstance(v,int):return integer(v)
     raise TypeError(type(v))
 def fingerprint(raw):return hashlib.sha256(raw).hexdigest()
+
+def create_owned_signing_identity(owned):
+    # This one controlled fixture uses the public self-signed Code Signing
+    # identity form documented by TN2206. It is the sole input shape, never a
+    # fallback after codesign fails. It installs no root or trust preferences.
+    # The same public certificate is the explicit code/profile test anchor;
+    # none of these synthetic signatures assert Apple or device authorization.
+    # Do not inherit a host openssl.cnf's v3_ca extensions: combining them with
+    # -addext can emit duplicate critical OIDs. This fixed file is public only.
+    configuration=owned/'public-self-signed-code-signing.cnf'
+    configuration.write_bytes(b'[req]\ndistinguished_name=owned_dn\nprompt=no\n'
+        b'[owned_dn]\nCN=Owned SDK Fixture Code\nOU=FIXTURE123\n'
+        b'[owned_code_signing]\nbasicConstraints=critical,CA:FALSE\n'
+        b'keyUsage=critical,digitalSignature\nextendedKeyUsage=codeSigning\n'
+        b'subjectKeyIdentifier=hash\nauthorityKeyIdentifier=keyid:always\n')
+    key=run(['openssl','genpkey','-algorithm','RSA','-pkeyopt','rsa_keygen_bits:2048'],private=True)
+    certificate=run(['openssl','req','-new','-x509','-sha256','-config',configuration,
+        '-extensions','owned_code_signing','-key','/dev/stdin','-days','30',
+        '-subj','/CN=Owned SDK Fixture Code/OU=FIXTURE123','-outform','DER'],input=key,private=True)
+    return key,certificate
+
+def export_owned_signing_identity(key, certificate_pem, password):
+    # The self-signed certificate is the full chain. Adding it as -certfile
+    # would duplicate the same certificate in the PKCS12 bag.
+    env={'PATH':os.defpath,'OWNED_SYNTHETIC_P12_PASSWORD':password}
+    return run(['openssl','pkcs12','-export','-inkey','/dev/stdin','-in',certificate_pem,
+        '-passout','env:OWNED_SYNTHETIC_P12_PASSWORD','-keypbe','PBE-SHA1-3DES',
+        '-certpbe','PBE-SHA1-3DES','-macalg','SHA1','-iter','2048'],input=key,env=env,private=True)
+
 def main():
     a=argparse.ArgumentParser();a.add_argument('--output',type=Path,required=True);args=a.parse_args()
     if sys.platform!='darwin':raise SystemExit('Requires macOS/Xcode; no SDK execution was attempted.')
@@ -328,21 +357,24 @@ def main():
         try:
             # Every key PEM is captured from stdout and only fed to a child's
             # stdin. No private_bytes file, P12 file or account credential.
-            root_key=run(['openssl','genpkey','-algorithm','RSA','-pkeyopt','rsa_keygen_bits:2048'],private=True)
-            leaf_key=run(['openssl','genpkey','-algorithm','RSA','-pkeyopt','rsa_keygen_bits:2048'],private=True)
-            root=run(['openssl','req','-new','-x509','-key','/dev/stdin','-days','30','-subj','/CN=Owned SDK Fixture Root',
-                '-addext','basicConstraints=critical,CA:TRUE','-addext','keyUsage=critical,digitalSignature,keyCertSign','-outform','DER'],input=root_key,private=True)
+            signing_key,root=create_owned_signing_identity(owned)
+            # Root/leaf names are the existing public output contract. Their
+            # DER is deliberately identical for this self-signed identity;
+            # the previous CA-issued-leaf failure remains a separate record.
+            leaf=root
             root_der=out/'root.cert.der';root_der.write_bytes(root)
             root_pem=out/'root.cert.pem';root_pem.write_bytes(run(['openssl','x509','-inform','DER','-outform','PEM'],input=root))
-            csr=owned/'leaf.csr.der';csr.write_bytes(run(['openssl','req','-new','-key','/dev/stdin','-subj','/CN=Owned SDK Fixture Code/OU=FIXTURE123','-outform','DER'],input=leaf_key,private=True))
-            ext=owned/'public-leaf-extensions.cnf';ext.write_text('basicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature\nextendedKeyUsage=codeSigning\nsubjectKeyIdentifier=hash\nauthorityKeyIdentifier=keyid\n')
-            leaf=run(['openssl','x509','-req','-inform','DER','-in',csr,'-CA',root_pem,'-CAkey','/dev/stdin','-set_serial','2','-days','30','-sha256','-extfile',ext,'-outform','DER'],input=root_key,private=True)
             (out/'leaf.cert.der').write_bytes(leaf)
             leaf_pem=out/'leaf.cert.pem';leaf_pem.write_bytes(run(['openssl','x509','-inform','DER','-outform','PEM'],input=leaf))
             at=datetime.now(timezone.utc).replace(microsecond=0)
             run(['openssl','verify','-purpose','any','-attime',str(int(at.timestamp())),'-CAfile',root_pem,leaf_pem],public_log=out/'owned-certificate-chain.log')
-            env={'PATH':os.defpath,'OWNED_SYNTHETIC_P12_PASSWORD':p12_password}
-            p12=run(['openssl','pkcs12','-export','-inkey','/dev/stdin','-in',leaf_pem,'-certfile',root_pem,'-passout','env:OWNED_SYNTHETIC_P12_PASSWORD','-keypbe','PBE-SHA1-3DES','-certpbe','PBE-SHA1-3DES','-macalg','SHA1','-iter','2048'],input=leaf_key,env=env,private=True)
+            public_record('OWNED_SIGNING_IDENTITY_SHAPE',{'schemaVersion':1,
+                'shape':'self-signed-code-signing-identity','leafSHA256':fingerprint(leaf),
+                'explicitCodeAndProfileAnchorSHA256':fingerprint(root),
+                'globalTrustOrSearchListChanged':False,'codesignExecutionVerified':False})
+            # No duplicate -certfile copy: the self-signed leaf is already the
+            # complete one-certificate identity. PKCS12 and keys stay in memory.
+            p12=export_owned_signing_identity(signing_key,leaf_pem,p12_password)
             importer=compile_owned_importer(owned,out)
             request={'path':str(keychain),'keychainPassword':keychain_password,'p12Password':p12_password,
                 'p12':base64.b64encode(p12).decode(),'leafCertificate':base64.b64encode(leaf).decode(),
@@ -367,8 +399,9 @@ def main():
             # cross-process identity lookup or system/global trust.
             run(['security','verify-cert','-c',out/'leaf.cert.der','-c',root_der,'-r',root_der,
                  '-p','codeSign','-L','-N','-q'],public_output_label='OWNED_EXPLICIT_ANCHOR_CODE_SIGN_POLICY')
-            del request,p12,leaf_key
-            root_key_memory=root_key
+            del request,p12
+            root_key_memory=signing_key
+            del signing_key
             app=owned/'Payload/Owned.app';app.mkdir(parents=True)
             framework=app/'Frameworks/OwnedFramework.framework';framework.mkdir(parents=True)
             common=['xcrun','--sdk','iphoneos','clang','-target','arm64-apple-ios17.0','-isysroot',sdk,'-O0','-g0']
