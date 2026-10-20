@@ -19,6 +19,34 @@ import java.util.concurrent.TimeUnit
 
 /** Only public createSession/execute/cancel/close and the real state host protocol are used. */
 class OriginalTraditionalRuntimeTest {
+    @Test(timeout = 15_000) fun searchDoesNotInventShelfIdentityButDetailsStillRequireTheGrantedBookOwner() {
+        Peer { respond(it, "<div class='book'><a href='/book'>Unshelved</a></div>") }.use { peer ->
+            val directory = Files.createTempDirectory("public-unshelved-owner-")
+            val host = RulePersistenceHost(FileRulePersistenceAdapter(directory))
+            LegadoRuntime.setHostCallback { _, operation, raw ->
+                if (operation == "task.cancel") "{}" else {
+                    val request = parseObject(raw)
+                    val bookRead = operation == "state.read" && request["keys"].asJsonArray.any {
+                        val key = com.google.gson.JsonParser.parseString(it.asString).asJsonArray
+                        key[1].asString == "variables" && key[2].asString == "book"
+                    }
+                    if (bookRead) """{"ok":false,"error":{"code":"UNSUPPORTED_CAPABILITY","message":"No App book UUID grant"}}"""
+                    else host.dispatch(operation, request).toString()
+                }
+            }
+            val created = parseObject(LegadoRuntime.createSession(source(peer.origin).toString(), options.toString()))
+            assertTrue(created.toString(), created["ok"].asBoolean); val id = created["sessionId"].asString
+            try {
+                val search = parseObject(LegadoRuntime.execute(id, "public-unshelved-search", "search", "{\"key\":\"owned\"}"))
+                assertTrue(search.toString(), search["ok"].asBoolean)
+                val books = search["result"].asJsonObject["books"].asJsonArray
+                assertEquals(1, books.size()); assertEquals("Unshelved", books[0].asJsonObject["name"].asString)
+                val detail = parseObject(LegadoRuntime.execute(id, "public-ungranted-details", "details", jsonObject("book" to books[0]).toString()))
+                assertEquals("UNSUPPORTED_CAPABILITY", detail["error"].asJsonObject["code"].asString)
+                assertEquals(1, peer.requests.size)
+            } finally { LegadoRuntime.closeSession(id); LegadoRuntime.setHostCallback(null); directory.toFile().deleteRecursively() }
+        }
+    }
     @Test(timeout = 25_000) fun publicFourStageChainKeepsOriginalSelectorsPagingVariablesCookiesAndBusinessDtos() {
         Peer { e -> when (e.requestURI.path) {
             "/search" -> { e.responseHeaders.add("Set-Cookie", "owned=1; Path=/"); respond(e, "<div class='book'><a href='/book'>Original</a><b>Author</b></div>") }

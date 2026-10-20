@@ -5,6 +5,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import io.legado.app.data.entities.Book
 import io.legado.app.data.entities.BookChapter
+import io.legado.app.data.entities.SearchBook
 import io.yuedu.legado.originalrule.RuleEnvironment
 
 /** Business-only projection of the finite retained entities. Never reflects an environment or
@@ -50,6 +51,18 @@ internal object OriginalRuleDto {
         "latestChapterTitle" to book.latestChapterTitle, "latestChapterTime" to book.latestChapterTime, "lastCheckTime" to book.lastCheckTime,
         "lastCheckCount" to book.lastCheckCount, "totalChapterNum" to book.totalChapterNum, "durChapterTitle" to book.durChapterTitle,
         "durChapterIndex" to book.durChapterIndex, "reverseToc" to book.getReverseToc())
+
+    /** Search rows precede App shelf UUID allocation. Project the actual SearchBook fields
+     * without constructing a persistent Book and accidentally asking for an ungranted owner. */
+    fun book(book: SearchBook): JsonObject {
+        val now = System.currentTimeMillis()
+        return jsonObject("bookUrl" to book.bookUrl, "origin" to book.origin, "name" to book.name, "author" to book.author,
+            "tocUrl" to book.tocUrl, "kind" to book.kind, "wordCount" to book.wordCount, "variable" to book.variable,
+            "infoHtml" to book.infoHtml, "tocHtml" to book.tocHtml, "originName" to book.originName,
+            "originOrder" to book.originOrder, "type" to book.type, "coverUrl" to book.coverUrl, "intro" to book.intro,
+            "latestChapterTitle" to book.latestChapterTitle, "latestChapterTime" to now, "lastCheckTime" to now,
+            "lastCheckCount" to 0, "totalChapterNum" to 0, "durChapterTitle" to null, "durChapterIndex" to 0, "reverseToc" to false)
+    }
 
     fun chapter(chapter: BookChapter): JsonObject = jsonObject(
         "url" to chapter.url, "title" to chapter.title, "isVolume" to chapter.isVolume, "baseUrl" to chapter.baseUrl, "bookUrl" to chapter.bookUrl,

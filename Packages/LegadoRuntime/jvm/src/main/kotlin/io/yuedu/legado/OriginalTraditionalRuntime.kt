@@ -51,7 +51,7 @@ internal object OriginalTraditionalRuntime {
                         "search" -> {
                             val page = if (input.has("page") && input["page"].isJsonNull) null else input.int("page", 1)
                             val books = WebBook.searchBookAwait(source, input.requiredText("key"), page)
-                            jsonObject("books" to JsonArray().apply { books.forEach { add(OriginalRuleDto.book(it.toBook())) } })
+                            jsonObject("books" to JsonArray().apply { books.forEach { add(OriginalRuleDto.book(it)) } })
                         }
                         "details", "getBookInfo" -> {
                             val book = OriginalRuleDto.book(input.requiredObject("book"), environment, source.bookSourceUrl)
