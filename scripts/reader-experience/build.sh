@@ -39,7 +39,7 @@ BUILD_ARGS=(
   -project "$REPO_DIR/Yuedu-Reader.xcodeproj" -scheme Yuedu-Reader
   -configuration Release -destination 'generic/platform=iOS'
   -onlyUsePackageVersionsFromResolvedFile
-  CURRENT_PROJECT_VERSION=13
+  CURRENT_PROJECT_VERSION=14
   IPHONEOS_DEPLOYMENT_TARGET="$MIN_IOS"
   ARCHS=arm64 CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= CODE_SIGN_ENTITLEMENTS=
   GATEWAY_BASE_URL=
@@ -78,11 +78,12 @@ if [[ ${LEGADO_READER_WITH_JVM:-0} == 1 ]]; then
 cat > "$OUTPUT/README.txt" <<'TEXT'
 阅读（unsigned，独立修改版）
 
-本包将有限的 mainJs 书源流程接到本地 Rhino/JVM，正文使用原生 CoreText 阅读器。
-传统规则书源仍使用现有 JavaScriptCore 实现，尚未证明完整 Legado 兼容。
-本包不内置书源，安装后自行导入；更新不会清除已导入的书源和阅读数据。
+本包的传统文本书源默认入口及有限 mainJs 流程接到本地 Rhino/JVM，正文使用原生 CoreText 阅读器。
+书源及宿主能力仍未全部完成，完整 Legado 兼容尚未验证。
+本包不内置书源，安装后自行导入；沿用原签名账号及应用标识覆盖安装，并核对已有书籍、书源和阅读进度。
 设置 → 高级 → 自签与续签提供配置、重签准备、独立确认安装、自动检查开关和连接诊断。
-实际续签仍须配置有效 Apple 账号服务、签名材料和已配对且可达的安装连接；本测试包不预置这些私密材料，也不代表已经续签成功。
+自签设置新增 Anisette 服务选择、注册状态及配对身份导入。请使用自己信任的服务，并准备有效签名配置、受密码保护的 P12 和对应公开配对 JSON。
+实际续签还需要有效 Apple 账号和已配对且可达的认证安装连接；导入成功及连接成功均不证明同机安装权限或到期时间延长。
 build-manifest.json 记录了实际来源、普通 JVM JAR、书源资源未打包的检查结果和 IPA 的哈希。
 本包最低 iOS 18。应用账号、会员、遥测及 CloudKit 关闭；不提供上游官方服务。
 本项目与 Legado、Yuedu Reader 官方无关，也未获其背书。许可证和源码义务分别按组件核对。
@@ -93,10 +94,10 @@ else
 cat > "$OUTPUT/README.txt" <<'TEXT'
 阅读（unsigned，独立修改版）
 
-这是用于验证 CoreText 阅读器和 JavaScriptCore 书源流程的构建配置，不另设用户发行版本。
+这是用于验证 CoreText 阅读器的构建配置，不另设用户发行版本。
 本包不内置书源；原生界面基于 Yuedu Reader。
 本项目与原项目官方无关，也未获其背书。工程默认使用独立 App 标识；构建清单记录实际是否需要标识覆盖。
-实验性 JVM 尚未接入阅读主流程；本包不代表 Legado 全功能已迁移。
+此配置没有嵌入 JVM，依赖 JVM 的书源默认入口不可用；本包不代表 Legado 全功能已迁移。
 可安装后尝试导入本地书、导入书源和搜索阅读；本轮只证明编译打包，未逐项验收这些功能。
 应用账号、会员、遥测及 CloudKit 关闭；使用合成配置，不提供上游官方服务。
 

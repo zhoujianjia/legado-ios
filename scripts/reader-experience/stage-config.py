@@ -388,14 +388,14 @@ def manifest(app, ipa, settings, source, xcode, overlay, with_jvm=False):
             "swiftPackageResolvedSHA256": digest(resolved), "bundleValidation": summary,
             "bundledBookSources": bundled_sources(app),
             "ipaSHA256": digest(ipa), "ipaBytes": ipa.stat().st_size,
-            "readerRoute": "Legado Rhino/JVM mainJs route; traditional sources use existing JavaScriptCore; native CoreText reader" if with_jvm else "Existing Yuedu SwiftUI/CoreText and JavaScriptCore",
+            "readerRoute": "Original traditional text WebBook and finite mainJs via Rhino/JVM; native CoreText reader" if with_jvm else "Native CoreText reader; JVM-backed default source routes unavailable without the embedded runtime",
             "jvmIntegratedIntoReading": with_jvm, "nativeJVMCompiled": with_jvm,
             "mainJsRouteExecutionValidated": False,
             "syntheticBackendConfiguration": True, "backendServicesConfigured": False,
             "deviceCompilationPassed": True, "signed": False, "deviceValidationPassed": False,
             "simulatorExecution": "not_run", "functionalAcceptance": "not_run",
             "limitations": ["Unsigned: sign the app and embedded extensions before installation.",
-                            "This prototype includes a finite mainJs JVM route; traditional sources use the existing JSC implementation. Full Legado compatibility remains unverified." if with_jvm else "This package retains the Yuedu reader and its existing JSC source compatibility; it is not the full Legado port.",
+                            "Original traditional text consumers and finite mainJs use the JVM. Book-source and host coverage remains incomplete; full Legado compatibility is unverified." if with_jvm else "This package retains the CoreText reader without the JVM required by default source routes; it is not the full Legado port.",
                             "Accounts, subscription verification, CloudKit and remote backend features are not configured in local experience mode.",
                             "Compilation and packaging do not prove import/search/reading/TTS/RSS work on this device."]}
 
