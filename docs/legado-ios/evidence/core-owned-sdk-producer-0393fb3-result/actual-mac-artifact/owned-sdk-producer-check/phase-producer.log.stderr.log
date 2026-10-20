@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py", line 440, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py", line 326, in main
+    run(['xcrun','swiftc',HERE/'ImportOwnedIdentity.swift','-o',importer],public_log=out/'import-tool-compile.log')
+  File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py", line 252, in run
+    raise ToolFailure('private tool' if private else redacted[0],result.returncode)
+ToolFailure: xcrun failed: 1
