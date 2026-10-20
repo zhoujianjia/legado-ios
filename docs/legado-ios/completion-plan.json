@@ -169,8 +169,8 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Both8d handles closed. Archive Native actual failure and repair every confirmed compiler failure together with reviewed Await source/control cohort, then submit one combined SDK/Native pair. No per-item or IPA tag.",
-      "alreadyRunningTasks": "None. Both8d SDK and Native are terminal failures. SDK evidence archived; Native actual artifact review/archival is in progress locally. Never poll closed runs again.",
+      "nextPlannedCheckpoint": "Both8d actual terminal causes are archived: SDKForm204 typecheck, NativeView1253 async overload, and two exact portable stale assertions. Reviewed Await plus both source repairs and coherent controls are ready for root integration, then one new SDK/Native tag pair. No per-item or IPA tag.",
+      "alreadyRunningTasks": "None. Both8d source jobs are terminal and archived; never poll them or earlier closed runs again.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
         "sourceTag": "reader-renewal-8d934dd",
@@ -227,8 +227,12 @@
         "status": "completed",
         "conclusion": "failure",
         "queryAgain": false,
-        "detailedArchivePending": true,
-        "record": null
+        "record": "docs/legado-ios/core-native-8d934dd-terminal-result.json",
+        "actualNativeSelectedMethodsExecuted": 0,
+        "actualNativeSelectedMethodsPassed": 0,
+        "MainJSMethodsPassed": 0,
+        "ordinaryJVMMethodsPassed": 327,
+        "compilerFailure": "BookSourceFormLoginView.swift1253 missingawait"
       },
       "currentUnifiedCheckpoint": {
         "sourceCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
@@ -250,7 +254,8 @@
         "status": "completed",
         "conclusion": "failure",
         "SDKTerminalRecord": "docs/legado-ios/core-sdk-8d934dd-terminal-result.json",
-        "NativeTerminalArchivePending": true
+        "NativeTerminalArchivePending": false,
+        "NativeTerminalRecord": "docs/legado-ios/core-native-8d934dd-terminal-result.json"
       },
       "live8dPortableFailureRepair": {
         "record": "docs/legado-ios/core-sdk-8d-portable-expectations-repair.json",
@@ -1491,6 +1496,13 @@
         "independentPackageMethodsPassed": 24,
         "producerCommandsPassed": 48,
         "actualAppSignerPassed": false
+      },
+      "current8dNativeTerminal": {
+        "record": "docs/legado-ios/core-native-8d934dd-terminal-result.json",
+        "actualOrdinaryJVMMethodsPassed": 327,
+        "actualNativeHostMethodsExecuted": 0,
+        "AppBuildExit": 65,
+        "bothActualCompilerFailuresNeedRepair": true
       }
     }
   },

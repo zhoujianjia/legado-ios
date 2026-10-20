@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
+  "actualRequiredHostBuild": {
+    "argv": [
+      "/Applications/Xcode_26.2.app/Contents/Developer/usr/bin/xcodebuild",
+      "-project",
+      "Yuedu-Reader.xcodeproj",
+      "-scheme",
+      "Yuedu-Reader",
+      "-destination",
+      "id=4C675116-265D-488F-BFFA-836A4545674C",
+      "-configuration",
+      "Debug",
+      "-onlyUsePackageVersionsFromResolvedFile",
+      "CODE_SIGNING_ALLOWED=YES",
+      "CODE_SIGNING_REQUIRED=YES",
+      "CODE_SIGN_IDENTITY=-",
+      "CODE_SIGN_STYLE=Manual",
+      "DEVELOPMENT_TEAM=",
+      "CODE_SIGN_ENTITLEMENTS=",
+      "GATEWAY_BASE_URL=",
+      "YUEDU_LOCAL_EXPERIENCE=YES",
+      "IPHONEOS_DEPLOYMENT_TARGET=18.0",
+      "ENABLE_DEBUG_DYLIB=NO",
+      "SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) DEBUG LEGADO_REQUIRE_NATIVE_MAINJS",
+      "build-for-testing"
+    ],
+    "exitCode": 65,
+    "timedOut": false,
+    "actualLog": {
+      "path": ".build/native-8d934dd-terminal/extracted/.build/native-reader-test/native-build.log",
+      "bytes": 6357186,
+      "sha256": "0309c2bc45da426c710611e28b67861a12e854619c3ee4535734ea8395297800"
+    },
+    "individualTimeoutSeconds": null,
+    "jobBudgetMinutes": 90,
+    "shell": "/bin/bash --noprofile --norc -e -o pipefail {0}",
+    "buildFailurePrecedesSetPlusE": true,
+    "compilerError": {
+      "path": "Modules/Features/BookSource/BookSourceFormLoginView.swift",
+      "line": 1253,
+      "column": 64,
+      "message": "expression is 'async' but is not marked with 'await'"
+    }
+  },
+  "actualJVM": {
+    "argv": [
+      "bash",
+      "Packages/LegadoRuntime/jvm/gradlew",
+      "-p",
+      "Packages/LegadoRuntime/jvm",
+      "--no-daemon",
+      "test",
+      "runtimeJar",
+      "runtimeSmoke"
+    ],
+    "exitCode": 0,
+    "completion": "BUILD SUCCESSFUL in 2m 27s",
+    "log": {
+      "path": ".build/native-8d934dd-terminal/extracted/.build/ci-logs/native-reader-jvm.log",
+      "bytes": 9873,
+      "sha256": "567a6d87fc1b184b2cd403abe3e4eef3b867967da57b4da81280479ff6690686"
+    },
+    "actualXMLSuites": 47,
+    "actualTests": 327
+  },
+  "plannedButNotExecuted": [
+    {
+      "group": "mainjs",
+      "methods": [
+        "LegadoNativeMainJSReaderTests/testNativeMainJSProductReadingChain"
+      ],
+      "count": 1,
+      "budgetSeconds": 2700,
+      "runGroupCommand": [
+        "python",
+        "-B",
+        "scripts/reader-experience/native-smoke-tools.py",
+        "run-group",
+        "--group",
+        "mainjs"
+      ],
+      "executed": false,
+      "actualMethods": 0,
+      "summaryProduced": false,
+      "xcresultProduced": false
+    },
+    {
+      "group": "original",
+      "methods": [
+        "LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoUsesExistingKeychainAndReopens",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIUsesProductSourceServiceAndStoredMap",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIEventsReachExistingFormProjectionAfterServiceGateRelease",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalDismissPersistenceUsesCheckedOwnerWithoutExecutingLoginJS",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalDeltaLoginUIReusesPhysicalControlsThroughProductServiceWithoutCredentialWrite",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2UsesProductRhinoAndCheckedLoginBeforeClose"
+      ],
+      "count": 21,
+      "budgetSeconds": 1800,
+      "runGroupCommand": [
+        "python",
+        "-B",
+        "scripts/reader-experience/native-smoke-tools.py",
+        "run-group",
+        "--group",
+        "original"
+      ],
+      "executed": false,
+      "actualMethods": 0,
+      "summaryProduced": false,
+      "xcresultProduced": false
+    }
+  ],
+  "otherAppGroupsNotExecuted": [
+    {
+      "group": "configuration",
+      "budgetSeconds": 900,
+      "executed": false,
+      "actualMethods": 0
+    },
+    {
+      "group": "localproduct",
+      "budgetSeconds": 1200,
+      "executed": false,
+      "actualMethods": 0
+    },
+    {
+      "group": "cache",
+      "budgetSeconds": 900,
+      "executed": false,
+      "actualMethods": 0
+    }
+  ],
+  "sourceFacts": [
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "bytes": 10489,
+      "sha256": "136efb498a55a9382459fad881d7b3f0c1eaa1fb1fb9e5d640b6fdb4b025c364"
+    },
+    {
+      "path": "scripts/reader-experience/native-smoke-tools.py",
+      "bytes": 45974,
+      "sha256": "016f0cc03332c0ad0a2dad58b22cc0a36c6df70b6f8467bac65651e5a9a88bf0"
+    }
+  ],
+  "meaning": "Only build and JVM argv above actually ran. Group budgets/commands are exact8d source plans and are not claimed as executed phases."
+}

@@ -1,0 +1,339 @@
+{
+  "version": 1,
+  "frozenUTC": "2026-10-20T21:28:57.620865+00:00",
+  "scope": "Independent acquisition and factual review of actual Native8d terminal job logs/artifact only, no source implementation review or new test/build",
+  "terminal": {
+    "run": 39495414820,
+    "job": 118879092115,
+    "conclusion": "failure",
+    "sourceCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
+    "actualFailureStep": "Execute1 MainJS and21 original methods in separate required hosts",
+    "actualExit": 65,
+    "statusNotPolled": true
+  },
+  "acquisition": {
+    "jobLogFetchCount": 1,
+    "artifactMetadataFetchCount": 1,
+    "artifactDownloadCount": 1,
+    "artifactID": 12299635003,
+    "artifactName": "legado-native-main-app-product-chain",
+    "zip": {
+      "bytes": 312836,
+      "sha256": "42101dac687c77d96b1b8343b0dd09e25025bc221256b96994958a7b00879ae1"
+    },
+    "GitHubDigestSizeMatch": true,
+    "CRC": true,
+    "safePaths": true,
+    "duplicates": false,
+    "members": 68,
+    "privateDownloadMetadata": "private-artifact-download.json; signedURLs never included in this report",
+    "rawLogIgnoredOnly": true
+  },
+  "source": {
+    "actualInputs": 131,
+    "allHistoricalGit8dBlobsMatched": true,
+    "evidenceRosterIsNotCompileWhitelist": true,
+    "compilerFileBoundSeparatelyToGit8d": true,
+    "bindings": {
+      "path": "source-binding.json",
+      "bytes": 34219,
+      "sha256": "b88f3cc408cdc9e20091286549a61d7e56243a62af1ee0cabec3293ad02447a2"
+    }
+  },
+  "JVM": {
+    "suites": 47,
+    "tests": 327,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "actualMethodResults": {
+      "path": "actual-jvm-xml-review.json",
+      "bytes": 78465,
+      "sha256": "07e60505f474baa9bab5a8cb459775475647e33bfafd449bef9abceccd3c3812"
+    },
+    "freshGradle": "BUILD SUCCESSFUL in2m27; test/runtimeJar/runtimeSmoke all executed",
+    "ordinaryJarInspector": {
+      "sha256": "129cf62b76f1ab25b44166064aacb24c1d985362323373b2f84b1b15c92ed964",
+      "bytes": 10851856,
+      "maximumBaseClassMajor": 65,
+      "requiredClasses": [
+        "io/yuedu/legado/LegadoRuntime.class",
+        "io/yuedu/legado/NativeHost.class",
+        "io/yuedu/legado/ProductionHttpTransport.class",
+        "io/yuedu/legado/RuntimeSessionOptions.class",
+        "io/yuedu/legado/StaticScalarSelectorRule.class",
+        "org/htmlunit/corejs/javascript/Context.class",
+        "okhttp3/OkHttpClient.class",
+        "org/brotli/dec/BrotliInputStream.class",
+        "org/apache/commons/text/StringEscapeUtils.class",
+        "org/apache/commons/lang3/StringUtils.class",
+        "io/legado/app/model/analyzeRule/AnalyzeRule.class",
+        "io/legado/app/data/entities/Book.class",
+        "io/legado/app/data/entities/BookChapter.class",
+        "io/legado/app/data/entities/BookSource.class"
+      ],
+      "testClassesIncluded": false
+    },
+    "ordinaryJarBinaryIncludedInArtifact": false,
+    "jarHashMeaning": "Reported by actual packaging inspection; no JAR binary is included here for independent rehash."
+  },
+  "AppCompiler": {
+    "uniqueErrors": [
+      {
+        "path": "Modules/Features/BookSource/BookSourceFormLoginView.swift",
+        "line": 1253,
+        "column": 64,
+        "message": "expression is 'async' but is not marked with 'await'"
+      }
+    ],
+    "additionalCompilerErrorLines": [],
+    "rawJobUniqueCompilerErrorCount": 1,
+    "sameAsSDKForm204": false,
+    "notEvidenceThatSeparateSDKForm204IsFixed": true,
+    "sourceExpression": "if let url = URL(string: request.action) { UIApplication.shared.open(url) }",
+    "note": "call is 'async'; await required",
+    "AppTestExecuted": 0,
+    "buildForTestingPassed": false
+  },
+  "nativeGroups": [
+    {
+      "group": "mainjs",
+      "intendedMethods": [
+        "LegadoNativeMainJSReaderTests/testNativeMainJSProductReadingChain"
+      ],
+      "intendedCount": 1,
+      "actualExecuted": 0,
+      "actualPassed": 0,
+      "actualFailed": 0,
+      "actualSkipped": 0,
+      "state": "not-executed: required App build-for-testing failed",
+      "groupArtifacts": [],
+      "selectorsAreNotExecutionEvidence": true
+    },
+    {
+      "group": "original",
+      "intendedMethods": [
+        "LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoUsesExistingKeychainAndReopens",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIUsesProductSourceServiceAndStoredMap",
+        "LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIEventsReachExistingFormProjectionAfterServiceGateRelease",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalDismissPersistenceUsesCheckedOwnerWithoutExecutingLoginJS",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalDeltaLoginUIReusesPhysicalControlsThroughProductServiceWithoutCredentialWrite",
+        "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2UsesProductRhinoAndCheckedLoginBeforeClose"
+      ],
+      "intendedCount": 21,
+      "actualExecuted": 0,
+      "actualPassed": 0,
+      "actualFailed": 0,
+      "actualSkipped": 0,
+      "state": "not-executed: required App build-for-testing failed",
+      "groupArtifacts": [],
+      "selectorsAreNotExecutionEvidence": true
+    }
+  ],
+  "otherExecutedGates": [
+    {
+      "path": "extracted/.build/ci-logs/native-reader-diagnostics-guards.log",
+      "bytes": 1861,
+      "sha256": "7efa186157e2234b1b77d4e0b68e1a735f8bb83eafe43ec70c46d284b4926ec6",
+      "unittestExecutedSummaries": [
+        16
+      ],
+      "unittestFailIdentities": [],
+      "unittestTerminalOK": true,
+      "swiftExecutedSummaries": []
+    },
+    {
+      "path": "extracted/.build/ci-logs/native-reader-jvm.log",
+      "bytes": 9873,
+      "sha256": "567a6d87fc1b184b2cd403abe3e4eef3b867967da57b4da81280479ff6690686",
+      "unittestExecutedSummaries": [],
+      "unittestFailIdentities": [],
+      "unittestTerminalOK": false,
+      "swiftExecutedSummaries": []
+    },
+    {
+      "path": "extracted/.build/ci-logs/native-reader-notice-guards.log",
+      "bytes": 2453,
+      "sha256": "2312c2017c0e9180b1ff2be1e5bc41d7e6b7e4ef1d6d07611f58ceef3ab49e0a",
+      "unittestExecutedSummaries": [
+        15
+      ],
+      "unittestFailIdentities": [],
+      "unittestTerminalOK": false,
+      "swiftExecutedSummaries": []
+    },
+    {
+      "path": "extracted/.build/ci-logs/native-reader-overlays.log",
+      "bytes": 4221,
+      "sha256": "b9acbb89847687ca99e5972fbb0a431ef775f51f41bdac0d6d36c12aca799dfa",
+      "unittestExecutedSummaries": [
+        24
+      ],
+      "unittestFailIdentities": [],
+      "unittestTerminalOK": true,
+      "swiftExecutedSummaries": []
+    },
+    {
+      "path": "extracted/.build/ci-logs/native-reader-package-guards.log",
+      "bytes": 1154,
+      "sha256": "c8c9b406d72b0ede9032005bdab7d23d12e3014db41e641e9935048e42495476",
+      "unittestExecutedSummaries": [
+        6
+      ],
+      "unittestFailIdentities": [],
+      "unittestTerminalOK": true,
+      "swiftExecutedSummaries": []
+    },
+    {
+      "path": "extracted/.build/ci-logs/native-reader-saved-diagnostics-tests.log",
+      "bytes": 6267,
+      "sha256": "20e8d88412e815e9439a3c8be9d50b2f3a54c92a878d0f62c68d164460ac0358",
+      "unittestExecutedSummaries": [],
+      "unittestFailIdentities": [],
+      "unittestTerminalOK": false,
+      "swiftExecutedSummaries": [
+        {
+          "tests": 17,
+          "failures": 0
+        },
+        {
+          "tests": 17,
+          "failures": 0
+        },
+        {
+          "tests": 17,
+          "failures": 0
+        }
+      ]
+    },
+    {
+      "path": "extracted/.build/ci-logs/native-reader-source-stamps.log",
+      "bytes": 1759,
+      "sha256": "68da35f67bfe7fe793b79dc528915a371c62160c41d927aa1bcb50a24078f0c4",
+      "unittestExecutedSummaries": [
+        9
+      ],
+      "unittestFailIdentities": [],
+      "unittestTerminalOK": true,
+      "swiftExecutedSummaries": []
+    },
+    {
+      "path": "extracted/.build/ci-logs/native-reader-staging-guards.log",
+      "bytes": 2819,
+      "sha256": "c49dc3423c7cbc107fba375908087f910636255d72a0606c671fb58c229bf2ec",
+      "unittestExecutedSummaries": [
+        21
+      ],
+      "unittestFailIdentities": [],
+      "unittestTerminalOK": true,
+      "swiftExecutedSummaries": []
+    }
+  ],
+  "restore": {
+    "status": "restored",
+    "nativeRuntimeRecompiled": false,
+    "freshOrdinaryJVMRequired": true,
+    "nativeExecutionVerified": false,
+    "deviceValidationPassed": false
+  },
+  "secondaryFailures": [
+    {
+      "kind": "diagnostics-unavailable",
+      "message": "CalledProcessError: Command '['xcrun', 'simctl', 'get_app_container', '4C675116-265D-488F-BFFA-836A4545674C', 'local.zhoujianjia.legado-reader', 'app']' returned non-zero exit status 2.",
+      "relation": "post-build collector could not find an installed App; not a failing executed Native test"
+    }
+  ],
+  "evidence": [
+    {
+      "path": ".build/native-8d934dd-terminal/artifact-metadata.json",
+      "bytes": 872,
+      "sha256": "89b30c3dde65de36a886de84d7fb62f2b99053efcb7a0ef2e90af721c168a7f0"
+    },
+    {
+      "path": ".build/native-8d934dd-terminal/member-inventory.json",
+      "bytes": 14327,
+      "sha256": "ad38e9cffb01d624d0f78dc88261c5466bd189e1222b2b7984bd6bf801bee54a"
+    },
+    {
+      "path": ".build/native-8d934dd-terminal/artifact.zip",
+      "bytes": 312836,
+      "sha256": "42101dac687c77d96b1b8343b0dd09e25025bc221256b96994958a7b00879ae1"
+    },
+    {
+      "path": ".build/native-8d934dd-terminal/decoded-job.log",
+      "bytes": 7051323,
+      "sha256": "28e2eb99804f7f82fb617e1ea4ea5096187ce5eb1b64a709729e97388947bf4c"
+    },
+    {
+      "path": ".build/native-8d934dd-terminal/extracted/.build/native-reader-test/native-build.log",
+      "bytes": 6357186,
+      "sha256": "0309c2bc45da426c710611e28b67861a12e854619c3ee4535734ea8395297800"
+    },
+    {
+      "path": ".build/native-8d934dd-terminal/extracted/.build/native-reader-test/native-source-inputs.json",
+      "bytes": 26119,
+      "sha256": "7ba666ced79ab9a3df371de5da6b77051f6571377087bf0c4e060456689765cf"
+    },
+    {
+      "path": ".build/native-8d934dd-terminal/extracted/.build/native-reader-test/ordinary-jar.json",
+      "bytes": 880,
+      "sha256": "139a277121fa4d8b24f4f24dbdd230622328d245a4da18f7b0cacc81943a3a65"
+    },
+    {
+      "path": ".build/native-8d934dd-terminal/extracted/.build/native-reader-test/native-restore.json",
+      "bytes": 5107,
+      "sha256": "52e9efebef3916004986f5ade1af814aafbe13c729149ea2c927442d6b14459e"
+    },
+    {
+      "path": ".build/native-8d934dd-terminal/extracted/.build/native-reader-test/diagnostics/collection.json",
+      "bytes": 815,
+      "sha256": "cb765ebb58b79da865843eb6d60e6ae6cc602870919c0117cd1dcb1c3f1bb3a5"
+    },
+    {
+      "path": ".build/native-8d934dd-terminal/extracted/.build/ci-logs/native-reader-jvm.log",
+      "bytes": 9873,
+      "sha256": "567a6d87fc1b184b2cd403abe3e4eef3b867967da57b4da81280479ff6690686"
+    }
+  ],
+  "checks": {
+    "total": 644,
+    "failed": 0,
+    "details": {
+      "path": "checks.json",
+      "bytes": 88870,
+      "sha256": "237163810c131403f6581c49cbcaf426489b22938c7009bba25114c8b9cd75f2"
+    }
+  },
+  "mismatches": [],
+  "limits": [
+    "MainJS1/original21 are intended exact8d definitions; all actual Native methods are0 because build-for-testing exited65 before either required host group ran.",
+    "This is a different actual diagnostic from the separate SDK8d Form.swift204 typecheck block. The earlier SDK error is not disproved or fixed by this earlier-stop Native result.",
+    "Actual JVM327 XML passes do not prove original JNI/App consumer, UIKit, signing, Apple account/provisioning or automatic renewal.",
+    "Restored audited native runtime and source-only macOS saved-diagnostics/portable guards are separate gates, not executed required Native hosts.",
+    "No successful source compile/test rerun, polling, source edits, canonical/Git mutations or cloud mutations were performed. Download URLs/private tool responses remain ignored and are omitted from this report."
+  ],
+  "mutations": {
+    "canonical": false,
+    "Git": false,
+    "cloud": false,
+    "source": false,
+    "newTests": false,
+    "newCompilation": false,
+    "statusPolling": false
+  }
+}

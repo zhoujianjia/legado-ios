@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
+  "phase": "verify-built-App-native-exports",
+  "status": "not-executed-required-App-build-failed",
+  "executed": false,
+  "passed": false,
+  "exitCode": null,
+  "blockedBy": "build-for-testing exit65",
+  "expectedCommand": [
+    "python",
+    "-B",
+    "scripts/legado-ios/verify-native-exports.py",
+    "--executable",
+    "$APP/YueduReader",
+    "--report",
+    ".build/native-reader-test/native-exports.json"
+  ],
+  "actualReportPresent": false,
+  "meaning": "The command is present after build in the source shell block. Its echoed shell source is not actual execution. No built App export verification is claimed."
+}
