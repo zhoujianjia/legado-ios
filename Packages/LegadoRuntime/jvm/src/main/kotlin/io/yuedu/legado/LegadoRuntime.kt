@@ -49,13 +49,16 @@ object LegadoRuntime {
 
     /** Immutable embedding options are not part of the source or script bindings. */
     @JvmStatic fun createSession(sourceJson: String, optionsJson: String): String = envelope {
+        val options = RuntimeSessionOptions.parse(parseObject(optionsJson))
+        if (options.usesOriginalTraditional) OriginalTraditionalRuntime.checkRequestBudget(sourceJson)
         val source = parseObject(sourceJson)
         require(source["mainJs"]?.takeUnless { it.isJsonNull }?.asString?.isNotBlank() == true ||
             source.has("ruleSearch") || source.has("ruleContent")) {
             "Source requires mainJs or supported declarative rules"
         }
         val id = UUID.randomUUID().toString()
-        sessions[id] = RuntimeSession(id, source, RuntimeSessionOptions.parse(parseObject(optionsJson)))
+        if (options.usesOriginalTraditional) OriginalTraditionalRuntime.validateSource(source)
+        sessions[id] = RuntimeSession(id, source, options)
         jsonObject("ok" to true, "sessionId" to id)
     }
 
@@ -63,9 +66,12 @@ object LegadoRuntime {
         val startedAt = System.nanoTime()
         var task: RuntimeTask? = null
         var timeout: java.util.concurrent.ScheduledFuture<*>? = null
+        var originalTraditional = false
         try {
             require(taskId.isNotBlank()) { "taskId must not be empty" }
             val session = sessions[sessionId] ?: throw RuntimeFailure("UNKNOWN_SESSION", "Session is closed or unknown")
+            originalTraditional = session.options.usesOriginalTraditional
+            if (session.options.usesOriginalTraditional) OriginalTraditionalRuntime.checkRequestBudget(inputJson)
             val input = parseObject(inputJson)
             val timeoutMs = input["timeoutMs"]?.asLong ?: 30_000L
             require(timeoutMs in 1..300_000) { "timeoutMs must be between 1 and 300000" }
@@ -109,7 +115,10 @@ object LegadoRuntime {
                 error is IllegalArgumentException || error is JsonParseException -> "INVALID_ARGUMENT"
                 else -> "SCRIPT_ERROR"
             }
-            return failure(code, hostFailure?.message ?: error.message ?: error.javaClass.simpleName, taskId)
+            val response = failure(code, hostFailure?.message ?: error.message ?: error.javaClass.simpleName, taskId)
+            if (originalTraditional && response.toByteArray(Charsets.UTF_8).size > OriginalTraditionalRuntime.MAX_RESULT_BYTES)
+                return failure("PAYLOAD_TOO_LARGE", "Original traditional error envelope exceeds 8 MiB UTF-8")
+            return response
         } finally {
             timeout?.cancel(false)
             task?.let { taskTrace.event(TaskTraceStage.EXECUTE_FINISHED, it) }
@@ -150,8 +159,10 @@ object LegadoRuntime {
             "javaVersion" to System.getProperty("java.version"),
             "vmVersion" to System.getProperty("java.vm.version"),
             "vmName" to System.getProperty("java.vm.name"),
-            "supportedSourceTypes" to listOf("mainJs", "declarative subset"), "platformHosts" to "prototype subset"
+            "supportedSourceTypes" to listOf("mainJs", "declarative subset", "opt-in original traditional text"), "platformHosts" to "prototype subset",
+            "sourceMode" to task.session.options.sourceMode
         )
+        if (task.session.options.usesOriginalTraditional) return OriginalTraditionalRuntime.execute(task, operation, input)
         if (operation == "semanticSuite") return EngineSemanticSuite.run(task)
         if (operation == "tlsCapabilityProbe") return TlsCapabilityProbe.run(task)
         if (operation == "httpWireCapabilityProbe") return HttpWireDiagnosticBridge.run(task, ::executeOperation)

@@ -11,7 +11,10 @@ public struct LegadoRuntimeError: Error, LocalizedError, Codable, Sendable, Equa
 
 public struct LegadoSourceSession: Hashable, Sendable {
     public let id: String
-    public init(id: String) { self.id = id }
+    public let sourceMode: LegadoSessionOptions.SourceMode
+    public init(id: String, sourceMode: LegadoSessionOptions.SourceMode = .existing) {
+        self.id = id; self.sourceMode = sourceMode
+    }
 }
 
 /// Runtime configuration stays separate from imported/exported book-source data.
@@ -20,15 +23,30 @@ public struct LegadoSessionOptions: Encodable, Sendable {
         case platformHost = "platform-host"
         case jvmOkHttp = "jvm-okhttp"
     }
+    public enum SourceMode: String, Encodable, Sendable, Hashable {
+        case existing
+        case originalTraditional = "original-traditional"
+    }
     public let httpTransport: HTTPTransport
     public let userAgent: String?
     /// Granted explicitly by the embedding host; imported source JSON cannot
     /// choose this owner or a persistence path. Nil preserves isolated memory.
     public let stateOwner: String?
-    public init(httpTransport: HTTPTransport, userAgent: String? = nil, stateOwner: String? = nil) {
+    public let sourceMode: SourceMode
+    public init(httpTransport: HTTPTransport, userAgent: String? = nil, stateOwner: String? = nil, sourceMode: SourceMode = .existing) {
         self.httpTransport = httpTransport
         self.userAgent = userAgent
         self.stateOwner = stateOwner
+        self.sourceMode = sourceMode
+    }
+    private enum CodingKeys: String, CodingKey { case httpTransport, userAgent, stateOwner, sourceMode }
+    public func encode(to encoder: any Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encode(httpTransport, forKey: .httpTransport)
+        try values.encodeIfPresent(userAgent, forKey: .userAgent)
+        try values.encodeIfPresent(stateOwner, forKey: .stateOwner)
+        // Preserve the previous embedding JSON for the default route.
+        if sourceMode != .existing { try values.encode(sourceMode, forKey: .sourceMode) }
     }
 }
 
@@ -118,7 +136,12 @@ public final class LegadoRuntime: @unchecked Sendable {
     }
 
     public func createSession(sourceJSON: String, options: LegadoSessionOptions? = nil) async throws -> LegadoSourceSession {
-        try Self.requireJSONObject(sourceJSON)
+        if options?.sourceMode == .originalTraditional {
+            try await work {
+                try Self.requireOriginalRequestBudget(sourceJSON.utf8.count)
+                try Self.requireJSONObject(sourceJSON)
+            }
+        } else { try Self.requireJSONObject(sourceJSON) }
         let optionsJSON = try options.map { String(decoding: try JSONEncoder().encode($0), as: UTF8.self) }
         let response = try await work {
             try self.ensureStarted()
@@ -127,12 +150,17 @@ public final class LegadoRuntime: @unchecked Sendable {
         }
         let envelope = try Self.envelope(response)
         guard let id = envelope.sessionId, !id.isEmpty else { throw LegadoRuntimeError(code: "invalid_response", message: "createSession omitted sessionId") }
-        return LegadoSourceSession(id: id)
+        return LegadoSourceSession(id: id, sourceMode: options?.sourceMode ?? .existing)
     }
 
     /// Returns the complete JVM JSON envelope, keeping model conversion outside JNI.
     public func execute(session: LegadoSourceSession, operation: String, requestJSON: String = "{}", taskID: String = UUID().uuidString) async throws -> String {
-        try Self.requireJSONObject(requestJSON)
+        if session.sourceMode == .originalTraditional {
+            try await work {
+                try Self.requireOriginalRequestBudget(requestJSON.utf8.count)
+                try Self.requireJSONObject(requestJSON)
+            }
+        } else { try Self.requireJSONObject(requestJSON) }
         guard !taskID.isEmpty, !operation.isEmpty else { throw LegadoRuntimeError(code: "invalid_request", message: "taskID and operation are required") }
         try Task.checkCancellation()
         return try await withTaskCancellationHandler {
@@ -161,6 +189,64 @@ public final class LegadoRuntime: @unchecked Sendable {
     public func close(session: LegadoSourceSession) async throws {
         let response = try await work { try self.ensureStarted(); return try self.transport.closeSession(session.id) }
         _ = try Self.envelope(response)
+    }
+
+    /// Opt-in retained WebBook business API. The host must grant the same source owner;
+    /// missing Cookie/book/chapter capabilities remain typed runtime errors.
+    public func searchOriginal(session: LegadoSourceSession, key: String, page: Int32? = 1,
+                               timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString) async throws -> LegadoOriginalSearchResult {
+        try await executeOriginal(session, "search", OriginalSearchRequest(key: key, page: page, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
+    }
+    public func detailsOriginal(session: LegadoSourceSession, book: LegadoOriginalBook, canReName: Bool = true,
+                                timeoutMilliseconds: Int64 = 30_000, taskID: String = UUID().uuidString) async throws -> LegadoOriginalDetailsResult {
+        try await executeOriginal(session, "details", OriginalDetailsRequest(book: book, canReName: canReName, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
+    }
+    public func chaptersOriginal(session: LegadoSourceSession, book: LegadoOriginalBook, runPreUpdateJs: Bool = false,
+                                 isFromBookInfo: Bool = false, timeoutMilliseconds: Int64 = 30_000,
+                                 taskID: String = UUID().uuidString) async throws -> LegadoOriginalChaptersResult {
+        try await executeOriginal(session, "toc", OriginalChaptersRequest(book: book, runPreUpdateJs: runPreUpdateJs, isFromBookInfo: isFromBookInfo, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
+    }
+    /// Returns text and updated business entities; the existing App pipeline must own saving.
+    /// No App UUID or ChapterCacheRepository generation is synthesized here.
+    public func contentOriginal(session: LegadoSourceSession, book: LegadoOriginalBook, chapter: LegadoOriginalChapter,
+                                nextChapterURL: String? = nil, timeoutMilliseconds: Int64 = 30_000,
+                                taskID: String = UUID().uuidString) async throws -> LegadoOriginalContentResult {
+        try await executeOriginal(session, "content", OriginalContentRequest(book: book, chapter: chapter, nextChapterUrl: nextChapterURL, timeoutMs: timeoutMilliseconds), timeoutMilliseconds, taskID)
+    }
+    private func executeOriginal<Request: Encodable & Sendable, Response: Decodable & Sendable>(
+        _ session: LegadoSourceSession, _ operation: String, _ request: Request, _ timeoutMilliseconds: Int64, _ taskID: String
+    ) async throws -> Response {
+        guard session.sourceMode == .originalTraditional else {
+            throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY", message: "Original business API requires an explicitly configured original-traditional session")
+        }
+        guard (1...300_000).contains(timeoutMilliseconds) else {
+            throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "timeout must be between 1 and 300000 milliseconds")
+        }
+        try Task.checkCancellation()
+        let requestJSON = try await work {
+            let data = try JSONEncoder().encode(request)
+            try Self.requireOriginalRequestBudget(data.count)
+            Self.logger.debug("original.dto.encode bytes=\(data.count) main=\(Thread.isMainThread)")
+            return String(decoding: data, as: UTF8.self)
+        }
+        let raw = try await execute(session: session, operation: operation, requestJSON: requestJSON, taskID: taskID)
+        let result: Response = try await work {
+            // The JVM bounds the business result to 8 MiB; reserve a finite envelope allowance.
+            guard raw.utf8.count <= 8 * 1024 * 1024 + 64 * 1024 else {
+                throw LegadoRuntimeError(code: "PAYLOAD_TOO_LARGE", message: "Original response exceeds the bridge budget")
+            }
+            let data = Data(raw.utf8)
+            Self.logger.debug("original.dto.decode bytes=\(data.count) main=\(Thread.isMainThread)")
+            do { return try JSONDecoder().decode(OriginalBusinessEnvelope<Response>.self, from: data).result }
+            catch { throw LegadoRuntimeError(code: "invalid_response", message: "Original runtime omitted or returned an incompatible business DTO") }
+        }
+        try Task.checkCancellation()
+        return result
+    }
+    private static func requireOriginalRequestBudget(_ bytes: Int) throws {
+        guard bytes <= 4 * 1024 * 1024 else {
+            throw LegadoRuntimeError(code: "PAYLOAD_TOO_LARGE", message: "Original traditional request exceeds 4 MiB UTF-8")
+        }
     }
     private func ensureStarted() throws {
         try startupLock.withLock {

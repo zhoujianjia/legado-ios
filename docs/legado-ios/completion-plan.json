@@ -304,16 +304,18 @@
             "Cookie宿主接通同一JVM会话，44项桌面回归与普通JAR/smoke通过；完整规则／AnalyzeUrl及App入口尚未完成。",
             "原AnalyzeRule.ajax/connect已接入有限AnalyzeUrl的@js/<js>、@result、原{{…}}扫描及页组选项；实际82项JVM方法与普通JAR/smoke通过，新增URL9项中的一项含140组原ZIP方法差分。保留同一任务、Rhino、HTTP与Cookie；完整header/login、option.js/bodyJs、WebBook与App传统入口仍未完成。",
             "已按原顺序接通source动态header/初始登录域/显式头替换、相对URL、option.js/bodyJs、query/form编码、DNS/超时/重定向及原错误边界；同一HTTP执行器供mainJs与原请求复用。实际114项JVM方法（新18+旧96）及普通JAR/smoke通过，原组合140/域分类40均在方法内不额外累计。原AnalyzeRule.ajax传book例外与构造/执行异常分界已更正；完整WebBook、持久化及App/JNI仍未完成。",
-            "已接通task-owned原WebBook四段await文本执行与目录/正文分页，复用原AnalyzeRule/AnalyzeUrl和同一HTTP/Cookie/实体；实际138唯一方法（新13+旧125）及普通JAR/smoke通过。此为C3底层准备，仅needSave=false；持久化、完整模型/宿主和App入口仍未完成。"
+            "已接通task-owned原WebBook四段await文本执行与目录/正文分页，复用原AnalyzeRule/AnalyzeUrl和同一HTTP/Cookie/实体；实际138唯一方法（新13+旧125）及普通JAR/smoke通过。此为C3底层准备，仅needSave=false；持久化、完整模型/宿主和App入口仍未完成。",
+            "原WebBook四段已接到公开JSON execute及普通JAR真实smoke，显式sourceMode=original-traditional需要同owner和jvm-okhttp；返回有限原Book/Chapter业务DTO及变量，原生UUID不推造。实际171唯一JVM方法（6新+165相关旧）及普通JAR通过；5项新Swift Package方法待SDK，JNI和App产品路由未验证/未切换。"
           ],
           "implementationEvidence": [
             "docs/legado-ios/core-renewal-sequence-first-step.json",
             "docs/legado-ios/core-renewal-url-signature-step.json",
             "docs/legado-ios/core-original-url-options-step.json",
             "docs/legado-ios/core-original-webbook-step.json",
-            "docs/legado-ios/core-original-state-persistence-step.json"
+            "docs/legado-ios/core-original-state-persistence-step.json",
+            "docs/legado-ios/core-original-public-runtime-step.json"
           ],
-          "nextActionZh": "继续原公开接口/必要宿主、完整保存与批量上下文；持久状态和正文已有受控JVM底层证据，App唯一入口及C2整体门槛未通过前不切传统产品路由。"
+          "nextActionZh": "继续C2真实App source revision/book UUID/chapter URL-generation和完整Cookie所有权，再依原门槛完成公开普通JAR→JNI→原生产品链；剩余原接口、批量和完整保存栅栏继续未完成。"
         },
         {
           "id": "C2",
@@ -375,9 +377,11 @@
           "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
           "preparatoryImplementationEvidence": [
             "docs/legado-ios/core-original-webbook-step.json",
-            "docs/legado-ios/core-original-state-persistence-step.json"
+            "docs/legado-ios/core-original-state-persistence-step.json",
+            "docs/legado-ios/core-original-public-runtime-step.json"
           ],
-          "preparatoryScopeZh": "原WebBook文本await四段与有限needSave=true保存已有固定源码桌面证据；受控持久backend可跨进程恢复目录/正文，App完整状态/UUID-generation/发布、完整保存栅栏和批量仍未完成，整步未验收。"
+          "preparatoryScopeZh": "原WebBook四段公开execute与跨任务同owner/HTTP/Cookie已有171项JVM及普通JAR证据，有限实体变量业务结果可往返；批量、完整保存栅栏和App状态/发布仍未完成，整步未验收。",
+          "preparatoryStatus": "public-JVM-business-boundary-implemented-Swift-SDK-and-product-gates-unfinished"
         },
         {
           "id": "C4",
@@ -405,7 +409,12 @@
           ],
           "actualAcceptedEvidence": [],
           "requiresPhysicalDevice": false,
-          "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。"
+          "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
+          "preparatoryImplementationEvidence": [
+            "docs/legado-ios/core-original-public-runtime-step.json"
+          ],
+          "preparatoryStatus": "public-JVM-business-boundary-implemented-Swift-SDK-and-product-gates-unfinished",
+          "preparatoryScopeZh": "普通JAR公开原文本业务合同与Swift Package typed API已接线；Swift5项新测试仅准备，未执行JNI或App原生产品链。显式门槛保留、传统产品路由未切换。"
         },
         {
           "id": "C5",
@@ -642,7 +651,8 @@
       "boundMaterialSDKSubmission": "docs/legado-ios/core-renewal-478b69d-initial.json",
       "ownedStatePersistencePreparation": "docs/legado-ios/core-original-state-persistence-step.json",
       "sealedMaterialSDKResult": "docs/legado-ios/core-renewal-c8d899b-result.json",
-      "controlledIPAImplementation": "docs/legado-ios/core-renewal-controlled-ipa-step.json"
+      "controlledIPAImplementation": "docs/legado-ios/core-renewal-controlled-ipa-step.json",
+      "originalPublicRuntimePreparation": "docs/legado-ios/core-original-public-runtime-step.json"
     }
   },
   "stages": [
@@ -4565,6 +4575,10 @@
     "controlled-IPA-to-sealed-materials": {
       "path": "docs/legado-ios/core-renewal-controlled-ipa-step.json",
       "scope": "Production path and nine source-bound native test definitions; four grammar inputs and independently read owned ZIP fixtures, zero Swift SDK executions."
+    },
+    "original-public-runtime-business-chain": {
+      "path": "docs/legado-ios/core-original-public-runtime-step.json",
+      "scope": "171 actual desktop JVM methods and ordinary JAR public four-stage smoke; Swift Package test definitions only, no JNI or native product route acceptance."
     }
   },
   "retainedExistingWork": [

@@ -133,3 +133,7 @@ Windows JDK 21 本轮强制执行完整 JVM 回归，实际为 18 份 XML、153 
 2026-10-20，原状态与有限正文保存已接入显式embedding owner及同一RuntimeSession网络/任务：源/书/章变量、文本/二进制缓存及TTL、完整Cookie快照、raw登录头可由同owner事务恢复，原WebBook默认needSave=true在受控backend原子保存目录/正文；两个独立Java进程实际恢复了这些文件。旧下载必须匹配当前目录URL；合法空正文不能继承另一章节正文；跨会话普通cache/source/login读会重读owner，显式putMemory仍按原瞬态语义。最终165唯一方法（12新+153相关旧）和普通生产JAR/smoke通过，47原调用是1项方法内部参考，未新增Android观察。
 
 这是C2/C3底层范围：App完整Cookie属性、书章UUID/generation及正文缓存发布仍未接，完整失败编辑/删除/资源ContentSaveFence和批量亦未完成。Swift状态宿主另在478b69d的78项SDK中待验，传统产品路由未切换。原始结果、有限实现与未完成边界见[本段记录](core-original-state-persistence-step.json)。
+
+2026-10-20，公开原传统文本业务边界已接入现有JSON execute/JNI合同：显式embedding sourceMode=original-traditional要求同stateOwner及jvm-okhttp，search/details/toc/content返回有限原Book/Chapter实体与变量；公开content必须显式needSave=false，保存仍由App既有Pipeline负责。实际171唯一JVM方法（6新+165相关旧）及普通生产JAR公开四段smoke通过，覆盖两章、目录/正文次页与同Cookie；不重复累计原47调用。Swift Package typed API已有5项测试定义，需单独SDK执行，Windows grammar不能替代。
+
+完整App Cookie、book UUID/source revision/chapter URL-generation grant、JNI实际执行、原生产品阅读链、批量及完整保存栅栏仍未完成；传统产品路由未切换。源与原始结果见[公开业务边界记录](core-original-public-runtime-step.json)。
