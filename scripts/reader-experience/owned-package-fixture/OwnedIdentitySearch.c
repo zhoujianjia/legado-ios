@@ -11,10 +11,31 @@
 #include <Security/SecKeychainItem.h>
 #include <Security/SecAccess.h>
 #include <Security/SecACL.h>
+#include <Security/Authorization.h>
 #include <Security/SecTrustedApplication.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+
+OSStatus YueduOwnedUserTrustAuthorizationPreflight(void)
+{
+    AuthorizationRef authorization = NULL;
+    OSStatus status = AuthorizationCreate(NULL, kAuthorizationEmptyEnvironment,
+                                         kAuthorizationFlagDefaults, &authorization);
+    if (status != errAuthorizationSuccess) return status;
+    if (authorization == NULL) return errSecInternalComponent;
+    AuthorizationItem item = { "com.apple.trust-settings.user", 0, NULL, 0 };
+    AuthorizationRights rights = { 1, &item };
+    /* Deliberately no kAuthorizationFlagInteractionAllowed; no credentials,
+     * no sudo, and no changes to authorization rules. Public TrustSettings
+     * Set/Remove may still issue their own OS authorization request later. */
+    status = AuthorizationCopyRights(authorization, &rights,
+                                    kAuthorizationEmptyEnvironment,
+                                    kAuthorizationFlagExtendRights | kAuthorizationFlagPreAuthorize,
+                                    NULL);
+    OSStatus released = AuthorizationFree(authorization, kAuthorizationFlagDefaults);
+    return status == errAuthorizationSuccess ? released : status;
+}
 
 /* Public deprecated C APIs, not SPI or an indirect Swift symbol call. Their
  * Copy/Create results are released on both success and error paths. */

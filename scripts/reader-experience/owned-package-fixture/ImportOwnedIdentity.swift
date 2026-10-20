@@ -14,13 +14,20 @@ struct Input: Decodable {
     let leafCertificate: Data
     let rootCertificate: Data
 }
-enum Operation: String, Decodable { case importIdentity, reopenIdentity, prepareCodesignAccess, inspectCodesignAccess }
+enum Operation: String, Decodable {
+    case importIdentity, reopenIdentity, prepareCodesignAccess, inspectCodesignAccess
+    case preflightOwnedUserTrust, installOwnedUserTrust, removeOwnedUserTrust
+    var isUserTrust: Bool {
+        self == .preflightOwnedUserTrust || self == .installOwnedUserTrust || self == .removeOwnedUserTrust
+    }
+}
 var activeOperation = Operation.importIdentity
 enum Stage: String {
     case readInput, createKeychain, createTrustedApplications, createACL, importPKCS12
     case findImportedIdentity, findStoredIdentity, matchLeaf, findRoot, privateKey, signChallenge, verifyChallenge, complete
     case openKeychain, unlockKeychain, keychainStatus, legacyIdentitySearch
     case inspectKeyACL, prepareKeyACL
+    case hostedRunner, readUserTrust, authorizeUserTrust, installUserTrust, verifyUserTrust, removeUserTrust
 }
 struct Failure: Error { let stage: Stage; let status: OSStatus }
 func keyFailure(_ stage: Stage, _ error: Unmanaged<CFError>?, fallback: OSStatus) -> Failure {
@@ -56,6 +63,9 @@ func run() throws -> [String: Any] {
           let expectedLeaf = SecCertificateCreateWithData(nil, input.leafCertificate as CFData),
           SecCertificateCreateWithData(nil, input.rootCertificate as CFData) != nil else {
         throw Failure(stage: .readInput, status: errSecParam)
+    }
+    if activeOperation.isUserTrust {
+        return try ownedUserTrust(input, certificate: expectedLeaf)
     }
     if activeOperation != .importIdentity {
         // Run in a fresh process after import/partition changes. Open only the
@@ -129,6 +139,105 @@ func run() throws -> [String: Any] {
         throw Failure(stage: .matchLeaf, status: errSecDecode)
     }
     return try verifyStoredIdentity(keychain, input: input, expectedLeaf: expectedLeaf, importedCount: items.count)
+}
+
+
+// This is explicitly a temporary USER-global change for one randomly generated
+// public self-signed fixture certificate, never production Apple authorization.
+// The public Set/Remove APIs may request OS authorization. Our preflight omits
+// InteractionAllowed; the parent enforces a hard process deadline and never
+// supplies authorization credentials or user responses. This is not a no-UI guarantee.
+func ownedUserTrust(_ input: Input, certificate: SecCertificate) throws -> [String: Any] {
+    let environment = ProcessInfo.processInfo.environment
+    guard environment["GITHUB_ACTIONS"] == "true", environment["RUNNER_ENVIRONMENT"] == "github-hosted",
+          environment["RUNNER_OS"] == "macOS", input.leafCertificate == input.rootCertificate else {
+        throw Failure(stage: .hostedRunner, status: errSecParam)
+    }
+    var settings: CFArray?
+    let initial = SecTrustSettingsCopyTrustSettings(certificate, .user, &settings)
+    guard initial == errSecSuccess || initial == errSecItemNotFound else {
+        throw Failure(stage: .readUserTrust, status: initial)
+    }
+    if initial == errSecItemNotFound && settings != nil { throw Failure(stage: .readUserTrust, status: errSecDecode) }
+    var changed = false, authorized = false
+    switch activeOperation {
+    case .preflightOwnedUserTrust, .installOwnedUserTrust:
+        // Never overwrite a prior setting, including an empty broad-trust array.
+        guard initial == errSecItemNotFound else { throw Failure(stage: .readUserTrust, status: errSecDuplicateItem) }
+        try require(YueduOwnedUserTrustAuthorizationPreflight(), at: .authorizeUserTrust)
+        authorized = true
+        if activeOperation == .installOwnedUserTrust {
+            guard let policy = SecPolicyCreateWithProperties(kSecPolicyAppleCodeSigning, nil) else {
+                throw Failure(stage: .installUserTrust, status: errSecParam)
+            }
+            let constraint: [String: Any] = [kSecTrustSettingsPolicy as String: policy,
+                kSecTrustSettingsResult as String: NSNumber(value: SecTrustSettingsResult.trustRoot.rawValue)]
+            try require(SecTrustSettingsSetTrustSettings(certificate, .user, [constraint] as CFArray), at: .installUserTrust)
+            var actual: CFArray?
+            try require(SecTrustSettingsCopyTrustSettings(certificate, .user, &actual), at: .verifyUserTrust)
+            try verifyOwnedUserTrust(actual)
+            changed = true
+        }
+    case .removeOwnedUserTrust:
+        if initial == errSecSuccess {
+            // Refuse to erase an unexpected concurrent policy, app constraint,
+            // broad trust, allowed error, or different trust result.
+            try verifyOwnedUserTrust(settings)
+            try require(YueduOwnedUserTrustAuthorizationPreflight(), at: .authorizeUserTrust)
+            authorized = true
+            try require(SecTrustSettingsRemoveTrustSettings(certificate, .user), at: .removeUserTrust)
+            changed = true
+        }
+        var remaining: CFArray?
+        let status = SecTrustSettingsCopyTrustSettings(certificate, .user, &remaining)
+        guard status == errSecItemNotFound, remaining == nil else {
+            throw Failure(stage: .verifyUserTrust, status: status == errSecSuccess ? errSecDecode : status)
+        }
+    default: throw Failure(stage: .readInput, status: errSecParam)
+    }
+    let installed = activeOperation == .installOwnedUserTrust
+    return ["schemaVersion": 4, "operation": activeOperation.rawValue, "stage": Stage.complete.rawValue,
+        "status": "passed", "osStatus": 0, "certificateSHA256": fingerprint(input.leafCertificate),
+        "domain": "user", "policy": "codeSign", "disposableGitHubHostedRunner": true,
+        "authorizationPreflightPassed": authorized,
+        "priorSettingsAbsent": initial == errSecItemNotFound,
+        "settingsEntryCount": installed ? 1 : 0,
+        "temporaryUserDomainTrustChanged": changed,
+        "cleanupVerified": activeOperation == .removeOwnedUserTrust,
+        "adminSystemTrustOrSearchListChanged": false,
+        "codesignExecutionVerified": false]
+}
+
+func verifyOwnedUserTrust(_ raw: CFArray?) throws {
+    guard let raw, CFArrayGetCount(raw) == 1, let entries = raw as? [[String: Any]], entries.count == 1 else {
+        throw Failure(stage: .verifyUserTrust, status: errSecDecode)
+    }
+    let entry = entries[0]
+    let required: Set<String> = [kSecTrustSettingsPolicy as String, kSecTrustSettingsResult as String]
+    // Public CopyTrustSettings reconstructs this bounded descriptive metadata
+    // alongside the policy (Apple TrustSettings.cpp copyTrustSettings). It is
+    // never a substitute for checking the actual SecPolicy OID and trust result.
+    let descriptiveName = "kSecTrustSettingsPolicyName"
+    guard required.isSubset(of: Set(entry.keys)), Set(entry.keys).isSubset(of: required.union([descriptiveName])),
+          let policy = entry[kSecTrustSettingsPolicy as String], CFGetTypeID(policy as CFTypeRef) == SecPolicyGetTypeID(),
+          let result = entry[kSecTrustSettingsResult as String] as? NSNumber,
+          CFGetTypeID(result as CFTypeRef) == CFNumberGetTypeID(), result.int64Value == Int64(SecTrustSettingsResult.trustRoot.rawValue) else {
+        throw Failure(stage: .verifyUserTrust, status: errSecDecode)
+    }
+    if let name = entry[descriptiveName] {
+        guard let name = name as? String, (1...256).contains(name.utf8.count) else { throw Failure(stage: .verifyUserTrust, status: errSecDecode) }
+    }
+    guard let actualProperties = SecPolicyCopyProperties(policy as! SecPolicy),
+          let expectedPolicy = SecPolicyCreateWithProperties(kSecPolicyAppleCodeSigning, nil),
+          let expectedProperties = SecPolicyCopyProperties(expectedPolicy) else {
+        throw Failure(stage: .verifyUserTrust, status: errSecDecode)
+    }
+    let actual = actualProperties as NSDictionary
+    let expected = expectedProperties as NSDictionary
+    guard let oid = actual[kSecPolicyOid as String] as? String,
+          let expectedOID = expected[kSecPolicyOid as String] as? String, oid == expectedOID else {
+        throw Failure(stage: .verifyUserTrust, status: errSecDecode)
+    }
 }
 
 func legacySigningIdentityCount(_ keychain: SecKeychain, expected: Data) throws -> Int {
@@ -246,7 +355,7 @@ func aclReport(_ report: YueduOwnedKeyACLReport) -> [String: Any] {
 }
 do { report(try run()) } catch {
     let failure = error as? Failure
-    var value: [String: Any] = ["schemaVersion": activeOperation == .importIdentity ? 1 : (activeOperation == .reopenIdentity ? 2 : 3),
+    var value: [String: Any] = ["schemaVersion": activeOperation.isUserTrust ? 4 : (activeOperation == .importIdentity ? 1 : (activeOperation == .reopenIdentity ? 2 : 3)),
         "stage": (failure?.stage ?? .readInput).rawValue, "status": "failed", "osStatus": Int(failure?.status ?? errSecDecode)]
     if activeOperation != .importIdentity { value["operation"] = activeOperation.rawValue }
     report(value)

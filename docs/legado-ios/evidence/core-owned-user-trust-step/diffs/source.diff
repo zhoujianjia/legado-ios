@@ -1,0 +1,565 @@
+--- baseline/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py
++++ work/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py
+@@ -296,6 +296,119 @@
+             or after['codesignPathEntryCount']<1):
+         raise ToolFailure('owned partition write lacks actual required entries',-1)
+ 
++
++OWNED_USER_TRUST_OPERATIONS = ('preflightOwnedUserTrust','installOwnedUserTrust','removeOwnedUserTrust')
++
++def require_owned_hosted_runner():
++    if (sys.platform!='darwin' or os.environ.get('GITHUB_ACTIONS')!='true'
++            or os.environ.get('RUNNER_ENVIRONMENT')!='github-hosted' or os.environ.get('RUNNER_OS')!='macOS'):
++        raise ToolFailure('temporary user trust requires disposable GitHub-hosted Mac',-1)
++
++def owned_user_trust_status(raw, operation):
++    if operation not in OWNED_USER_TRUST_OPERATIONS or len(raw)>4096:raise ValueError('Owned trust status budget/operation')
++    def unique_object(pairs):
++        value={}
++        for key,item in pairs:
++            if key in value:raise ValueError('Duplicate owned trust field')
++            value[key]=item
++        return value
++    value=json.loads(raw,object_pairs_hook=unique_object)
++    core={'schemaVersion','operation','stage','status','osStatus'}
++    stages={'readInput','hostedRunner','readUserTrust','authorizeUserTrust','installUserTrust','verifyUserTrust','removeUserTrust','complete'}
++    if (not isinstance(value,dict) or type(value.get('schemaVersion')) is not int or value['schemaVersion']!=4
++            or value.get('operation')!=operation or value.get('stage') not in stages
++            or value.get('status') not in ('passed','failed') or type(value.get('osStatus')) is not int
++            or not -(2**31)<=value['osStatus']<2**31):raise ValueError('Invalid owned trust status')
++    if value['status']=='failed':
++        if set(value)!=core or value['osStatus']==0:raise ValueError('Invalid owned trust failure')
++        return value
++    facts={'certificateSHA256','domain','policy','disposableGitHubHostedRunner','authorizationPreflightPassed',
++           'priorSettingsAbsent','settingsEntryCount','temporaryUserDomainTrustChanged','cleanupVerified',
++           'adminSystemTrustOrSearchListChanged','codesignExecutionVerified'}
++    if (set(value)!=core|facts or value['stage']!='complete' or value['osStatus']!=0
++            or not isinstance(value['certificateSHA256'],str) or re.fullmatch('[0-9a-f]{64}',value['certificateSHA256']) is None
++            or value['domain']!='user' or value['policy']!='codeSign'
++            or type(value['settingsEntryCount']) is not int):raise ValueError('Invalid owned trust completion')
++    for name in facts-{'certificateSHA256','domain','policy','settingsEntryCount'}:
++        if type(value[name]) is not bool:raise ValueError('Invalid owned trust boolean')
++    if (value['disposableGitHubHostedRunner'] is not True or value['adminSystemTrustOrSearchListChanged'] is not False
++            or value['codesignExecutionVerified'] is not False):raise ValueError('Owned trust scope escalation')
++    if operation=='preflightOwnedUserTrust':
++        expected=(True,True,0,False,False)
++    elif operation=='installOwnedUserTrust':
++        expected=(True,True,1,True,False)
++    else:
++        expected=(not value['priorSettingsAbsent'],value['priorSettingsAbsent'],0,not value['priorSettingsAbsent'],True)
++    if tuple(value[k] for k in ('authorizationPreflightPassed','priorSettingsAbsent','settingsEntryCount',
++                                'temporaryUserDomainTrustChanged','cleanupVerified'))!=expected:
++        raise ValueError('Inconsistent owned trust facts')
++    return value
++
++def exact_valid_owned_identity(raw, expected_sha1):
++    if len(raw)>PUBLIC_DIAGNOSTIC_BYTES or re.fullmatch('[A-F0-9]{40}',expected_sha1) is None:
++        raise ValueError('Owned identity enumeration budget/hash')
++    ids=[];summary=None
++    for line in raw.decode('utf-8','strict').splitlines():
++        if not line.strip():continue
++        match=re.fullmatch(r'\s*[1-9][0-9]*\)\s+([A-Fa-f0-9]{40})\s+"[^\r\n]*"\s*',line)
++        if match:ids.append(match[1].upper());continue
++        match=re.fullmatch(r'\s*([0-9]+) valid identities found\s*',line)
++        if match and summary is None:summary=int(match[1]);continue
++        raise ValueError('Unexpected owned identity enumeration')
++    if summary is None or summary!=len(ids) or len(set(ids))!=len(ids) or len(ids)>1 or any(v!=expected_sha1 for v in ids):
++        raise ValueError('Ambiguous owned identity enumeration')
++    return summary
++
++class OwnedUserTrustScope:
++    def __init__(self, importer, request, keychain):
++        require_owned_hosted_runner()
++        self.importer=importer;self.request=dict(request,operation='preflightOwnedUserTrust',p12='',p12Password='')
++        self.keychain=keychain;self.cleanup_intent=False;self.installed=False;self.cleaned=False
++        self.leaf=base64.b64decode(request['leafCertificate'],validate=True)
++        if not self.leaf or len(self.leaf)>65536 or request['leafCertificate']!=request['rootCertificate']:
++            raise ValueError('Temporary trust requires the exact owned self-signed identity')
++    def invoke(self, operation, *, cleanup=False):
++        request=dict(self.request,operation=operation)
++        raw=run([self.importer],input=json.dumps(request).encode(),private=True,public_status=operation,
++                cleanup=cleanup,timeout_seconds=CLEANUP_TIMEOUT_SECONDS if cleanup else None)
++        status=owned_user_trust_status(raw,operation)
++        if status['certificateSHA256']!=fingerprint(self.leaf):raise ToolFailure('owned trust certificate mismatch',-1)
++        return status
++    def valid_identities(self, label, *, cleanup=False):
++        raw=run(['security','find-identity','-v','-p','codesigning',self.keychain],public_output_label=label,
++                cleanup=cleanup,timeout_seconds=CLEANUP_TIMEOUT_SECONDS if cleanup else None)
++        return exact_valid_owned_identity(raw,hashlib.sha1(self.leaf).hexdigest().upper())
++    def install(self):
++        if self.cleanup_intent:raise ToolFailure('owned trust scope already admitted',-1)
++        if self.valid_identities('OWNED_VALID_IDENTITY_BEFORE_USER_TRUST')!=0:
++            raise ToolFailure('unexpected previously valid owned identity',-1)
++        self.invoke('preflightOwnedUserTrust')
++        # Set may durably succeed before losing its ACK or being timed out.
++        # Record cleanup intent BEFORE starting the mutating child.
++        self.cleanup_intent=True
++        self.invoke('installOwnedUserTrust')
++        self.installed=True
++        if self.valid_identities('OWNED_VALID_IDENTITY_AFTER_USER_TRUST')!=1:
++            raise ToolFailure('temporary trust did not yield exact valid owned identity',-1)
++    def cleanup(self):
++        if not self.cleanup_intent:return
++        self.invoke('removeOwnedUserTrust',cleanup=True)
++        self.cleaned=True
++        self.cleanup_intent=False
++        if self.valid_identities('OWNED_VALID_IDENTITY_AFTER_TRUST_REMOVAL',cleanup=True)!=0:
++            raise ToolFailure('owned identity remains valid after exact user trust removal',-1)
++
++def finish_owned_user_trust(trust_scope, primary_error):
++    if trust_scope is None or not trust_scope.cleanup_intent:return None
++    try:trust_scope.cleanup()
++    except BaseException as error:
++        public_record('OWNED_USER_TRUST_CLEANUP_FAILURE',{'schemaVersion':1,'status':'failed',
++            'exitCode':error.code if isinstance(error,ToolFailure) else None,
++            'originalToolFailureRetained':primary_error is not None,'temporaryUserTrustMayRemain':True,
++            'adminSystemTrustOrSearchListChanged':False,'publicExceptionDetailsRetained':False})
++        return error
++    return None
++
+ def run(args,*,input=None,env=None,private=False,public_log=None,public_status=False,public_output_label=None,timeout_seconds=None,cleanup=False):
+     if private and (public_log is not None or public_output_label is not None):
+         raise ValueError('Private tool streams cannot become public logs')
+@@ -336,7 +449,14 @@
+             raise ToolProcessFailure('private tool' if private else redacted[0],timed_out,result.returncode,result.processStarted,result.processCleanup['issues']) from None
+         raise ToolTimeout('private tool' if private else redacted[0],seconds,result.returncode,result.processStarted) from None
+     if public_log:Path(public_log).write_text(public_text(result.stdout+result.stderr),encoding='utf-8')
+-    if public_status:
++    if public_status in OWNED_USER_TRUST_OPERATIONS:
++        try:status=owned_user_trust_status(result.stdout,public_status)
++        except (ValueError,UnicodeError,TypeError,RecursionError):
++            status={'schemaVersion':4,'operation':public_status,'stage':'readInput','status':'failed','osStatus':-1}
++        public_record('OWNED_USER_TRUST_STATUS',status)
++        if result.returncode==0 and (status.get('stage')!='complete' or status.get('status')!='passed'):
++            raise ToolFailure('owned user trust public proof',-1)
++    elif public_status:
+         # A malformed/private stdout must remain suppressed even on failure.
+         reopen=public_status=='reopen'
+         acl=public_status in ('aclPrepare','aclInspect')
+@@ -416,6 +536,7 @@
+ def main():
+     a=argparse.ArgumentParser();a.add_argument('--output',type=Path,required=True);args=a.parse_args()
+     if sys.platform!='darwin':raise SystemExit('Requires macOS/Xcode; no SDK execution was attempted.')
++    require_owned_hosted_runner()
+     # An outer producer deadline may request graceful termination. Let finally
+     # clean only this producer's own Keychain; SIGKILL remains uncatchable.
+     def terminate_producer(signum, frame):raise SystemExit(128+signum)
+@@ -448,6 +569,7 @@
+         keychain_password=secrets.token_hex(24);p12_password=secrets.token_hex(24)
+         PRIVATE_LITERALS.extend([keychain_password,p12_password])
+         primary_error=None
++        trust_scope=None
+         try:
+             # Every key PEM is captured from stdout and only fed to a child's
+             # stdin. No private_bytes file, P12 file or account credential.
+@@ -462,10 +584,10 @@
+             leaf_pem=out/'leaf.cert.pem';leaf_pem.write_bytes(run(['openssl','x509','-inform','DER','-outform','PEM'],input=leaf))
+             at=datetime.now(timezone.utc).replace(microsecond=0)
+             run(['openssl','verify','-purpose','any','-attime',str(int(at.timestamp())),'-CAfile',root_pem,leaf_pem],public_log=out/'owned-certificate-chain.log')
+-            public_record('OWNED_SIGNING_IDENTITY_SHAPE',{'schemaVersion':1,
++            public_record('OWNED_SIGNING_IDENTITY_SHAPE',{'schemaVersion':2,
+                 'shape':'self-signed-code-signing-identity','leafSHA256':fingerprint(leaf),
+                 'explicitCodeAndProfileAnchorSHA256':fingerprint(root),
+-                'globalTrustOrSearchListChanged':False,'codesignExecutionVerified':False})
++                'temporaryUserCodeSignTrustPlanned':True,'adminSystemTrustOrSearchListChanged':False,'codesignExecutionVerified':False})
+             # No duplicate -certfile copy: the self-signed leaf is already the
+             # complete one-certificate identity. PKCS12 and keys stay in memory.
+             p12=export_owned_signing_identity(signing_key,leaf_pem,p12_password)
+@@ -493,6 +615,8 @@
+             # cross-process identity lookup or system/global trust.
+             run(['security','verify-cert','-c',out/'leaf.cert.der','-c',root_der,'-r',root_der,
+                  '-p','codeSign','-L','-N','-q'],public_output_label='OWNED_EXPLICIT_ANCHOR_CODE_SIGN_POLICY')
++            trust_scope=OwnedUserTrustScope(importer,request,keychain)
++            trust_scope.install()
+             del request,p12
+             root_key_memory=signing_key
+             del signing_key
+@@ -566,15 +690,17 @@
+             (out/'owned-sdk-package.ipa').write_bytes(raw)
+             resource={'schema':1,'archive':base64.b64encode(raw).decode(),'anchor':base64.b64encode(root).decode(),'verificationEpochSeconds':int(at.timestamp()),'archiveSHA256':fingerprint(raw),'actualSDKProducedMachOs':parsed}
+             (out/'owned-sdk-package.json').write_text(json.dumps(resource,separators=(',',':'))+'\n')
++            trust_scope.cleanup()
+             run(['security','delete-keychain',keychain],private=True,timeout_seconds=CLEANUP_TIMEOUT_SECONDS,cleanup=True)
+             keychain=None
+-            record={'schema':1,'sourceInputs':records,'commands':RECORDS,'actualSDKProducedMachOs':parsed,'generatedAt':at.isoformat(),'archiveSHA256':fingerprint(raw),'archiveBytes':len(raw),'privateKeyFilesOutsideKeychain':0,'temporaryOwnedKeychainDeleted':True,'privateMaterialArtifacts':0,'realAppleAccountUsed':False,'SwiftPackageCoordinatorExecuted':False,'producerToolBudgetSeconds':PRODUCER_TIMEOUT_SECONDS,'ownedToolBudgetsSeconds':TOOL_TIMEOUT_SECONDS,'cleanupToolBudgetSeconds':CLEANUP_TIMEOUT_SECONDS}
++            record={'schema':1,'sourceInputs':records,'commands':RECORDS,'actualSDKProducedMachOs':parsed,'generatedAt':at.isoformat(),'archiveSHA256':fingerprint(raw),'archiveBytes':len(raw),'privateKeyFilesOutsideKeychain':0,'temporaryOwnedKeychainDeleted':True,'temporaryUserCodeSignTrustInstalled':trust_scope.installed,'temporaryUserCodeSignTrustRemovedAndAbsent':trust_scope.cleaned,'adminSystemTrustOrSearchListChanged':False,'privateMaterialArtifacts':0,'realAppleAccountUsed':False,'SwiftPackageCoordinatorExecuted':False,'producerToolBudgetSeconds':PRODUCER_TIMEOUT_SECONDS,'ownedToolBudgetsSeconds':TOOL_TIMEOUT_SECONDS,'cleanupToolBudgetSeconds':CLEANUP_TIMEOUT_SECONDS}
+             record['publicOutputs']=[{'path':p.name,'bytes':p.stat().st_size,'sha256':fingerprint(p.read_bytes())} for p in sorted(out.iterdir()) if p.is_file()]
+             (out/'sdk-produced-fixture-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
+         except BaseException as error:
+             primary_error=error
+             raise
+         finally:
++            trust_cleanup_error=finish_owned_user_trust(trust_scope,primary_error)
+             if keychain is not None and keychain.exists():
+                 try:
+                     run(['security','delete-keychain',keychain],private=True,timeout_seconds=CLEANUP_TIMEOUT_SECONDS,cleanup=True)
+@@ -582,6 +708,7 @@
+                 except Exception as cleanup_error:
+                     public_record('OWNED_KEYCHAIN_CLEANUP',{'status':'failed','exitCode':cleanup_error.code if isinstance(cleanup_error,ToolFailure) else None,
+                         'originalToolFailureRetained':primary_error is not None,'privateCommandPublished':False})
+-                    if primary_error is None:raise
++                    if primary_error is None and trust_cleanup_error is None:raise
++            if trust_cleanup_error is not None and primary_error is None:raise trust_cleanup_error
+     print('Owned SDK main/extensions/framework generated and original CMS verified; no private material published.')
+ if __name__=='__main__':main()
+--- baseline/scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift
++++ work/scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift
+@@ -14,13 +14,20 @@
+     let leafCertificate: Data
+     let rootCertificate: Data
+ }
+-enum Operation: String, Decodable { case importIdentity, reopenIdentity, prepareCodesignAccess, inspectCodesignAccess }
++enum Operation: String, Decodable {
++    case importIdentity, reopenIdentity, prepareCodesignAccess, inspectCodesignAccess
++    case preflightOwnedUserTrust, installOwnedUserTrust, removeOwnedUserTrust
++    var isUserTrust: Bool {
++        self == .preflightOwnedUserTrust || self == .installOwnedUserTrust || self == .removeOwnedUserTrust
++    }
++}
+ var activeOperation = Operation.importIdentity
+ enum Stage: String {
+     case readInput, createKeychain, createTrustedApplications, createACL, importPKCS12
+     case findImportedIdentity, findStoredIdentity, matchLeaf, findRoot, privateKey, signChallenge, verifyChallenge, complete
+     case openKeychain, unlockKeychain, keychainStatus, legacyIdentitySearch
+     case inspectKeyACL, prepareKeyACL
++    case hostedRunner, readUserTrust, authorizeUserTrust, installUserTrust, verifyUserTrust, removeUserTrust
+ }
+ struct Failure: Error { let stage: Stage; let status: OSStatus }
+ func keyFailure(_ stage: Stage, _ error: Unmanaged<CFError>?, fallback: OSStatus) -> Failure {
+@@ -56,6 +63,9 @@
+           let expectedLeaf = SecCertificateCreateWithData(nil, input.leafCertificate as CFData),
+           SecCertificateCreateWithData(nil, input.rootCertificate as CFData) != nil else {
+         throw Failure(stage: .readInput, status: errSecParam)
++    }
++    if activeOperation.isUserTrust {
++        return try ownedUserTrust(input, certificate: expectedLeaf)
+     }
+     if activeOperation != .importIdentity {
+         // Run in a fresh process after import/partition changes. Open only the
+@@ -131,6 +141,105 @@
+     return try verifyStoredIdentity(keychain, input: input, expectedLeaf: expectedLeaf, importedCount: items.count)
+ }
+ 
++
++// This is explicitly a temporary USER-global change for one randomly generated
++// public self-signed fixture certificate, never production Apple authorization.
++// The public Set/Remove APIs may request OS authorization. Our preflight omits
++// InteractionAllowed; the parent enforces a hard process deadline and never
++// supplies authorization credentials or user responses. This is not a no-UI guarantee.
++func ownedUserTrust(_ input: Input, certificate: SecCertificate) throws -> [String: Any] {
++    let environment = ProcessInfo.processInfo.environment
++    guard environment["GITHUB_ACTIONS"] == "true", environment["RUNNER_ENVIRONMENT"] == "github-hosted",
++          environment["RUNNER_OS"] == "macOS", input.leafCertificate == input.rootCertificate else {
++        throw Failure(stage: .hostedRunner, status: errSecParam)
++    }
++    var settings: CFArray?
++    let initial = SecTrustSettingsCopyTrustSettings(certificate, .user, &settings)
++    guard initial == errSecSuccess || initial == errSecItemNotFound else {
++        throw Failure(stage: .readUserTrust, status: initial)
++    }
++    if initial == errSecItemNotFound && settings != nil { throw Failure(stage: .readUserTrust, status: errSecDecode) }
++    var changed = false, authorized = false
++    switch activeOperation {
++    case .preflightOwnedUserTrust, .installOwnedUserTrust:
++        // Never overwrite a prior setting, including an empty broad-trust array.
++        guard initial == errSecItemNotFound else { throw Failure(stage: .readUserTrust, status: errSecDuplicateItem) }
++        try require(YueduOwnedUserTrustAuthorizationPreflight(), at: .authorizeUserTrust)
++        authorized = true
++        if activeOperation == .installOwnedUserTrust {
++            guard let policy = SecPolicyCreateWithProperties(kSecPolicyAppleCodeSigning, nil) else {
++                throw Failure(stage: .installUserTrust, status: errSecParam)
++            }
++            let constraint: [String: Any] = [kSecTrustSettingsPolicy as String: policy,
++                kSecTrustSettingsResult as String: NSNumber(value: SecTrustSettingsResult.trustRoot.rawValue)]
++            try require(SecTrustSettingsSetTrustSettings(certificate, .user, [constraint] as CFArray), at: .installUserTrust)
++            var actual: CFArray?
++            try require(SecTrustSettingsCopyTrustSettings(certificate, .user, &actual), at: .verifyUserTrust)
++            try verifyOwnedUserTrust(actual)
++            changed = true
++        }
++    case .removeOwnedUserTrust:
++        if initial == errSecSuccess {
++            // Refuse to erase an unexpected concurrent policy, app constraint,
++            // broad trust, allowed error, or different trust result.
++            try verifyOwnedUserTrust(settings)
++            try require(YueduOwnedUserTrustAuthorizationPreflight(), at: .authorizeUserTrust)
++            authorized = true
++            try require(SecTrustSettingsRemoveTrustSettings(certificate, .user), at: .removeUserTrust)
++            changed = true
++        }
++        var remaining: CFArray?
++        let status = SecTrustSettingsCopyTrustSettings(certificate, .user, &remaining)
++        guard status == errSecItemNotFound, remaining == nil else {
++            throw Failure(stage: .verifyUserTrust, status: status == errSecSuccess ? errSecDecode : status)
++        }
++    default: throw Failure(stage: .readInput, status: errSecParam)
++    }
++    let installed = activeOperation == .installOwnedUserTrust
++    return ["schemaVersion": 4, "operation": activeOperation.rawValue, "stage": Stage.complete.rawValue,
++        "status": "passed", "osStatus": 0, "certificateSHA256": fingerprint(input.leafCertificate),
++        "domain": "user", "policy": "codeSign", "disposableGitHubHostedRunner": true,
++        "authorizationPreflightPassed": authorized,
++        "priorSettingsAbsent": initial == errSecItemNotFound,
++        "settingsEntryCount": installed ? 1 : 0,
++        "temporaryUserDomainTrustChanged": changed,
++        "cleanupVerified": activeOperation == .removeOwnedUserTrust,
++        "adminSystemTrustOrSearchListChanged": false,
++        "codesignExecutionVerified": false]
++}
++
++func verifyOwnedUserTrust(_ raw: CFArray?) throws {
++    guard let raw, CFArrayGetCount(raw) == 1, let entries = raw as? [[String: Any]], entries.count == 1 else {
++        throw Failure(stage: .verifyUserTrust, status: errSecDecode)
++    }
++    let entry = entries[0]
++    let required: Set<String> = [kSecTrustSettingsPolicy as String, kSecTrustSettingsResult as String]
++    // Public CopyTrustSettings reconstructs this bounded descriptive metadata
++    // alongside the policy (Apple TrustSettings.cpp copyTrustSettings). It is
++    // never a substitute for checking the actual SecPolicy OID and trust result.
++    let descriptiveName = "kSecTrustSettingsPolicyName"
++    guard required.isSubset(of: Set(entry.keys)), Set(entry.keys).isSubset(of: required.union([descriptiveName])),
++          let policy = entry[kSecTrustSettingsPolicy as String], CFGetTypeID(policy as CFTypeRef) == SecPolicyGetTypeID(),
++          let result = entry[kSecTrustSettingsResult as String] as? NSNumber,
++          CFGetTypeID(result as CFTypeRef) == CFNumberGetTypeID(), result.int64Value == Int64(SecTrustSettingsResult.trustRoot.rawValue) else {
++        throw Failure(stage: .verifyUserTrust, status: errSecDecode)
++    }
++    if let name = entry[descriptiveName] {
++        guard let name = name as? String, (1...256).contains(name.utf8.count) else { throw Failure(stage: .verifyUserTrust, status: errSecDecode) }
++    }
++    guard let actualProperties = SecPolicyCopyProperties(policy as! SecPolicy),
++          let expectedPolicy = SecPolicyCreateWithProperties(kSecPolicyAppleCodeSigning, nil),
++          let expectedProperties = SecPolicyCopyProperties(expectedPolicy) else {
++        throw Failure(stage: .verifyUserTrust, status: errSecDecode)
++    }
++    let actual = actualProperties as NSDictionary
++    let expected = expectedProperties as NSDictionary
++    guard let oid = actual[kSecPolicyOid as String] as? String,
++          let expectedOID = expected[kSecPolicyOid as String] as? String, oid == expectedOID else {
++        throw Failure(stage: .verifyUserTrust, status: errSecDecode)
++    }
++}
++
+ func legacySigningIdentityCount(_ keychain: SecKeychain, expected: Data) throws -> Int {
+     // codesign's historical identity search uses the legacy sign-use search,
+     // while the existing proof uses SecItemCopyMatching. Both must really find
+@@ -246,7 +355,7 @@
+ }
+ do { report(try run()) } catch {
+     let failure = error as? Failure
+-    var value: [String: Any] = ["schemaVersion": activeOperation == .importIdentity ? 1 : (activeOperation == .reopenIdentity ? 2 : 3),
++    var value: [String: Any] = ["schemaVersion": activeOperation.isUserTrust ? 4 : (activeOperation == .importIdentity ? 1 : (activeOperation == .reopenIdentity ? 2 : 3)),
+         "stage": (failure?.stage ?? .readInput).rawValue, "status": "failed", "osStatus": Int(failure?.status ?? errSecDecode)]
+     if activeOperation != .importIdentity { value["operation"] = activeOperation.rawValue }
+     report(value)
+--- baseline/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c
++++ work/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c
+@@ -11,10 +11,31 @@
+ #include <Security/SecKeychainItem.h>
+ #include <Security/SecAccess.h>
+ #include <Security/SecACL.h>
++#include <Security/Authorization.h>
+ #include <Security/SecTrustedApplication.h>
+ #include <stdlib.h>
+ #include <stdbool.h>
+ #include <string.h>
++
++OSStatus YueduOwnedUserTrustAuthorizationPreflight(void)
++{
++    AuthorizationRef authorization = NULL;
++    OSStatus status = AuthorizationCreate(NULL, kAuthorizationEmptyEnvironment,
++                                         kAuthorizationFlagDefaults, &authorization);
++    if (status != errAuthorizationSuccess) return status;
++    if (authorization == NULL) return errSecInternalComponent;
++    AuthorizationItem item = { "com.apple.trust-settings.user", 0, NULL, 0 };
++    AuthorizationRights rights = { 1, &item };
++    /* Deliberately no kAuthorizationFlagInteractionAllowed; no credentials,
++     * no sudo, and no changes to authorization rules. Public TrustSettings
++     * Set/Remove may still issue their own OS authorization request later. */
++    status = AuthorizationCopyRights(authorization, &rights,
++                                    kAuthorizationEmptyEnvironment,
++                                    kAuthorizationFlagExtendRights | kAuthorizationFlagPreAuthorize,
++                                    NULL);
++    OSStatus released = AuthorizationFree(authorization, kAuthorizationFlagDefaults);
++    return status == errAuthorizationSuccess ? released : status;
++}
+ 
+ /* Public deprecated C APIs, not SPI or an indirect Swift symbol call. Their
+  * Copy/Create results are released on both success and error paths. */
+--- baseline/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h
++++ work/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h
+@@ -11,6 +11,11 @@
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
++
++/* Does not allow authorization interaction and grants no signing authority.
++ * The subsequent public Set/Remove APIs create their own authorization request;
++ * this successful preflight does NOT guarantee that those APIs cannot request UI. */
++OSStatus YueduOwnedUserTrustAuthorizationPreflight(void);
+ 
+ /* macOS owned-fixture producer only. No identity/key is returned or retained.
+  * The caller supplies its one owned Keychain and a bounded public leaf DER.
+--- baseline/scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py
++++ work/scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py
+@@ -0,0 +1,161 @@
++"""Portable protocol/process tests only: no macOS trust, keys or codesign execution."""
++from contextlib import redirect_stdout
++import base64
++import importlib.util
++import io
++import json
++from pathlib import Path
++import sys
++import tempfile
++from unittest.mock import patch
++import unittest
++
++spec=importlib.util.spec_from_file_location('owned_user_trust_producer',Path(__file__).with_name('generate-sdk-owned-package.py'))
++producer=importlib.util.module_from_spec(spec);spec.loader.exec_module(producer)
++
++class OwnedTemporaryUserTrustTests(unittest.TestCase):
++    def setUp(self):
++        producer.RECORDS.clear();producer.PRIVATE_LITERALS.clear();producer.PRODUCER_DEADLINE=None
++        self.leaf=b'public-owned-protocol-fixture-not-a-certificate'
++        self.request={'path':'owned-test.keychain','keychainPassword':'secret-input-canary','p12Password':'',
++                      'p12':'','leafCertificate':base64.b64encode(self.leaf).decode(),
++                      'rootCertificate':base64.b64encode(self.leaf).decode()}
++
++    def passed(self,operation,*,absent=False):
++        remove=operation=='removeOwnedUserTrust';install=operation=='installOwnedUserTrust'
++        return {'schemaVersion':4,'operation':operation,'stage':'complete','status':'passed','osStatus':0,
++                'certificateSHA256':producer.fingerprint(self.leaf),'domain':'user','policy':'codeSign',
++                'disposableGitHubHostedRunner':True,'authorizationPreflightPassed':not (remove and absent),
++                'priorSettingsAbsent':not remove or absent,'settingsEntryCount':1 if install else 0,
++                'temporaryUserDomainTrustChanged':install or (remove and not absent),'cleanupVerified':remove,
++                'adminSystemTrustOrSearchListChanged':False,'codesignExecutionVerified':False}
++
++    def child(self,status,code=0,action=''):
++        return [sys.executable,'-c','import sys,pathlib;sys.stdin.buffer.read();'+action+
++                'sys.stdout.write('+repr(json.dumps(status))+');sys.stderr.write("private-child-stderr-canary");sys.exit('+str(code)+')']
++
++    def scope(self):
++        with patch.object(producer,'require_owned_hosted_runner'):
++            return producer.OwnedUserTrustScope('owned-importer',self.request,Path('owned-test.keychain'))
++
++    def routed_children(self,scope,state,order,fail_install=0,fail_cleanup=0):
++        actual_run=producer.run
++        sha=producer.hashlib.sha1(self.leaf).hexdigest().upper()
++        def route(args,**kwargs):
++            if str(args[0])=='owned-importer':
++                op=json.loads(kwargs['input'])['operation'];order.append(op)
++                if op=='installOwnedUserTrust':
++                    action='pathlib.Path('+repr(str(state))+').write_text("owned-effect");'
++                    status=self.passed(op);code=fail_install
++                elif op=='removeOwnedUserTrust':
++                    existed=state.exists();status=self.passed(op,absent=not existed);code=fail_cleanup
++                    action='' if code else 'pathlib.Path('+repr(str(state))+').unlink(missing_ok=True);'
++                else:status=self.passed(op);code=0;action=''
++                # Real subprocess + original strict private-output boundary.
++                return actual_run(self.child(status,code,action),**kwargs)
++            if str(args[0])=='security':
++                order.append('valid:'+str(int(state.exists())))
++                text=('  1) '+sha+' "Owned protocol identity"\n     1 valid identities found\n') if state.exists() else '     0 valid identities found\n'
++                return actual_run([sys.executable,'-c','import sys;sys.stdout.write('+repr(text)+')'],**kwargs)
++            self.fail('Unexpected command route')
++        return route
++
++    def test_requires_all_hosted_runner_facts_before_any_mutation_capability(self):
++        valid={'GITHUB_ACTIONS':'true','RUNNER_ENVIRONMENT':'github-hosted','RUNNER_OS':'macOS'}
++        with patch.object(producer.sys,'platform','darwin'),patch.dict(producer.os.environ,valid,clear=True):
++            producer.require_owned_hosted_runner()
++        cases=[{},dict(valid,GITHUB_ACTIONS='false'),dict(valid,RUNNER_ENVIRONMENT='self-hosted'),dict(valid,RUNNER_OS='Windows')]
++        for value in cases:
++            with self.subTest(value=value),patch.object(producer.sys,'platform','darwin'),patch.dict(producer.os.environ,value,clear=True),self.assertRaises(producer.ToolFailure):
++                producer.require_owned_hosted_runner()
++        self.assertEqual(producer.RECORDS,[])
++
++    def test_schema4_rejects_unknown_missing_scope_and_inconsistent_cleanup_facts(self):
++        for op in producer.OWNED_USER_TRUST_OPERATIONS:
++            valid=self.passed(op)
++            self.assertEqual(producer.owned_user_trust_status(json.dumps(valid).encode(),op),valid)
++            bad=dict(valid);bad.pop('priorSettingsAbsent')
++            vectors=[bad,dict(valid,privateKey='secret-canary'),dict(valid,schemaVersion=True),dict(valid,settingsEntryCount=True),
++                     dict(valid,domain='admin'),dict(valid,policy='basic'),dict(valid,certificateSHA256='1'),
++                     dict(valid,adminSystemTrustOrSearchListChanged=True),dict(valid,codesignExecutionVerified=True),
++                     dict(valid,temporaryUserDomainTrustChanged=not valid['temporaryUserDomainTrustChanged'])]
++            for value in vectors:
++                with self.subTest(op=op,value=value),self.assertRaises(ValueError):producer.owned_user_trust_status(json.dumps(value).encode(),op)
++        absent=self.passed('removeOwnedUserTrust',absent=True)
++        self.assertEqual(producer.owned_user_trust_status(json.dumps(absent).encode(),'removeOwnedUserTrust'),absent)
++        duplicate=json.dumps(self.passed('installOwnedUserTrust')).replace('"domain": "user"','"domain": "admin", "domain": "user"')
++        with self.assertRaises(ValueError):producer.owned_user_trust_status(duplicate.encode(),'installOwnedUserTrust')
++        with self.assertRaises(ValueError):producer.owned_user_trust_status(b' '*4097,'installOwnedUserTrust')
++
++    def test_actual_private_child_declassifies_only_exact_status_and_preserves_nonzero(self):
++        op='installOwnedUserTrust';output=io.StringIO()
++        with redirect_stdout(output):raw=producer.run(self.child(self.passed(op)),input=b'private-input-canary',private=True,public_status=op)
++        self.assertEqual(producer.owned_user_trust_status(raw,op),self.passed(op))
++        self.assertNotIn('private-input-canary',output.getvalue());self.assertNotIn('private-child-stderr-canary',output.getvalue())
++        self.assertEqual(json.loads(output.getvalue().split(' ',1)[1]),self.passed(op))
++        output=io.StringIO()
++        with redirect_stdout(output),self.assertRaises(producer.ToolFailure) as failure:
++            producer.run(self.child(self.passed(op),7),input=b'private-input-canary',private=True,public_status=op)
++        self.assertEqual(failure.exception.code,7)
++        output=io.StringIO()
++        with redirect_stdout(output),self.assertRaises(producer.ToolFailure):
++            producer.run(self.child(dict(self.passed(op),privateKey='secret-report-canary')),input=b'private-input-canary',private=True,public_status=op)
++        self.assertNotIn('secret-report-canary',output.getvalue())
++
++    def test_exact_valid_identity_parser_rejects_foreign_duplicates_unknown_and_missing_summary(self):
++        sha='A'*40;line='  1) '+sha+' "Owned"\n'
++        self.assertEqual(producer.exact_valid_owned_identity(b'  0 valid identities found\n',sha),0)
++        self.assertEqual(producer.exact_valid_owned_identity((line+'  1 valid identities found\n').encode(),sha),1)
++        cases=[line,line+'  0 valid identities found\n',line+line+'  2 valid identities found\n',
++               line.replace(sha,'B'*40)+'  1 valid identities found\n',line+'unknown\n  1 valid identities found\n',
++               '  0 valid identities found\n  0 valid identities found\n']
++        for text in cases:
++            with self.subTest(text=text),self.assertRaises(ValueError):producer.exact_valid_owned_identity(text.encode(),sha)
++
++    def test_actual_child_pipeline_installs_reads_then_cleans_exact_scope_in_order(self):
++        scope=self.scope();order=[];output=io.StringIO()
++        with tempfile.TemporaryDirectory() as directory:
++            state=Path(directory)/'effect'
++            with redirect_stdout(output),patch.object(producer,'run',self.routed_children(scope,state,order)):
++                scope.install();self.assertTrue(state.exists());self.assertTrue(scope.cleanup_intent)
++                scope.cleanup();self.assertFalse(state.exists());self.assertFalse(scope.cleanup_intent)
++            self.assertEqual(order,['valid:0','preflightOwnedUserTrust','installOwnedUserTrust','valid:1','removeOwnedUserTrust','valid:0'])
++        self.assertTrue(scope.installed);self.assertTrue(scope.cleaned)
++
++    def test_lost_install_ack_retains_cleanup_intent_and_removes_actual_child_effect(self):
++        scope=self.scope();order=[];output=io.StringIO()
++        with tempfile.TemporaryDirectory() as directory:
++            state=Path(directory)/'effect'
++            with redirect_stdout(output),patch.object(producer,'run',self.routed_children(scope,state,order,fail_install=7)):
++                with self.assertRaises(producer.ToolFailure) as primary:scope.install()
++                self.assertEqual(primary.exception.code,7);self.assertTrue(state.exists());self.assertTrue(scope.cleanup_intent)
++                self.assertIsNone(producer.finish_owned_user_trust(scope,primary.exception))
++                self.assertFalse(state.exists());self.assertTrue(scope.cleaned)
++        self.assertNotIn('secret-input-canary',output.getvalue())
++        self.assertEqual(order,['valid:0','preflightOwnedUserTrust','installOwnedUserTrust','removeOwnedUserTrust','valid:0'])
++
++    def test_cleanup_failure_retains_original_error_and_reports_unremoved_trust_separately(self):
++        scope=self.scope();order=[];output=io.StringIO()
++        with tempfile.TemporaryDirectory() as directory:
++            state=Path(directory)/'effect'
++            with redirect_stdout(output),patch.object(producer,'run',self.routed_children(scope,state,order,fail_cleanup=9)):
++                scope.install();primary=producer.ToolFailure('codesign',1)
++                cleanup=producer.finish_owned_user_trust(scope,primary)
++                self.assertIsInstance(cleanup,producer.ToolFailure);self.assertEqual(cleanup.code,9)
++                self.assertEqual(primary.code,1);self.assertTrue(state.exists());self.assertTrue(scope.cleanup_intent)
++            facts=json.loads(output.getvalue().split('OWNED_USER_TRUST_CLEANUP_FAILURE ',1)[1])
++            self.assertTrue(facts['originalToolFailureRetained']);self.assertTrue(facts['temporaryUserTrustMayRemain'])
++            self.assertNotIn('private-child-stderr-canary',output.getvalue())
++
++    def test_preflight_failure_blocks_install_and_does_not_claim_cleanup_authority(self):
++        scope=self.scope();order=[];actual_run=producer.run;output=io.StringIO()
++        def route(args,**kwargs):
++            if str(args[0])=='security':return actual_run([sys.executable,'-c','print("  0 valid identities found")'],**kwargs)
++            op=json.loads(kwargs['input'])['operation'];order.append(op)
++            status={'schemaVersion':4,'operation':op,'stage':'authorizeUserTrust','status':'failed','osStatus':-60007}
++            return actual_run(self.child(status,1),**kwargs)
++        with redirect_stdout(output),patch.object(producer,'run',route),self.assertRaises(producer.ToolFailure):scope.install()
++        self.assertEqual(order,['preflightOwnedUserTrust']);self.assertFalse(scope.cleanup_intent)
++        self.assertIsNone(producer.finish_owned_user_trust(scope,None))
++
++if __name__=='__main__':unittest.main()

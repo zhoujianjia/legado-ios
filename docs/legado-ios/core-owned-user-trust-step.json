@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T11:21:04.509600+00:00",
+  "status": "owned-hosted-mac-user-trust-environment-source-reviewed-portable-passed-real-mac-pending",
+  "integrationBaseCommit": "6d372308934e87ac7d773b1314ee51cf1d6a61b4",
+  "previousActualResult": "docs/legado-ios/core-owned-sdk-producer-ddae452-result.json",
+  "sourceFiles": [
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "bytes": 52410,
+      "sha256": "8bafcafd1b1b6d85ec214cde1bf90fd375c866dc9634dcb3daeae836c75944a9"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+      "bytes": 23609,
+      "sha256": "548be3fd7b8e425a9389984bcd8f7c3427e609099462dc654474b808afdfc899"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c",
+      "bytes": 35826,
+      "sha256": "a949473d76db6035974e1ddb7f79b5736b1a7db984e6dd8226c355047e3b930a"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h",
+      "bytes": 3643,
+      "sha256": "db8f83fa1a5d650760bc5a68abcacb5fe61d744a606ec504bf07973b2efb3e1f"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py",
+      "bytes": 11753,
+      "sha256": "57b80616bcf2847a799af175b3bfe744d0cf9b4526aaf69b73c6ee46cd27600b"
+    }
+  ],
+  "implementation": [
+    "Use public Authorization preflight and SecTrustSettings user-domain operations only in the disposable GitHub-hosted Mac fixture producer.",
+    "Require prior absence for the exact generated self-signed certificate; install only codeSign/trustRoot, verify exact readback, and require actual valid-identity count0 to1.",
+    "Record cleanup intent before mutating child; remove and verify exact absence and valid-identity count0 before deleting the owned Keychain or publishing the successful fixture manifest.",
+    "Keep original codesign, detached CMS, MachO, nested profile and archive production unchanged. Actual errors, deadlines and cleanup failures remain failures."
+  ],
+  "sourceContinuity": {
+    "originalNineGeneratorFunctionsByteEqual": true,
+    "targetClangCodesignCMSMachOProfileZIPBodyByteEqual": true,
+    "oldReportSchemas1To3Unchanged": true,
+    "newTrustReportSchema": 4,
+    "explicitlyTemporaryUserGlobalMutation": true,
+    "adminSystemTrustOrSearchListMutation": false
+  },
+  "actualValidation": {
+    "newPortableDefinitions": 8,
+    "affectedPriorReporterMethods": 4,
+    "totalUniquePortableMethodsPassed": 12,
+    "SwiftGrammarFiles": 1,
+    "SwiftGrammarDiagnostics": 0,
+    "CCompiler": 0,
+    "SwiftCompiler": 0,
+    "Authorization": 0,
+    "SecTrustSettings": 0,
+    "macOS": 0,
+    "codesign": 0,
+    "nativeTests": 0,
+    "realCredentials": 0,
+    "device": 0,
+    "cloudQueriesOrTriggers": 0
+  },
+  "rootAudit": {
+    "schemaVersion": 1,
+    "recordedAtUTC": "2026-10-20T11:20:01.297482+00:00",
+    "preparation": {
+      "path": ".build/renewal-discovery/owned-user-trust-step/preparation.json",
+      "bytes": 11550,
+      "sha256": "061264584430e90f2fe8f63079fc7b9bfe6f6cd5ad6f7bd1bd82413d196e5d28"
+    },
+    "independentReview": {
+      "path": ".build/renewal-discovery/owned-user-trust-step/independent-source-review-v1.json",
+      "bytes": 28321,
+      "sha256": "1b5df7c8c1cca3578bd2e7d2fd808a2e5003f050eef6957eca6034762e6b1dba"
+    },
+    "sourceFiles": [
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "bytes": 52410,
+        "sha256": "8bafcafd1b1b6d85ec214cde1bf90fd375c866dc9634dcb3daeae836c75944a9"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+        "bytes": 23609,
+        "sha256": "548be3fd7b8e425a9389984bcd8f7c3427e609099462dc654474b808afdfc899"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c",
+        "bytes": 35826,
+        "sha256": "a949473d76db6035974e1ddb7f79b5736b1a7db984e6dd8226c355047e3b930a"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h",
+        "bytes": 3643,
+        "sha256": "db8f83fa1a5d650760bc5a68abcacb5fe61d744a606ec504bf07973b2efb3e1f"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py",
+        "bytes": 11753,
+        "sha256": "57b80616bcf2847a799af175b3bfe744d0cf9b4526aaf69b73c6ee46cd27600b"
+      }
+    ],
+    "verdict": "no-confirmed-source-blocker",
+    "confirmedBlockers": [],
+    "rootChecks": [
+      "Read the actual parent/private-helper input flow and exact certificate fingerprint checks; this same-user private CLI is not a separate unforgeable authorization boundary. Only the controlled parent has the generated request, after actual owned import/key challenge/partition/fresh reopen checks.",
+      "Reviewed public Authorization preflight flags, prior user trust absence, single exact-certificate codeSign/trustRoot setting, strict readback, removal and separate-process valid-identity transition requirements.",
+      "Reviewed finally explicitly: cleanup intent precedes mutating Set invocation, removal occurs before owned Keychain deletion, primary errors are retained, independent cleanup failures remain public bounded failures and never produce success.",
+      "Verified original nine producer functions and the actual target clang/codesign/detached-CMS/MachO/profile/ZIP production body byte-identical. Source shape/final manifest deliberately disclose temporary user-global trust change.",
+      "Verified exact twelve unique portable outcome lines and source hashes. Those protocol/process tests do not execute Apple Authorization, trust settings, C/Swift compiler, codesign or native tests."
+    ],
+    "actualNewRootTestsRun": 0,
+    "actualAppleSDKAuthorizationTrustCodesignRuns": 0,
+    "limitations": [
+      "Public Set/Remove can request authorization after no-interaction preflight; no UI-free guarantee is asserted. Closed stdin, existing private child deadline and actual error remain binding.",
+      "The GitHub-hosted environment check is a controlled test-environment guard, not authentication against a malicious same-user caller.",
+      "An uncatchable process kill may prevent cleanup; the job must remain disposable and a failed cleanup never establishes a complete successful fixture.",
+      "The prior real codesign item-not-found cause is not proven or fixed until new real Mac execution succeeds. No Apple-issued material authority, installation or automatic renewal follows from an owned test certificate."
+    ]
+  },
+  "remaining": [
+    "A future finite Mac run must establish actual non-interactive authorization availability, setting/readback/removal, exact valid-identity transition and genuine target codesign success.",
+    "This is an owned-fixture environment fix candidate; the previous item-not-found cause remains unproven until controlled new evidence.",
+    "No Apple profile authority, real account authorization, device install or automatic renewal completion is claimed."
+  ],
+  "nextStep": "Add the eight actual portable methods and exact new source path to the finite Mac job before one new reviewed source tag. Then inspect genuine authorization/set/readback/codesign/CMS/removal results; do not infer prior failure cause from source checks.",
+  "actualOldCodesignRootCauseProven": false,
+  "actualCodesignFailureFixed": false,
+  "limitations": [
+    "Public Set/Remove can request authorization after no-interaction preflight; no UI-free guarantee is asserted. Closed stdin, existing private child deadline and actual error remain binding.",
+    "The GitHub-hosted environment check is a controlled test-environment guard, not authentication against a malicious same-user caller.",
+    "An uncatchable process kill may prevent cleanup; the job must remain disposable and a failed cleanup never establishes a complete successful fixture.",
+    "The prior real codesign item-not-found cause is not proven or fixed until new real Mac execution succeeds. No Apple-issued material authority, installation or automatic renewal follows from an owned test certificate."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-owned-user-trust-step",
+    "manifest": "manifest.json",
+    "rawFiles": 16,
+    "privateMaterialPublished": false,
+    "fullPrimarySourcesRepublished": false
+  }
+}

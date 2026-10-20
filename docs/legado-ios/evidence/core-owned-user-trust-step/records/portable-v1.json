@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "preparedAtUTC": "2026-10-20T11:08:51.618359+00:00",
+  "sourceInputs": [
+    {
+      "path": ".build/renewal-discovery/owned-user-trust-step/work/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "bytes": 52410,
+      "sha256": "8bafcafd1b1b6d85ec214cde1bf90fd375c866dc9634dcb3daeae836c75944a9"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-user-trust-step/work/scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+      "bytes": 23609,
+      "sha256": "548be3fd7b8e425a9389984bcd8f7c3427e609099462dc654474b808afdfc899"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-user-trust-step/work/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c",
+      "bytes": 35826,
+      "sha256": "a949473d76db6035974e1ddb7f79b5736b1a7db984e6dd8226c355047e3b930a"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-user-trust-step/work/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h",
+      "bytes": 3643,
+      "sha256": "db8f83fa1a5d650760bc5a68abcacb5fe61d744a606ec504bf07973b2efb3e1f"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-user-trust-step/work/scripts/reader-experience/owned-package-fixture/test-producer-user-trust.py",
+      "bytes": 11753,
+      "sha256": "57b80616bcf2847a799af175b3bfe744d0cf9b4526aaf69b73c6ee46cd27600b"
+    }
+  ],
+  "sourcePreparation": {
+    "path": ".build/renewal-discovery/owned-user-trust-step/source-preparation.json",
+    "bytes": 7618,
+    "sha256": "a359b146787608bdc786195a6bd875cf2f8c7a67915006a5413bb66cc699f076"
+  },
+  "command": [
+    "C:\\Python312\\python.exe",
+    "-m",
+    "unittest",
+    "-v",
+    "test-producer-user-trust.OwnedTemporaryUserTrustTests",
+    "test-producer-diagnostics.ProducerDiagnosticsTests.test_typed_public_import_facts_keep_other_process_acl_unverified",
+    "test-producer-diagnostics.ProducerDiagnosticsTests.test_malformed_private_import_status_is_suppressed_not_echoed",
+    "test-producer-keychain-reopen.OwnedKeychainReopenReportTests.test_actual_private_reporter_has_separate_reopen_schema_and_no_codesign_claim",
+    "test-producer-keychain-reopen.OwnedKeyACLReportTests.test_actual_acl_reporter_declassifies_only_schema3_counts_and_preserves_no_codesign_claim"
+  ],
+  "exitCode": 0,
+  "durationSeconds": 1.375,
+  "exactUniqueMethods": [
+    "test_actual_child_pipeline_installs_reads_then_cleans_exact_scope_in_order (test-producer-user-trust.OwnedTemporaryUserTrustTests.test_actual_child_pipeline_installs_reads_then_cleans_exact_scope_in_order)",
+    "test_actual_private_child_declassifies_only_exact_status_and_preserves_nonzero (test-producer-user-trust.OwnedTemporaryUserTrustTests.test_actual_private_child_declassifies_only_exact_status_and_preserves_nonzero)",
+    "test_cleanup_failure_retains_original_error_and_reports_unremoved_trust_separately (test-producer-user-trust.OwnedTemporaryUserTrustTests.test_cleanup_failure_retains_original_error_and_reports_unremoved_trust_separately)",
+    "test_exact_valid_identity_parser_rejects_foreign_duplicates_unknown_and_missing_summary (test-producer-user-trust.OwnedTemporaryUserTrustTests.test_exact_valid_identity_parser_rejects_foreign_duplicates_unknown_and_missing_summary)",
+    "test_lost_install_ack_retains_cleanup_intent_and_removes_actual_child_effect (test-producer-user-trust.OwnedTemporaryUserTrustTests.test_lost_install_ack_retains_cleanup_intent_and_removes_actual_child_effect)",
+    "test_preflight_failure_blocks_install_and_does_not_claim_cleanup_authority (test-producer-user-trust.OwnedTemporaryUserTrustTests.test_preflight_failure_blocks_install_and_does_not_claim_cleanup_authority)",
+    "test_requires_all_hosted_runner_facts_before_any_mutation_capability (test-producer-user-trust.OwnedTemporaryUserTrustTests.test_requires_all_hosted_runner_facts_before_any_mutation_capability)",
+    "test_schema4_rejects_unknown_missing_scope_and_inconsistent_cleanup_facts (test-producer-user-trust.OwnedTemporaryUserTrustTests.test_schema4_rejects_unknown_missing_scope_and_inconsistent_cleanup_facts)",
+    "test_typed_public_import_facts_keep_other_process_acl_unverified (test-producer-diagnostics.ProducerDiagnosticsTests.test_typed_public_import_facts_keep_other_process_acl_unverified)",
+    "test_malformed_private_import_status_is_suppressed_not_echoed (test-producer-diagnostics.ProducerDiagnosticsTests.test_malformed_private_import_status_is_suppressed_not_echoed)",
+    "test_actual_private_reporter_has_separate_reopen_schema_and_no_codesign_claim (test-producer-keychain-reopen.OwnedKeychainReopenReportTests.test_actual_private_reporter_has_separate_reopen_schema_and_no_codesign_claim)",
+    "test_actual_acl_reporter_declassifies_only_schema3_counts_and_preserves_no_codesign_claim (test-producer-keychain-reopen.OwnedKeyACLReportTests.test_actual_acl_reporter_declassifies_only_schema3_counts_and_preserves_no_codesign_claim)"
+  ],
+  "methodsPassed": 12,
+  "rawLog": {
+    "path": ".build/renewal-discovery/owned-user-trust-step/portable-v1.log",
+    "bytes": 2702,
+    "sha256": "05de2bb4911414d0d6b87e39c403adc35d479e52499a917b20c2524483894533"
+  },
+  "limits": "Portable Python processes and strict public protocol/control-flow only. Child fixtures do not execute or prove C/Swift, Authorization/SecTrustSettings, real Security, private keys, Keychain, codesign, macOS or native tests.",
+  "methodsFailed": 0,
+  "methodsSkipped": 0,
+  "grammar": {
+    "path": ".build/renewal-discovery/owned-user-trust-step/grammar-v1.json",
+    "bytes": 499,
+    "sha256": "c2c914e312af1d23d942f6fc9e969ba0f1c355645812b800c1f340ec53ef7cd5"
+  }
+}

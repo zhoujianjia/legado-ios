@@ -1,0 +1,338 @@
+{
+  "schemaVersion": 1,
+  "scope": "Pinned primary-source investigation and candidate owned fixture environment change. This is not a proven root cause or an executed Mac repair.",
+  "actualPriorFailure": {
+    "source": "ddae452",
+    "publicLog": {
+      "path": ".build/sdk-evidence/ddae452/finite/owned-sdk-producer-check/phase-producer.log",
+      "bytes": 6983,
+      "sha256": "fc710a34207dd3f48df0b7c1986169d605f23933f921fef3f19aeeaf00178ab3"
+    },
+    "established": [
+      "C/Swift importer compilation, real CSSM partition ADD, exact four partition readback and fresh-process challenge all succeeded in the prior Mac run.",
+      "The first framework codesign invocation still exited 1 with item-not-found. Actual codeSign policy evaluation with the explicit owned root exited 0; the ordinary valid identity list was empty."
+    ],
+    "notEstablished": [
+      "No new Mac execution by this work.",
+      "Matching1/valid0 alone does not establish the precise modern CLI call that failed.",
+      "No evidence that the target CMS signing path reconstructed the identity with a NULL keychain."
+    ]
+  },
+  "primaryFacts": [
+    {
+      "source": {
+        "name": "cs_utils.cpp",
+        "url": "https://github.com/apple-oss-distributions/security_systemkeychain/blob/2b4c65b1074521e9c1dd2c8dc7fbf45dd775ec70/src/cs_utils.cpp",
+        "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/cs_utils.cpp",
+        "bytes": 21388,
+        "sha256": "a0ebc6f31fda06331fa336384d97c811c7af8390da47f7181c293d843bba0ebb"
+      },
+      "lines": [
+        199,
+        251
+      ],
+      "conclusion": "Historical public CLI selects from the supplied keychain with code-sign policy, false valid-only filtering and exact certificate SHA1. Its identity preference check precedes this search."
+    },
+    {
+      "source": {
+        "name": "codesign.cpp",
+        "url": "https://github.com/apple-oss-distributions/security_systemkeychain/blob/21f3ff10bb50f0e1404042b38c1b81564204f322/src/codesign.cpp",
+        "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/codesign.cpp",
+        "bytes": 18429,
+        "sha256": "447f93986f601a25af977da6a017948f955e7ee6cd4bd9452364a33f3d1efbc9"
+      },
+      "lines": [
+        420,
+        485
+      ],
+      "conclusion": "Historical CLI reports global identity/prepare failures without a target path, while per-target failures include it. Observed unprefixed stderr is compatible with an early stage; it does not prove the current binary call site."
+    },
+    {
+      "source": {
+        "name": "SecIdentity.h",
+        "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/keychain/headers/SecIdentity.h",
+        "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/SecIdentity.h",
+        "bytes": 14098,
+        "sha256": "25bccb27adb79f50aec405e063971abdfbfa15b67c2510e9346294ef451550af"
+      },
+      "lines": [
+        95,
+        109
+      ],
+      "conclusion": "SecIdentityCreateWithCertificate searches the explicit keychain list, or the default list if NULL."
+    },
+    {
+      "source": {
+        "name": "Identity.cpp",
+        "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_keychain/lib/Identity.cpp",
+        "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/Identity.cpp",
+        "bytes": 8301,
+        "sha256": "6f5db2853bd176cd2185f138224bd22ab7f527a70c82cf9e02ca94753e2c51d8"
+      },
+      "lines": [
+        48,
+        124
+      ],
+      "conclusion": "Identity reconstruction binds a private key by the certificate public-key hash with the selected keychain search scope."
+    },
+    {
+      "source": {
+        "name": "identity_find.m",
+        "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/SecurityTool/macOS/identity_find.m",
+        "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/identity_find.m",
+        "bytes": 19217,
+        "sha256": "d881bd10b77ded90ea83685f750ad244c85fc7cb2e0f959bf6f5ebe951f3a2a3"
+      },
+      "lines": [
+        101,
+        128
+      ],
+      "conclusion": "One current SecurityTool helper scopes identity enumeration but then queries private-key attributes without carrying that list. No proof that the current codesign executable calls this helper."
+    },
+    {
+      "source": {
+        "name": "identity_find.m",
+        "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/SecurityTool/macOS/identity_find.m",
+        "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/identity_find.m",
+        "bytes": 19217,
+        "sha256": "d881bd10b77ded90ea83685f750ad244c85fc7cb2e0f959bf6f5ebe951f3a2a3"
+      },
+      "lines": [
+        348,
+        386
+      ],
+      "conclusion": "security find-identity performs distinct matching and valid-only policy searches; the output lists describe different checks."
+    },
+    {
+      "source": {
+        "name": "signerutils.cpp",
+        "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/signerutils.cpp",
+        "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/signerutils.cpp",
+        "bytes": 14378,
+        "sha256": "2f352abf90941bca654b31bee3a44a75499abc22da4362601920c0ff6301c699"
+      },
+      "lines": [
+        367,
+        398
+      ],
+      "conclusion": "The library pre-signing context uses the supplied identity certificate; failed trust evaluation is logged as nonfatal here."
+    },
+    {
+      "source": {
+        "name": "CMSEncoder.cpp",
+        "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_cms/lib/CMSEncoder.cpp",
+        "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/CMSEncoder.cpp",
+        "bytes": 43450,
+        "sha256": "c1f0ecd469c7d190497f17982d5467fdee14d1342bc7fe0f67d926cd052a1084"
+      },
+      "lines": [
+        484,
+        504
+      ],
+      "conclusion": "The CMS encoder receives the selected SecIdentity and creates signer info from it."
+    },
+    {
+      "source": {
+        "name": "cmssiginfo-modern.c",
+        "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_smime/lib/cmssiginfo.c",
+        "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/cmssiginfo-modern.c",
+        "bytes": 59017,
+        "sha256": "6c3e7268f87d57e16230b3ef55093e7aaef36c49210a1cb4fd17ba4166a74918"
+      },
+      "lines": [
+        106,
+        139
+      ],
+      "conclusion": "Signer creation copies the private key from the supplied identity and checks that its class is private; this is not default-keychain reconstruction."
+    },
+    {
+      "source": {
+        "name": "SecTrustSettings.h",
+        "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/trust/headers/SecTrustSettings.h",
+        "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/SecTrustSettings.h",
+        "bytes": 13996,
+        "sha256": "c0db29964d3e219e1b48b50a34e66c02965f100141e1d5468d70e8d8595b102e"
+      },
+      "lines": [
+        73,
+        160
+      ],
+      "conclusion": "Trust constraints may be policy-limited. An empty array is broad trust, not absence; trustRoot is restricted to a self-signed root."
+    },
+    {
+      "source": {
+        "name": "SecTrustSettings.h",
+        "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/trust/headers/SecTrustSettings.h",
+        "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/SecTrustSettings.h",
+        "bytes": 13996,
+        "sha256": "c0db29964d3e219e1b48b50a34e66c02965f100141e1d5468d70e8d8595b102e"
+      },
+      "lines": [
+        162,
+        175
+      ],
+      "conclusion": "User trust modification can require GUI authentication. This implementation does not claim that an earlier no-interaction authorization preflight guarantees no later OS authorization request."
+    },
+    {
+      "source": {
+        "name": "SecTrustSettings.h",
+        "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/trust/headers/SecTrustSettings.h",
+        "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/SecTrustSettings.h",
+        "bytes": 13996,
+        "sha256": "c0db29964d3e219e1b48b50a34e66c02965f100141e1d5468d70e8d8595b102e"
+      },
+      "lines": [
+        239,
+        269
+      ],
+      "conclusion": "CopyTrustSettings missing exact certificate is errSecItemNotFound. Set replaces that certificate settings; Remove targets the exact certificate/domain."
+    },
+    {
+      "source": {
+        "name": "TrustSettings.cpp",
+        "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_keychain/lib/TrustSettings.cpp",
+        "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/TrustSettings.cpp",
+        "bytes": 57320,
+        "sha256": "5eba3124dc03f49a7e00dc3ddd530ef369e71b327344a79e5182440dabb58eab"
+      },
+      "lines": [
+        642,
+        719
+      ],
+      "conclusion": "The public trust writer internally creates an authorization reference and permits interaction. The caller cannot pass a no-interaction flag to Set/Remove."
+    },
+    {
+      "source": {
+        "name": "TrustSettings.cpp",
+        "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_keychain/lib/TrustSettings.cpp",
+        "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/TrustSettings.cpp",
+        "bytes": 57320,
+        "sha256": "5eba3124dc03f49a7e00dc3ddd530ef369e71b327344a79e5182440dabb58eab"
+      },
+      "lines": [
+        1035,
+        1089
+      ],
+      "conclusion": "Public settings readback reconstructs the SecPolicy and can include generated descriptive policyName. Validate the policy OID and explicit trust result; do not mistake that metadata for a broader constraint."
+    },
+    {
+      "source": {
+        "name": "TrustSettingsSchema.h",
+        "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_keychain/lib/TrustSettingsSchema.h",
+        "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/TrustSettingsSchema.h",
+        "bytes": 6261,
+        "sha256": "38b983ac7eff84dd5cbd3a5aa62d853162ad89cf3e1b62ee20cd4faf56c77c69"
+      },
+      "lines": [
+        137,
+        143
+      ],
+      "conclusion": "The user trust authorization right is com.apple.trust-settings.user; the code requests it through public Authorization APIs without changing authorization rules."
+    },
+    {
+      "source": {
+        "name": "SecPolicy.h",
+        "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/trust/headers/SecPolicy.h",
+        "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/SecPolicy.h",
+        "bytes": 20745,
+        "sha256": "b372cc248b0aa1aa4b29e914f888727cd9cf9c6ea3cdefd94be9bbfd9c24d3e7"
+      },
+      "lines": [
+        78,
+        83
+      ],
+      "conclusion": "kSecPolicyAppleCodeSigning is public."
+    },
+    {
+      "source": {
+        "name": "SecPolicy.h",
+        "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/trust/headers/SecPolicy.h",
+        "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/SecPolicy.h",
+        "bytes": 20745,
+        "sha256": "b372cc248b0aa1aa4b29e914f888727cd9cf9c6ea3cdefd94be9bbfd9c24d3e7"
+      },
+      "lines": [
+        162,
+        175
+      ],
+      "conclusion": "SecPolicyCopyProperties is public and nullable."
+    },
+    {
+      "source": {
+        "name": "SecPolicy.h",
+        "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/trust/headers/SecPolicy.h",
+        "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/SecPolicy.h",
+        "bytes": 20745,
+        "sha256": "b372cc248b0aa1aa4b29e914f888727cd9cf9c6ea3cdefd94be9bbfd9c24d3e7"
+      },
+      "lines": [
+        249,
+        263
+      ],
+      "conclusion": "SecPolicyCreateWithProperties is the public nullable policy constructor used by the candidate; no private code-sign policy constructor is imported."
+    }
+  ],
+  "currentDocumentation": [
+    {
+      "url": "https://developer.apple.com/documentation/technotes/tn3161-inside-code-signing-certificates",
+      "raw": {
+        "path": ".build/renewal-discovery/owned-identity-search-scope-step/primary/tn3161.md",
+        "bytes": 32989,
+        "sha256": "91001a458630344dd43ae2e33d511371c0243acaac6b8ebedd54780da1282739"
+      },
+      "lines": [
+        256,
+        306
+      ],
+      "conclusion": "Current documentation describes trust-chain, validity and code-sign purpose checks in identity selection. --keychain restricts the identity search file. A separate explicit-anchor verify-cert invocation does not set that CLI environment."
+    },
+    {
+      "url": "https://developer.apple.com/forums/thread/712043",
+      "section": "Check for an expired certificate; Check for a missing issuer",
+      "conclusion": "Apple DTS shows an unprefixed item-not-found for an expired identity, and explains that untrusted identity symptoms have multiple causes. This supports investigating policy filtering without treating the observed error as proof of a missing key."
+    },
+    {
+      "url": "https://developer.apple.com/forums/thread/712005",
+      "section": "Test from Terminal; Working without the GUI",
+      "conclusion": "Apple DTS distinguishes trusted identity availability, keychain unlocking and private-key ACL access. These are independent prerequisites."
+    }
+  ],
+  "sourceVersionBoundary": {
+    "historicalCLICommit": "21f3ff10bb50f0e1404042b38c1b81564204f322",
+    "historicalCLIRelease": "security_systemkeychain-55202",
+    "securityCommit": "db15acbe6a7f257a859ad9a3bb86097bfe0679d9",
+    "warning": "Neither pinned source set is asserted to match the exact current hosted codesign executable. The OSS repository import dates are not platform release dates."
+  },
+  "candidateChange": {
+    "purpose": "Give only this disposable hosted Mac fixture its own exact synthetic certificate as a temporary user-domain codeSign trustRoot; keep actual platform codesign and independent CMS/MachO verification mandatory.",
+    "processWideMutation": "This intentionally changes per-user trust during the test; it is not represented as an unchanged global user environment.",
+    "gates": [
+      "Only Darwin + GITHUB_ACTIONS=true + RUNNER_ENVIRONMENT=github-hosted + RUNNER_OS=macOS in both producer and importer.",
+      "Exact certificate user settings must be absent; no existing entry, including an empty broad-trust array, is overwritten.",
+      "Public AuthorizationCopyRights has no InteractionAllowed flag and must succeed before each actual mutation. Public Set/Remove can still request system authorization; no credentials, clicks, sudo or user responses are supplied.",
+      "Set/Remove execute in the existing bounded private-input child process. A deadline, rejection or nonzero exit remains failure.",
+      "Read back a single actual codeSign policy plus explicit trustRoot result; no allowed errors/app policy/broad trust accepted.",
+      "Actual security find-identity -v must show exact SHA1 0 before, 1 after install, and 0 after removal.",
+      "Mark cleanup intent before starting Set so a committed write with a lost ACK is still cleaned in finally.",
+      "Remove only the exact certificate with the expected bounded policy, then actually read missing. Preserve primary and cleanup failures independently; cleanup failure keeps the whole stage failed."
+    ],
+    "noChange": [
+      "No admin/system trust domain mutation.",
+      "No keychain search list mutation.",
+      "No other certificate import or trust rewrite.",
+      "No sudo, authorization database edits, different signing backend, ad-hoc target signatures, relaxed CMS or MachO verification."
+    ],
+    "limits": [
+      "Actual headless authorization availability and signing success remain unverified until a new finite Mac run.",
+      "SIGKILL can bypass parent finally; the host must be disposable. Child termination can leave an uncertain OS mutation; a failed run never earns a successful manifest.",
+      "Cleanup proof means the exact certificate was absent at the actual final read, not a universal assertion about all system state or future OS work."
+    ]
+  },
+  "reviewerExecutions": {
+    "Mac": 0,
+    "SecurityCalls": 0,
+    "actualCodesign": 0,
+    "cloud": 0,
+    "newTestsAtResearchRecord": 0
+  }
+}
