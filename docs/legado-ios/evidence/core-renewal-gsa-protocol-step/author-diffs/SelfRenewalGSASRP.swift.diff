@@ -1,0 +1,145 @@
+--- /dev/null
++++ prepared/Modules/Services/SelfRenewal/SelfRenewalGSASRP.swift
+@@ -0,0 +1,142 @@
++import CryptoKit
++import CryptoSwift
++import Foundation
++import Security
++
++/// Independently written SRP-6a protocol arithmetic, using the existing
++/// CryptoSwift dependency for bounded integer arithmetic and AES only.
++/// RFC5054 group 2048, SHA256, padded integer hashes, no username in x.
++/// No corecrypto code, private framework or additional package is linked.
++struct SelfRenewalGSASRP: Sendable, CustomStringConvertible, CustomDebugStringConvertible {
++    var description: String { "GSA SRP state <redacted>" }
++    var debugDescription: String { description }
++    enum Failure: Error, Sendable, Equatable {
++        case invalidInput, random, invalidServerPublicKey, proof, negotiation, encryptedData
++    }
++    enum PasswordProtocol: String, Sendable { case s2k, s2kFO = "s2k_fo" }
++    struct Proof: Sendable, CustomStringConvertible, CustomDebugStringConvertible {
++        var description: String { "GSA session proof <redacted>" }
++        var debugDescription: String { description }
++        let clientProof: Data
++        let expectedServerProof: Data
++        let sessionKey: Data
++        func verify(serverProof: Data, protocolName: PasswordProtocol, spd: Data, sc: Data?, negotiation: Data) throws {
++            guard SelfRenewalGSASRP.equal(serverProof, expectedServerProof) else { throw Failure.proof }
++            guard !spd.isEmpty, spd.count <= 65_536, sc == nil || sc!.count <= 65_536 else { throw Failure.invalidInput }
++            var transcript = Data(("s2k,s2k_fo||" + protocolName.rawValue + "|").utf8)
++            transcript += SelfRenewalGSASRP.lengthPrefixed(spd); transcript.append(124)
++            if let sc { transcript += SelfRenewalGSASRP.lengthPrefixed(sc) }
++            transcript.append(124)
++            let key = SelfRenewalGSASRP.mac(sessionKey, Data("HMAC key:".utf8))
++            guard SelfRenewalGSASRP.equal(negotiation, SelfRenewalGSASRP.mac(key, SelfRenewalGSASRP.hash(transcript))) else {
++                throw Failure.negotiation
++            }
++        }
++        func decryptSPD(_ data: Data) throws -> Data {
++            guard !data.isEmpty, data.count <= 65_536, data.count % 16 == 0 else { throw Failure.encryptedData }
++            do {
++                let key = SelfRenewalGSASRP.mac(sessionKey, Data("extra data key:".utf8))
++                let iv = SelfRenewalGSASRP.mac(sessionKey, Data("extra data iv:".utf8)).prefix(16)
++                let plain = try CryptoSwift.AES(key: Array(key), blockMode: CBC(iv: Array(iv)), padding: .noPadding).decrypt(Array(data))
++                guard let last = plain.last, (1...16).contains(Int(last)), plain.count >= Int(last),
++                      plain.suffix(Int(last)).allSatisfy({ $0 == last }) else { throw Failure.encryptedData }
++                return Data(plain.dropLast(Int(last)))
++            } catch { throw Failure.encryptedData }
++        }
++    }
++    let clientPublic: Data
++    private let privateExponent: Data
++    private static let width = 256
++    // RFC5054 Appendix A, group 2048. No remotely selected group/generator.
++    static let primeHex = "AC6BDB41324A9A9BF166DE5E1389582FAF72B6651987EE07FC3192943DB56050A37329CBB4A099ED8193E0757767A13DD52312AB4B03310DCD7F48A9DA04FD50E8083969EDB767B0CF6095179A163AB3661A05FBD5FAAAE82918A9962F0B93B855F97993EC975EEAA80D740ADBF4FF747359D041D5C33EA71D281E446B14773BCA97B43A23FB801676BD207A436C6481F1D2B9078717461A5B9D32E688F87748544523B524B0D57D5EA77A2775D2ECFA032CFBDBF52FB3786160279004E57AE6AF874E7303CE53299CCC041C7BC308D82A5698F3A8D0C38271AE35F8E9DBFBB694B5C803D89F7AE435DE236D525F54759B65E372FCD68EF20FA7111F9E4AFF73"
++    private static var prime: BigUInteger { BigUInteger(primeHex, radix: 16)! }
++
++    init(random: @Sendable () throws -> Data = SelfRenewalGSASRP.randomExponent) throws {
++        let value = try random()
++        guard value.count == 32, value.contains(where: { $0 != 0 }) else { throw Failure.random }
++        try Task.checkCancellation()
++        privateExponent = value
++        clientPublic = Self.pad(BigUInteger(2).power(BigUInteger(value), modulus: Self.prime))
++        try Task.checkCancellation()
++    }
++    static func randomExponent() throws -> Data {
++        var bytes = [UInt8](repeating: 0, count: 32)
++        guard SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes) == errSecSuccess else { throw Failure.random }
++        return Data(bytes)
++    }
++    static func passwordKey(password: String, salt: Data, iterations: Int, protocolName: PasswordProtocol) throws -> Data {
++        guard !password.isEmpty, password.utf8.count <= 1_024, !password.utf8.contains(0),
++              (1...64).contains(salt.count), (1...1_000_000).contains(iterations) else { throw Failure.invalidInput }
++        let started = SourcePerfTrace.now
++        defer { SourcePerfTrace.record("renewal.gsa.kdf", "iterations=\(iterations) main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
++        let digest = hash(Data(password.utf8))
++        let key = protocolName == .s2k ? digest : Data(digest.map { String(format: "%02x", $0) }.joined().utf8)
++        // PBKDF2-SHA256, one 32-byte block. Explicit bounded checkpoints keep
++        // cancellation responsive during the server-selected iteration count.
++        var block = mac(key, salt + Data([0, 0, 0, 1])); var result = block
++        try Task.checkCancellation()
++        if iterations > 1 {
++            for index in 1..<iterations {
++                if index % 128 == 0 { try Task.checkCancellation() }
++                block = mac(key, block)
++                for offset in 0..<32 { result[offset] ^= block[offset] }
++            }
++        }
++        try Task.checkCancellation()
++        return result
++    }
++    func respond(username: String, passwordKey: Data, salt: Data, serverPublic: Data) throws -> Proof {
++        guard !username.isEmpty, username.utf8.count <= 320, !username.utf8.contains(0),
++              passwordKey.count == 32, (1...64).contains(salt.count), serverPublic.count == Self.width else { throw Failure.invalidInput }
++        let started = SourcePerfTrace.now
++        defer { SourcePerfTrace.record("renewal.gsa.srp", "groupBits=2048 main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
++        let n = Self.prime, g = BigUInteger(2), b = BigUInteger(serverPublic)
++        guard b > 0, b < n else { throw Failure.invalidServerPublicKey }
++        try Task.checkCancellation()
++        let k = BigUInteger(Self.hash(Self.pad(n) + Self.pad(g)))
++        let x = BigUInteger(Self.hash(salt + Self.hash(Data([58]) + passwordKey)))
++        let u = BigUInteger(Self.hash(clientPublic + serverPublic))
++        guard u > 0 else { throw Failure.invalidServerPublicKey }
++        let gx = g.power(x, modulus: n)
++        try Task.checkCancellation()
++        let subtract = (k * gx) % n
++        let base = (b + n - subtract) % n
++        guard base > 0 else { throw Failure.invalidServerPublicKey }
++        let secret = base.power(BigUInteger(privateExponent) + u * x, modulus: n)
++        try Task.checkCancellation()
++        let key = Self.hash(Self.pad(secret))
++        let hn = Self.hash(Self.pad(n)), hg = Self.hash(Self.pad(g))
++        let xor = Data(zip(hn, hg).map { $0.0 ^ $0.1 })
++        let m1 = Self.hash(xor + Self.hash(Data(username.utf8)) + salt + clientPublic + serverPublic + key)
++        return Proof(clientProof: m1, expectedServerProof: Self.hash(clientPublic + m1 + key), sessionKey: key)
++    }
++    static func decryptAppToken(_ envelope: Data, key: Data) throws -> Data {
++        guard [16, 24, 32].contains(key.count), (36...65_536).contains(envelope.count), envelope.prefix(3) == Data("XYZ".utf8) else { throw Failure.encryptedData }
++        do {
++            let gcm = GCM(iv: Array(envelope[3..<19]), authenticationTag: Array(envelope.suffix(16)),
++                          additionalAuthenticatedData: Array(envelope.prefix(3)), mode: .detached)
++            return Data(try CryptoSwift.AES(key: Array(key), blockMode: gcm, padding: .noPadding).decrypt(Array(envelope.dropFirst(19).dropLast(16))))
++        } catch { throw Failure.encryptedData }
++    }
++    static func appTokenChecksum(key: Data, dsid: String) throws -> Data {
++        guard [16, 24, 32].contains(key.count), !dsid.isEmpty, dsid.utf8.count <= 64, dsid.utf8.allSatisfy({ (48...57).contains($0) }) else { throw Failure.invalidInput }
++        return mac(key, Data(("apptokens" + dsid + "com.apple.gs.xcode.auth").utf8))
++    }
++    static func equal(_ left: Data, _ right: Data) -> Bool {
++        guard left.count == right.count else { return false }
++        return zip(left, right).reduce(UInt8(0)) { $0 | ($1.0 ^ $1.1) } == 0
++    }
++    private static func pad(_ number: BigUInteger) -> Data {
++        let data = number.serialize()
++        return Data(repeating: 0, count: width - data.count) + data
++    }
++    private static func hash(_ data: Data) -> Data { Data(SHA256.hash(data: data)) }
++    private static func mac(_ key: Data, _ data: Data) -> Data {
++        Data(CryptoKit.HMAC<SHA256>.authenticationCode(for: data, using: SymmetricKey(data: key)))
++    }
++    private static func lengthPrefixed(_ data: Data) -> Data {
++        let count = UInt32(data.count)
++        return Data([UInt8(truncatingIfNeeded: count), UInt8(truncatingIfNeeded: count >> 8),
++                     UInt8(truncatingIfNeeded: count >> 16), UInt8(truncatingIfNeeded: count >> 24)]) + data
++    }
++}

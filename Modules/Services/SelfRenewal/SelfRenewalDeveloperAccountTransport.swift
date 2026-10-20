@@ -39,9 +39,8 @@ final class SelfRenewalDeveloperURLSessionTransport: @unchecked Sendable, SelfRe
 
     func send(_ request: URLRequest) async throws -> SelfRenewalDeveloperAccountResponse {
         let maximum = SelfRenewalDERPropertyList.Limits.bytes
-        guard let url = request.url, url.scheme == "https", url.host == "developerservices2.apple.com",
-              url.port == nil, url.user == nil, url.password == nil,
-              url.path.hasPrefix("/services/QH65B2/"), request.httpMethod == "POST" else {
+        guard let url = request.url, url.scheme == "https", url.port == nil, url.user == nil, url.password == nil,
+              Self.allowedEndpoint(url, method: request.httpMethod) else {
             throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
         }
         do {
@@ -66,6 +65,16 @@ final class SelfRenewalDeveloperURLSessionTransport: @unchecked Sendable, SelfRe
         catch let error as SelfRenewalDeveloperAccountTransportFailure { throw error }
         catch let error as URLError where error.code == .cancelled { throw SelfRenewalDeveloperAccountTransportFailure.cancelled }
         catch { throw SelfRenewalDeveloperAccountTransportFailure.network }
+    }
+    private static func allowedEndpoint(_ url: URL, method: String?) -> Bool {
+        if url.host == "developerservices2.apple.com" { return url.path.hasPrefix("/services/QH65B2/") && method == "POST" }
+        guard url.host == "gsa.apple.com", url.query == nil, url.fragment == nil else { return false }
+        switch (url.absoluteString, method) {
+        case ("https://gsa.apple.com/grandslam/GsService2", "POST"),
+             ("https://gsa.apple.com/auth/verify/trusteddevice", "GET"),
+             ("https://gsa.apple.com/grandslam/GsService2/validate", "GET"): return true
+        default: return false
+        }
     }
     private final class Delegate: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
         func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,

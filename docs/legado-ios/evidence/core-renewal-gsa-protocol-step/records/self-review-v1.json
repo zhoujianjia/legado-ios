@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUTC": "2026-10-20T10:46:43.017603+00:00",
+  "reviewKind": "Original-author self-review; not independent review",
+  "independentReview": false,
+  "author": "owned_signer_shape_review",
+  "sources": [
+    {
+      "path": ".build/renewal-discovery/gsa-login-step/final-sources/Modules/Services/SelfRenewal/SelfRenewalGSASRP.swift",
+      "bytes": 9284,
+      "sha256": "12274c4d876de84025f419f2f8a47d8bc4942ca2072d6ffe7915fccf88ae0c28"
+    },
+    {
+      "path": ".build/renewal-discovery/gsa-login-step/final-sources/Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift",
+      "bytes": 16039,
+      "sha256": "c7af83ecf1e52216c4d9b790bfafec0f4119ae03bf0e105b41d62104c277f3b7"
+    },
+    {
+      "path": ".build/renewal-discovery/gsa-login-step/final-sources/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
+      "bytes": 5606,
+      "sha256": "57523fa33b1b21dbda241888813000a7e17a4f1ca1f58af139b44126969f0a75"
+    },
+    {
+      "path": ".build/renewal-discovery/gsa-login-step/final-sources/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "bytes": 31460,
+      "sha256": "e260c45a437c62a349b524bf57106553d1a9c8dfc98c194e37746a227425153d"
+    },
+    {
+      "path": ".build/renewal-discovery/gsa-login-step/final-sources/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+      "bytes": 43572,
+      "sha256": "e3b0f9db32fa69e0d1f52b0d219e8d981eeb8558b64d88a78e1f5d8617bbdfbf"
+    }
+  ],
+  "confirmedRemainingSourceBlockers": [],
+  "preFreezeCorrections": [
+    "Added independent-task actual awaited fixture cleanup because cancelled worker cannot call cancellation-checking Vault cleanup APIs. Outer cancellation still reaches and awaits the real worker/task.",
+    "CBC is decrypted without automatic padding then exact PKCS7 tail is validated before parsing, rather than trusting unspecified removal behavior.",
+    "Status ec accepts strict decimal string or typed integer as in actual original trusted-device response protocol; booleans/floats/malformed values reject.",
+    "M2 and negotiation MAC are mandatory before SPD parsing; exact XYZ/16-byte-IV/tag envelope and AES-GCM authentication are mandatory before candidate token extraction. Unknown password protocol and secondary-auth type reject.",
+    "The authenticated SPD app-token AES key accepts its valid 16/24/32-byte AES sizes, matching the original variable-key-length crypto primitive; SRP/CBC/session proofs remain SHA256/32-byte fixed.",
+    "Removed an invented maximum one-year expiry cap; actual positive finite future server expiry remains only a local refusal bound, followed by the existing live account/team checks before persistence."
+  ],
+  "boundaries": [
+    "No password, OTP, idmsToken, session key or raw server body is logged/persisted by Auth. Only temporary pending 2FA state remains in memory, with one actual 300-second security-expiry task and explicit clearing barrier. Swift memory is not claimed to be securely zeroized.",
+    "Auth owns only password/2FA protocol state. Injected Account owns secure token record and injected existing Transport owns one URLSession. No duplicate Vault, keychain service, cookies, queue or token storage.",
+    "Client.connect is called only after complete authenticated protocol response and still validates actual developer identity plus original Personal Team before persisting. Candidate token/expiry do not establish Apple signing authority.",
+    "All server-selected work/data are bounded: fixed2048 group, 32-byte CSPRNG secret, serverB256, salt1..64, iteration1..1000000 with128-iteration cancellation checkpoints, 65536 encrypted blobs, existing1MiB network/plist budget.",
+    "Root AppSession actual Auth owner wiring remains a required integration action after this source review, with cancel/await before clearPendingAuthentication on close/logout/context discard. No Settings/UI/default provider is claimed."
+  ],
+  "unprovenProperties": [
+    "No Swift SDK/typecheck, controlled URLProtocol peer, real Keychain or real Apple GSA execution yet.",
+    "Existing CryptoSwift BigUInteger exponentiation and AES-GCM implementation are general purpose; no constant-time/side-channel audit or secure-memory-erasure property is claimed.",
+    "Actual anisette provisioning/provider and real serial metadata remain absent. Missing deviceSerialNumber rejects rather than fabricating0.",
+    "Trusted-device 2FA only; SMS and unsupported newer secondary authentication states explicitly remain unsupported.",
+    "True account renewal, official issuer rotation/post-expiry enrollment and real-device automatic self-renewal remain unfinished."
+  ]
+}

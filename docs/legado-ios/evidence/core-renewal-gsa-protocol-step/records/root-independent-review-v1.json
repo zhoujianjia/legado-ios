@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUTC": "2026-10-20T10:51:21.557758+00:00",
+  "reviewer": "root",
+  "independentReview": true,
+  "author": "owned_signer_shape_review",
+  "reviewKind": "Independent source and ownership/protocol review; no new runtime execution",
+  "preparation": {
+    "path": ".build/renewal-discovery/gsa-login-step/preparation.json",
+    "bytes": 20270,
+    "sha256": "33daca15850985280415010354e41aa3162a5055ed9544af253aa035af1fffc1"
+  },
+  "sources": [
+    {
+      "path": ".build/renewal-discovery/gsa-login-step/final-sources/Modules/Services/SelfRenewal/SelfRenewalGSASRP.swift",
+      "bytes": 9284,
+      "sha256": "12274c4d876de84025f419f2f8a47d8bc4942ca2072d6ffe7915fccf88ae0c28"
+    },
+    {
+      "path": ".build/renewal-discovery/gsa-login-step/final-sources/Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift",
+      "bytes": 16039,
+      "sha256": "c7af83ecf1e52216c4d9b790bfafec0f4119ae03bf0e105b41d62104c277f3b7"
+    },
+    {
+      "path": ".build/renewal-discovery/gsa-login-step/final-sources/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
+      "bytes": 5606,
+      "sha256": "57523fa33b1b21dbda241888813000a7e17a4f1ca1f58af139b44126969f0a75"
+    },
+    {
+      "path": ".build/renewal-discovery/gsa-login-step/final-sources/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "bytes": 31460,
+      "sha256": "e260c45a437c62a349b524bf57106553d1a9c8dfc98c194e37746a227425153d"
+    },
+    {
+      "path": ".build/renewal-discovery/gsa-login-step/final-sources/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+      "bytes": 43572,
+      "sha256": "e3b0f9db32fa69e0d1f52b0d219e8d981eeb8558b64d88a78e1f5d8617bbdfbf"
+    }
+  ],
+  "exactBoundArtifactsChecked": 34,
+  "verdict": "no-confirmed-source-blocker",
+  "confirmedBlockers": [],
+  "reviewedInvariants": [
+    "Read the complete new SRP source, complete authentication actor, all eight native method definitions and fixture/URLProtocol/cleanup owner, plus the two existing-source diffs.",
+    "Fixed2048/SHA256 group and32-byte secure exponent; reject B zero/outside group/incorrect width before secret arithmetic. Bounded server iterations and salt/password lengths. PBKDF2 checks cancellation every128 rounds; BigUInteger pow only bounded group values. Exact padded k/u/K/M1/M2 and noUsernameInX colon facts match the already pinned primary/reference evidence.",
+    "M2 is verified before negotiation MAC; transcript binds offered/selected protocol and LE-length SPD/sc. CBC decrypt requires exact PKCS7 padding after authenticated transcript. Token parsing follows authenticated XYZ-prefix/16-byte IV GCM tag validation and bounded plist parsing. Candidate never bypasses actual Account.connect account/team pin.",
+    "Read pinned AltSign authentication lines covering actual wire crypto semantics and trusted-device/validate routes, including top-level validate ec string/integer. No raw primary or restricted corecrypto implementation is copied into application sources or this report.",
+    "Actor busy spans handshake and account.connect. Secondary pending challenge is in-memory, single-use with checked identity/time and five-minute expiration task; consumed state is cleared before real validation/rehandshake. Password is never stored in secure/disk record and no automatic secondary recursion or fake token is used.",
+    "Same injected account/transport/fresh provider only; exact three GSA URL/method pairs share existing ephemeral URLSession, redirect/auth/cookie/cache/system TLS/body-limit/cancel rules. Only an optional serial DTO property is added. Root integration must apply this one-line insertion to current shared-logout Client, not overwrite the older author mirror.",
+    "Controlled peer uses actual same transport and existing Client/Vault/Keychain. Its worker cancellation is forwarded; exact owned cleanup runs independently and is actually awaited. These are source facts, not accepted runtime results."
+  ],
+  "actualValidationReused": {
+    "independentPythonReference": {
+      "script": {
+        "path": ".build/renewal-discovery/gsa-login-step/vectors/reference.py",
+        "bytes": 6365,
+        "sha256": "27f75a85d0662d4e2bbb978bb3936538dfb1610a5849f70a028bbc699546b8f9"
+      },
+      "vectors": {
+        "path": ".build/renewal-discovery/gsa-login-step/vectors/vectors.json",
+        "bytes": 13612,
+        "sha256": "e28f33ad0dca5fe81f11ca2dcddf66881d12005653a1ddf75239646b2c27bd1e"
+      },
+      "initialFailures": [
+        {
+          "path": ".build/renewal-discovery/gsa-login-step/vectors/initial-rfc-parser-failure.json",
+          "bytes": 411,
+          "sha256": "1a15b638981c50a98e059fb629e1673c0d5202837d713b03d4d35846606ab5b9"
+        },
+        {
+          "path": ".build/renewal-discovery/gsa-login-step/vectors/second-rfc-transcription-failure.json",
+          "bytes": 426,
+          "sha256": "40ac84f6f9c546e07adfc01db7d2c5975ca99b0e6eae1f3e8a92d77fb6b93145"
+        }
+      ],
+      "actualScriptExecutions": 4,
+      "failedExecutions": 2,
+      "passedExecutions": 2,
+      "secondPassReason": "Only regenerated derived encrypted token with an expiry aligned to the original material fixture clock. Same SRP formulas; first successful run retained in tool transcript.",
+      "publishedRFCFieldsPassed": [
+        "k",
+        "x",
+        "u",
+        "A",
+        "B",
+        "S"
+      ],
+      "derivedAppleProtocolCases": 2,
+      "clientServerSecretEqualityCases": 2,
+      "GCM16ByteIVLibraryRoundTrips": 2,
+      "PythonVersion": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]",
+      "cryptographyVersion": "47.0.0",
+      "scope": "Independent Python builtin integer pow/hashlib SRP and cryptography cipher-generated public vectors; no Swift implementation imported/executed and no Apple authority proved."
+    },
+    "grammar": {
+      "initial": {
+        "path": ".build/renewal-discovery/gsa-login-step/grammar-initial-v1.json",
+        "bytes": 1430,
+        "sha256": "57670884834122feb97d26239fce05b1c90cf3cd44764cd20286076ae81643c8"
+      },
+      "final": {
+        "path": ".build/renewal-discovery/gsa-login-step/grammar-final-v1.json",
+        "bytes": 1713,
+        "sha256": "192ad8fe4b52b55888400f37af58bc02d9d2e00b26eb2bc92c3f30f706fcd18a"
+      },
+      "initialSourceFiles": 5,
+      "finalChangedFiles": 3,
+      "unchangedInitialGrammarReused": 2,
+      "finalDiagnostics": 0,
+      "SwiftSDKExecutions": 0
+    },
+    "nativeDefinitions": {
+      "suite": "SelfRenewalDeveloperAuthenticationTests",
+      "methods": [
+        "matchesIndependentPasswordAndAuthenticatedResponseVectors",
+        "refusesInvalidServerKeysAndWorkBudgets",
+        "rejectsTamperedProofNegotiationAndTokenEnvelope",
+        "connectsOnlyThroughActualMaterialAccountValidation",
+        "rejectsWrongTeamAfterValidGSACryptoWithoutPersistingCredentials",
+        "submitsTrustedDeviceCodeAndRestartsAuthenticatedHandshake",
+        "cancellationTerminatesActualLoginAndClearsPendingState",
+        "refusesUnverifiedCryptoMissingMetadataAndStorageFailure"
+      ],
+      "defined": 8,
+      "executed": 0,
+      "accepted": 0,
+      "controlledPeerScope": "Same actual URLSessionTransport with owned DEBUG URLProtocol, both GSA and real Client viewDeveloper/listTeams routes, real namespace and secure storage. No alternate production client/network session; no real Apple or TLS acceptance inferred."
+    }
+  },
+  "reviewExecutions": {
+    "newPythonReferenceRuns": 0,
+    "newGrammarRuns": 0,
+    "SwiftSDKRuns": 0,
+    "nativeMethodsAccepted": 0,
+    "KeychainHTTPRuns": 0,
+    "actualAppleRequests": 0,
+    "physicalDeviceRuns": 0
+  },
+  "integrationRequirementsAndLimits": [
+    "Retain one Authentication actor beside the existing AppSession account. Its initializer must consume that exact account and same services. UI gets only Outcome/Challenge, never candidate token/password storage or signing key.",
+    "Cancel/await the actual login task before clearPendingAuthentication or logout. Guard AppSession and UI operation identity so a completed older action cannot clear/publish over a newer one.",
+    "The five-minute bound governs waiting pending challenge state; password copies may remain in a consumed active async handshake until it terminates. Swift String/Data erasure and constant-time BigUInteger arithmetic are not established.",
+    "No genuine anisette generation/provisioning provider, SMS, AppSession authentication call, official current-server compatibility, Apple authorization, installation or automatic renewal is accepted. Explicit caller headers remain an unfinished dependency, not successful provisioning.",
+    "The two independent Python derived protocol vector runs do not execute Swift. All eight Swift definitions and crypto public API/type semantics require actual SDK execution in the next coherent source group."
+  ],
+  "canonicalOrGitMutations": false
+}

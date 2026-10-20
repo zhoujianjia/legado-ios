@@ -1,0 +1,390 @@
+{
+  "schemaVersion": 1,
+  "preparedAtUTC": "2026-10-20T10:46:43.018603+00:00",
+  "status": "actual-GSA-protocol-source-five-file-draft-self-reviewed-independent-review-and-SDK-pending",
+  "scope": "Actual SRP/password KDF/M1/M2/np/SPD/app-token and trusted-device 2FA state machine feeding the same existing material account client over the same injected transport. No real Apple/account/device request.",
+  "files": [
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalGSASRP.swift",
+      "work": {
+        "path": ".build/renewal-discovery/gsa-login-step/work/SelfRenewalGSASRP.swift",
+        "bytes": 9284,
+        "sha256": "12274c4d876de84025f419f2f8a47d8bc4942ca2072d6ffe7915fccf88ae0c28"
+      },
+      "snapshot": {
+        "path": ".build/renewal-discovery/gsa-login-step/final-sources/Modules/Services/SelfRenewal/SelfRenewalGSASRP.swift",
+        "bytes": 9284,
+        "sha256": "12274c4d876de84025f419f2f8a47d8bc4942ca2072d6ffe7915fccf88ae0c28"
+      },
+      "diff": {
+        "path": ".build/renewal-discovery/gsa-login-step/diffs/SelfRenewalGSASRP.swift.diff",
+        "bytes": 9524,
+        "sha256": "c573c7d1df973c4c1a214de6a86a205d3e816f73f587f26fca6d980c48e256ac"
+      },
+      "newCanonicalFile": true
+    },
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift",
+      "work": {
+        "path": ".build/renewal-discovery/gsa-login-step/work/SelfRenewalDeveloperAuthentication.swift",
+        "bytes": 16039,
+        "sha256": "c7af83ecf1e52216c4d9b790bfafec0f4119ae03bf0e105b41d62104c277f3b7"
+      },
+      "snapshot": {
+        "path": ".build/renewal-discovery/gsa-login-step/final-sources/Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift",
+        "bytes": 16039,
+        "sha256": "c7af83ecf1e52216c4d9b790bfafec0f4119ae03bf0e105b41d62104c277f3b7"
+      },
+      "diff": {
+        "path": ".build/renewal-discovery/gsa-login-step/diffs/SelfRenewalDeveloperAuthentication.swift.diff",
+        "bytes": 16394,
+        "sha256": "a0548a63386862cf4b19811c6de3d3e19f3c344d63139aaed9fd0e2a75891b7e"
+      },
+      "newCanonicalFile": true
+    },
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
+      "work": {
+        "path": ".build/renewal-discovery/gsa-login-step/work/SelfRenewalDeveloperAccountTransport.swift",
+        "bytes": 5606,
+        "sha256": "57523fa33b1b21dbda241888813000a7e17a4f1ca1f58af139b44126969f0a75"
+      },
+      "snapshot": {
+        "path": ".build/renewal-discovery/gsa-login-step/final-sources/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
+        "bytes": 5606,
+        "sha256": "57523fa33b1b21dbda241888813000a7e17a4f1ca1f58af139b44126969f0a75"
+      },
+      "diff": {
+        "path": ".build/renewal-discovery/gsa-login-step/diffs/SelfRenewalDeveloperAccountTransport.swift.diff",
+        "bytes": 2101,
+        "sha256": "c0c02f9aaa8b7624ec0af40cc839745c50271ea8afc459db4935dd860f322967"
+      },
+      "newCanonicalFile": false,
+      "baseline": {
+        "path": ".build/renewal-discovery/gsa-login-step/baseline/SelfRenewalDeveloperAccountTransport.swift",
+        "bytes": 5050,
+        "sha256": "009704043b7a86351793e75e451951a77767a91516cb645715896bc756236f68"
+      },
+      "integrationPolicy": "Merge the exact three fixed GSA endpoint additions into the same current transport endpoint predicate; preserve the separately researched certificates endpoint and all existing cancellation/system TLS/limits/redirect policy. Never create a second session."
+    },
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "work": {
+        "path": ".build/renewal-discovery/gsa-login-step/work/SelfRenewalDeveloperAccountClient.swift",
+        "bytes": 31460,
+        "sha256": "e260c45a437c62a349b524bf57106553d1a9c8dfc98c194e37746a227425153d"
+      },
+      "snapshot": {
+        "path": ".build/renewal-discovery/gsa-login-step/final-sources/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+        "bytes": 31460,
+        "sha256": "e260c45a437c62a349b524bf57106553d1a9c8dfc98c194e37746a227425153d"
+      },
+      "diff": {
+        "path": ".build/renewal-discovery/gsa-login-step/diffs/SelfRenewalDeveloperAccountClient.swift.diff",
+        "bytes": 419,
+        "sha256": "59723f80ef57437b76cbfefdbaf144c1c527c8f3c576cb490b08db46c5fcfd91"
+      },
+      "newCanonicalFile": false,
+      "baseline": {
+        "path": ".build/renewal-discovery/gsa-login-step/baseline/SelfRenewalDeveloperAccountClient.swift",
+        "bytes": 31414,
+        "sha256": "d160d6fad6903183a0691673ce7af8f8bde885a86b9b6bfb9aec4ecebb4245ae"
+      },
+      "integrationPolicy": "Apply ONLY the exact optional deviceSerialNumber property insertion to the current shared-logout Client. Do not replace current canonical Client with this older baseline mirror."
+    },
+    {
+      "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+      "work": {
+        "path": ".build/renewal-discovery/gsa-login-step/work/SelfRenewalDeveloperAuthenticationTests.swift",
+        "bytes": 43572,
+        "sha256": "e3b0f9db32fa69e0d1f52b0d219e8d981eeb8558b64d88a78e1f5d8617bbdfbf"
+      },
+      "snapshot": {
+        "path": ".build/renewal-discovery/gsa-login-step/final-sources/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+        "bytes": 43572,
+        "sha256": "e3b0f9db32fa69e0d1f52b0d219e8d981eeb8558b64d88a78e1f5d8617bbdfbf"
+      },
+      "diff": {
+        "path": ".build/renewal-discovery/gsa-login-step/diffs/SelfRenewalDeveloperAuthenticationTests.swift.diff",
+        "bytes": 44008,
+        "sha256": "6bbe76aa46e0d639053565cf7195c1e62b25e279e89e293e206d0da70e3391c2"
+      },
+      "newCanonicalFile": true
+    }
+  ],
+  "runtimeReferencesAtFreeze": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "bytes": 34314,
+      "sha256": "66e50b4f8a18ea3c0bb5db0759d271ed22fb675ecc9748b04b439d83663881fc"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
+      "bytes": 5050,
+      "sha256": "009704043b7a86351793e75e451951a77767a91516cb645715896bc756236f68"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "bytes": 38453,
+      "sha256": "f8d754a50c0b011e325b4a3c5e2e910cb8a6bf48e0ca39bc3c80988e57d78e19"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDERPropertyList.swift",
+      "bytes": 8386,
+      "sha256": "93461f503492f663854eb97569efb010fb57257f3f29ac75605ef8ea874b5666"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 54908,
+      "sha256": "1998e8c636bbefdfb8ad0e5063de5d53ae8ff6ace2bc06d727c25e14ccc86f82"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "bytes": 11454,
+      "sha256": "30464ff0e74f2c8580628907d455d8b369f1491b3376f9a00e2ed7e91a84c284"
+    },
+    {
+      "path": "Yuedu-Reader.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved",
+      "bytes": 7779,
+      "sha256": "c75489cf86de2c4d29140463da3aa310783290d8df66c70c0ac99cb93671168e"
+    },
+    {
+      "path": "NOTICE",
+      "bytes": 3060,
+      "sha256": "e78ed8764bc98196f98c4c620056bce4e9ce3133a725b64827a8a9da77e8f0db"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalApplicationMaterialFixture.swift",
+      "bytes": 140748,
+      "sha256": "eb9b966c9843518796926c5df2b932f571c88c8549e24531281eab1aa42f11f7"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalCMSFixture.swift",
+      "bytes": 42388,
+      "sha256": "a1ea510648fd0f0a748ad83b9f6ec0253bde44360e1d6fcf5e288525f6bd562e"
+    },
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift",
+      "bytes": 7785,
+      "sha256": "254d22cb63322addecf71b85b2be757bbe514df7370ad80dc75995afa9af6ca2"
+    }
+  ],
+  "primaryProtocolEvidence": {
+    "AltSignCommit": "1c44cfdcafc1ef301c9a0a20a96be0983bb5a003",
+    "AltSignAuthentication": {
+      "url": "https://github.com/rileytestut/AltSign/blob/1c44cfdcafc1ef301c9a0a20a96be0983bb5a003/AltSign/Apple%20API/ALTAppleAPI%2BAuthentication.m",
+      "path": ".build/renewal-discovery/account-enrollment-step/primary/AltSign-0-ALTAppleAPI+Authentication.m",
+      "bytes": 30931,
+      "sha256": "a748caf0a14b03dcde9d8e0e8a8c8914388ba4a672717dc3bc904cbe9ce6f115",
+      "scope": "Read original wire/crypto semantics. Independently written Swift, no Objective-C or private corecrypto code copied/linked. Auth source all-rights-reserved header and podspec MIT distinction retained."
+    },
+    "RFC5054": {
+      "url": "https://www.rfc-editor.org/rfc/rfc5054.txt",
+      "path": ".build/renewal-discovery/gsa-login-step/primary/rfc5054.txt",
+      "bytes": 44445,
+      "sha256": "9e02b1964e48b196a7a8c7457d5d07148996f3e39a2b4f1289951ea408e1ce1b",
+      "scope": "Published AppendixB SHA1/1024 verifier/shared-secret known-vector baseline; production remains SHA256/2048 only."
+    },
+    "corecryptoCommit": "9612a959abb6eac0aac3ee6a7245c46365c9d81b",
+    "corecryptoUse": "Internal verification reference only. Its license limits redistribution: all corecrypto raw files remain ignored reference cache, excluded from prepared sources/application/distribution. No symbol, implementation or private framework is linked/copied. Facts checked: default SRP6a_HASH, padded integer hashes, noUsernameInX still colon, M1/M2/hashK.",
+    "CryptoSwiftCommit": "e45a26384239e028ec87fbcc788f513b67e10d8f",
+    "CryptoSwiftUse": "Existing resolved1.9.0 public BigUInteger exponentiation/Data conversion and AES CBC/GCM with16-byteIV. No package added; existing NOTICE acknowledges zlib/libpng dependency. Original package copyright/license unmodified.",
+    "ignoredReferenceBindings": [
+      {
+        "path": ".build/renewal-discovery/gsa-login-step/primary/corecrypto-ccsrp.c",
+        "bytes": 1434,
+        "sha256": "3957eb8175c9abfafe3ca83a5585fb0fa771c9c081474c3d4d1c5bd90adfedb2"
+      },
+      {
+        "path": ".build/renewal-discovery/gsa-login-step/primary/corecrypto-ccsrp.h",
+        "bytes": 19067,
+        "sha256": "3594e0f6dfddab179cff96987556e17036a86273e87bf9f0ac991a95177d74bb"
+      },
+      {
+        "path": ".build/renewal-discovery/gsa-login-step/primary/corecrypto-ccsrp_client.c",
+        "bytes": 7984,
+        "sha256": "57a73845deee4165b5bda285a3ece636a5756344ab0c6304fabc3900790c78fe"
+      },
+      {
+        "path": ".build/renewal-discovery/gsa-login-step/primary/corecrypto-ccsrp_common.c",
+        "bytes": 3893,
+        "sha256": "afae9eeca77adccf14665bc25334c54c643ee1fdd7ed275a5d76d299442818e2"
+      },
+      {
+        "path": ".build/renewal-discovery/gsa-login-step/primary/corecrypto-ccsrp_digest.c",
+        "bytes": 2945,
+        "sha256": "0324cead0257aa136c6e95312f6bf7e9a28dd5f76105c9a68544b4cf3d917857"
+      },
+      {
+        "path": ".build/renewal-discovery/gsa-login-step/primary/corecrypto-ccsrp_generate_H_AMK.c",
+        "bytes": 1403,
+        "sha256": "a76c1fcd34e8805febb6543a41ad3e500f076bec64533ec9708aa1f8315341ce"
+      },
+      {
+        "path": ".build/renewal-discovery/gsa-login-step/primary/corecrypto-ccsrp_generate_K_from_S.c",
+        "bytes": 4762,
+        "sha256": "e6ce94c47f9a387eeb8d24378f92fef8a74d22587345434b30618ccb1150282f"
+      },
+      {
+        "path": ".build/renewal-discovery/gsa-login-step/primary/corecrypto-ccsrp_generate_M.c",
+        "bytes": 2403,
+        "sha256": "94537083b21a1cc32253abc4e91f2705a3c5b24c18c82ee806e4bbcd6ba80b24"
+      },
+      {
+        "path": ".build/renewal-discovery/gsa-login-step/primary/corecrypto-ccsrp_generate_x.c",
+        "bytes": 1786,
+        "sha256": "1e97972fef7eacfae1b4c59b948f12053c589892246c0e42161a451f1ef2a936"
+      },
+      {
+        "path": ".build/renewal-discovery/gsa-login-step/primary/corecrypto-commit.json",
+        "bytes": 247,
+        "sha256": "c1e2effbe1c32c78ad9046df1f39c4af653ee92075790889ca066bb6a8b839fb"
+      },
+      {
+        "path": ".build/renewal-discovery/gsa-login-step/primary/corecrypto-License.txt",
+        "bytes": 4212,
+        "sha256": "81ae299edb2de359617e04e1e5c186f99d7903b6692eec84915fbd60de25163b"
+      },
+      {
+        "path": ".build/renewal-discovery/gsa-login-step/primary/corecrypto-reference.json",
+        "bytes": 2749,
+        "sha256": "2fc9da6cf86d46cb21e5503054bd1e1c20cbb98930b38ad51f32dbe16118a045"
+      },
+      {
+        "path": ".build/renewal-discovery/gsa-login-step/primary/corecrypto-tree.json",
+        "bytes": 7957,
+        "sha256": "8d939bc539508b2f56ae4f5a107fd48dfc506c5279b0da997b4f8affcfac6c8e"
+      },
+      {
+        "path": ".build/renewal-discovery/gsa-login-step/primary/CryptoSwift-DataConversion.swift",
+        "bytes": 6299,
+        "sha256": "8fa7f86bc1a2dbf656f3637b34d601893003e22578a72893a4f95f078edd4ef6"
+      },
+      {
+        "path": ".build/renewal-discovery/gsa-login-step/primary/rfc5054.txt",
+        "bytes": 44445,
+        "sha256": "9e02b1964e48b196a7a8c7457d5d07148996f3e39a2b4f1289951ea408e1ce1b"
+      }
+    ]
+  },
+  "actualIndependentPythonReference": {
+    "script": {
+      "path": ".build/renewal-discovery/gsa-login-step/vectors/reference.py",
+      "bytes": 6365,
+      "sha256": "27f75a85d0662d4e2bbb978bb3936538dfb1610a5849f70a028bbc699546b8f9"
+    },
+    "vectors": {
+      "path": ".build/renewal-discovery/gsa-login-step/vectors/vectors.json",
+      "bytes": 13612,
+      "sha256": "e28f33ad0dca5fe81f11ca2dcddf66881d12005653a1ddf75239646b2c27bd1e"
+    },
+    "initialFailures": [
+      {
+        "path": ".build/renewal-discovery/gsa-login-step/vectors/initial-rfc-parser-failure.json",
+        "bytes": 411,
+        "sha256": "1a15b638981c50a98e059fb629e1673c0d5202837d713b03d4d35846606ab5b9"
+      },
+      {
+        "path": ".build/renewal-discovery/gsa-login-step/vectors/second-rfc-transcription-failure.json",
+        "bytes": 426,
+        "sha256": "40ac84f6f9c546e07adfc01db7d2c5975ca99b0e6eae1f3e8a92d77fb6b93145"
+      }
+    ],
+    "actualScriptExecutions": 4,
+    "failedExecutions": 2,
+    "passedExecutions": 2,
+    "secondPassReason": "Only regenerated derived encrypted token with an expiry aligned to the original material fixture clock. Same SRP formulas; first successful run retained in tool transcript.",
+    "publishedRFCFieldsPassed": [
+      "k",
+      "x",
+      "u",
+      "A",
+      "B",
+      "S"
+    ],
+    "derivedAppleProtocolCases": 2,
+    "clientServerSecretEqualityCases": 2,
+    "GCM16ByteIVLibraryRoundTrips": 2,
+    "PythonVersion": "3.12.6 (tags/v3.12.6:a4a2d2b, Sep  6 2024, 20:11:23) [MSC v.1940 64 bit (AMD64)]",
+    "cryptographyVersion": "47.0.0",
+    "scope": "Independent Python builtin integer pow/hashlib SRP and cryptography cipher-generated public vectors; no Swift implementation imported/executed and no Apple authority proved."
+  },
+  "grammar": {
+    "initial": {
+      "path": ".build/renewal-discovery/gsa-login-step/grammar-initial-v1.json",
+      "bytes": 1430,
+      "sha256": "57670884834122feb97d26239fce05b1c90cf3cd44764cd20286076ae81643c8"
+    },
+    "final": {
+      "path": ".build/renewal-discovery/gsa-login-step/grammar-final-v1.json",
+      "bytes": 1713,
+      "sha256": "192ad8fe4b52b55888400f37af58bc02d9d2e00b26eb2bc92c3f30f706fcd18a"
+    },
+    "initialSourceFiles": 5,
+    "finalChangedFiles": 3,
+    "unchangedInitialGrammarReused": 2,
+    "finalDiagnostics": 0,
+    "SwiftSDKExecutions": 0
+  },
+  "nativeDefinitions": {
+    "suite": "SelfRenewalDeveloperAuthenticationTests",
+    "methods": [
+      "matchesIndependentPasswordAndAuthenticatedResponseVectors",
+      "refusesInvalidServerKeysAndWorkBudgets",
+      "rejectsTamperedProofNegotiationAndTokenEnvelope",
+      "connectsOnlyThroughActualMaterialAccountValidation",
+      "rejectsWrongTeamAfterValidGSACryptoWithoutPersistingCredentials",
+      "submitsTrustedDeviceCodeAndRestartsAuthenticatedHandshake",
+      "cancellationTerminatesActualLoginAndClearsPendingState",
+      "refusesUnverifiedCryptoMissingMetadataAndStorageFailure"
+    ],
+    "defined": 8,
+    "executed": 0,
+    "accepted": 0,
+    "controlledPeerScope": "Same actual URLSessionTransport with owned DEBUG URLProtocol, both GSA and real Client viewDeveloper/listTeams routes, real namespace and secure storage. No alternate production client/network session; no real Apple or TLS acceptance inferred."
+  },
+  "implemented": [
+    "Fixed original GSA POST envelope/client metadata and exact trusteddevice/validate GET endpoints, keeping redirects/auth/cookies/cache/TLS/body limits/cancellation in the same transport.",
+    "Fixed RFC5054 group2048/SHA256, secure32-byte a, cancellable s2k/s2k_fo PBKDF2, padded k/u/K/M1/M2 and noUsernameInX colon semantics.",
+    "Mandatory server M2 and negotiation transcript HMAC (LE data lengths) before authenticated SPD CBC parse, exact app-token checksum and XYZ/16-byte-IV GCM tag before token parse.",
+    "Actor busy covers actual handshake/connect calls. One in-memory five-minute trusted-device challenge is consumed once, validation restarts a fresh authenticated SRP then same Client.connect. No password disk/Keychain entry and no automatic/infinite2FA retry.",
+    "Only serial metadata optional field is added to existing Anisette DTO for source-compatible old callers; Auth requires real provider metadata, never substitutes a fake serial or authorization flag.",
+    "Token is delivered directly to same existing account Client.connect; the original session/team pin and secure record owner remain responsible for admission/persistence. No external session-valid flag."
+  ],
+  "actualDIInterface": {
+    "type": "SelfRenewalDeveloperAuthentication actor",
+    "initializer": "init(account: SelfRenewalDeveloperAccountClient, transport: any SelfRenewalDeveloperAccountTransport, freshAnisette: @Sendable () async throws -> SelfRenewalDeveloperAccountClient.Anisette, clock: @Sendable () -> Date = Date, random: @Sendable () throws -> Data = SecRandom-backed helper)",
+    "methods": [
+      "signIn(appleID: String, password: String) async throws -> Outcome",
+      "submitVerificationCode(_ code: String, challengeID: UUID) async throws -> Outcome",
+      "clearPendingAuthentication() throws; requires !busy after the real operation was cancelled and awaited"
+    ],
+    "outcome": "connected(existing SessionObservation) or verificationRequired(Challenge{id,expiresAt}); no credential DTO returned to UI",
+    "rootIntegrationRequired": "The actual AppSession developer account owner must instantiate Auth once with its retained SAME client and SAME DeveloperServices transport/provider, and expose these actual methods under its busy/cancel/await lifecycle. Do not construct another Session/Client/Vault in AppOwner or use nil/stub provider as success."
+  },
+  "selfReview": {
+    "path": ".build/renewal-discovery/gsa-login-step/self-review-v1.json",
+    "bytes": 4713,
+    "sha256": "a6cb9507a98de74298be45b48a2d814ff6655b4d5eb797598def6e6c1ada0276"
+  },
+  "canonicalOrGitMutations": false,
+  "cloudQueriesOrTriggers": false,
+  "realCredentialAccountDeviceOperations": 0,
+  "remaining": [
+    "Independent reviewer source audit, root manual same-owner AppSession Auth wiring, and focused actual Swift SDK/native acceptance.",
+    "True anisette provisioning and actual platform/device serial metadata provider. Current default app does not have a working Apple login provider.",
+    "SMS/other secondary-auth variants, real Apple acceptance/session refresh/expiry behavior, cryptographic timing audit, post-expiry enrollment, official issuer rotation, certificate-lost-ACK reconciliation, Settings UI and true device self-renewal."
+  ],
+  "acceptance": {
+    "GSAAppleLoginVerified": false,
+    "SwiftSDKAccepted": false,
+    "controlledPeerMethodsAccepted": 0,
+    "AppleSigningAuthorityEstablished": false,
+    "deviceSelfRenewalVerified": false,
+    "automaticSelfRenewalImplemented": false
+  },
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

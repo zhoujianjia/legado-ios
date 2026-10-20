@@ -68,6 +68,7 @@ actor SelfRenewalDeveloperAccountClient {
         let localUserID: String
         let routingInfo: UInt64
         let deviceID: String
+        var deviceSerialNumber: String? = nil
         let clientInfo: String
         let issuedAt: Date
         let locale: String

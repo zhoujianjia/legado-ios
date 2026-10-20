@@ -1,0 +1,243 @@
+--- /dev/null
++++ prepared/Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift
+@@ -0,0 +1,240 @@
++import Foundation
++
++/// Password/2FA protocol state only. The injected material account client owns
++/// secure token storage; the injected transport owns the one HTTP session.
++/// Successful SRP is followed by that same client's real account/team checks.
++actor SelfRenewalDeveloperAuthentication {
++    typealias Account = SelfRenewalDeveloperAccountClient
++    private typealias Value = SelfRenewalDERPropertyList.Value
++    enum Failure: Error, Sendable, Equatable {
++        case busy, invalidInput, malformedResponse, unsupportedProtocol, missingDeviceMetadata
++        case expiredChallenge, unsupportedSecondaryAuthentication, incorrectCredentials, incorrectVerificationCode
++        case http(Int), portal(Int64), transport(Int)
++    }
++    struct Challenge: Sendable, Equatable { let id: UUID; let expiresAt: Date }
++    enum Outcome: Sendable { case connected(Account.SessionObservation), verificationRequired(Challenge) }
++    private struct Pending {
++        let challenge: Challenge
++        let username: String
++        let password: String
++        let dsid: String
++        let idmsToken: String
++    }
++    private enum Handshake { case candidate(Account.Credentials), secondary(dsid: String, idmsToken: String) }
++    private let account: Account
++    private let transport: any SelfRenewalDeveloperAccountTransport
++    private let freshAnisette: @Sendable () async throws -> Account.Anisette
++    private let clock: @Sendable () -> Date
++    private let random: @Sendable () throws -> Data
++    private var busy = false
++    private var pending: Pending?
++    private var expirationTask: Task<Void, Never>?
++
++    init(account: Account, transport: any SelfRenewalDeveloperAccountTransport,
++         freshAnisette: @escaping @Sendable () async throws -> Account.Anisette,
++         clock: @escaping @Sendable () -> Date = { Date() },
++         random: @escaping @Sendable () throws -> Data = SelfRenewalGSASRP.randomExponent) {
++        self.account = account; self.transport = transport; self.freshAnisette = freshAnisette
++        self.clock = clock; self.random = random
++    }
++    deinit { expirationTask?.cancel() }
++
++    func signIn(appleID: String, password: String) async throws -> Outcome {
++        guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
++        clearPending()
++        let username = appleID.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
++        guard Self.text(username, maximum: 320), username.contains("@"),
++              !password.isEmpty, password.utf8.count <= 1_024, !password.utf8.contains(0) else { throw Failure.invalidInput }
++        let started = SourcePerfTrace.now
++        defer { SourcePerfTrace.record("renewal.gsa.signIn", "groupBits=2048 main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
++        switch try await handshake(username: username, password: password) {
++        case .candidate(let candidate):
++            try Task.checkCancellation()
++            return .connected(try await account.connect(candidate))
++        case .secondary(let dsid, let idmsToken):
++            // Only the real, authenticated SPD supplies these values. A pushed
++            // code request is explicit login work, never a background retry.
++            _ = try await secondaryRequest(path: "/auth/verify/trusteddevice", dsid: dsid, token: idmsToken, code: nil)
++            try Task.checkCancellation()
++            let challenge = Challenge(id: UUID(), expiresAt: clock().addingTimeInterval(300))
++            pending = Pending(challenge: challenge, username: username, password: password, dsid: dsid, idmsToken: idmsToken)
++            let challengeID = challenge.id
++            expirationTask = Task { [weak self] in
++                // Security expiry for in-memory password/identity-token state.
++                // This is a timeout, never a wait for UI/network to settle.
++                do { try await Task.sleep(for: .seconds(300)) } catch { return }
++                await self?.expire(challengeID)
++            }
++            return .verificationRequired(challenge)
++        }
++    }
++    func submitVerificationCode(_ code: String, challengeID: UUID) async throws -> Outcome {
++        guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
++        guard let value = pending, value.challenge.id == challengeID, value.challenge.expiresAt > clock() else {
++            clearPending(); throw Failure.expiredChallenge
++        }
++        // Consume once even on bad code, cancellation, network or parse error;
++        // no hidden code retry or endless secondary-auth recursion.
++        clearPending()
++        guard code.utf8.count == 6, code.utf8.allSatisfy({ (48...57).contains($0) }) else { throw Failure.invalidInput }
++        let response = try await secondaryRequest(path: "/grandslam/GsService2/validate", dsid: value.dsid, token: value.idmsToken, code: code)
++        let root = try Self.dictionary(SelfRenewalDERPropertyList.decodeXMLPropertyList(response))
++        try Self.status(root)
++        try Task.checkCancellation()
++        switch try await handshake(username: value.username, password: value.password) {
++        case .candidate(let candidate):
++            try Task.checkCancellation()
++            return .connected(try await account.connect(candidate))
++        case .secondary: throw Failure.unsupportedSecondaryAuthentication
++        }
++    }
++    /// Caller cancels and awaits the actual operation task before clearing;
++    /// busy is an explicit barrier against clearing through an in-flight connect.
++    func clearPendingAuthentication() throws {
++        guard !busy else { throw Failure.busy }
++        clearPending()
++    }
++    private func clearPending() { pending = nil; expirationTask?.cancel(); expirationTask = nil }
++    private func expire(_ id: UUID) { if pending?.challenge.id == id { clearPending() } }
++
++    private func handshake(username: String, password: String) async throws -> Handshake {
++        let srp = try SelfRenewalGSASRP(random: random)
++        let first = try await authenticationRequest(["A2k": srp.clientPublic, "ps": ["s2k", "s2k_fo"], "u": username, "o": "init"])
++        guard let protocolName = SelfRenewalGSASRP.PasswordProtocol(rawValue: try Self.string(first["sp"], maximum: 16)) else { throw Failure.unsupportedProtocol }
++        let cookie = try Self.string(first["c"], maximum: 8_192)
++        let salt = try Self.data(first["s"], maximum: 64)
++        let iterations = try Self.integer(first["i"])
++        guard (1...1_000_000).contains(iterations) else { throw Failure.invalidInput }
++        let server = try Self.data(first["B"], maximum: 256)
++        let key = try SelfRenewalGSASRP.passwordKey(password: password, salt: salt, iterations: Int(iterations), protocolName: protocolName)
++        let proof = try srp.respond(username: username, passwordKey: key, salt: salt, serverPublic: server)
++        let complete = try await authenticationRequest(["c": cookie, "M1": proof.clientProof, "u": username, "o": "complete"])
++        let spd = try Self.data(complete["spd"], maximum: 65_536)
++        let sc = try complete["sc"].map { try Self.data($0, maximum: 65_536, allowEmpty: true) }
++        try proof.verify(serverProof: Self.data(complete["M2"], maximum: 32), protocolName: protocolName,
++                         spd: spd, sc: sc, negotiation: Self.data(complete["np"], maximum: 32))
++        let plain = try proof.decryptSPD(spd)
++        let values = try Self.dictionary(SelfRenewalDERPropertyList.decodeXMLPropertyList(plain))
++        let dsid = try Self.string(values["adsid"], maximum: 64)
++        guard dsid.utf8.allSatisfy({ (48...57).contains($0) }) else { throw Failure.malformedResponse }
++        let idms = try Self.string(values["GsIdmsToken"], maximum: 8_192)
++        let status = try Self.dictionary(complete["Status"])
++        if let secondary = status["au"] {
++            guard case .string(let kind) = secondary, kind == "trustedDeviceSecondaryAuth" else { throw Failure.unsupportedSecondaryAuthentication }
++            return .secondary(dsid: dsid, idmsToken: idms)
++        }
++        let tokenKey = try Self.data(values["sk"], maximum: 32)
++        guard [16, 24, 32].contains(tokenKey.count) else { throw Failure.malformedResponse }
++        let tokenCookie = try Self.data(values["c"], maximum: 8_192)
++        let checksum = try SelfRenewalGSASRP.appTokenChecksum(key: tokenKey, dsid: dsid)
++        let response = try await authenticationRequest(["u": dsid, "app": ["com.apple.gs.xcode.auth"], "c": tokenCookie,
++                                                       "t": idms, "checksum": checksum, "o": "apptokens"])
++        let encrypted = try Self.data(response["et"], maximum: 65_536)
++        let tokenBytes = try SelfRenewalGSASRP.decryptAppToken(encrypted, key: tokenKey)
++        let tokenRoot = try Self.dictionary(SelfRenewalDERPropertyList.decodeXMLPropertyList(tokenBytes))
++        let tokens = try Self.dictionary(tokenRoot["t"])
++        let token = try Self.dictionary(tokens["com.apple.gs.xcode.auth"])
++        let raw = try Self.string(token["token"], maximum: 8_192)
++        let expiry = try Self.integer(token["expiry"])
++        let expiration = Date(timeIntervalSince1970: Double(expiry) / 1_000)
++        guard expiry > 0, expiration.timeIntervalSince1970.isFinite, expiration > clock() else { throw Failure.expiredChallenge }
++        return .candidate(Account.Credentials(dsid: dsid, xcodeToken: raw, expiresAt: expiration))
++    }
++    private func authenticationRequest(_ parameters: [String: Any]) async throws -> [String: Value] {
++        try Task.checkCancellation()
++        let anisette = try await freshAnisette()
++        try Task.checkCancellation()
++        try validate(anisette)
++        guard let serial = anisette.deviceSerialNumber, Self.text(serial, maximum: 128) else { throw Failure.missingDeviceMetadata }
++        var parameters = parameters
++        parameters["cpd"] = ["bootstrap": true, "icscrec": true, "loc": anisette.locale, "pbe": false,
++            "prkgen": true, "svct": "iCloud", "X-Apple-I-Client-Time": Self.timestamp(anisette.issuedAt),
++            "X-Apple-Locale": anisette.locale, "X-Apple-I-TimeZone": anisette.timeZone,
++            "X-Apple-I-MD": anisette.oneTimePassword, "X-Apple-I-MD-LU": anisette.localUserID,
++            "X-Apple-I-MD-M": anisette.machineID, "X-Apple-I-MD-RINFO": anisette.routingInfo,
++            "X-Mme-Device-Id": anisette.deviceID, "X-Apple-I-SRL-NO": serial] as [String: Any]
++        let body: Data
++        do { body = try PropertyListSerialization.data(fromPropertyList: ["Header": ["Version": "1.0.1"], "Request": parameters], format: .xml, options: 0) }
++        catch { throw Failure.invalidInput }
++        guard body.count <= 65_536 else { throw Failure.invalidInput }
++        var request = URLRequest(url: URL(string: "https://gsa.apple.com/grandslam/GsService2")!)
++        request.httpMethod = "POST"; request.httpBody = body
++        request.setValue("text/x-xml-plist", forHTTPHeaderField: "Content-Type")
++        request.setValue("*/*", forHTTPHeaderField: "Accept")
++        request.setValue("akd/1.0 CFNetwork/978.0.7 Darwin/18.7.0", forHTTPHeaderField: "User-Agent")
++        request.setValue(anisette.clientInfo, forHTTPHeaderField: "X-MMe-Client-Info")
++        let result = try await send(request)
++        let envelope = try Self.dictionary(SelfRenewalDERPropertyList.decodeXMLPropertyList(result))
++        let response = try Self.dictionary(envelope["Response"])
++        try Self.status(Self.dictionary(response["Status"]))
++        return response
++    }
++    private func secondaryRequest(path: String, dsid: String, token: String, code: String?) async throws -> Data {
++        let anisette = try await freshAnisette()
++        try Task.checkCancellation(); try validate(anisette)
++        var request = URLRequest(url: URL(string: "https://gsa.apple.com" + path)!)
++        request.httpMethod = "GET"
++        let headers = ["Content-Type": "text/x-xml-plist", "User-Agent": "Xcode", "Accept": "text/x-xml-plist",
++            "Accept-Language": "en-us", "X-Apple-App-Info": "com.apple.gs.xcode.auth", "X-Xcode-Version": "11.2 (11B41)",
++            "X-Apple-Identity-Token": Data((dsid + ":" + token).utf8).base64EncodedString(),
++            "X-Apple-I-MD-M": anisette.machineID, "X-Apple-I-MD": anisette.oneTimePassword,
++            "X-Apple-I-MD-LU": anisette.localUserID, "X-Apple-I-MD-RINFO": String(anisette.routingInfo),
++            "X-Mme-Device-Id": anisette.deviceID, "X-MMe-Client-Info": anisette.clientInfo,
++            "X-Apple-I-Client-Time": Self.timestamp(anisette.issuedAt), "X-Apple-Locale": anisette.locale,
++            "X-Apple-I-TimeZone": anisette.timeZone]
++        for (name, value) in headers { request.setValue(value, forHTTPHeaderField: name) }
++        if let code { request.setValue(code, forHTTPHeaderField: "security-code") }
++        return try await send(request)
++    }
++    private func send(_ request: URLRequest) async throws -> Data {
++        let response: SelfRenewalDeveloperAccountResponse
++        do { response = try await transport.send(request) }
++        catch let failure as SelfRenewalDeveloperAccountTransportFailure {
++            if failure == .cancelled { throw CancellationError() }
++            throw Failure.transport(failure.rawValue)
++        }
++        catch is CancellationError { throw CancellationError() }
++        catch { throw Failure.transport(-1) }
++        try Task.checkCancellation()
++        guard (200...299).contains(response.statusCode) else { throw Failure.http(response.statusCode) }
++        guard response.body.count <= SelfRenewalDERPropertyList.Limits.bytes else { throw Failure.malformedResponse }
++        return response.body
++    }
++    private func validate(_ anisette: Account.Anisette) throws {
++        guard anisette.issuedAt.timeIntervalSince1970.isFinite,
++              abs(clock().timeIntervalSince(anisette.issuedAt)) <= 90,
++              [anisette.machineID, anisette.oneTimePassword, anisette.localUserID, anisette.deviceID,
++               anisette.clientInfo, anisette.locale, anisette.timeZone].allSatisfy({ Self.text($0, maximum: 8_192) }) else { throw Failure.invalidInput }
++    }
++    private static func status(_ status: [String: Value]) throws {
++        let code: Int64
++        switch status["ec"] {
++        case .integer(let value): code = value
++        case .string(let text):
++            guard (1...16).contains(text.utf8.count),
++                  text.utf8.enumerated().allSatisfy({ (48...57).contains($0.element) || ($0.offset == 0 && $0.element == 45) }),
++                  let value = Int64(text) else { throw Failure.malformedResponse }
++            code = value
++        default: throw Failure.malformedResponse
++        }
++        if code == -22406 { throw Failure.incorrectCredentials }
++        if code == -21669 { throw Failure.incorrectVerificationCode }
++        guard code == 0 else { throw Failure.portal(code) }
++    }
++    private static func dictionary(_ value: Value?) throws -> [String: Value] {
++        guard case .dictionary(let dictionary) = value else { throw Failure.malformedResponse }; return dictionary
++    }
++    private static func integer(_ value: Value?) throws -> Int64 {
++        guard case .integer(let integer) = value else { throw Failure.malformedResponse }; return integer
++    }
++    private static func string(_ value: Value?, maximum: Int) throws -> String {
++        guard case .string(let string) = value, text(string, maximum: maximum) else { throw Failure.malformedResponse }; return string
++    }
++    private static func data(_ value: Value?, maximum: Int, allowEmpty: Bool = false) throws -> Data {
++        guard case .data(let bytes) = value, (allowEmpty || !bytes.isEmpty), bytes.count <= maximum else { throw Failure.malformedResponse }; return bytes
++    }
++    private static func text(_ value: String, maximum: Int) -> Bool {
++        !value.isEmpty && value.utf8.count <= maximum && !value.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) })
++    }
++    private static func timestamp(_ date: Date) -> String { ISO8601DateFormatter().string(from: date) }
++}
