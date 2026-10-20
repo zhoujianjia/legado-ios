@@ -163,7 +163,7 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "已按固定4af3bfc提交140项集中SDK与同job平台样本；下轮各观察新tag和旧445一次，按各自固定源码收实际结果。继续Book/Cookie/S5开发，不反复小补丁触发。",
+      "nextPlannedCheckpoint": "445原生缺3fixture按文件App import（实际445两文件4诊断）和SPM Bool属性误调用已修；4af3平台codesign1缺公共stderr，先补真实诊断并继续实际开发。下一批集中重验修复及必要Book/S5，独立SPM10必须重跑，不能复用失败编译作通过。",
       "alreadyRunningTasks": "C renewal source1a87f6d passed its actual8/13/UI1 job; A build12 separately audited/delivered and now has a user report stopping before TCP at its old endpoint cap. D sourcef3e0b15 smoke39289697059 and measurements39289697993 are saved completed/failure: duplicate UMD resource outputs, actual Swift/iOS0. Those failures and original artifacts are preserved; initial in-progress receipts remain historical. New source 5f543a1 was submitted as renewal8/16/UI1, smoke and independent measurements. docs/legado-ios/stage-checkpoint-5f543a1-initial.json saves three initial API reads only; it does not establish passing native executions. Original D failures remain preserved."
     },
     "nextReadyBatch": [
@@ -697,7 +697,8 @@
       "controlledPackageSigningImplementation": "docs/legado-ios/core-renewal-controlled-package-step.json",
       "authenticatedInstallationImplementation": "docs/legado-ios/core-renewal-authenticated-installation-step.json",
       "integratedRenewalSDKCheckpoint": "docs/legado-ios/core-integrated-renewal-sdk-checkpoint.json",
-      "integratedRenewalSDKRequest": "docs/legado-ios/core-integrated-renewal-sdk-request.json"
+      "integratedRenewalSDKRequest": "docs/legado-ios/core-integrated-renewal-sdk-request.json",
+      "integratedRenewalSDKFirstResults": "docs/legado-ios/core-integrated-renewal-sdk-first-results.json"
     }
   },
   "stages": [
@@ -4664,6 +4665,10 @@
     "integrated-renewal-sdk-request": {
       "path": "docs/legado-ios/core-integrated-renewal-sdk-request.json",
       "scope": "Tag push accepted; no run status, SDK producer or native test outcome observed yet. Exact source commit contains 140 selected methods and 110 bound inputs."
+    },
+    "integrated-renewal-sdk-first-results": {
+      "path": "docs/legado-ios/core-integrated-renewal-sdk-first-results.json",
+      "scope": "445 native23 and package10 did not compile; 4af3 platform fixture failed codesign before xcodebuild. All executed/accepted native/package methods are zero. Four minimal source repairs preserve assertions."
     }
   },
   "retainedExistingWork": [

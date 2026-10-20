@@ -1,6 +1,7 @@
 import CryptoKit
 import Foundation
 import Security
+@testable import yuedu_app
 
 /// Test-only dynamic PKI. Security creates/retains each private key; only public
 /// keys, certificates, CMS and signatures become Data. No fixed private fixture.

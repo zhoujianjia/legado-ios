@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T05:00:34.437909+00:00",
+  "sourceCommit": "44528e085bc57dcffc5699af293328729e513a02",
+  "sourceTag": "reader-renewal-44528e0",
+  "runID": 39368789144,
+  "selectionMode": "controlledsigning",
+  "sourceInputs": 80,
+  "plannedMethods": 23,
+  "allInputsComparedToImmutableCommit": true,
+  "artifact": {
+    "path": ".build/renewal-discovery/integrated-renewal-sdk-first-observation/44528e0/reader-renewal-probe-evidence.zip",
+    "bytes": 939408,
+    "sha256": "6692d81b11217f335e1f024d43c9c5e7b839e9286ce97faee0adcacad7438367"
+  },
+  "artifactID": 12241486674,
+  "safeHashMatchedMembers": 32,
+  "wrapperLog": {
+    "path": ".build/sdk-evidence/44528e0/ci-logs/reader-renewal.log",
+    "bytes": 819,
+    "sha256": "288348173c4f3d34d1bc2beb71349ad90e489152c3f94b47879140569d20dd8f"
+  },
+  "overlays": {
+    "path": ".build/sdk-evidence/44528e0/reader-renewal-probe/overlays.json",
+    "bytes": 2624,
+    "sha256": "388e48e1802d982ca718ed42453f18ebdaebebc5d401dbf0c1233e394be25b11"
+  },
+  "executedNativeMethods": 0,
+  "acceptedNativeMethods": 0,
+  "networkRequestsDuringAudit": 0,
+  "newBuildTriggered": false,
+  "AppleOrDeviceAuthorityEstablished": false,
+  "failureKind": "test-fixtures-missing-per-file-testable-App-import",
+  "xcodebuildExitCode": 65,
+  "timeout": false,
+  "uniqueCompilerDiagnostics": 4,
+  "failureLog": {
+    "path": ".build/sdk-evidence/44528e0/reader-renewal-probe/controlledsigning-tests.log",
+    "bytes": 7446393,
+    "sha256": "47116d73b086fe7a8a03ace6002890cfee1bcaedcb565ca24009062f8c29ba4d"
+  },
+  "diagnostics": [
+    "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/SelfRenewalIPAArchiveFixture.swift:22:19: error: cannot find type 'SelfRenewalIPAArchiveBytes' in scope",
+    "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift:9:23: error: cannot find type 'SelfRenewalDERPropertyList' in scope",
+    "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift:8:26: error: cannot find type 'SelfRenewalSigningMaterialVault' in scope",
+    "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift:48:40: error: cannot find type 'SelfRenewalProvisioningProfileVerifier' in scope"
+  ],
+  "contiguousSlice": {
+    "file": {
+      "path": ".build/renewal-discovery/integrated-renewal-sdk-first-observation/44528e0/compiler-diagnostics.raw.log",
+      "bytes": 4910,
+      "sha256": "9592c9805071efbe7179ade495284c333f58da31bc63346358a0fd9285ac1cd1"
+    },
+    "originalLog": {
+      "path": ".build/sdk-evidence/44528e0/reader-renewal-probe/controlledsigning-tests.log",
+      "bytes": 7446393,
+      "sha256": "47116d73b086fe7a8a03ace6002890cfee1bcaedcb565ca24009062f8c29ba4d"
+    },
+    "firstLine": 27720,
+    "lastLine": 27738,
+    "byteOffset": 7353565
+  }
+}

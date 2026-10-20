@@ -1,0 +1,8 @@
+/Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift:85:39: error: cannot call value of non-function type 'Bool'
+ 83 |         do { _ = try await runtime.searchOriginal(session: .init(id: "existing"), key: "owned"); XCTFail("Expected explicit mode gate") }
+ 84 |         catch let error as LegadoRuntimeError { XCTAssertEqual(error.code, "UNSUPPORTED_CAPABILITY") }
+ 85 |         XCTAssertTrue(transport.calls.isEmpty())
+    |                                       `- error: cannot call value of non-function type 'Bool'
+ 86 |         let options = try JSONSerialization.jsonObject(with: JSONEncoder().encode(LegadoSessionOptions(httpTransport: .jvmOkHttp))) as? [String: String]
+ 87 |         XCTAssertEqual(options, ["httpTransport": "jvm-okhttp"])
+error: fatalError

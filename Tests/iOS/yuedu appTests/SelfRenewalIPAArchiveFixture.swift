@@ -1,6 +1,7 @@
 import Foundation
 import ReadiumZIPFoundation
 import zlib
+@testable import yuedu_app
 
 /// Owned ZIP construction is independent of the production ZIP parser and
 /// ZIPFoundation's archive writer. Public existing app fixtures supply CMS.

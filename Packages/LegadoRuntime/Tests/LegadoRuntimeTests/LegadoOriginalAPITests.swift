@@ -82,7 +82,7 @@ private final class OriginalAPITransport: LegadoRuntimeTransport, @unchecked Sen
         let transport = OriginalAPITransport(); let runtime = runtime(transport)
         do { _ = try await runtime.searchOriginal(session: .init(id: "existing"), key: "owned"); XCTFail("Expected explicit mode gate") }
         catch let error as LegadoRuntimeError { XCTAssertEqual(error.code, "UNSUPPORTED_CAPABILITY") }
-        XCTAssertTrue(transport.calls.isEmpty())
+        XCTAssertTrue(transport.calls.isEmpty)
         let options = try JSONSerialization.jsonObject(with: JSONEncoder().encode(LegadoSessionOptions(httpTransport: .jvmOkHttp))) as? [String: String]
         XCTAssertEqual(options, ["httpTransport": "jvm-okhttp"])
     }

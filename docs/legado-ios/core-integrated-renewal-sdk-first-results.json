@@ -1,0 +1,537 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T05:02:54.927605+00:00",
+  "status": "two-terminal-SDK-source-checkpoints-audited-compile-repairs-connected-platform-codesign-diagnostic-pending",
+  "results": {
+    "44528e0Native": {
+      "schemaVersion": 1,
+      "recordedAtUTC": "2026-10-20T05:00:34.437909+00:00",
+      "sourceCommit": "44528e085bc57dcffc5699af293328729e513a02",
+      "sourceTag": "reader-renewal-44528e0",
+      "runID": 39368789144,
+      "selectionMode": "controlledsigning",
+      "sourceInputs": 80,
+      "plannedMethods": 23,
+      "allInputsComparedToImmutableCommit": true,
+      "artifact": {
+        "path": ".build/renewal-discovery/integrated-renewal-sdk-first-observation/44528e0/reader-renewal-probe-evidence.zip",
+        "bytes": 939408,
+        "sha256": "6692d81b11217f335e1f024d43c9c5e7b839e9286ce97faee0adcacad7438367"
+      },
+      "artifactID": 12241486674,
+      "safeHashMatchedMembers": 32,
+      "wrapperLog": {
+        "path": ".build/sdk-evidence/44528e0/ci-logs/reader-renewal.log",
+        "bytes": 819,
+        "sha256": "288348173c4f3d34d1bc2beb71349ad90e489152c3f94b47879140569d20dd8f"
+      },
+      "overlays": {
+        "path": ".build/sdk-evidence/44528e0/reader-renewal-probe/overlays.json",
+        "bytes": 2624,
+        "sha256": "388e48e1802d982ca718ed42453f18ebdaebebc5d401dbf0c1233e394be25b11"
+      },
+      "executedNativeMethods": 0,
+      "acceptedNativeMethods": 0,
+      "networkRequestsDuringAudit": 0,
+      "newBuildTriggered": false,
+      "AppleOrDeviceAuthorityEstablished": false,
+      "failureKind": "test-fixtures-missing-per-file-testable-App-import",
+      "xcodebuildExitCode": 65,
+      "timeout": false,
+      "uniqueCompilerDiagnostics": 4,
+      "failureLog": {
+        "path": ".build/sdk-evidence/44528e0/reader-renewal-probe/controlledsigning-tests.log",
+        "bytes": 7446393,
+        "sha256": "47116d73b086fe7a8a03ace6002890cfee1bcaedcb565ca24009062f8c29ba4d"
+      },
+      "diagnostics": [
+        "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/SelfRenewalIPAArchiveFixture.swift:22:19: error: cannot find type 'SelfRenewalIPAArchiveBytes' in scope",
+        "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift:9:23: error: cannot find type 'SelfRenewalDERPropertyList' in scope",
+        "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift:8:26: error: cannot find type 'SelfRenewalSigningMaterialVault' in scope",
+        "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift:48:40: error: cannot find type 'SelfRenewalProvisioningProfileVerifier' in scope"
+      ],
+      "contiguousSlice": {
+        "file": {
+          "path": ".build/renewal-discovery/integrated-renewal-sdk-first-observation/44528e0/compiler-diagnostics.raw.log",
+          "bytes": 4910,
+          "sha256": "9592c9805071efbe7179ade495284c333f58da31bc63346358a0fd9285ac1cd1"
+        },
+        "originalLog": {
+          "path": ".build/sdk-evidence/44528e0/reader-renewal-probe/controlledsigning-tests.log",
+          "bytes": 7446393,
+          "sha256": "47116d73b086fe7a8a03ace6002890cfee1bcaedcb565ca24009062f8c29ba4d"
+        },
+        "firstLine": 27720,
+        "lastLine": 27738,
+        "byteOffset": 7353565
+      }
+    },
+    "44528e0IndependentPackage": {
+      "schemaVersion": 1,
+      "stage": "44528e0-independent-SPM-actual-result-audit",
+      "artifactVerification": {
+        "path": ".build/renewal-discovery/integrated-renewal-sdk-first-observation/44528e0/artifact-reader-renewal-original-api-evidence/artifact-verification.json",
+        "bytes": 2002,
+        "sha256": "90d7daf468e120c1ba2595ab30c50dc4f26acafcf1c48c252c3ca8c3566052df"
+      },
+      "sourceCommit": "44528e085bc57dcffc5699af293328729e513a02",
+      "sourceTag": "reader-renewal-44528e0",
+      "runID": 39368789144,
+      "artifactID": 12241655865,
+      "sourceInputCount": 19,
+      "sourceInputByteAudits": [
+        {
+          "sourceInput": {
+            "path": "Packages/LegadoRuntime/Package.swift",
+            "bytes": 4171,
+            "sha256": "183cd2b775956d8c5b6f16bd97bbec13e7fca59fc26d3e03ef1569907f7c3e57"
+          },
+          "verifiedRawByteMatch": {
+            "path": "Packages/LegadoRuntime/Package.swift",
+            "bytes": 4171,
+            "sha256": "183cd2b775956d8c5b6f16bd97bbec13e7fca59fc26d3e03ef1569907f7c3e57"
+          },
+          "usedHistoricalSnapshot": false
+        },
+        {
+          "sourceInput": {
+            "path": "Packages/LegadoRuntime/Sources/CLegadoJNI/include/LegadoJNI.h",
+            "bytes": 1442,
+            "sha256": "cf59d8119a24139c83c0ee1e445eeed9325fa1c1e14323db33bf4485d734434d"
+          },
+          "verifiedRawByteMatch": {
+            "path": "Packages/LegadoRuntime/Sources/CLegadoJNI/include/LegadoJNI.h",
+            "bytes": 1442,
+            "sha256": "cf59d8119a24139c83c0ee1e445eeed9325fa1c1e14323db33bf4485d734434d"
+          },
+          "usedHistoricalSnapshot": false
+        },
+        {
+          "sourceInput": {
+            "path": "Packages/LegadoRuntime/Sources/CLegadoJNI/LegadoJNI.m",
+            "bytes": 35615,
+            "sha256": "304c7e15c7bc1fb539f43dbf1cc55c33853251c703d7830fb136cc45722b9f0d"
+          },
+          "verifiedRawByteMatch": {
+            "path": "Packages/LegadoRuntime/Sources/CLegadoJNI/LegadoJNI.m",
+            "bytes": 35615,
+            "sha256": "304c7e15c7bc1fb539f43dbf1cc55c33853251c703d7830fb136cc45722b9f0d"
+          },
+          "usedHistoricalSnapshot": false
+        },
+        {
+          "sourceInput": {
+            "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoHTTPHeaders.swift",
+            "bytes": 2709,
+            "sha256": "8b29823799a1d433ea778df43ea5abc30f3d58c65cb5a9a1e96cc9783ceb9e4f"
+          },
+          "verifiedRawByteMatch": {
+            "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoHTTPHeaders.swift",
+            "bytes": 2709,
+            "sha256": "8b29823799a1d433ea778df43ea5abc30f3d58c65cb5a9a1e96cc9783ceb9e4f"
+          },
+          "usedHistoricalSnapshot": false
+        },
+        {
+          "sourceInput": {
+            "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+            "bytes": 4792,
+            "sha256": "e52ff760d2d8ffa094283f531ae140962bb38f91e990771f353cf357c7b99a60"
+          },
+          "verifiedRawByteMatch": {
+            "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+            "bytes": 4792,
+            "sha256": "e52ff760d2d8ffa094283f531ae140962bb38f91e990771f353cf357c7b99a60"
+          },
+          "usedHistoricalSnapshot": false
+        },
+        {
+          "sourceInput": {
+            "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift",
+            "bytes": 6621,
+            "sha256": "24cfdb60f63cfcbb458f4471cf2e59a37ec899df7e9dfc8d3656c91724cb7b4e"
+          },
+          "verifiedRawByteMatch": {
+            "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoPlatformHost.swift",
+            "bytes": 6621,
+            "sha256": "24cfdb60f63cfcbb458f4471cf2e59a37ec899df7e9dfc8d3656c91724cb7b4e"
+          },
+          "usedHistoricalSnapshot": false
+        },
+        {
+          "sourceInput": {
+            "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+            "bytes": 18274,
+            "sha256": "113d34549166041b0c6c975068cca021fa4295ca58d97441149f4160c0b27be7"
+          },
+          "verifiedRawByteMatch": {
+            "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+            "bytes": 18274,
+            "sha256": "113d34549166041b0c6c975068cca021fa4295ca58d97441149f4160c0b27be7"
+          },
+          "usedHistoricalSnapshot": false
+        },
+        {
+          "sourceInput": {
+            "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoSavedDiagnostics.swift",
+            "bytes": 3933,
+            "sha256": "dc1f2a7cba3d5952b9097eb97105a8ff3f66e9db298f9e4f493b4537e3785839"
+          },
+          "verifiedRawByteMatch": {
+            "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoSavedDiagnostics.swift",
+            "bytes": 3933,
+            "sha256": "dc1f2a7cba3d5952b9097eb97105a8ff3f66e9db298f9e4f493b4537e3785839"
+          },
+          "usedHistoricalSnapshot": false
+        },
+        {
+          "sourceInput": {
+            "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/NativeLegadoTransport.swift",
+            "bytes": 5698,
+            "sha256": "67a1e5f6607b6639fc5a20ac312e917e480c44ac5cb6b57cfdc53f3fa62287d2"
+          },
+          "verifiedRawByteMatch": {
+            "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/NativeLegadoTransport.swift",
+            "bytes": 5698,
+            "sha256": "67a1e5f6607b6639fc5a20ac312e917e480c44ac5cb6b57cfdc53f3fa62287d2"
+          },
+          "usedHistoricalSnapshot": false
+        },
+        {
+          "sourceInput": {
+            "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoHTTPHeadersTests.swift",
+            "bytes": 4197,
+            "sha256": "3d934f8beb733c79c6be06d9688bba6517d0f6eec5f6bdf4ddc16bcdacb97c49"
+          },
+          "verifiedRawByteMatch": {
+            "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoHTTPHeadersTests.swift",
+            "bytes": 4197,
+            "sha256": "3d934f8beb733c79c6be06d9688bba6517d0f6eec5f6bdf4ddc16bcdacb97c49"
+          },
+          "usedHistoricalSnapshot": false
+        },
+        {
+          "sourceInput": {
+            "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+            "bytes": 9116,
+            "sha256": "8b6b13bed418221941fa5f340f198562aba5285742c56dc15733482fefb8aab1"
+          },
+          "verifiedRawByteMatch": {
+            "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+            "bytes": 9116,
+            "sha256": "8b6b13bed418221941fa5f340f198562aba5285742c56dc15733482fefb8aab1"
+          },
+          "usedHistoricalSnapshot": false
+        },
+        {
+          "sourceInput": {
+            "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoRuntimeTests.swift",
+            "bytes": 16964,
+            "sha256": "7fe1c059b72a2633d813afc8683232f3ebd6de89ca74a4262571598aaa75c726"
+          },
+          "verifiedRawByteMatch": {
+            "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoRuntimeTests.swift",
+            "bytes": 16964,
+            "sha256": "7fe1c059b72a2633d813afc8683232f3ebd6de89ca74a4262571598aaa75c726"
+          },
+          "usedHistoricalSnapshot": false
+        },
+        {
+          "sourceInput": {
+            "path": "scripts/reader-experience/original-api-package-tools.py",
+            "bytes": 17626,
+            "sha256": "9075019b7e91ee677cc76cf5d8586a9771b2b9f2902a9f6b102e83f33258b39d"
+          },
+          "verifiedRawByteMatch": {
+            "path": "scripts/reader-experience/original-api-package-tools.py",
+            "bytes": 17626,
+            "sha256": "9075019b7e91ee677cc76cf5d8586a9771b2b9f2902a9f6b102e83f33258b39d"
+          },
+          "usedHistoricalSnapshot": false
+        },
+        {
+          "sourceInput": {
+            "path": "scripts/reader-experience/original-api-package-tests.sh",
+            "bytes": 511,
+            "sha256": "eb729ca6267b92a66610a35acaafa734a97bd128b69df1ab9e341f48f0c3704b"
+          },
+          "verifiedRawByteMatch": {
+            "path": "scripts/reader-experience/original-api-package-tests.sh",
+            "bytes": 511,
+            "sha256": "eb729ca6267b92a66610a35acaafa734a97bd128b69df1ab9e341f48f0c3704b"
+          },
+          "usedHistoricalSnapshot": false
+        },
+        {
+          "sourceInput": {
+            "path": "scripts/reader-experience/test-original-api-package-tools.py",
+            "bytes": 15186,
+            "sha256": "6e943465dd09f1775e4d02be1f194a8714c52935ffbcceaf3f13f5cd22fc298e"
+          },
+          "verifiedRawByteMatch": {
+            "path": "scripts/reader-experience/test-original-api-package-tools.py",
+            "bytes": 15186,
+            "sha256": "6e943465dd09f1775e4d02be1f194a8714c52935ffbcceaf3f13f5cd22fc298e"
+          },
+          "usedHistoricalSnapshot": false
+        },
+        {
+          "sourceInput": {
+            "path": "scripts/reader-experience/smoke-tools.py",
+            "bytes": 27526,
+            "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765"
+          },
+          "verifiedRawByteMatch": {
+            "path": "scripts/reader-experience/smoke-tools.py",
+            "bytes": 27526,
+            "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765"
+          },
+          "usedHistoricalSnapshot": false
+        },
+        {
+          "sourceInput": {
+            "path": "scripts/reader-experience/stage-config.py",
+            "bytes": 26097,
+            "sha256": "bd43e49da06d69611e6c258bea3b493715c90585caf09f4f96d16f338f856607"
+          },
+          "verifiedRawByteMatch": {
+            "path": "scripts/reader-experience/stage-config.py",
+            "bytes": 26097,
+            "sha256": "bd43e49da06d69611e6c258bea3b493715c90585caf09f4f96d16f338f856607"
+          },
+          "usedHistoricalSnapshot": false
+        },
+        {
+          "sourceInput": {
+            "path": "scripts/sim.sh",
+            "bytes": 10507,
+            "sha256": "d526c909dcab8a0f605edcaba3c5870a19efbb2d04f17997e93bdc2e16e7bb5a"
+          },
+          "verifiedRawByteMatch": {
+            "path": "scripts/sim.sh",
+            "bytes": 10507,
+            "sha256": "d526c909dcab8a0f605edcaba3c5870a19efbb2d04f17997e93bdc2e16e7bb5a"
+          },
+          "usedHistoricalSnapshot": false
+        },
+        {
+          "sourceInput": {
+            "path": ".github/workflows/reader-renewal-probe.yml",
+            "bytes": 7769,
+            "sha256": "dae22755f3ce8161c646838c4d85baaf21a9a72b2257a12b77c5b2e01451ea11"
+          },
+          "verifiedRawByteMatch": {
+            "path": ".build/renewal-discovery/controlled-signing-selection-gates/sources/.github/workflows/reader-renewal-probe.yml",
+            "bytes": 7769,
+            "sha256": "dae22755f3ce8161c646838c4d85baaf21a9a72b2257a12b77c5b2e01451ea11"
+          },
+          "usedHistoricalSnapshot": true
+        }
+      ],
+      "toolchain": {
+        "developerDirectory": "/Applications/Xcode_26.2.app/Contents/Developer",
+        "version": "swift-driver version: 1.127.14.1 Apple Swift version 6.2.3 (swiftlang-6.2.3.3.21 clang-1700.6.3.2)\nTarget: arm64-apple-macosx15.0\n",
+        "executable": "/Applications/Xcode_26.2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift",
+        "requiredFlagsPresentInActualHelp": [
+          "--parallel",
+          "--num-workers",
+          "--xunit-output",
+          "--filter",
+          "--verbose",
+          "--disable-swift-testing"
+        ]
+      },
+      "execution": {
+        "arguments": [
+          "/Applications/Xcode_26.2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift",
+          "test",
+          "--package-path",
+          "/Users/runner/work/legado-ios/legado-ios/Packages/LegadoRuntime",
+          "--parallel",
+          "--num-workers",
+          "1",
+          "--xunit-output",
+          "/Users/runner/work/legado-ios/legado-ios/.build/reader-renewal-original-api/xunit.xml",
+          "--filter",
+          "^(LegadoRuntimeTests\\.LegadoOriginalAPITests/testBusinessCodingPreservesOriginalNamesWithoutEnvironmentOrAppUuid|LegadoRuntimeTests\\.LegadoOriginalAPITests/testConfiguredTypedFourStageChainKeepsBusinessIdentitiesAndExplicitNoSave|LegadoRuntimeTests\\.LegadoOriginalAPITests/testNullPageAndUtf8RequestBudgetAreExplicit|LegadoRuntimeTests\\.LegadoOriginalAPITests/testOriginalTypedErrorsAndIncompatibleDtosStayErrors|LegadoRuntimeTests\\.LegadoOriginalAPITests/testTypedBusinessApiDoesNotSelectTheExistingRoute|LegadoRuntimeTests\\.LegadoRuntimeTests/testCancelReachesRuntimeWhileExecuteWorkerIsBlocked|LegadoRuntimeTests\\.LegadoRuntimeTests/testConfiguredSessionCannotSilentlyUseLegacyTransport|LegadoRuntimeTests\\.LegadoRuntimeTests/testConfiguredSessionKeepsTransportOptionsOutsideSourceData|LegadoRuntimeTests\\.LegadoRuntimeTests/testRuntimeOperationsRunOnSignalableBackgroundThreads|LegadoRuntimeTests\\.LegadoRuntimeTests/testSessionAndUnicodeRequestRoundTrip)$",
+          "--verbose",
+          "--disable-swift-testing"
+        ],
+        "developerDirectory": "/Applications/Xcode_26.2.app/Contents/Developer",
+        "runtimeSourceOnly": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "completed": true
+      },
+      "intendedQualifiedMethods": [
+        "LegadoRuntimeTests.LegadoOriginalAPITests/testBusinessCodingPreservesOriginalNamesWithoutEnvironmentOrAppUuid",
+        "LegadoRuntimeTests.LegadoOriginalAPITests/testConfiguredTypedFourStageChainKeepsBusinessIdentitiesAndExplicitNoSave",
+        "LegadoRuntimeTests.LegadoOriginalAPITests/testNullPageAndUtf8RequestBudgetAreExplicit",
+        "LegadoRuntimeTests.LegadoOriginalAPITests/testOriginalTypedErrorsAndIncompatibleDtosStayErrors",
+        "LegadoRuntimeTests.LegadoOriginalAPITests/testTypedBusinessApiDoesNotSelectTheExistingRoute",
+        "LegadoRuntimeTests.LegadoRuntimeTests/testCancelReachesRuntimeWhileExecuteWorkerIsBlocked",
+        "LegadoRuntimeTests.LegadoRuntimeTests/testConfiguredSessionCannotSilentlyUseLegacyTransport",
+        "LegadoRuntimeTests.LegadoRuntimeTests/testConfiguredSessionKeepsTransportOptionsOutsideSourceData",
+        "LegadoRuntimeTests.LegadoRuntimeTests/testRuntimeOperationsRunOnSignalableBackgroundThreads",
+        "LegadoRuntimeTests.LegadoRuntimeTests/testSessionAndUnicodeRequestRoundTrip"
+      ],
+      "actualOutcome": {
+        "phase": "SwiftPM test-module compilation",
+        "completed": true,
+        "exitCode": 1,
+        "timedOut": false,
+        "xunitPresent": false,
+        "selectedMethodsActuallyExecuted": 0,
+        "selectedMethodsPassed": 0,
+        "selectedMethodFailuresEstablished": 0,
+        "meaning": "Compilation failed before selected XCTest methods. This is not a timeout or ten failed test methods."
+      },
+      "actualCompilerDiagnostic": {
+        "file": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+        "line": 85,
+        "column": 39,
+        "message": "cannot call value of non-function type 'Bool'",
+        "statement": "XCTAssertTrue(transport.calls.isEmpty())",
+        "exactRawExcerpt": {
+          "path": ".build/renewal-discovery/integrated-renewal-sdk-first-observation/44528e0/spm-independent-audit/compiler-errors-excerpt.log",
+          "bytes": 834,
+          "sha256": "d3432c6008f06b03f9a0f9c52803281becac80de0313d29f2cded6626e2b9f02"
+        },
+        "rawTestsLog": {
+          "path": ".build/renewal-discovery/integrated-renewal-sdk-first-observation/44528e0/artifact-reader-renewal-original-api-evidence/reader-renewal-original-api/tests.log",
+          "bytes": 67451,
+          "sha256": "ddd87f9dc8c6c2c41d73805f5c10e6fd91d514d62a9871240a75f0dbbda63958"
+        }
+      },
+      "minimalFutureFix": {
+        "path": {
+          "path": ".build/renewal-discovery/integrated-renewal-sdk-first-observation/44528e0/spm-independent-audit/future/Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+          "bytes": 9114,
+          "sha256": "f158a8c618268901849edc6238b6cfbc98edb3149e1eaba3ce9c7d7f7fb79dbc"
+        },
+        "before": {
+          "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+          "bytes": 9116,
+          "sha256": "8b6b13bed418221941fa5f340f198562aba5285742c56dc15733482fefb8aab1"
+        },
+        "replace": "transport.calls.isEmpty() -> transport.calls.isEmpty",
+        "testMethodsUnchanged": true,
+        "assertionUnchangedExceptPropertySyntax": true,
+        "productionSourcesModified": false,
+        "canonicalModified": false,
+        "SDKOrMockRerun": false
+      },
+      "checks": {
+        "allEightArtifactMembersSizeAndSHA256Match": true,
+        "sourceTagAndIndependentModeBound": true,
+        "exactTenQualifiedMethodsAndFilter": true,
+        "exact19InputsVerifiedAgainstCurrentUnchangedOrHistoricalBytes": true,
+        "existingRawBytesPreserved": true,
+        "networkQueries": 0,
+        "downloads": 0,
+        "CIRunsTriggered": 0,
+        "GitCommands": 0
+      }
+    },
+    "4af3bfcNative": {
+      "schemaVersion": 1,
+      "recordedAtUTC": "2026-10-20T05:00:38.873806+00:00",
+      "sourceCommit": "4af3bfcb54a3852a7f299598073abd30f292ec92",
+      "sourceTag": "reader-renewal-4af3bfc",
+      "runID": 39371934271,
+      "selectionMode": "integratedrenewal",
+      "sourceInputs": 110,
+      "plannedMethods": 140,
+      "allInputsComparedToImmutableCommit": true,
+      "artifact": {
+        "path": ".build/renewal-discovery/integrated-renewal-sdk-first-observation/4af3bfc/reader-renewal-probe-evidence.zip",
+        "bytes": 28057,
+        "sha256": "e210f5bbbad67118fa8461078bd7eb4f98b6d0412f9b485c56dc6a10eceb1dd6"
+      },
+      "artifactID": 12242006709,
+      "safeHashMatchedMembers": 13,
+      "wrapperLog": {
+        "path": ".build/renewal-discovery/integrated-renewal-sdk-first-observation/4af3bfc/artifact-reader-renewal-probe-evidence/ci-logs/reader-renewal.log",
+        "bytes": 1093,
+        "sha256": "7dac16c46f695895314be4a46ff93963402fc94d33bdf06b0962d5aaf8f9232c"
+      },
+      "overlays": {
+        "path": ".build/renewal-discovery/integrated-renewal-sdk-first-observation/4af3bfc/artifact-reader-renewal-probe-evidence/reader-renewal-probe/overlays.json",
+        "bytes": 2624,
+        "sha256": "90c05d76671d701063d3c99a09c8f177ada6133a708454d3a8a83ea11b694d54"
+      },
+      "executedNativeMethods": 0,
+      "acceptedNativeMethods": 0,
+      "networkRequestsDuringAudit": 0,
+      "newBuildTriggered": false,
+      "AppleOrDeviceAuthorityEstablished": false,
+      "failureKind": "same-job-platform-producer-codesign-framework-exit1-before-xcodebuild",
+      "publicProducerFailureLogMissing": true,
+      "actualCodesignAttemptFailed": true,
+      "actualPlatformFixtureAccepted": false,
+      "nextAction": "Preserve safe public failed tool diagnostics and identify the actual signer error; do not guess from exit code 1."
+    }
+  },
+  "repairs": [
+    {
+      "file": {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalIPAArchiveFixture.swift",
+        "bytes": 6376,
+        "sha256": "2d048181fbd7c73ec23e2f0cc13b510649119c786083c54361407db0809ebb45"
+      },
+      "beforeSHA256": "da73a61e141a964ce81ee52d58e197ad8c62829de2be7d05f32d27630b8364dd",
+      "change": "Add explicit per-file @testable App module import; no expectation or method changes.",
+      "grammarErrors": [],
+      "SDKExecuted": false
+    },
+    {
+      "file": {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift",
+        "bytes": 9327,
+        "sha256": "86f6804669188243b3b7d24da999c427e79c13c20d60caf3636c870e6e7e26a1"
+      },
+      "beforeSHA256": "45f5a30a7577035c977ac622b59463df21c24e610aee8eb010928aeeb6eb2db4",
+      "change": "Add explicit per-file @testable App module import; no expectation or method changes.",
+      "grammarErrors": [],
+      "SDKExecuted": false
+    },
+    {
+      "file": {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+        "bytes": 25253,
+        "sha256": "6b861399ca66a21e7c7388810f6ae394074b7d35af90c58600b2973ac5954633"
+      },
+      "beforeSHA256": "2acb824ebc7d805700bbc26c968b3c38f3548a36aa2ca8e6aa53ea9a8e48218a",
+      "change": "Add explicit per-file @testable App module import; no expectation or method changes.",
+      "grammarErrors": [],
+      "SDKExecuted": false
+    },
+    {
+      "file": {
+        "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+        "bytes": 9114,
+        "sha256": "f158a8c618268901849edc6238b6cfbc98edb3149e1eaba3ce9c7d7f7fb79dbc"
+      },
+      "beforeSHA256": "8b6b13bed418221941fa5f340f198562aba5285742c56dc15733482fefb8aab1",
+      "change": "Use the Bool isEmpty property without calling it; preserve every test and assertion.",
+      "SDKExecuted": false
+    }
+  ],
+  "actualNativeMethodsAccepted": 0,
+  "actualIndependentPackageMethodsAccepted": 0,
+  "remaining": [
+    "The failed codesign framework command returned 1 before xcodebuild; safe public stderr was not retained, so its exact cause is not yet established.",
+    "All repaired fixtures and the ten independent package methods require actual SDK execution in the next coherent checkpoint.",
+    "S5/Book later drafts are outside both immutable source checkpoints."
+  ],
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-integrated-renewal-sdk-first-results",
+    "manifest": "manifest.json",
+    "rawFiles": 49
+  },
+  "newCloudBuildTriggered": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

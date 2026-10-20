@@ -2,6 +2,7 @@ import CryptoKit
 import Darwin
 import Foundation
 import Security
+@testable import yuedu_app
 
 /// Real loopback BSD sockets and SecureTransport mTLS on both sides. Service
 /// responses are owned protocol fixtures; no Apple device or pairing record is
