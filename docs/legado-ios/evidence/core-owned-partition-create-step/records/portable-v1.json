@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "preparedAtUTC": "2026-10-20T10:35:48.264373+00:00",
+  "sourceInputs": [
+    {
+      "path": ".build/renewal-discovery/owned-partition-create-step/work/generate-sdk-owned-package.py",
+      "bytes": 43866,
+      "sha256": "e67cd3483ac21fff7d83dda266f6a6e116adfa132aecda465505c265dd21431a"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-partition-create-step/work/ImportOwnedIdentity.swift",
+      "bytes": 16957,
+      "sha256": "dafa60a6249511756e8f4a58661c411bb7c7bf5ac4c00212c8bb4eb56541193b"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-partition-create-step/work/OwnedIdentitySearch.c",
+      "bytes": 34616,
+      "sha256": "19d4ef4df74ef50fb0451249727d80fa86a1b7d55c8a2551c05d531f1880d13c"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-partition-create-step/work/OwnedIdentitySearch.h",
+      "bytes": 3340,
+      "sha256": "9452131a50696a693dd9af7c60cc7cec280aa5fb119e4a03f185bece51cca673"
+    },
+    {
+      "path": ".build/renewal-discovery/owned-partition-create-step/work/test-producer-keychain-reopen.py",
+      "bytes": 23577,
+      "sha256": "306696a98281c3468de247c4cd28be359d7358001049c8445856b5c9cf543a2a"
+    }
+  ],
+  "command": [
+    "C:\\Python312\\python.exe",
+    "-m",
+    "unittest",
+    "-v",
+    "test-producer-keychain-reopen.OwnedKeyACLReportTests"
+  ],
+  "exitCode": 0,
+  "durationSeconds": 0.75,
+  "exactUniqueMethods": [
+    "test_acl_schema_rejects_unknown_payloads_counts_and_inconsistent_append (test-producer-keychain-reopen.OwnedKeyACLReportTests.test_acl_schema_rejects_unknown_payloads_counts_and_inconsistent_append)",
+    "test_actual_acl_malformed_or_cross_operation_private_output_stays_suppressed (test-producer-keychain-reopen.OwnedKeyACLReportTests.test_actual_acl_malformed_or_cross_operation_private_output_stays_suppressed)",
+    "test_actual_acl_reporter_declassifies_only_schema3_counts_and_preserves_no_codesign_claim (test-producer-keychain-reopen.OwnedKeyACLReportTests.test_actual_acl_reporter_declassifies_only_schema3_counts_and_preserves_no_codesign_claim)",
+    "test_actual_fresh_inspection_rejects_unapplied_partition_or_changed_classic_facts (test-producer-keychain-reopen.OwnedKeyACLReportTests.test_actual_fresh_inspection_rejects_unapplied_partition_or_changed_classic_facts)",
+    "test_actual_partition_failure_remains_nonzero_and_blocks_fresh_read (test-producer-keychain-reopen.OwnedKeyACLReportTests.test_actual_partition_failure_remains_nonzero_and_blocks_fresh_read)",
+    "test_actual_pipeline_checks_real_owned_partition_creation_then_fresh_inspection_without_cli_mutation (test-producer-keychain-reopen.OwnedKeyACLReportTests.test_actual_pipeline_checks_real_owned_partition_creation_then_fresh_inspection_without_cli_mutation)"
+  ],
+  "methodsPassed": 6,
+  "methodsFailed": 0,
+  "methodsSkipped": 0,
+  "rawLog": {
+    "path": ".build/renewal-discovery/owned-partition-create-step/portable-v1.log",
+    "bytes": 1461,
+    "sha256": "ec7ad30f37977eba4043b80758830253e7b21bd3e47b981175680310f947f874"
+  },
+  "grammar": {
+    "path": ".build/renewal-discovery/owned-partition-create-step/grammar-v1.json",
+    "bytes": 375,
+    "sha256": "c4ba3ac8fc5333b96363f66aebcdc20300db91eba88b5a4a0496ff8c6a85e960"
+  },
+  "limits": "Six actual portable Python reporter/child/pipeline-order regressions and one importer grammar pass. No Apple C/Swift compilation, private key, CSSM/Security, Mac, codesign or native test execution. Old eleven unrelated methods are not rerun or counted."
+}

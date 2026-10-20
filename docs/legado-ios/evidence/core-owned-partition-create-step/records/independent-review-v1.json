@@ -1,0 +1,203 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUTC": "2026-10-20T10:40:56.092484+00:00",
+  "reviewer": "owned_signer_shape_review",
+  "independentReview": true,
+  "reviewKind": "Independent five-source static review of another author; missing-partition CSSM ADD version",
+  "preparation": {
+    "path": ".build/renewal-discovery/owned-partition-create-step/preparation.json",
+    "bytes": 19900,
+    "sha256": "a6013cc4d3bc0073e10006b38e98de2a9bfc1526014c9b91d5986a4fc0e3e556"
+  },
+  "sources": [
+    {
+      "intendedPath": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "path": ".build/renewal-discovery/owned-partition-create-step/final-sources/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "bytes": 43866,
+      "sha256": "e67cd3483ac21fff7d83dda266f6a6e116adfa132aecda465505c265dd21431a"
+    },
+    {
+      "intendedPath": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+      "path": ".build/renewal-discovery/owned-partition-create-step/final-sources/scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+      "bytes": 16957,
+      "sha256": "dafa60a6249511756e8f4a58661c411bb7c7bf5ac4c00212c8bb4eb56541193b"
+    },
+    {
+      "intendedPath": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c",
+      "path": ".build/renewal-discovery/owned-partition-create-step/final-sources/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c",
+      "bytes": 34616,
+      "sha256": "19d4ef4df74ef50fb0451249727d80fa86a1b7d55c8a2551c05d531f1880d13c"
+    },
+    {
+      "intendedPath": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h",
+      "path": ".build/renewal-discovery/owned-partition-create-step/final-sources/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h",
+      "bytes": 3340,
+      "sha256": "9452131a50696a693dd9af7c60cc7cec280aa5fb119e4a03f185bece51cca673"
+    },
+    {
+      "intendedPath": "scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py",
+      "path": ".build/renewal-discovery/owned-partition-create-step/final-sources/scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py",
+      "bytes": 23577,
+      "sha256": "306696a98281c3468de247c4cd28be359d7358001049c8445856b5c9cf543a2a"
+    }
+  ],
+  "bindingAudit": {
+    "artifactsChecked": 43,
+    "mismatches": []
+  },
+  "verdict": "no-confirmed-source-blocker",
+  "confirmedBlockers": [],
+  "reviewedInvariants": [
+    {
+      "topic": "Exact borrowed key/CSP and lifetime",
+      "sources": [
+        "OwnedIdentitySearch.c:78-138",
+        "OwnedIdentitySearch.c:469-580",
+        "primary/SecKey.h:333-352",
+        "primary/cssmapi.h:447-458"
+      ],
+      "facts": [
+        "Existing ownedKey still requires the actual same owned keychain, exactly one private key and matching public representation/sign capability before access mutation.",
+        "Only SecKeyGetCSSMKey/SecKeyGetCSPHandle public APIs obtain the exact borrowed reference key and CSP; public header checks require REFERENCE/private/sign.",
+        "Only KeyHeader is inspected. KeyData is never accessed, copied, freed, serialized or exported. Swift retains the actual SecKey across synchronous C call; public borrowed lifetime covers both pointers."
+      ]
+    },
+    {
+      "topic": "Genuine ADD subject and actual password credentials",
+      "sources": [
+        "OwnedIdentitySearch.c:513-565",
+        "primary/acl_partition.cpp:65-85",
+        "primary/aclclient.cpp:218-234",
+        "primary/objectacl.cpp:362-384",
+        "primary/acls.cpp:75-99"
+      ],
+      "facts": [
+        "New entry is a true two-node PARTITION typed subject with bounded property-list payload, PARTITION_ID-only authorization and the protected partition tag; not an ANY ACL retag.",
+        "The edit mode is ADD, never REPLACE/DELETE or owner replacement. Only an absent partition with one known finite sign/owner context is admitted.",
+        "Credential sample is the public KEYCHAIN_LOCK/PASSWORD/DATUM shape with exact database-password length, bounded 256-byte stack copy and no UI callback. Apple pinned server source checks actual database credentials before permitting protected partition ADD.",
+        "Payload, stack list nodes, authorization, edit, credential and borrowed reference pointers all remain live until CSSM_ChangeKeyAcl returns. The local password copy is volatile-cleared on every post-allocation exit."
+      ]
+    },
+    {
+      "topic": "Current importer code identity is actual and scoped",
+      "sources": [
+        "OwnedIdentitySearch.c:141-188",
+        "primary/clientid.cpp:187-287",
+        "primary/SecCode.h",
+        "primary/SecStaticCode.h",
+        "primary/CSCommon.h"
+      ],
+      "facts": [
+        "Public current dynamic code and its static code both undergo default validity checks before signing-info inspection.",
+        "Public flags must classify a genuinely ad-hoc-signed importer and public unique identifier must have exact 20-byte cdhash. Non-ad-hoc/unsigned/invalid metadata fails; there is no fallback signer or importer re-sign command.",
+        "Only apple-tool:, apple:, codesign:, and the exact current importer cdhash are included. The latter follows pinned Apple signed-unclassified cdhash partition mapping.",
+        "No creator hash/path/subject requirement is exported. Creator count is metadata; actual private-key operation remains required after persistent read."
+      ]
+    },
+    {
+      "topic": "Persisted ACL preservation and fresh private challenge",
+      "sources": [
+        "OwnedIdentitySearch.c:469-580",
+        "ImportOwnedIdentity.swift:184-226",
+        "generate-sdk-owned-package.py:266-297"
+      ],
+      "facts": [
+        "Classic ACL append and target SIGN+ANY/unknown guard are retained. Absent partition is checked before mutation; existing nonempty partition is refused.",
+        "After ADD the exact same key is copied afresh and must report exactly one partition, four unique expected membership counts and one extra ACL. Normalizing those newly added facts must equal all original reported classic/owner/key counts.",
+        "Swift compares the first classic append after-report to the partition before-report, then performs actual sign/verify after partition publication.",
+        "A second actual importer process inspects persisted facts, validates its current code-derived creator membership and exercises its own real private-key challenge. No success is inferred from in-memory handles or mutation return alone."
+      ]
+    },
+    {
+      "topic": "Strict public schemas and sensitive process output",
+      "sources": [
+        "generate-sdk-owned-package.py:150-209",
+        "generate-sdk-owned-package.py:218-297",
+        "generate-sdk-owned-package.py:299-368",
+        "OwnedIdentitySearch.h:24-64"
+      ],
+      "facts": [
+        "Old schema1/schema2 and dispatcher run() are byte-identical. Schema3 admits only strict bounded fields and real bool types; new creatorPartitionCount plus partitionACLAdded/creatorPartitionVerified are consistency checked.",
+        "Before preparing every partition count must be zero; expected after-report adds only one subject/classic count and exactly one genuine partition/four membership counts. Inspection requires equality with actual prepared persisted counts.",
+        "Private password/P12/key/ACL/partition payload/raw cdhash remain suppressed. Any C/Swift/child/challenge failure stays nonzero."
+      ]
+    },
+    {
+      "topic": "Proven previous no-op versus unproven codesign cause",
+      "sources": [
+        "observed-584/phase-producer.log",
+        "observed-584/phase-producer.log.stderr.log",
+        "observed-584/phase-producer.json",
+        "primary/keychain_find.c:1691-1813"
+      ],
+      "facts": [
+        "Read immutable actual 584 records: prior new C/Swift compiled, owner edit and real key challenges passed; before and after CLI reported no partition entries.",
+        "The older CLI only loops existing partition ACLs in pinned primary source, consistent with its real zero-exit no-op on absent partition. Replacing that narrow no-op is causally supported.",
+        "That run failed before codesign. This review does not establish cause/fix for older item-not-found or valid0 trust diagnostics."
+      ]
+    }
+  ],
+  "sourceContinuity": {
+    "exactOldFunctions": {
+      "identity_status": true,
+      "reopened_identity_status": true,
+      "run": true,
+      "create_owned_signing_identity": true,
+      "export_owned_signing_identity": true,
+      "compile_owned_importer": true
+    },
+    "oldElevenPortableClassByteIdentical": true,
+    "completeGeneratorTailFromFreshReopenCommentByteIdentical": true,
+    "unchangedTailIncludes": "Actual explicit code-sign anchor policy, four MachOs/codesign, original CMS/CD verification, double profile-CMS, ZIP payload/output, cleanup/deadlines.",
+    "producerInputs": 7,
+    "finiteInputs": 19,
+    "newPaths": 0
+  },
+  "evidence": {
+    "portable": {
+      "path": ".build/renewal-discovery/owned-partition-create-step/portable-v1.json",
+      "bytes": 3516,
+      "sha256": "e2ac385f9d29958c1b12112deb5d1766ad3314f4aac4a39c8b950605eeedb528"
+    },
+    "rawPortableLog": {
+      "path": ".build/renewal-discovery/owned-partition-create-step/portable-v1.log",
+      "bytes": 1461,
+      "sha256": "ec7ad30f37977eba4043b80758830253e7b21bd3e47b981175680310f947f874"
+    },
+    "grammar": {
+      "path": ".build/renewal-discovery/owned-partition-create-step/grammar-v1.json",
+      "bytes": 375,
+      "sha256": "c4ba3ac8fc5333b96363f66aebcdc20300db91eba88b5a4a0496ff8c6a85e960"
+    },
+    "actualPortablePassed": 6,
+    "actualPortableRunsForFrozenDraft": 1,
+    "oldElevenRerun": false,
+    "scope": "Actual Python reporter/child/order/rejection only; does not execute C/CSSM/Security/private-key or Swift SDK code."
+  },
+  "executionThisReview": {
+    "metadataAndASTSourceComparisonOnly": true,
+    "newPortableRuns": 0,
+    "newGrammarRuns": 0,
+    "CCompile": 0,
+    "SwiftSDKCompile": 0,
+    "MacSecurityCSSM": 0,
+    "codesign": 0,
+    "realAppleAccountRequests": 0,
+    "device": 0,
+    "cloudQueriedOrTriggered": false
+  },
+  "limitations": [
+    "Public deprecated API availability and native struct/function semantics have not been compiled for this new version.",
+    "Actual database password acceptance, binary-plist partition decoding, headless ADD, importer signature classification/membership and preserved key operation require the same-source finite Mac run.",
+    "Only new absent-partition shape is supported. A real unexpected existing partition fails closed rather than being replaced.",
+    "No actual codesign success, target ad-hoc workaround, Apple authority, installation, background self-renewal or user-data preservation result is inferred."
+  ],
+  "acceptance": {
+    "sourceReviewComplete": true,
+    "nativeSDKAccepted": false,
+    "MacCodesignSuccessEstablished": false,
+    "AppleAuthorizationEstablished": false,
+    "deviceSelfRenewalVerified": false
+  },
+  "mutations": "Only this ignored independent review JSON. No source, canonical, Git, CI or current run mutation."
+}

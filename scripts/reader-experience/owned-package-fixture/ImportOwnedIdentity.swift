@@ -187,7 +187,25 @@ func verifyStoredIdentity(_ keychain: SecKeychain, input: Input, expectedLeaf: S
         try require(YueduOwnedKeyACLInspect(keychain, key, preparing ? 1 : 0, &before, &after, &changed),
                     at: preparing ? .prepareKeyACL : .inspectKeyACL)
         guard changed == (preparing ? 1 : 0) else { throw Failure(stage: .inspectKeyACL, status: errSecDecode) }
+        if preparing {
+            var partitionBefore = YueduOwnedKeyACLReport(), partitionAfter = YueduOwnedKeyACLReport()
+            try input.keychainPassword.withCString { password in
+                try require(YueduOwnedKeyCreatePartition(keychain, key,
+                    UnsafeRawPointer(password).assumingMemoryBound(to: UInt8.self),
+                    UInt32(input.keychainPassword.utf8.count), &partitionBefore, &partitionAfter), at: .prepareKeyACL)
+            }
+            guard NSDictionary(dictionary: aclReport(after)).isEqual(to: aclReport(partitionBefore)) else {
+                throw Failure(stage: .prepareKeyACL, status: errSecDecode)
+            }
+            after = partitionAfter
+        }
+        guard after.partitionACLCount == 1, after.partitionIDCount == 4, after.applePartitionCount == 1,
+              after.appleToolPartitionCount == 1, after.codesignPartitionCount == 1,
+              after.creatorPartitionCount == 1, after.otherPartitionCount == 0 else {
+            throw Failure(stage: .inspectKeyACL, status: errSecDecode)
+        }
         aclFacts = ["aclBefore": aclReport(before), "aclAfter": aclReport(after), "classicACLChanged": changed == 1,
+                    "partitionACLAdded": preparing, "creatorPartitionVerified": true,
                     "fixtureOwnerPolicy": "current-importer-subject-before-import"]
     }
     // In schema 3 this challenge happens after any actual ACL publication.
@@ -219,6 +237,7 @@ func aclReport(_ report: YueduOwnedKeyACLReport) -> [String: Any] {
      "codesignPathEntryCount": Int(report.codesignPathEntryCount), "partitionACLCount": Int(report.partitionACLCount),
      "partitionIDCount": Int(report.partitionIDCount), "applePartitionCount": Int(report.applePartitionCount),
      "appleToolPartitionCount": Int(report.appleToolPartitionCount), "codesignPartitionCount": Int(report.codesignPartitionCount),
+     "creatorPartitionCount": Int(report.creatorPartitionCount),
      "otherPartitionCount": Int(report.otherPartitionCount), "opaqueACLCount": Int(report.opaqueACLCount),
      "unknownAuthorizationCount": Int(report.unknownAuthorizationCount),
      "ownerACLCount": Int(report.ownerACLCount), "ownerAllowAnyACLCount": Int(report.ownerAllowAnyACLCount),

@@ -1,0 +1,594 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-20T10:42:30.131954+00:00",
+  "status": "actual-absent-owned-key-partition-creation-source-reviewed-portable-passed-Mac-pending",
+  "previousActualFailure": "docs/legado-ios/core-owned-sdk-producer-584ed6e-result.json",
+  "sourceBinding": {
+    "integrationBaseCommit": "e80e17754913f4343f06546f7cc3495f59b4cedb",
+    "changedFiles": [
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "bytes": 43866,
+        "sha256": "e67cd3483ac21fff7d83dda266f6a6e116adfa132aecda465505c265dd21431a"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+        "bytes": 16957,
+        "sha256": "dafa60a6249511756e8f4a58661c411bb7c7bf5ac4c00212c8bb4eb56541193b"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c",
+        "bytes": 34616,
+        "sha256": "19d4ef4df74ef50fb0451249727d80fa86a1b7d55c8a2551c05d531f1880d13c"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h",
+        "bytes": 3340,
+        "sha256": "9452131a50696a693dd9af7c60cc7cec280aa5fb119e4a03f185bece51cca673"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py",
+        "bytes": 23577,
+        "sha256": "306696a98281c3468de247c4cd28be359d7358001049c8445856b5c9cf543a2a"
+      }
+    ],
+    "finiteNineteenInputs": [
+      {
+        "path": ".github/workflows/reader-owned-sdk-producer.yml",
+        "bytes": 3846,
+        "sha256": "c8a3f8b952674e233100344db7cfac3ca8da76b329ae20b89d902de2c6df719e"
+      },
+      {
+        "path": "scripts/reader-experience/owned-sdk-producer-check.py",
+        "bytes": 14191,
+        "sha256": "62434d613e07ce98f1f1fd646f4630a08a42d240263835b183c3b9cfe31d2cdb"
+      },
+      {
+        "path": "scripts/reader-experience/test-owned-sdk-producer-check.py",
+        "bytes": 13845,
+        "sha256": "755ec45f371a0d3bc4c3e18ae1f2d1c56c6eda2ae8cfd2adba36352d8b72f20a"
+      },
+      {
+        "path": "scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 142987,
+        "sha256": "967f0d77e96c86a1ae105e56f776b0c8fb8bd07ce7ffab2fcf141d0fba68d5de"
+      },
+      {
+        "path": "scripts/reader-experience/smoke-tools.py",
+        "bytes": 27526,
+        "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765"
+      },
+      {
+        "path": "scripts/reader-experience/stage-config.py",
+        "bytes": 26097,
+        "sha256": "bd43e49da06d69611e6c258bea3b493715c90585caf09f4f96d16f338f856607"
+      },
+      {
+        "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 133487,
+        "sha256": "bce6e42851ae34d358079741019624e360621f22ce6d316c29a34bda9d201997"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalControlledPackageFixture.swift",
+        "bytes": 657444,
+        "sha256": "71f798f3b8bb5d5b6a3febd093821ae556dd5fa92beffd19d12c114480082913"
+      },
+      {
+        "path": "scripts/sim.sh",
+        "bytes": 11179,
+        "sha256": "9504f915fc98cde2a10e7917f8f976071312b3e1cb798aad0a6f7e6d80c64e48"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "bytes": 43866,
+        "sha256": "e67cd3483ac21fff7d83dda266f6a6e116adfa132aecda465505c265dd21431a"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+        "bytes": 16957,
+        "sha256": "dafa60a6249511756e8f4a58661c411bb7c7bf5ac4c00212c8bb4eb56541193b"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h",
+        "bytes": 3340,
+        "sha256": "9452131a50696a693dd9af7c60cc7cec280aa5fb119e4a03f185bece51cca673"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c",
+        "bytes": 34616,
+        "sha256": "19d4ef4df74ef50fb0451249727d80fa86a1b7d55c8a2551c05d531f1880d13c"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/main.c",
+        "bytes": 180,
+        "sha256": "0f1f097060993b3b25b4da50f31a4ef5a1d8077084d64ca561dbfc3a743a86f7"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/extension.c",
+        "bytes": 186,
+        "sha256": "79636265b4cdbf74aff701991aa425a6454fe6cd9049a9652c094b767eba7609"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/framework.c",
+        "bytes": 156,
+        "sha256": "4d6d77e995c1740eeb510f39830683aa31e050e0ebd97881f3e68643970b79ef"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-diagnostics.py",
+        "bytes": 6262,
+        "sha256": "e8accbbb0f8931a2756c74ffd58bb36dc2de93da71c7961e4fd8434d61ee90bc"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-timeouts.py",
+        "bytes": 11655,
+        "sha256": "30af8da39c75cac6b8a0c6819be41c1b9b34cc8975a88635438e72ab6eb77cfa"
+      },
+      {
+        "path": "scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py",
+        "bytes": 23577,
+        "sha256": "306696a98281c3468de247c4cd28be359d7358001049c8445856b5c9cf543a2a"
+      }
+    ],
+    "preparationSHA256": "a6013cc4d3bc0073e10006b38e98de2a9bfc1526014c9b91d5986a4fc0e3e556"
+  },
+  "actualPriorMacObservation": {
+    "sourcePrefix": "584ed6e",
+    "raw": [
+      {
+        "source": {
+          "path": ".build/sdk-evidence/584ed6e/finite/owned-sdk-producer-check/phase-producer.log",
+          "bytes": 4394,
+          "sha256": "fb0794bc0ad3ab16ae4f2b4388032ee1c2013f579d80ebeb1e7ba37156114f22"
+        },
+        "copy": {
+          "path": ".build/renewal-discovery/owned-partition-create-step/observed-584/phase-producer.log",
+          "bytes": 4394,
+          "sha256": "fb0794bc0ad3ab16ae4f2b4388032ee1c2013f579d80ebeb1e7ba37156114f22"
+        }
+      },
+      {
+        "source": {
+          "path": ".build/sdk-evidence/584ed6e/finite/owned-sdk-producer-check/phase-producer.log.stderr.log",
+          "bytes": 810,
+          "sha256": "e6dbcc792dd63ef97ffd1110521ccb46f81ef4432dac8a366754fde08c3480e8"
+        },
+        "copy": {
+          "path": ".build/renewal-discovery/owned-partition-create-step/observed-584/phase-producer.log.stderr.log",
+          "bytes": 810,
+          "sha256": "e6dbcc792dd63ef97ffd1110521ccb46f81ef4432dac8a366754fde08c3480e8"
+        }
+      },
+      {
+        "source": {
+          "path": ".build/sdk-evidence/584ed6e/finite/owned-sdk-producer-check/phase-producer.json",
+          "bytes": 9013,
+          "sha256": "3e840220f71e38b06f9ab4682599007c93e75a890c7ffcfa3a23291f532f371c"
+        },
+        "copy": {
+          "path": ".build/renewal-discovery/owned-partition-create-step/observed-584/phase-producer.json",
+          "bytes": 9013,
+          "sha256": "3e840220f71e38b06f9ab4682599007c93e75a890c7ffcfa3a23291f532f371c"
+        }
+      }
+    ],
+    "confirmed": [
+      "Actual C/Swift compilation, PKCS12 import, creator-owner headless SetAccess, fresh codesign subject append and actual post-edit private-key challenge succeeded.",
+      "Before and after the private-only security CLI, fresh partitionACLCount and partitionIDCount both stayed zero; strict generator failed with owned partition write lacks actual required entries.",
+      "This run did not reach codesign. Earlier real codesign item-not-found cause remains unproved; this delta fixes the separately proven absent-partition no-op."
+    ]
+  },
+  "actualImplementation": [
+    "Same ownedKey verifies exact one same-Keychain private signing key and public-key equality; only its borrowed CSSM reference BlobType/private class/sign header is checked. KeyData is never read/copied/exported; its public borrowed lifetime remains under SecKey.",
+    "Existing classic ACL append is unchanged. New public CSSM_ChangeKeyAcl ADD only executes when no partition exists, using the exact typed PARTITION subject, PARTITION_ID authorization and protected partition tag.",
+    "Only four entries: apple-tool:, apple:, codesign:, and the exact currently executing valid ad-hoc-signed importer cdhash. Current dynamic/static signatures and 20-byte unique identifier are checked via public APIs; unsigned, non-ad-hoc/team and abnormal identifiers are refused. It does not re-sign the importer or any target.",
+    "Actual database password is a bounded private CSSM KEYCHAIN_LOCK/PASSWORD/DATUM credential without UI callback. The 256-byte local copy is volatile-cleared on all post-allocation exits; neither credentials nor creator cdhash are serialized to public diagnostics/Python.",
+    "Real persisted access is read after ADD; all non-partition summary fields stay equal. Then a separate existing importer process freshly verifies its current code against the stored creator entry, requires exact four counts, and actually signs/verifies a fresh private-key challenge.",
+    "Original real codesign commands, complete CMS/MachO/profile/explicit-anchor/ZIP verification, deletion and producer deadlines remain required. Any nonzero mutation/read/challenge/codesign status stays a nonzero failure.",
+    "Public schema1 and schema2 remain byte-identical. Schema3 adds only bounded creatorPartitionCount, partitionACLAdded and creatorPartitionVerified facts; raw ACL/subject/cdhash/path/label/key/password output is still forbidden."
+  ],
+  "publicPrimaryReferences": [
+    {
+      "name": "SecKey.h",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/keychain/headers/SecKey.h",
+      "path": ".build/renewal-discovery/owned-partition-create-step/primary/SecKey.h",
+      "bytes": 93929,
+      "sha256": "2cba3b0d904c00560c1f7d4d7efb163d75a1aa941bb40b7ef851723806f6d3a0",
+      "origin": "already fetched pinned primary",
+      "lineSegments": "333-352",
+      "meaning": "Public borrowed reference key and same-key CSP handle: never modify/free the CSSM_KEY or inspect its KeyData."
+    },
+    {
+      "name": "cssmapi.h",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_cssm/lib/cssmapi.h",
+      "path": ".build/renewal-discovery/owned-partition-create-step/primary/cssmapi.h",
+      "bytes": 110719,
+      "sha256": "a34f84feaa56376657d0ff436756464a4d58962b7679dbcbb7b2c123e2b4fc3f",
+      "origin": "already fetched pinned primary",
+      "lineSegments": "447-458",
+      "meaning": "Public deprecated CSSM_ChangeKeyAcl argument order/operation."
+    },
+    {
+      "name": "cssmtype.h",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_cssm/lib/cssmtype.h",
+      "path": ".build/renewal-discovery/owned-partition-create-step/primary/cssmtype.h",
+      "bytes": 85818,
+      "sha256": "647032d694ed3fd7aa394106ae1054f9ab384beb634f1f69efa2e4e094be4f56",
+      "origin": "already fetched pinned primary",
+      "lineSegments": "380-399,573-583,635-694,733-743,777-785,809-816",
+      "meaning": "Public typed CSSM subject/sample/prototype/edit structures and reference/private/sign constants."
+    },
+    {
+      "name": "cssmapple.h",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_cssm/lib/cssmapple.h",
+      "path": ".build/renewal-discovery/owned-partition-create-step/primary/cssmapple.h",
+      "bytes": 47104,
+      "sha256": "bfc789ab517801d43659f2b65fbd36fe69c7d935566994b83ba65173c4f2103c",
+      "origin": "already fetched pinned primary",
+      "lineSegments": "90-113,129-137,1204-1210",
+      "meaning": "Public PARTITION subject, PARTITION_ID authorization and protected partition tag; not an ANY subject."
+    },
+    {
+      "name": "aclclient.cpp",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_cdsa_client/lib/aclclient.cpp",
+      "path": ".build/renewal-discovery/owned-partition-create-step/primary/aclclient.cpp",
+      "bytes": 11478,
+      "sha256": "1ba66750f4a6457b961fc89fe809accaabb4e4a0d2f5cfc4b07618e9d20a4468",
+      "origin": "already fetched pinned primary",
+      "lineSegments": "218-234",
+      "meaning": "Actual Apple password credential is KEYCHAIN_LOCK, PASSWORD word, password DATUM."
+    },
+    {
+      "name": "acl_partition.cpp",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_cdsa_utilities/lib/acl_partition.cpp",
+      "path": ".build/renewal-discovery/owned-partition-create-step/primary/acl_partition.cpp",
+      "bytes": 3705,
+      "sha256": "54d5d0489888f67bf6bb84df88b31d28879483e793df38bf7332323291d03079",
+      "origin": "already fetched pinned primary",
+      "lineSegments": "39-51,65-85",
+      "meaning": "Partition payload is property-list dictionary bytes in exact two-node typed subject."
+    },
+    {
+      "name": "objectacl.cpp",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_cdsa_utilities/lib/objectacl.cpp",
+      "path": ".build/renewal-discovery/owned-partition-create-step/primary/objectacl.cpp",
+      "bytes": 25172,
+      "sha256": "dc94a92a68872e2502bd0a35f17f1022b37687dc6f563d43f8e624829c4bd89b",
+      "origin": "public primary HTTPS source",
+      "lineSegments": "362-384",
+      "meaning": "ADD validates credentials then adds only the new subject; replacement/deletion are separate cases."
+    },
+    {
+      "name": "acls.cpp",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/securityd/src/acls.cpp",
+      "path": ".build/renewal-discovery/owned-partition-create-step/primary/acls.cpp",
+      "bytes": 18731,
+      "sha256": "9dcfaa50edcc327c000da89c8bba923bcc7048c028f8362f1b74c5ca1ecdb55b",
+      "origin": "exact previously pinned primary copy",
+      "lineSegments": "75-99,150-205",
+      "meaning": "Actual database password credentials authorize protected partition ADD; partitions are an additional access check, not a classic ACL equivalent."
+    },
+    {
+      "name": "clientid.cpp",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/securityd/src/clientid.cpp",
+      "path": ".build/renewal-discovery/owned-partition-create-step/primary/clientid.cpp",
+      "bytes": 15554,
+      "sha256": "45fe03d07c8ee7a19d6a767b4ec809c70aa08699d2934b41e0dcaba5ba4777e8",
+      "origin": "already fetched pinned primary",
+      "lineSegments": "187-287",
+      "meaning": "Actual ad-hoc signed non-Apple code maps to cdhash of kSecCodeInfoUnique; unsigned maps to unsigned and is rejected here."
+    },
+    {
+      "name": "SecCode.h",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/SecCode.h",
+      "path": ".build/renewal-discovery/owned-partition-create-step/primary/SecCode.h",
+      "bytes": 28321,
+      "sha256": "c9c43c0a0b21dc5bb0ee037b0d28aba2658d57c019eab4ce9a6fc09b43dc2b7d",
+      "origin": "already fetched pinned primary",
+      "lineSegments": "51-103,332-355,402-406,455-468,506-509",
+      "meaning": "Public current/static code, signature validation and public unique code identifier."
+    },
+    {
+      "name": "SecStaticCode.h",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/SecStaticCode.h",
+      "path": ".build/renewal-discovery/owned-partition-create-step/primary/SecStaticCode.h",
+      "bytes": 10344,
+      "sha256": "4647531b672952064d7d014057c5147722babb29aa0ab6d11b8fbd45b3fde532",
+      "origin": "already fetched pinned primary",
+      "lineSegments": "118-179",
+      "meaning": "Public static validation flags; new helper uses full default validation, not BasicValidateOnly."
+    },
+    {
+      "name": "CSCommon.h",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/OSX/libsecurity_codesigning/lib/CSCommon.h",
+      "path": ".build/renewal-discovery/owned-partition-create-step/primary/CSCommon.h",
+      "bytes": 22431,
+      "sha256": "f67ea0a42d5bb3fb9812206c421e0942ee54a002bd48a0659fee36a794cf4a4f",
+      "origin": "already fetched pinned primary",
+      "lineSegments": "263-291",
+      "meaning": "Public real ad-hoc code-signature flag for current helper classification only."
+    },
+    {
+      "name": "keychain_find.c",
+      "url": "https://github.com/apple-oss-distributions/Security/blob/db15acbe6a7f257a859ad9a3bb86097bfe0679d9/SecurityTool/macOS/keychain_find.c",
+      "path": ".build/renewal-discovery/owned-partition-create-step/primary/keychain_find.c",
+      "bytes": 59979,
+      "sha256": "d2c7f006e9bba0585de241e579441662488d4397bafd9587b22df7e0c90216e9",
+      "origin": "already fetched pinned primary",
+      "lineSegments": "1691-1813",
+      "meaning": "Prior CLI loops existing partition ACLs; exit zero can leave absent entry absent, matching actual 584 observation."
+    }
+  ],
+  "sourceContinuity": {
+    "byteIdenticalGeneratorFunctions": [
+      "identity_status",
+      "reopened_identity_status",
+      "run",
+      "create_owned_signing_identity",
+      "export_owned_signing_identity",
+      "compile_owned_importer"
+    ],
+    "allElevenPriorPortableMethodBodiesAndTheirGlobalHelpersByteIdentical": true,
+    "generatorMainTargetVerificationTailOnlyChangesPrepareCallArguments": true,
+    "producerSourceCount": 7,
+    "finiteSourceCount": 19,
+    "newSourcePaths": 0,
+    "CIWorkflowEdited": false
+  },
+  "independentReview": {
+    "schemaVersion": 1,
+    "reviewedAtUTC": "2026-10-20T10:40:56.092484+00:00",
+    "reviewer": "owned_signer_shape_review",
+    "independentReview": true,
+    "reviewKind": "Independent five-source static review of another author; missing-partition CSSM ADD version",
+    "preparation": {
+      "path": ".build/renewal-discovery/owned-partition-create-step/preparation.json",
+      "bytes": 19900,
+      "sha256": "a6013cc4d3bc0073e10006b38e98de2a9bfc1526014c9b91d5986a4fc0e3e556"
+    },
+    "sources": [
+      {
+        "intendedPath": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "path": ".build/renewal-discovery/owned-partition-create-step/final-sources/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "bytes": 43866,
+        "sha256": "e67cd3483ac21fff7d83dda266f6a6e116adfa132aecda465505c265dd21431a"
+      },
+      {
+        "intendedPath": "scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+        "path": ".build/renewal-discovery/owned-partition-create-step/final-sources/scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift",
+        "bytes": 16957,
+        "sha256": "dafa60a6249511756e8f4a58661c411bb7c7bf5ac4c00212c8bb4eb56541193b"
+      },
+      {
+        "intendedPath": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c",
+        "path": ".build/renewal-discovery/owned-partition-create-step/final-sources/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c",
+        "bytes": 34616,
+        "sha256": "19d4ef4df74ef50fb0451249727d80fa86a1b7d55c8a2551c05d531f1880d13c"
+      },
+      {
+        "intendedPath": "scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h",
+        "path": ".build/renewal-discovery/owned-partition-create-step/final-sources/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h",
+        "bytes": 3340,
+        "sha256": "9452131a50696a693dd9af7c60cc7cec280aa5fb119e4a03f185bece51cca673"
+      },
+      {
+        "intendedPath": "scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py",
+        "path": ".build/renewal-discovery/owned-partition-create-step/final-sources/scripts/reader-experience/owned-package-fixture/test-producer-keychain-reopen.py",
+        "bytes": 23577,
+        "sha256": "306696a98281c3468de247c4cd28be359d7358001049c8445856b5c9cf543a2a"
+      }
+    ],
+    "bindingAudit": {
+      "artifactsChecked": 43,
+      "mismatches": []
+    },
+    "verdict": "no-confirmed-source-blocker",
+    "confirmedBlockers": [],
+    "reviewedInvariants": [
+      {
+        "topic": "Exact borrowed key/CSP and lifetime",
+        "sources": [
+          "OwnedIdentitySearch.c:78-138",
+          "OwnedIdentitySearch.c:469-580",
+          "primary/SecKey.h:333-352",
+          "primary/cssmapi.h:447-458"
+        ],
+        "facts": [
+          "Existing ownedKey still requires the actual same owned keychain, exactly one private key and matching public representation/sign capability before access mutation.",
+          "Only SecKeyGetCSSMKey/SecKeyGetCSPHandle public APIs obtain the exact borrowed reference key and CSP; public header checks require REFERENCE/private/sign.",
+          "Only KeyHeader is inspected. KeyData is never accessed, copied, freed, serialized or exported. Swift retains the actual SecKey across synchronous C call; public borrowed lifetime covers both pointers."
+        ]
+      },
+      {
+        "topic": "Genuine ADD subject and actual password credentials",
+        "sources": [
+          "OwnedIdentitySearch.c:513-565",
+          "primary/acl_partition.cpp:65-85",
+          "primary/aclclient.cpp:218-234",
+          "primary/objectacl.cpp:362-384",
+          "primary/acls.cpp:75-99"
+        ],
+        "facts": [
+          "New entry is a true two-node PARTITION typed subject with bounded property-list payload, PARTITION_ID-only authorization and the protected partition tag; not an ANY ACL retag.",
+          "The edit mode is ADD, never REPLACE/DELETE or owner replacement. Only an absent partition with one known finite sign/owner context is admitted.",
+          "Credential sample is the public KEYCHAIN_LOCK/PASSWORD/DATUM shape with exact database-password length, bounded 256-byte stack copy and no UI callback. Apple pinned server source checks actual database credentials before permitting protected partition ADD.",
+          "Payload, stack list nodes, authorization, edit, credential and borrowed reference pointers all remain live until CSSM_ChangeKeyAcl returns. The local password copy is volatile-cleared on every post-allocation exit."
+        ]
+      },
+      {
+        "topic": "Current importer code identity is actual and scoped",
+        "sources": [
+          "OwnedIdentitySearch.c:141-188",
+          "primary/clientid.cpp:187-287",
+          "primary/SecCode.h",
+          "primary/SecStaticCode.h",
+          "primary/CSCommon.h"
+        ],
+        "facts": [
+          "Public current dynamic code and its static code both undergo default validity checks before signing-info inspection.",
+          "Public flags must classify a genuinely ad-hoc-signed importer and public unique identifier must have exact 20-byte cdhash. Non-ad-hoc/unsigned/invalid metadata fails; there is no fallback signer or importer re-sign command.",
+          "Only apple-tool:, apple:, codesign:, and the exact current importer cdhash are included. The latter follows pinned Apple signed-unclassified cdhash partition mapping.",
+          "No creator hash/path/subject requirement is exported. Creator count is metadata; actual private-key operation remains required after persistent read."
+        ]
+      },
+      {
+        "topic": "Persisted ACL preservation and fresh private challenge",
+        "sources": [
+          "OwnedIdentitySearch.c:469-580",
+          "ImportOwnedIdentity.swift:184-226",
+          "generate-sdk-owned-package.py:266-297"
+        ],
+        "facts": [
+          "Classic ACL append and target SIGN+ANY/unknown guard are retained. Absent partition is checked before mutation; existing nonempty partition is refused.",
+          "After ADD the exact same key is copied afresh and must report exactly one partition, four unique expected membership counts and one extra ACL. Normalizing those newly added facts must equal all original reported classic/owner/key counts.",
+          "Swift compares the first classic append after-report to the partition before-report, then performs actual sign/verify after partition publication.",
+          "A second actual importer process inspects persisted facts, validates its current code-derived creator membership and exercises its own real private-key challenge. No success is inferred from in-memory handles or mutation return alone."
+        ]
+      },
+      {
+        "topic": "Strict public schemas and sensitive process output",
+        "sources": [
+          "generate-sdk-owned-package.py:150-209",
+          "generate-sdk-owned-package.py:218-297",
+          "generate-sdk-owned-package.py:299-368",
+          "OwnedIdentitySearch.h:24-64"
+        ],
+        "facts": [
+          "Old schema1/schema2 and dispatcher run() are byte-identical. Schema3 admits only strict bounded fields and real bool types; new creatorPartitionCount plus partitionACLAdded/creatorPartitionVerified are consistency checked.",
+          "Before preparing every partition count must be zero; expected after-report adds only one subject/classic count and exactly one genuine partition/four membership counts. Inspection requires equality with actual prepared persisted counts.",
+          "Private password/P12/key/ACL/partition payload/raw cdhash remain suppressed. Any C/Swift/child/challenge failure stays nonzero."
+        ]
+      },
+      {
+        "topic": "Proven previous no-op versus unproven codesign cause",
+        "sources": [
+          "observed-584/phase-producer.log",
+          "observed-584/phase-producer.log.stderr.log",
+          "observed-584/phase-producer.json",
+          "primary/keychain_find.c:1691-1813"
+        ],
+        "facts": [
+          "Read immutable actual 584 records: prior new C/Swift compiled, owner edit and real key challenges passed; before and after CLI reported no partition entries.",
+          "The older CLI only loops existing partition ACLs in pinned primary source, consistent with its real zero-exit no-op on absent partition. Replacing that narrow no-op is causally supported.",
+          "That run failed before codesign. This review does not establish cause/fix for older item-not-found or valid0 trust diagnostics."
+        ]
+      }
+    ],
+    "sourceContinuity": {
+      "exactOldFunctions": {
+        "identity_status": true,
+        "reopened_identity_status": true,
+        "run": true,
+        "create_owned_signing_identity": true,
+        "export_owned_signing_identity": true,
+        "compile_owned_importer": true
+      },
+      "oldElevenPortableClassByteIdentical": true,
+      "completeGeneratorTailFromFreshReopenCommentByteIdentical": true,
+      "unchangedTailIncludes": "Actual explicit code-sign anchor policy, four MachOs/codesign, original CMS/CD verification, double profile-CMS, ZIP payload/output, cleanup/deadlines.",
+      "producerInputs": 7,
+      "finiteInputs": 19,
+      "newPaths": 0
+    },
+    "evidence": {
+      "portable": {
+        "path": ".build/renewal-discovery/owned-partition-create-step/portable-v1.json",
+        "bytes": 3516,
+        "sha256": "e2ac385f9d29958c1b12112deb5d1766ad3314f4aac4a39c8b950605eeedb528"
+      },
+      "rawPortableLog": {
+        "path": ".build/renewal-discovery/owned-partition-create-step/portable-v1.log",
+        "bytes": 1461,
+        "sha256": "ec7ad30f37977eba4043b80758830253e7b21bd3e47b981175680310f947f874"
+      },
+      "grammar": {
+        "path": ".build/renewal-discovery/owned-partition-create-step/grammar-v1.json",
+        "bytes": 375,
+        "sha256": "c4ba3ac8fc5333b96363f66aebcdc20300db91eba88b5a4a0496ff8c6a85e960"
+      },
+      "actualPortablePassed": 6,
+      "actualPortableRunsForFrozenDraft": 1,
+      "oldElevenRerun": false,
+      "scope": "Actual Python reporter/child/order/rejection only; does not execute C/CSSM/Security/private-key or Swift SDK code."
+    },
+    "executionThisReview": {
+      "metadataAndASTSourceComparisonOnly": true,
+      "newPortableRuns": 0,
+      "newGrammarRuns": 0,
+      "CCompile": 0,
+      "SwiftSDKCompile": 0,
+      "MacSecurityCSSM": 0,
+      "codesign": 0,
+      "realAppleAccountRequests": 0,
+      "device": 0,
+      "cloudQueriedOrTriggered": false
+    },
+    "limitations": [
+      "Public deprecated API availability and native struct/function semantics have not been compiled for this new version.",
+      "Actual database password acceptance, binary-plist partition decoding, headless ADD, importer signature classification/membership and preserved key operation require the same-source finite Mac run.",
+      "Only new absent-partition shape is supported. A real unexpected existing partition fails closed rather than being replaced.",
+      "No actual codesign success, target ad-hoc workaround, Apple authority, installation, background self-renewal or user-data preservation result is inferred."
+    ],
+    "acceptance": {
+      "sourceReviewComplete": true,
+      "nativeSDKAccepted": false,
+      "MacCodesignSuccessEstablished": false,
+      "AppleAuthorizationEstablished": false,
+      "deviceSelfRenewalVerified": false
+    },
+    "mutations": "Only this ignored independent review JSON. No source, canonical, Git, CI or current run mutation."
+  },
+  "actualValidation": {
+    "portable": {
+      "path": ".build/renewal-discovery/owned-partition-create-step/portable-v1.json",
+      "bytes": 3516,
+      "sha256": "e2ac385f9d29958c1b12112deb5d1766ad3314f4aac4a39c8b950605eeedb528"
+    },
+    "rawPortableLog": {
+      "path": ".build/renewal-discovery/owned-partition-create-step/portable-v1.log",
+      "bytes": 1461,
+      "sha256": "ec7ad30f37977eba4043b80758830253e7b21bd3e47b981175680310f947f874"
+    },
+    "methodsPassed": 6,
+    "methodsSkipped": 0,
+    "grammar": {
+      "path": ".build/renewal-discovery/owned-partition-create-step/grammar-v1.json",
+      "bytes": 375,
+      "sha256": "c4ba3ac8fc5333b96363f66aebcdc20300db91eba88b5a4a0496ff8c6a85e960"
+    },
+    "grammarDiagnostics": 0,
+    "AppleCCompilerRuns": 0,
+    "SwiftCompilerRuns": 0,
+    "MacSecurityRuns": 0,
+    "codesignRuns": 0,
+    "realDeviceRuns": 0,
+    "realAppleAccountRequests": 0,
+    "cloudQueries": 0,
+    "cloudTriggers": 0
+  },
+  "rootAudit": {
+    "originalSixFunctionsAndFinalTargetVerificationTailByteEqual": true,
+    "exactPortableUniqueMethodLogBindings": 6,
+    "newAppleCOrSwiftCompilerRuns": 0,
+    "scope": "Read complete C ADD diff and Swift/Python call/strict-schema ordering. Checked exact owned borrowed reference/CSP, actual code identity, public typed partition/password sample lifetime, preservation summaries, fresh process read/challenge and unchanged target-verification tail. No native success inferred."
+  },
+  "remaining": [
+    "Public deprecated CSSM/SecKey/SecCode API availability, actual compiler/type semantics, password ACL ADD acceptance and current importer signature classification require the next finite real Mac run.",
+    "This source draft does not prove that the earlier codesign item-not-found is fixed. Exact four partitions, private challenge and real CLI success must all occur.",
+    "Existing nonempty partition configurations fail closed; this only handles the exact observed newly imported owned absent-partition path.",
+    "No Apple signing authority, installation authorization, same-device transport/no-VPN permission, cold-launch or whole user-data preservation is established."
+  ],
+  "actualOldCodesignRootCauseProven": false,
+  "actualCodesignFailureFixed": false,
+  "nextActualProductionStep": "Push this exact reviewed nineteen-input source once to the finite owned Mac job. Inspect actual C/Swift compile, true partition ADD/readback/private challenge and unchanged real codesign/CMS/MachO/ZIP/staging. Continue App account and source-cache implementation without polling terminal runs.",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "evidence": {
+    "path": "docs/legado-ios/evidence/core-owned-partition-create-step",
+    "manifest": "manifest.json",
+    "rawFiles": 19,
+    "fullUpstreamPrimarySourcesRepublished": false,
+    "privateMaterialsPublished": false
+  }
+}

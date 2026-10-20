@@ -241,22 +241,25 @@ class OwnedKeyACLReportTests(unittest.TestCase):
     passed=OwnedKeychainReopenReportTests.passed
     child=OwnedKeychainReopenReportTests.child
     def summary(self):
-        return dict(privateKeyCount=1,sameOwnedKeychain=True,aclCount=4,signACLCount=1,signAppListACLCount=1,
+        return dict(privateKeyCount=1,sameOwnedKeychain=True,aclCount=3,signACLCount=1,signAppListACLCount=1,
                     signAllowAnyACLCount=0,signEmptyACLCount=0,signTrustedApplicationCount=2,codesignPathEntryCount=1,
-                    partitionACLCount=1,partitionIDCount=1,applePartitionCount=0,appleToolPartitionCount=0,
-                    codesignPartitionCount=0,otherPartitionCount=1,opaqueACLCount=0,unknownAuthorizationCount=0,
+                    partitionACLCount=0,partitionIDCount=0,applePartitionCount=0,appleToolPartitionCount=0,
+                    codesignPartitionCount=0,creatorPartitionCount=0,otherPartitionCount=0,opaqueACLCount=0,unknownAuthorizationCount=0,
                     ownerACLCount=1,ownerAllowAnyACLCount=0,ownerTrustedApplicationCount=1,creatorOwnerPathEntryCount=1)
 
     def access(self,prepare=True):
         value=self.passed(); before=self.summary(); after=dict(before)
         if prepare:
             after['signTrustedApplicationCount']+=1; after['codesignPathEntryCount']+=1
+            after.update(aclCount=4,partitionACLCount=1,partitionIDCount=4,applePartitionCount=1,
+                         appleToolPartitionCount=1,codesignPartitionCount=1,creatorPartitionCount=1)
         else:
-            before.update(signTrustedApplicationCount=3,codesignPathEntryCount=2,partitionIDCount=3,
-                          applePartitionCount=1,appleToolPartitionCount=1,codesignPartitionCount=1,otherPartitionCount=0)
+            before.update(aclCount=4,signTrustedApplicationCount=3,codesignPathEntryCount=2,partitionACLCount=1,partitionIDCount=4,
+                          applePartitionCount=1,appleToolPartitionCount=1,codesignPartitionCount=1,creatorPartitionCount=1)
             after=dict(before)
         value.update(schemaVersion=3,operation='prepareCodesignAccess' if prepare else 'inspectCodesignAccess',
-                     aclBefore=before,aclAfter=after,classicACLChanged=prepare,fixtureOwnerPolicy='current-importer-subject-before-import')
+                     aclBefore=before,aclAfter=after,classicACLChanged=prepare,partitionACLAdded=prepare,
+                     creatorPartitionVerified=True,fixtureOwnerPolicy='current-importer-subject-before-import')
         return value
 
     def test_actual_acl_reporter_declassifies_only_schema3_counts_and_preserves_no_codesign_claim(self):
@@ -276,13 +279,15 @@ class OwnedKeyACLReportTests(unittest.TestCase):
         valid=self.access(); cases=[]
         for name,changed in [('privateKeyCount',True),('sameOwnedKeychain',1),('aclCount',33),
                              ('signAllowAnyACLCount',1),('signTrustedApplicationCount',17),
-                             ('partitionIDCount',17),('otherPartitionCount',False),('ownerACLCount',0),
+                             ('partitionIDCount',17),('otherPartitionCount',False),('creatorPartitionCount',True),('ownerACLCount',0),
                              ('ownerAllowAnyACLCount',1),('creatorOwnerPathEntryCount',0)]:
             item=json.loads(json.dumps(valid)); item['aclBefore'][name]=changed; cases.append(item)
         item=json.loads(json.dumps(valid)); item['aclBefore']['rawACL']='secret-canary'; cases.append(item)
         item=json.loads(json.dumps(valid)); item['aclAfter']['codesignPathEntryCount']-=1; cases.append(item)
         cases.extend([dict(valid,classicACLChanged=False),dict(valid,classicACLChanged=1),
                       dict(valid,operation='reopenIdentity'),dict(valid,rawPrivateKey='canary'),dict(valid,schemaVersion=True),
+                      dict(valid,partitionACLAdded=False),dict(valid,partitionACLAdded=1),dict(valid,creatorPartitionVerified=False),
+                      dict(valid,creatorPartitionVerified=1),dict(valid,creatorPartition='cdhash:secret-canary'),
                       dict(valid,fixtureOwnerPolicy='all-applications')])
         for item in cases:
             with self.subTest(item=item),self.assertRaises(ValueError):producer.key_access_status(json.dumps(item).encode())
@@ -310,25 +315,25 @@ class OwnedKeyACLReportTests(unittest.TestCase):
         original=producer.run; commands=[]
         def actual(argv,**kwargs):
             commands.append(([str(v) for v in argv],dict(kwargs)))
-            if argv[0]=='security':
-                return original([sys.executable,'-c','import sys;sys.stdout.write("owned-private-ACL-noise");sys.exit('+str(partition_exit)+')'],**kwargs)
+            self.assertNotEqual(argv[0],'security')
             private=json.loads(kwargs['input']); preparing=private['operation']=='prepareCodesignAccess'
             self.assertEqual(private['p12'],''); self.assertEqual(private['p12Password'],'')
             value=self.access(preparing)
             value['leafSHA256']=producer.fingerprint(b'owned-public-leaf'); value['rootSHA256']=producer.fingerprint(b'owned-public-root')
             if not preparing and invalid_inspect is not None:invalid_inspect(value)
-            return original(self.child(value),**kwargs)
+            if preparing and partition_exit:
+                value=dict(schemaVersion=3,operation='prepareCodesignAccess',stage='prepareKeyACL',status='failed',osStatus=-25293)
+            return original(self.child(value,partition_exit if preparing else 0),**kwargs)
         return request,commands,actual
 
-    def test_actual_pipeline_checks_unique_owned_key_before_private_only_partition_then_fresh_inspection(self):
+    def test_actual_pipeline_checks_real_owned_partition_creation_then_fresh_inspection_without_cli_mutation(self):
         request,commands,actual=self.pipeline(); output=io.StringIO()
         with redirect_stdout(output),patch.object(producer,'run',side_effect=actual):
-            producer.prepare_owned_codesign_access('owned-importer',request,request['path'],request['keychainPassword'])
-        self.assertEqual(len(commands),3)
+            producer.prepare_owned_codesign_access('owned-importer',request)
+        self.assertEqual(len(commands),2)
         self.assertEqual(json.loads(commands[0][1]['input'])['operation'],'prepareCodesignAccess')
-        self.assertEqual(commands[1][0],['security','set-key-partition-list','-S','apple-tool:,apple:,codesign:',
-                                       '-t','private','-s','-k','owned-password-canary','owned-fixture.keychain-db'])
-        self.assertEqual(json.loads(commands[2][1]['input'])['operation'],'inspectCodesignAccess')
+        self.assertEqual(json.loads(commands[1][1]['input'])['operation'],'inspectCodesignAccess')
+        self.assertTrue(all(command==['owned-importer'] for command,_ in commands))
         self.assertTrue(all(options['private'] for _,options in commands))
         for canary in ('owned-password-canary','private-p12-canary','owned-private-ACL-noise'):
             self.assertNotIn(canary,output.getvalue())
@@ -337,20 +342,20 @@ class OwnedKeyACLReportTests(unittest.TestCase):
     def test_actual_partition_failure_remains_nonzero_and_blocks_fresh_read(self):
         request,commands,actual=self.pipeline(partition_exit=9)
         with redirect_stdout(io.StringIO()),patch.object(producer,'run',side_effect=actual),self.assertRaises(producer.ToolFailure) as failed:
-            producer.prepare_owned_codesign_access('owned-importer',request,request['path'],request['keychainPassword'])
-        self.assertEqual(failed.exception.code,9); self.assertEqual(len(commands),2)
+            producer.prepare_owned_codesign_access('owned-importer',request)
+        self.assertEqual(failed.exception.code,9); self.assertEqual(len(commands),1)
 
     def test_actual_fresh_inspection_rejects_unapplied_partition_or_changed_classic_facts(self):
         def missing_partition(value):
             for key in ('aclBefore','aclAfter'):
-                value[key].update(partitionIDCount=1,applePartitionCount=0,appleToolPartitionCount=0,codesignPartitionCount=0,otherPartitionCount=1)
+                value[key].update(partitionIDCount=3,creatorPartitionCount=0)
         def changed_classic(value):
             for key in ('aclBefore','aclAfter'):value[key]['unknownAuthorizationCount']=1
         for change in (missing_partition,changed_classic):
             request,commands,actual=self.pipeline(invalid_inspect=change)
             with redirect_stdout(io.StringIO()),patch.object(producer,'run',side_effect=actual),self.assertRaises(producer.ToolFailure):
-                producer.prepare_owned_codesign_access('owned-importer',request,request['path'],request['keychainPassword'])
-            self.assertEqual(len(commands),3)
+                producer.prepare_owned_codesign_access('owned-importer',request)
+            self.assertEqual(len(commands),2)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,220 @@
+--- baseline/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c
++++ work/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c
+@@ -4,6 +4,9 @@
+ #include <Security/SecCertificate.h>
+ #include <Security/cssmtype.h>
+ #include <Security/cssmapple.h>
++#include <Security/cssmapi.h>
++#include <Security/SecCode.h>
++#include <Security/SecStaticCode.h>
+ #include <Security/SecItem.h>
+ #include <Security/SecKeychainItem.h>
+ #include <Security/SecAccess.h>
+@@ -135,7 +138,54 @@
+     return status;
+ }
+ 
+-static OSStatus partitions(CFStringRef description, YueduOwnedKeyACLReport *report) {
++/* Public code-signing APIs validate this actual running tool and its on-disk
++ * code before reading the public unique cdhash. Only a genuinely ad-hoc signed
++ * current importer maps unambiguously to cdhash: in Apple's partition policy;
++ * unsigned, developer/team and unclassified identities are refused. This does
++ * not change the signing of any target or establish Apple authority. */
++static OSStatus creatorPartition(CFStringRef *result) {
++    if (result == NULL) return errSecParam;
++    *result = NULL;
++    SecCodeRef dynamic = NULL;
++    SecStaticCodeRef code = NULL;
++    CFDictionaryRef info = NULL;
++    OSStatus status = SecCodeCopySelf(kSecCSDefaultFlags, &dynamic);
++    if (status != errSecSuccess) goto finish;
++    if (dynamic == NULL) { status = errSecDecode; goto finish; }
++    status = SecCodeCheckValidity(dynamic, kSecCSDefaultFlags, NULL);
++    if (status != errSecSuccess) goto finish;
++    status = SecCodeCopyStaticCode(dynamic, kSecCSDefaultFlags, &code);
++    if (status != errSecSuccess) goto finish;
++    if (code == NULL) { status = errSecDecode; goto finish; }
++    status = SecStaticCodeCheckValidity(code, kSecCSDefaultFlags, NULL);
++    if (status != errSecSuccess) goto finish;
++    status = SecCodeCopySigningInformation(code, kSecCSSigningInformation, &info);
++    if (status != errSecSuccess) goto finish;
++    if (info == NULL || CFGetTypeID(info) != CFDictionaryGetTypeID()) { status = errSecDecode; goto finish; }
++    CFTypeRef flagsValue = CFDictionaryGetValue(info, kSecCodeInfoFlags);
++    CFTypeRef uniqueValue = CFDictionaryGetValue(info, kSecCodeInfoUnique);
++    int64_t flags = 0;
++    if (flagsValue == NULL || CFGetTypeID(flagsValue) != CFNumberGetTypeID() || CFNumberIsFloatType((CFNumberRef)flagsValue) ||
++        !CFNumberGetValue((CFNumberRef)flagsValue, kCFNumberSInt64Type, &flags) || flags < 0 || flags > UINT32_MAX ||
++        (flags & kSecCodeSignatureAdhoc) == 0 || uniqueValue == NULL || CFGetTypeID(uniqueValue) != CFDataGetTypeID() ||
++        CFDataGetLength((CFDataRef)uniqueValue) != 20) { status = errSecAuthFailed; goto finish; }
++    char text[48] = "cdhash:";
++    const uint8_t *bytes = CFDataGetBytePtr((CFDataRef)uniqueValue);
++    const char hex[] = "0123456789abcdef";
++    for (size_t n = 0; n < 20; ++n) {
++        text[7 + 2*n] = hex[bytes[n] >> 4]; text[8 + 2*n] = hex[bytes[n] & 15];
++    }
++    text[47] = '\0';
++    *result = CFStringCreateWithCString(NULL, text, kCFStringEncodingASCII);
++    if (*result == NULL) status = errSecAllocate;
++finish:
++    if (info != NULL) CFRelease(info);
++    if (code != NULL) CFRelease(code);
++    if (dynamic != NULL) CFRelease(dynamic);
++    return status;
++}
++
++static OSStatus partitions(CFStringRef description, CFStringRef creator, YueduOwnedKeyACLReport *report) {
+     if (description == NULL || CFGetTypeID(description) != CFStringGetTypeID()) return errSecDecode;
+     CFIndex size = CFStringGetLength(description);
+     if (size < 2 || size > 16384 || size % 2 != 0) return errSecDecode;
+@@ -168,6 +218,7 @@
+         if (CFEqual(identifier, CFSTR("apple:"))) report->applePartitionCount += 1;
+         else if (CFEqual(identifier, CFSTR("apple-tool:"))) report->appleToolPartitionCount += 1;
+         else if (CFEqual(identifier, CFSTR("codesign:"))) report->codesignPartitionCount += 1;
++        else if (CFEqual(identifier, creator)) report->creatorPartitionCount += 1;
+         else report->otherPartitionCount += 1;
+     }
+     status = errSecSuccess;
+@@ -180,6 +231,7 @@
+     CFArrayRef list = NULL;
+     SecTrustedApplicationRef creator = NULL;
+     CFDataRef creatorPath = NULL;
++    CFStringRef creatorID = NULL;
+     OSStatus status = SecAccessCopyACLList(access, &list);
+     if (status != errSecSuccess) goto finish;
+     if (list == NULL || CFGetTypeID(list) != CFArrayGetTypeID() || CFArrayGetCount(list) < 1 || CFArrayGetCount(list) > 32) {
+@@ -245,7 +297,8 @@
+             if (applications != NULL && (CFGetTypeID(applications) != CFArrayGetTypeID() || CFArrayGetCount(applications) > 16)) status = errSecDecode;
+             if (status == errSecSuccess && isPartition) {
+                 report->partitionACLCount += 1;
+-                status = partitions(description, report);
++                if (creatorID == NULL) status = creatorPartition(&creatorID);
++                if (status == errSecSuccess) status = partitions(description, creatorID, report);
+             }
+             if (status == errSecSuccess && (isSign || isOwner)) {
+                 if (isSign) report->signACLCount += 1;
+@@ -288,6 +341,7 @@
+     if (list != NULL) CFRelease(list);
+     if (creator != NULL) CFRelease(creator);
+     if (creatorPath != NULL) CFRelease(creatorPath);
++    if (creatorID != NULL) CFRelease(creatorID);
+     return status;
+ }
+ 
+@@ -411,3 +465,117 @@
+     if (codesign != NULL) CFRelease(codesign);
+     return status;
+ }
++
++OSStatus YueduOwnedKeyCreatePartition(SecKeychainRef keychain, SecKeyRef privateKey,
++                                     const uint8_t *password, uint32_t passwordLength,
++                                     YueduOwnedKeyACLReport *before,
++                                     YueduOwnedKeyACLReport *after) {
++    if (before == NULL || after == NULL || before == after) return errSecParam;
++    memset(before, 0, sizeof(*before)); memset(after, 0, sizeof(*after));
++    if (password == NULL || passwordLength < 1 || passwordLength > 256) return errSecParam;
++    uint8_t passwordCopy[256] = {0};
++    SecAccessRef original = NULL, persisted = NULL;
++    CFStringRef creatorID = NULL;
++    CFArrayRef identifiers = NULL;
++    CFDictionaryRef dictionary = NULL;
++    CFDataRef payload = NULL;
++    YueduOwnedKeyACLReport initial = {0}, final = {0};
++    const CSSM_KEY *borrowedKey = NULL;
++    CSSM_CSP_HANDLE csp = 0;
++    OSStatus status = ownedKey(keychain, privateKey);
++    if (status != errSecSuccess) goto finish;
++    status = creatorPartition(&creatorID);
++    if (status != errSecSuccess) goto finish;
++    status = SecKeychainItemCopyAccess((SecKeychainItemRef)privateKey, &original);
++    if (status != errSecSuccess) goto finish;
++    if (original == NULL) { status = errSecNoAccessForItem; goto finish; }
++    status = inspectAccess(original, &initial, NULL);
++    if (status != errSecSuccess) goto finish;
++    /* Only add a genuinely absent partition, never replace/guess an existing
++     * entry or manufacture a simple ANY ACL carrying a partition tag. */
++    if (initial.aclCount >= 32 || initial.partitionACLCount != 0 || initial.partitionIDCount != 0 ||
++        initial.ownerACLCount != 1 || initial.ownerAllowAnyACLCount != 0 || initial.creatorOwnerPathEntryCount != 1 ||
++        initial.signACLCount != 1 || initial.signAppListACLCount != 1 || initial.signAllowAnyACLCount != 0 ||
++        initial.signEmptyACLCount != 0 || initial.codesignPathEntryCount < 1) { status = errSecAuthFailed; goto finish; }
++    status = SecKeyGetCSSMKey(privateKey, &borrowedKey);
++    if (status != errSecSuccess) goto finish;
++    if (borrowedKey == NULL || borrowedKey->KeyHeader.BlobType != CSSM_KEYBLOB_REFERENCE ||
++        borrowedKey->KeyHeader.KeyClass != CSSM_KEYCLASS_PRIVATE_KEY ||
++        (borrowedKey->KeyHeader.KeyUsage & CSSM_KEYUSE_SIGN) == 0) { status = errSecInvalidKeyRef; goto finish; }
++    /* The public API borrows this opaque reference until privateKey is
++     * released. Its KeyData is never inspected, copied, serialized or freed. */
++    status = SecKeyGetCSPHandle(privateKey, &csp);
++    if (status != errSecSuccess) goto finish;
++    if (csp == 0) { status = errSecInvalidKeyRef; goto finish; }
++    const void *parts[] = { CFSTR("apple-tool:"), CFSTR("apple:"), CFSTR("codesign:"), creatorID };
++    identifiers = CFArrayCreate(NULL, parts, 4, &kCFTypeArrayCallBacks);
++    if (identifiers == NULL) { status = errSecAllocate; goto finish; }
++    const void *keys[] = { CFSTR("Partitions") }, *values[] = { identifiers };
++    dictionary = CFDictionaryCreate(NULL, keys, values, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
++    if (dictionary == NULL) { status = errSecAllocate; goto finish; }
++    payload = CFPropertyListCreateData(NULL, dictionary, kCFPropertyListBinaryFormat_v1_0, 0, NULL);
++    if (payload == NULL || CFDataGetLength(payload) < 1 || CFDataGetLength(payload) > 8192) { status = errSecDecode; goto finish; }
++
++    /* Real partition subject: a two-element typed list, not an ANY subject
++     * with changed authorizations. This matches PartitionAclSubject::Maker. */
++    CSSM_LIST_ELEMENT partitionType = {0}, partitionData = {0};
++    partitionType.ElementType = CSSM_LIST_ELEMENT_WORDID;
++    partitionType.WordID = CSSM_ACL_SUBJECT_TYPE_PARTITION;
++    partitionType.NextElement = &partitionData;
++    partitionData.ElementType = CSSM_LIST_ELEMENT_DATUM;
++    partitionData.Element.Word.Length = (CSSM_SIZE)CFDataGetLength(payload);
++    partitionData.Element.Word.Data = (uint8_t *)CFDataGetBytePtr(payload);
++    CSSM_ACL_AUTHORIZATION_TAG authorization = CSSM_ACL_AUTHORIZATION_PARTITION_ID;
++    CSSM_ACL_ENTRY_INPUT entry = {0};
++    entry.Prototype.TypedSubject.ListType = CSSM_LIST_TYPE_SEXPR;
++    entry.Prototype.TypedSubject.Head = &partitionType; entry.Prototype.TypedSubject.Tail = &partitionData;
++    entry.Prototype.Authorization.NumberOfAuthTags = 1; entry.Prototype.Authorization.AuthTags = &authorization;
++    memcpy(entry.Prototype.EntryTag, CSSM_APPLE_ACL_TAG_PARTITION_ID, sizeof(CSSM_APPLE_ACL_TAG_PARTITION_ID));
++    CSSM_ACL_EDIT edit = {0};
++    edit.EditMode = CSSM_ACL_EDIT_MODE_ADD; edit.NewEntry = &entry;
++
++    /* Public CSSM password sample. No UI callback, no raw credential output.
++     * The server checks this actual database password before allowing the
++     * protected partition ADD. All structures live only across the call. */
++    memcpy(passwordCopy, password, passwordLength);
++    CSSM_LIST_ELEMENT lockType = {0}, passwordType = {0}, passwordData = {0};
++    lockType.ElementType = CSSM_LIST_ELEMENT_WORDID; lockType.WordID = CSSM_SAMPLE_TYPE_KEYCHAIN_LOCK;
++    lockType.NextElement = &passwordType;
++    passwordType.ElementType = CSSM_LIST_ELEMENT_WORDID; passwordType.WordID = CSSM_SAMPLE_TYPE_PASSWORD;
++    passwordType.NextElement = &passwordData;
++    passwordData.ElementType = CSSM_LIST_ELEMENT_DATUM;
++    passwordData.Element.Word.Length = passwordLength; passwordData.Element.Word.Data = passwordCopy;
++    CSSM_SAMPLE sample = {0};
++    sample.TypedSample.ListType = CSSM_LIST_TYPE_SEXPR;
++    sample.TypedSample.Head = &lockType; sample.TypedSample.Tail = &passwordData;
++    CSSM_ACCESS_CREDENTIALS credentials = {0};
++    credentials.Samples.NumberOfSamples = 1; credentials.Samples.Samples = &sample;
++    status = CSSM_ChangeKeyAcl(csp, &credentials, &edit, borrowedKey);
++    if (status != errSecSuccess) goto finish;
++
++    status = SecKeychainItemCopyAccess((SecKeychainItemRef)privateKey, &persisted);
++    if (status != errSecSuccess) goto finish;
++    if (persisted == NULL) { status = errSecNoAccessForItem; goto finish; }
++    status = inspectAccess(persisted, &final, NULL);
++    if (status != errSecSuccess) goto finish;
++    if (final.partitionACLCount != 1 || final.partitionIDCount != 4 || final.applePartitionCount != 1 ||
++        final.appleToolPartitionCount != 1 || final.codesignPartitionCount != 1 || final.creatorPartitionCount != 1 ||
++        final.otherPartitionCount != 0 || final.aclCount != initial.aclCount + 1) { status = errSecDecode; goto finish; }
++    YueduOwnedKeyACLReport normalized = final;
++    normalized.aclCount -= 1; normalized.partitionACLCount -= 1; normalized.partitionIDCount -= 4;
++    normalized.applePartitionCount -= 1; normalized.appleToolPartitionCount -= 1;
++    normalized.codesignPartitionCount -= 1; normalized.creatorPartitionCount -= 1;
++    if (memcmp(&initial, &normalized, sizeof(initial)) != 0) { status = errSecDecode; goto finish; }
++    *before = initial; *after = final;
++finish:
++    /* Volatile writes keep the local password copy's erasure observable to
++     * the abstract machine. Never clear or free the caller's borrowed input. */
++    for (size_t n = 0; n < sizeof(passwordCopy); ++n) ((volatile uint8_t *)passwordCopy)[n] = 0;
++    if (original != NULL) CFRelease(original);
++    if (persisted != NULL) CFRelease(persisted);
++    if (creatorID != NULL) CFRelease(creatorID);
++    if (identifiers != NULL) CFRelease(identifiers);
++    if (dictionary != NULL) CFRelease(dictionary);
++    if (payload != NULL) CFRelease(payload);
++    return status;
++}

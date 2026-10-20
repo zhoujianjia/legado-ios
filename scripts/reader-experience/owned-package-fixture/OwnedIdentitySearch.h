@@ -26,7 +26,7 @@ typedef struct {
     uint32_t signACLCount, signAppListACLCount, signAllowAnyACLCount, signEmptyACLCount;
     uint32_t signTrustedApplicationCount, codesignPathEntryCount;
     uint32_t partitionACLCount, partitionIDCount;
-    uint32_t applePartitionCount, appleToolPartitionCount, codesignPartitionCount, otherPartitionCount;
+    uint32_t applePartitionCount, appleToolPartitionCount, codesignPartitionCount, creatorPartitionCount, otherPartitionCount;
     uint32_t opaqueACLCount, unknownAuthorizationCount;
     uint32_t ownerACLCount, ownerAllowAnyACLCount, ownerTrustedApplicationCount, creatorOwnerPathEntryCount;
 } YueduOwnedKeyACLReport;
@@ -47,6 +47,17 @@ OSStatus YueduOwnedKeyACLInspect(SecKeychainRef keychain, SecKeyRef privateKey,
                                YueduOwnedKeyACLReport *before,
                                YueduOwnedKeyACLReport *after,
                                uint32_t *classicChanged);
+
+/* ADD one real typed PARTITION subject only when this exact owned private key
+ * has no partition ACL. Preserve every existing owner/ACL. Password remains
+ * private and bounded; current importer must have an actually valid ad-hoc
+ * code signature, whose exact cdhash is the sole extra partition. The borrowed
+ * CSSM reference key is passed only to the public CSSM operation, never read,
+ * copied, exported or freed. All output facts are zero on any failure. */
+OSStatus YueduOwnedKeyCreatePartition(SecKeychainRef keychain, SecKeyRef privateKey,
+                                     const uint8_t *password, uint32_t passwordLength,
+                                     YueduOwnedKeyACLReport *before,
+                                     YueduOwnedKeyACLReport *after);
 
 #ifdef __cplusplus
 }
