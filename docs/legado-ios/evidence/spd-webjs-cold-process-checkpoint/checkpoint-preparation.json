@@ -1,0 +1,729 @@
+{
+  "status": "Frozen five controls over exact WebJS backend/Swift plus canonical S4/C5/S2; independent source/control review and actual SDK/Native pending",
+  "canonicalGroups": [
+    {
+      "manifest": {
+        "path": "docs/legado-ios/core-installation-lookup-complete-step.json",
+        "bytes": 12898,
+        "sha256": "a0a7fd413372d56d28e7ca0e364fd4245b4bb007d7c0e072a6721b532dc7916a"
+      },
+      "sourceFiles": [
+        {
+          "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+          "bytes": 29023,
+          "sha256": "1b917b4b678e7b1df40f2f0e6d32210852cf9604ce759c8723b357aa274e1ec5"
+        },
+        {
+          "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+          "bytes": 30962,
+          "sha256": "97c60dc187d739dbde19efb2ca44e1765880bfc6601113e4d2c54905e0d40f4e"
+        },
+        {
+          "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+          "bytes": 18085,
+          "sha256": "605fa0c1e4cef249759fe673b9bf7699e6bf3b0cc5f2935239694557a55f77eb"
+        }
+      ]
+    },
+    {
+      "manifest": {
+        "path": "docs/legado-ios/core-original-reader-cold-process-step.json",
+        "bytes": 34629,
+        "sha256": "714670bbdf0f9081480be6a4a5fefc3d6dfcc0239565e47275a8dfc39446e22f"
+      },
+      "sourceFiles": [
+        {
+          "path": ".github/workflows/legado-native-reader-test.yml",
+          "bytes": 11036,
+          "sha256": "0318c243eb490c23181ff1ff0850ae7e44afbe5abdc17d7e22eb788a4b755029"
+        },
+        {
+          "path": "scripts/reader-experience/original-cold-process-tools.py",
+          "bytes": 16767,
+          "sha256": "857611a99eaf8d02f4a0af5fe3157e1e6f18d7227773920c3deac8940ef8be03"
+        },
+        {
+          "path": "scripts/reader-experience/test-native-smoke-tools.py",
+          "bytes": 25972,
+          "sha256": "adc1b948ce482b791f8301d6417884dfea4c25730da2d4b736ffa34663e6e3f2"
+        },
+        {
+          "path": "scripts/reader-experience/test-original-cold-process-tools.py",
+          "bytes": 8030,
+          "sha256": "60c07689e88c4053c19de6aa716d646679c58d20c3b60890bc612b52320d9648"
+        },
+        {
+          "path": "scripts/xctest.sh",
+          "bytes": 7800,
+          "sha256": "2a2f3771110fbe3651a384364b47f8a193aa556c547971b871f1e60c9afa0e3d"
+        },
+        {
+          "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+          "bytes": 93923,
+          "sha256": "538bac2a31ca90e06fe34067f12b12702543ff1675de408eaaf7ce36d66b7de7"
+        }
+      ]
+    },
+    {
+      "manifest": {
+        "path": ".build/s2-authenticated-spd-challenge-step/final-v1.json",
+        "bytes": 3887,
+        "sha256": "b9c1b3bf8fe49ef180c458be2d541da1d9fa71eea80daf77e514c6741ce8dd4b"
+      },
+      "sourceFiles": [
+        {
+          "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift",
+          "bytes": 18074,
+          "sha256": "a4b0857dccf5d13ba72462499b8251a88b613dec65525a58a53d5176d521c2f3"
+        },
+        {
+          "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+          "bytes": 94894,
+          "sha256": "5a66a0ec9b30099edae1ac7d877c373e967b1feab0127edec6f573f74c70c28f"
+        }
+      ]
+    }
+  ],
+  "files": [
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "baseline": {
+        "bytes": 11036,
+        "sha256": "0318c243eb490c23181ff1ff0850ae7e44afbe5abdc17d7e22eb788a4b755029"
+      },
+      "candidate": {
+        "bytes": 11036,
+        "sha256": "478f90b663163d50c5de8154ae1c0e967146934c7da5589973c40e9d00a59b6b"
+      },
+      "diff": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/diffs/.github/workflows/legado-native-reader-test.yml.diff",
+        "bytes": 778,
+        "sha256": "113e7e46399eb572b262f9d425df8192ede8ea196ef8e6de3f15751a267a2d18"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/native-smoke-tools.py",
+      "baseline": {
+        "bytes": 51047,
+        "sha256": "2d1c70b5a6dd5d6d6f7fe5aa6c6b4dbf6661fbe96156f135238f3c428c588e5b"
+      },
+      "candidate": {
+        "bytes": 53171,
+        "sha256": "db2b4c3ecaede2365ced06173afea22b52272b34eb410cadec4a82bc429b5821"
+      },
+      "diff": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/diffs/scripts/reader-experience/native-smoke-tools.py.diff",
+        "bytes": 3329,
+        "sha256": "c843facc53c82adc9e28481bf89829cbad0188035a015d906256a3d43af1e48b"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "baseline": {
+        "bytes": 193768,
+        "sha256": "a7a4cb5d1ec23463cb79cedf5bd383f39bf76445dcab831515e2371e8d75a051"
+      },
+      "candidate": {
+        "bytes": 195760,
+        "sha256": "7ae8b74a786e400be8aaaae96051459a684d3594382bc66991e9d1152cb50c95"
+      },
+      "diff": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/diffs/scripts/reader-experience/renewal-probe-tools.py.diff",
+        "bytes": 2341,
+        "sha256": "44d927bc55805170443c1bd9fac98749ad02bff74f812bd3169bb88fe7b4dfa3"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "baseline": {
+        "bytes": 25972,
+        "sha256": "adc1b948ce482b791f8301d6417884dfea4c25730da2d4b736ffa34663e6e3f2"
+      },
+      "candidate": {
+        "bytes": 26262,
+        "sha256": "5058432cdf154557aa831a37003e517209eccdb58a881135f695311dced99109"
+      },
+      "diff": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/diffs/scripts/reader-experience/test-native-smoke-tools.py.diff",
+        "bytes": 4321,
+        "sha256": "5c3cdfc4daaa2dde2d12d4f44662d699bd06571cdd6071a152835c8916d81afa"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "baseline": {
+        "bytes": 189428,
+        "sha256": "ea68e7e590320a441529d3a08a0f08e7f3cfc83669d39025101c96d11cfac180"
+      },
+      "candidate": {
+        "bytes": 189568,
+        "sha256": "942eb2d700461bd2d08c0e569af4827bfe56bc805e0678ca3748579089c753cb"
+      },
+      "diff": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/diffs/scripts/reader-experience/test-renewal-probe-tools.py.diff",
+        "bytes": 14217,
+        "sha256": "3240c27aa3f870d633ca5680583f0eb4806427f9fd55b15abddc24ef08c5fe2b"
+      }
+    }
+  ],
+  "productionSources": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+      "candidate": {
+        "bytes": 18583,
+        "sha256": "7c8378dc5c04073d84f2c0ce33aab7df9cb8b288a07fb12a6f30a041a1e69564"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/source-snapshot/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+        "bytes": 18583,
+        "sha256": "7c8378dc5c04073d84f2c0ce33aab7df9cb8b288a07fb12a6f30a041a1e69564"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+      "candidate": {
+        "bytes": 34297,
+        "sha256": "55396e74b91a00936d75fedfc9942d68b02bb5e3909339b05d3a49377e1c9553"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/source-snapshot/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+        "bytes": 34297,
+        "sha256": "55396e74b91a00936d75fedfc9942d68b02bb5e3909339b05d3a49377e1c9553"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt",
+      "candidate": {
+        "bytes": 3276,
+        "sha256": "cf117e2c81949513fe94389c05bfeddd106478151f46380d4401ad00e3f2c5f4"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/source-snapshot/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt",
+        "bytes": 3276,
+        "sha256": "cf117e2c81949513fe94389c05bfeddd106478151f46380d4401ad00e3f2c5f4"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "candidate": {
+        "bytes": 34025,
+        "sha256": "20495b81b6ff6708e76ce9a9230fe438f982e3e4a29bb5c55b4ee640b83e264e"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/source-snapshot/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+        "bytes": 34025,
+        "sha256": "20495b81b6ff6708e76ce9a9230fe438f982e3e4a29bb5c55b4ee640b83e264e"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "candidate": {
+        "bytes": 10534,
+        "sha256": "8df920540f68138245452ab365d90ea619b447948c72653787861baa041af78a"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/source-snapshot/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+        "bytes": 10534,
+        "sha256": "8df920540f68138245452ab365d90ea619b447948c72653787861baa041af78a"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+      "candidate": {
+        "bytes": 21499,
+        "sha256": "1e92134bd8d3cf3074c6616f2662894c7e63954d82babf1ffa2a346d3a483a4e"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/source-snapshot/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+        "bytes": 21499,
+        "sha256": "1e92134bd8d3cf3074c6616f2662894c7e63954d82babf1ffa2a346d3a483a4e"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+      "candidate": {
+        "bytes": 14151,
+        "sha256": "7e02f85a7f891eee0a0d67a7a1114620a9ded0990eacb4bc3757090f1b1ed022"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/source-snapshot/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+        "bytes": 14151,
+        "sha256": "7e02f85a7f891eee0a0d67a7a1114620a9ded0990eacb4bc3757090f1b1ed022"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "candidate": {
+        "bytes": 134943,
+        "sha256": "132f345c5deb2ebba852b4ba867d7d3022bf092c821422333025e0ed50ebb5b3"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/source-snapshot/Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "bytes": 134943,
+        "sha256": "132f345c5deb2ebba852b4ba867d7d3022bf092c821422333025e0ed50ebb5b3"
+      }
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceStore.swift",
+      "candidate": {
+        "bytes": 67541,
+        "sha256": "1aedc8892e51d4f081d82ee9c9a3978eb2efbe00a8da5445c0c895341934e0c6"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/source-snapshot/Modules/Core/BookSource/BookSourceStore.swift",
+        "bytes": 67541,
+        "sha256": "1aedc8892e51d4f081d82ee9c9a3978eb2efbe00a8da5445c0c895341934e0c6"
+      }
+    },
+    {
+      "path": "Modules/Features/BookSource/JsBridgeBrowserView.swift",
+      "candidate": {
+        "bytes": 72723,
+        "sha256": "f6744e2d37b146d9633011c17068deccd76c6644d3ad2bc4d73d1731be994ab0"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/source-snapshot/Modules/Features/BookSource/JsBridgeBrowserView.swift",
+        "bytes": 72723,
+        "sha256": "f6744e2d37b146d9633011c17068deccd76c6644d3ad2bc4d73d1731be994ab0"
+      }
+    },
+    {
+      "path": "Modules/Features/BookSource/SourceBrowserPresenter.swift",
+      "candidate": {
+        "bytes": 24642,
+        "sha256": "a89b76868551ceb4de72f057075f7054305dce2964c39caeb2e3c6788959da6b"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/source-snapshot/Modules/Features/BookSource/SourceBrowserPresenter.swift",
+        "bytes": 24642,
+        "sha256": "a89b76868551ceb4de72f057075f7054305dce2964c39caeb2e3c6788959da6b"
+      }
+    },
+    {
+      "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "candidate": {
+        "bytes": 126215,
+        "sha256": "684bfd6c48683a04dcb16f51da4aa5c2ea49ea2dccdf5988e3ace9f7ed0d620f"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/source-snapshot/Modules/Services/Online/LegadoMainJSSourceService.swift",
+        "bytes": 126215,
+        "sha256": "684bfd6c48683a04dcb16f51da4aa5c2ea49ea2dccdf5988e3ace9f7ed0d620f"
+      }
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "candidate": {
+        "bytes": 108492,
+        "sha256": "a382856a9c09c08e1974b81e768320381556fba4cbaea053c4df637652914712"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/source-snapshot/Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 108492,
+        "sha256": "a382856a9c09c08e1974b81e768320381556fba4cbaea053c4df637652914712"
+      }
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPreviewStateOwner.swift",
+      "candidate": {
+        "bytes": 32176,
+        "sha256": "721b509906b166f5ad79f98124464862fb6d6699b9c16906772c9c2e8a1d18b1"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/source-snapshot/Modules/Services/Online/LegadoPreviewStateOwner.swift",
+        "bytes": 32176,
+        "sha256": "721b509906b166f5ad79f98124464862fb6d6699b9c16906772c9c2e8a1d18b1"
+      }
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "candidate": {
+        "bytes": 93615,
+        "sha256": "c7379540df3b2051e8be7bb1237dd713a0abf5344ebf069d44c9e4bb51864211"
+      },
+      "snapshot": {
+        "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/source-snapshot/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+        "bytes": 93615,
+        "sha256": "c7379540df3b2051e8be7bb1237dd713a0abf5344ebf069d44c9e4bb51864211"
+      }
+    }
+  ],
+  "counts": {
+    "AppDefinitions": 463,
+    "AppLeaves": 466,
+    "BoolParameterPairs": 3,
+    "coreInputs": 343,
+    "nativeInputs": 148,
+    "uniqueInputUnion": 359,
+    "NativeOriginalDefinitions": 27,
+    "NativeLoginInfoDefinitions": 16,
+    "NativeMainJSDefinitions": 1,
+    "NativeIndependentColdHosts": 2,
+    "PackageMethods": 24,
+    "PackageCompilationInputs": 16,
+    "PackageControls": 7,
+    "PackageAllInputs": 23,
+    "unchangedCanonicalNoncandidateInputs": 339
+  },
+  "sourceRosters": {
+    "core": {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/core-source-inputs.json",
+      "bytes": 64220,
+      "sha256": "0af8258dead405c2f9075d5b96ab18ad5272a954aef1a0e13549fc36e43d65f7"
+    },
+    "Native": {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/Native-source-inputs.json",
+      "bytes": 28126,
+      "sha256": "3b8173e066916be8ee5350d2efa93a0456c2081e71faafa565796f4b81ed9968"
+    },
+    "Package": {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/Package-source-inputs.json",
+      "bytes": 4293,
+      "sha256": "cb7633de60b337d08519f35502f44ba357b8c420a34e08c3160681fced1f16b5"
+    }
+  },
+  "newNativeSelector": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLocalHTMLWebJSKeepsSameSessionAfterProducerAndDrainsAwaitCancellation",
+  "coldMethods": {
+    "producer": "LegadoNativeOriginalReaderTests/testNativeOriginalColdProducerPersistsPublicReaderBeforeProcessExit",
+    "consumer": "LegadoNativeOriginalReaderTests/testNativeOriginalColdConsumerRestoresOwnedReaderWithoutNetwork"
+  },
+  "actualPortableGuards": {
+    "distinctMethods": 4,
+    "executions": 4,
+    "passed": 4,
+    "failed": 0,
+    "commands": [
+      {
+        "argv": [
+          "C:/Python312/python.exe",
+          "-B",
+          "scripts/reader-experience/test-renewal-probe-tools.py",
+          "DeltaReuseCheckpointSelectionTests",
+          "-v"
+        ],
+        "methods": 2,
+        "exitCode": 0,
+        "seconds": 1.953,
+        "log": {
+          "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/affected-core-v1.log",
+          "bytes": 565,
+          "sha256": "355c9e5a7a1801cc98fae6dbcd3f088b8d420bece329b37f7046fa7f913bac89"
+        }
+      },
+      {
+        "argv": [
+          "C:/Python312/python.exe",
+          "-B",
+          "scripts/reader-experience/test-native-smoke-tools.py",
+          "NativeSmokeProvenanceTests.test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging",
+          "NativeSmokeProvenanceTests.test_result_requires_exact_built_app_source_stamp",
+          "-v"
+        ],
+        "methods": 2,
+        "exitCode": 0,
+        "seconds": 0.218,
+        "log": {
+          "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/affected-native-v1.log",
+          "bytes": 455,
+          "sha256": "e46ac267a8edda9c654a0f9ea5c5f8d52c3d9a145731f5ac21d7733e3d0e2fa6"
+        }
+      }
+    ],
+    "otherOldSuccessfulSuitesRepeated": false,
+    "SwiftSDK": 0,
+    "JVM": 0,
+    "JNI": 0,
+    "UIKit": 0
+  },
+  "invariants": {
+    "allCoreAndNativeProductionFunctionASTsUnchanged": true,
+    "allOldAppModesAndThreeBoolPairsUnchanged": true,
+    "old26NativeSelectorsPreservedInOrder": true,
+    "separateMainJSHostUnchanged": true,
+    "twoColdProcessSelectorsRemainIndependent": true,
+    "workflowOnlyLabelChange": true,
+    "requiredSameJobSignedSDKFixture": true,
+    "AppSingleColdSeconds": 3600,
+    "NativeOriginalSeconds": 1800,
+    "NativeMainJSSeconds": 2700,
+    "Package24SelectionAnd23SourceBytesUnchanged": true,
+    "allPhaseArgvRawExitSourceSdkGatesUnchanged": true
+  },
+  "preparedUTC": "2026-10-20T23:08:49.576531+00:00",
+  "sourceComposition": {
+    "JVMBackend": {
+      "path": ".build/original-local-html-webjs-step/implementation-v1/backend-final-v2.json",
+      "bytes": 34731,
+      "sha256": "3ce8c092ce65acf3e38e136cf6b81070a7e1df96ebc8184a4d1266fd4e816854"
+    },
+    "SwiftPageOwner": {
+      "path": ".build/original-local-html-webjs-swift-step/final-v1.json",
+      "bytes": 11850,
+      "sha256": "e2fbf3c0091ff1f74869120f32f33d4a0e8c5c22bc700e39bbb1eb2667092fd0"
+    },
+    "canonicalS4C5S2": [
+      {
+        "manifest": {
+          "path": "docs/legado-ios/core-installation-lookup-complete-step.json",
+          "bytes": 12898,
+          "sha256": "a0a7fd413372d56d28e7ca0e364fd4245b4bb007d7c0e072a6721b532dc7916a"
+        },
+        "sourceFiles": [
+          {
+            "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+            "bytes": 29023,
+            "sha256": "1b917b4b678e7b1df40f2f0e6d32210852cf9604ce759c8723b357aa274e1ec5"
+          },
+          {
+            "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+            "bytes": 30962,
+            "sha256": "97c60dc187d739dbde19efb2ca44e1765880bfc6601113e4d2c54905e0d40f4e"
+          },
+          {
+            "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+            "bytes": 18085,
+            "sha256": "605fa0c1e4cef249759fe673b9bf7699e6bf3b0cc5f2935239694557a55f77eb"
+          }
+        ]
+      },
+      {
+        "manifest": {
+          "path": "docs/legado-ios/core-original-reader-cold-process-step.json",
+          "bytes": 34629,
+          "sha256": "714670bbdf0f9081480be6a4a5fefc3d6dfcc0239565e47275a8dfc39446e22f"
+        },
+        "sourceFiles": [
+          {
+            "path": ".github/workflows/legado-native-reader-test.yml",
+            "bytes": 11036,
+            "sha256": "0318c243eb490c23181ff1ff0850ae7e44afbe5abdc17d7e22eb788a4b755029"
+          },
+          {
+            "path": "scripts/reader-experience/original-cold-process-tools.py",
+            "bytes": 16767,
+            "sha256": "857611a99eaf8d02f4a0af5fe3157e1e6f18d7227773920c3deac8940ef8be03"
+          },
+          {
+            "path": "scripts/reader-experience/test-native-smoke-tools.py",
+            "bytes": 25972,
+            "sha256": "adc1b948ce482b791f8301d6417884dfea4c25730da2d4b736ffa34663e6e3f2"
+          },
+          {
+            "path": "scripts/reader-experience/test-original-cold-process-tools.py",
+            "bytes": 8030,
+            "sha256": "60c07689e88c4053c19de6aa716d646679c58d20c3b60890bc612b52320d9648"
+          },
+          {
+            "path": "scripts/xctest.sh",
+            "bytes": 7800,
+            "sha256": "2a2f3771110fbe3651a384364b47f8a193aa556c547971b871f1e60c9afa0e3d"
+          },
+          {
+            "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+            "bytes": 93923,
+            "sha256": "538bac2a31ca90e06fe34067f12b12702543ff1675de408eaaf7ce36d66b7de7"
+          }
+        ]
+      },
+      {
+        "manifest": {
+          "path": ".build/s2-authenticated-spd-challenge-step/final-v1.json",
+          "bytes": 3887,
+          "sha256": "b9c1b3bf8fe49ef180c458be2d541da1d9fa71eea80daf77e514c6741ce8dd4b"
+        },
+        "sourceFiles": [
+          {
+            "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift",
+            "bytes": 18074,
+            "sha256": "a4b0857dccf5d13ba72462499b8251a88b613dec65525a58a53d5176d521c2f3"
+          },
+          {
+            "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+            "bytes": 94894,
+            "sha256": "5a66a0ec9b30099edae1ac7d877c373e967b1feab0127edec6f573f74c70c28f"
+          }
+        ]
+      }
+    ]
+  },
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-20T23:10:02.173666+00:00",
+  "candidateRoot": "preparation/work-v3",
+  "baselineRoot": "rawbaseline",
+  "sourceIndependentReview": {
+    "status": "Full combined WebJS source review in progress by login_info_v2_review; no source acceptance inferred here",
+    "contractPreRead": {
+      "path": ".build/original-local-html-webjs-independent-pre-review/pre-review-v1.json",
+      "bytes": 30547,
+      "sha256": "4819d8bfe791161f57443e76e32693e4d51ecf3c16e0a35295a5c968e63f65f8"
+    },
+    "preReadScope": "Locked contract/counterexample only, not final production review"
+  },
+  "newDefinitions": {
+    "App": 0,
+    "Package": 0,
+    "NativeOriginal": 1,
+    "NativeIndependentCold": 2,
+    "notes": "Two C5 cold methods already canonical; kept in distinct required hosts, not appended to original27."
+  },
+  "onlyNewBoundPaths": {
+    "core": [
+      ".github/workflows/legado-native-reader-test.yml",
+      "scripts/reader-experience/original-cold-process-tools.py",
+      "scripts/reader-experience/test-native-smoke-tools.py",
+      "scripts/reader-experience/test-original-cold-process-tools.py",
+      "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt"
+    ],
+    "native": [
+      "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+      "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+      "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+      "scripts/reader-experience/original-cold-process-tools.py",
+      "scripts/reader-experience/test-original-cold-process-tools.py",
+      "Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift",
+      "Modules/Core/BookSource/BookSourceStore.swift",
+      "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt"
+    ]
+  },
+  "evidence": [
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/prepare-successor.py",
+      "bytes": 2796,
+      "sha256": "95d38cec8e54dee258ba1f8f5638838b127d252d31595c7663d39a58fbecf1aa"
+    },
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/prepare-validation.py",
+      "bytes": 10203,
+      "sha256": "55bc5e5bfcb3e4430f5f5dde12bfa93379d897769de6feab652ccf553e8a8d64"
+    },
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/freeze-controls.py",
+      "bytes": 5824,
+      "sha256": "7c771524f40a976387b6db1487c9c3438f01586177b983898273567459b9f0e3"
+    },
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/validation-v1.json",
+      "bytes": 1102,
+      "sha256": "3fe5fb285f2856c1fe57b3968535296fa1f40bc8a1ddd4d30d72aff73bd53c4c"
+    },
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/validation-facts-v1.json",
+      "bytes": 18753,
+      "sha256": "c499a299f7fad6d95c81bab35817f5bc3e037787fb27848031a0aa4b192fd240"
+    },
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/affected-core-v1.log",
+      "bytes": 565,
+      "sha256": "355c9e5a7a1801cc98fae6dbcd3f088b8d420bece329b37f7046fa7f913bac89"
+    },
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/affected-native-v1.log",
+      "bytes": 455,
+      "sha256": "e46ac267a8edda9c654a0f9ea5c5f8d52c3d9a145731f5ac21d7733e3d0e2fa6"
+    },
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/core-source-inputs.json",
+      "bytes": 64220,
+      "sha256": "0af8258dead405c2f9075d5b96ab18ad5272a954aef1a0e13549fc36e43d65f7"
+    },
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/Native-source-inputs.json",
+      "bytes": 28126,
+      "sha256": "3b8173e066916be8ee5350d2efa93a0456c2081e71faafa565796f4b81ed9968"
+    },
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/Package-source-inputs.json",
+      "bytes": 4293,
+      "sha256": "cb7633de60b337d08519f35502f44ba357b8c420a34e08c3160681fced1f16b5"
+    },
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/union-source-inputs.json",
+      "bytes": 67043,
+      "sha256": "375ec57a0f03912d4f529ea6a7bd6bcf47c3b1aa0e4cd4f3993f689c537854d3"
+    },
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/production-function-ast-facts.json",
+      "bytes": 22792,
+      "sha256": "d3b4deb767a57e9357faed7c07636fb530d8a92f6b31f4507e1cde9ed35114d2"
+    },
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/baseline-related-count-search.json",
+      "bytes": 6931,
+      "sha256": "7070cd1d13a86419902bccbacc437d9dd4e3400156d59c286700e353d6e27522"
+    },
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/candidate-related-count-search.json",
+      "bytes": 7148,
+      "sha256": "aded3df9819ecd4dbcb1eb578eab5c636b24b38b10ab3c90e60da7eb03800c01"
+    },
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/preparation/inventory-draft-v1.json",
+      "bytes": 3724,
+      "sha256": "abc6d221beeca0424ed524e45f00a3b3f9d5d3cce58b87710fd8857114be8a52"
+    },
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/preparation/controls-draft-v1.json",
+      "bytes": 1911,
+      "sha256": "27c57358ed8914972516c5770beaa070cbf974027d2ac6fada2da5ca6e348fc1"
+    },
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/preparation/controls-draft-v2.json",
+      "bytes": 2063,
+      "sha256": "0928b5d0ccc2184511523a5c48e82020f1913e0f93ac50a56fae703eb5dbbeaa"
+    },
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/preparation/controls-draft-v3.json",
+      "bytes": 77911,
+      "sha256": "1e0cd881fc8c8922265cb1689a16aeaca6afaa1066cccddfe1e656431b688094"
+    },
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/history/freeze-attempt1.json",
+      "bytes": 332,
+      "sha256": "1b125cb81c150910b5cd29a5dff9583a5219525e81a572786070f76bb58867cd"
+    },
+    {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/freeze-controls-attempt1.py",
+      "bytes": 5502,
+      "sha256": "d794c9e27c57982c0dc705172a45e4cc29bfc3810425646360633994e3bc4c1c"
+    }
+  ],
+  "proofLimits": [
+    "Only four affected portable guard methods executed, in two real Python processes; no App/Package/JVM/Native/UIKit suite execution in this controls task. Earlier unchanged portable pass records are inherited evidence, not rerun.",
+    "Backend candidate separately records bounded K2/ordinaryJava and packaging execution. Swift candidate separately records grammar/Node contract/Native definition only; neither establishes SDK/JNI/UIKit/device success.",
+    "Package24 method selection and all23 input bytes exact current canonical. Original26 selectors preserved in order plus WebJS1; MainJS1 and two C5 cold hosts stay separate.",
+    "Active source stamp/result expected original count27 and requireNativeRuntime calls16 agree with final Native source. App463/466/three Bool matrices, required samejob signed SDK fixture, single3600 invocation, raw-details/phase/exit/source gates remain unchanged.",
+    "The incorrect draft originalrule/Page path was corrected before any tests; root draft versions and raw22/23 historical failures were not edited. fc3 cloud runs are outside this task; no cloud status queried or restart/tag performed."
+  ],
+  "preparationHistory": {
+    "testFailures": 0,
+    "preTestCorrections": [
+      {
+        "kind": "Inventory path correction before test execution",
+        "old": ".../io/yuedu/legado/originalrule/OriginalWebJsPageRuntime.kt",
+        "actual": ".../io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+        "testsExecuted": 0
+      }
+    ],
+    "postGuardFreezeFailure": {
+      "path": ".build/consolidated-sdk-spd-webjs-cold-process-checkpoint/history/freeze-attempt1.json",
+      "bytes": 332,
+      "sha256": "1b125cb81c150910b5cd29a5dff9583a5219525e81a572786070f76bb58867cd"
+    },
+    "rootDraftV1V2Preserved": true,
+    "sourceTamperLoopIncludesAllCohortInputs": true
+  },
+  "flags": {
+    "controlsPrepared": true,
+    "independentSourceReviewPassed": false,
+    "independentControlsReviewPassed": false,
+    "SDKValidated": false,
+    "NativeValidated": false,
+    "deviceValidated": false
+  },
+  "operations": {
+    "canonical": false,
+    "GitMutation": false,
+    "cloud": false,
+    "tags": false
+  }
+}

@@ -1,0 +1,779 @@
+{
+  "version": 2,
+  "frozenUTC": "2026-10-20T23:04:03.807430+00:00",
+  "scope": "JVM production explicit localHTML plus retained AnalyzeRule WebJS request/cache/result chain; real Swift page/Host owner integration is a separate concurrent candidate, not accepted by this backend-only evidence",
+  "candidateRoot": "snapshot-v2/work",
+  "baselineRoot": "snapshot-v2/rawbaseline",
+  "baseline": {
+    "coherentSourceManifest": {
+      "path": ".build/consolidated-header-v2-browser-source-step/final-v1.json",
+      "bytes": 30709,
+      "sha256": "deb31b5e7a4784869f2e0580402c611ab363dcdc31ae7844715baa6ebec65d4c"
+    },
+    "coherentOrdinaryJar": {
+      "path": ".build/consolidated-header-v2-browser-source-step/snapshot-v1/legado-runtime.jar",
+      "bytes": 10862024,
+      "sha256": "df6f572adfd6c18ca67d98573be86dcf9e65f0c0d8b603eae60f054e8c29eac3"
+    },
+    "lockedContract": {
+      "path": ".build/original-local-html-webjs-step/final-v1.json",
+      "bytes": 12917,
+      "sha256": "4c40a0c8b387272f79546474b08301d0be1e31994bb3a365e529deeb26365f0f"
+    },
+    "interface": {
+      "path": ".build/original-local-html-webjs-step/implementation-v1/interface-v4.json",
+      "bytes": 8788,
+      "sha256": "6c93808ac32392e3ac32a0e82b3e8a83df0e9dc5266e46316700717cd7dfd709"
+    },
+    "archiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
+    "allOtherMainInputsExact": true
+  },
+  "files": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+      "baseline": {
+        "bytes": 18729,
+        "sha256": "56d1ac088c821a504c6fd898c1cdc5ba4dec856841d66e7b6d4627c157939a34"
+      },
+      "candidate": {
+        "bytes": 18583,
+        "sha256": "7c8378dc5c04073d84f2c0ce33aab7df9cb8b288a07fb12a6f30a041a1e69564"
+      },
+      "baselineSnapshot": "snapshot-v2/rawbaseline/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+      "candidateSnapshot": "snapshot-v2/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+      "diff": {
+        "path": "snapshot-v2/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt.diff",
+        "bytes": 1186,
+        "sha256": "5947ae7665121ac4b00019caf9d5d4e61d9a976046ec9f02e7045ba1dfeb325b"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+      "baseline": {
+        "bytes": 31213,
+        "sha256": "4300e895fe54091bbc38176597e57949ae840a99ea32f9f76694b348b83f3a96"
+      },
+      "candidate": {
+        "bytes": 34297,
+        "sha256": "55396e74b91a00936d75fedfc9942d68b02bb5e3909339b05d3a49377e1c9553"
+      },
+      "baselineSnapshot": "snapshot-v2/rawbaseline/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+      "candidateSnapshot": "snapshot-v2/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+      "diff": {
+        "path": "snapshot-v2/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt.diff",
+        "bytes": 7509,
+        "sha256": "58e76658d4fe7190a045e54c7a8ddfebd86ceb7076efeaa50b3ace7cdb3f2c09"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt",
+      "baseline": {
+        "bytes": 3577,
+        "sha256": "aeec014168c22ed26003d74bb48a69d1c413fe38d37b6a21f0329af06374cdc5"
+      },
+      "candidate": {
+        "bytes": 3276,
+        "sha256": "cf117e2c81949513fe94389c05bfeddd106478151f46380d4401ad00e3f2c5f4"
+      },
+      "baselineSnapshot": "snapshot-v2/rawbaseline/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt",
+      "candidateSnapshot": "snapshot-v2/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt",
+      "diff": {
+        "path": "snapshot-v2/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt.diff",
+        "bytes": 1590,
+        "sha256": "5ff13f64eed8a5d65419c901f9c566c425b79c4229dcbc3f4d63f8b7902220a1"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "baseline": {
+        "bytes": 31873,
+        "sha256": "eb415c0570ec1435cba9875d3ab487dbe3e375e2c04219c2fc20aedef886551e"
+      },
+      "candidate": {
+        "bytes": 34025,
+        "sha256": "20495b81b6ff6708e76ce9a9230fe438f982e3e4a29bb5c55b4ee640b83e264e"
+      },
+      "baselineSnapshot": "snapshot-v2/rawbaseline/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "candidateSnapshot": "snapshot-v2/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "diff": {
+        "path": "snapshot-v2/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt.diff",
+        "bytes": 10267,
+        "sha256": "070981dc92b0930100cc8debdbefca35ccfe59b063714f8616925024144654f1"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "baseline": {
+        "bytes": 10009,
+        "sha256": "3928cf760b6f58292adccb14aab5432edb750e3b28c9029043661254453c87e7"
+      },
+      "candidate": {
+        "bytes": 10534,
+        "sha256": "8df920540f68138245452ab365d90ea619b447948c72653787861baa041af78a"
+      },
+      "baselineSnapshot": "snapshot-v2/rawbaseline/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "candidateSnapshot": "snapshot-v2/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "diff": {
+        "path": "snapshot-v2/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt.diff",
+        "bytes": 1272,
+        "sha256": "d5852a7b327a32d8f723c8c16ebcc82acaa11b74e55a4d04001c007bc6abe860"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+      "baseline": {
+        "bytes": 21307,
+        "sha256": "422aa2262f740b0f154d5b79221571e26141483119949b46550e6e7846255b20"
+      },
+      "candidate": {
+        "bytes": 21499,
+        "sha256": "1e92134bd8d3cf3074c6616f2662894c7e63954d82babf1ffa2a346d3a483a4e"
+      },
+      "baselineSnapshot": "snapshot-v2/rawbaseline/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+      "candidateSnapshot": "snapshot-v2/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+      "diff": {
+        "path": "snapshot-v2/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt.diff",
+        "bytes": 852,
+        "sha256": "99f58dd8a75d51589290f9b27c0c50cd083d9059b9ec9fdfc8b7b3a4d9d57b07"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+      "baseline": null,
+      "candidate": {
+        "bytes": 14151,
+        "sha256": "7e02f85a7f891eee0a0d67a7a1114620a9ded0990eacb4bc3757090f1b1ed022"
+      },
+      "baselineSnapshot": null,
+      "candidateSnapshot": "snapshot-v2/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+      "diff": {
+        "path": "snapshot-v2/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt.diff",
+        "bytes": 14522,
+        "sha256": "778d6303c942603ba4ef6e17c732169bb09fcfa0a116522c46b996ead6983e64"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "baseline": {
+        "bytes": 134721,
+        "sha256": "33d71b87c47cfa1ae24edec9398d31c022e8367f7f475010d0644eb7ec4d0107"
+      },
+      "candidate": {
+        "bytes": 134943,
+        "sha256": "132f345c5deb2ebba852b4ba867d7d3022bf092c821422333025e0ed50ebb5b3"
+      },
+      "baselineSnapshot": "snapshot-v2/rawbaseline/Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "candidateSnapshot": "snapshot-v2/work/Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "diff": {
+        "path": "snapshot-v2/diffs/Packages/LegadoRuntime/vendor/original-rule/manifest.json.diff",
+        "bytes": 3369,
+        "sha256": "0519ab080fa739711000c389286e42c7b5495122d58e421f7a5729256bfa5aea"
+      }
+    }
+  ],
+  "mainSourceChanges": {
+    "modified": [
+      "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+      "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+      "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt",
+      "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt"
+    ],
+    "added": [
+      "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt"
+    ],
+    "manifest": [
+      "Packages/LegadoRuntime/vendor/original-rule/manifest.json"
+    ]
+  },
+  "wire": {
+    "sourceBrowser": "Existing prefetchedHTML is sole body; localPage={pageId,sessionId,parentTaskId,javaName,cacheName,resultName}",
+    "operations": [
+      "webJsRequest",
+      "webJsPageClose"
+    ],
+    "requestMethods": [
+      "request(run/ajaxAwait/connectAwait/getStringAwait), <=64 wire args then original first6; direct methods <=6",
+      "cache.put",
+      "cache.putMemory",
+      "cache.get",
+      "cache.getFromMemory",
+      "cache.delete",
+      "cache.deleteMemory",
+      "java.put",
+      "java.get(single source-variable argument)",
+      "java.ajax",
+      "java.connect",
+      "java.getString",
+      "java.getStringList",
+      "java.upConfig",
+      "cache.get(key,onlyDisk=false) preserves disk/memory distinction"
+    ]
+  },
+  "counts": {
+    "sourceFiles": 8,
+    "changedMain": 6,
+    "newMain": 1,
+    "compiledMainRoots": 7,
+    "mainInputs": 125,
+    "retainedMainInputs": 118,
+    "totalMainAndControlInputs": 128,
+    "portedSources": 59,
+    "recompiledProductionClasses": 59,
+    "retainedProductionClasses": 349,
+    "totalProductionClasses": 408,
+    "unchangedResources": 391,
+    "JVMJUnitExecuted": 0,
+    "finalOrdinaryJavaSessions": 3,
+    "finalOrdinaryJavaPublicCalls": 81,
+    "finalSourceBrowserHostCalls": 11,
+    "finalCheckedStateCommits": 7,
+    "finalRealHTTP": 5,
+    "finalGET": 1,
+    "finalPOST": 4,
+    "credentialOwnerCalls": 0,
+    "genericHTTPHostCalls": 0,
+    "finalPackagingGuards": 6,
+    "SwiftSDK": 0,
+    "JNI": 0,
+    "UIKit": 0,
+    "device": 0
+  },
+  "ordinaryJar": {
+    "path": "snapshot-v2/legado-runtime.jar",
+    "bytes": 10890165,
+    "sha256": "89f77040ea6a0f4592ca00a059c25da76cece9d1520b541e144588e6b4c5003b"
+  },
+  "consumer": {
+    "path": "snapshot-v2/evidence/OrdinaryLocalWebJs.java",
+    "bytes": 22701,
+    "sha256": "5e6c6ed3d56840345622ad27b6eadbdbf69cfd3bd10f10f9a680969b539434d2",
+    "scope": "Final81-call independent ordinary Java process: final89f770 JAR plus consumer classes only; no JUnit/test dirs/UIKit. Eleven source.browser synthetic Host calls are not presentation ACKs."
+  },
+  "newDefinitions": {
+    "Native": 0,
+    "Package": 0,
+    "App": 0,
+    "JVMJUnit": 0,
+    "ordinaryJavaConsumer": 1,
+    "companionSwiftAuthorOwnsNativeIncrement": true
+  },
+  "implementation": [
+    "Page scope lives in the existing RuntimeSession and is minted only by explicit login browser admission. Parent normal completion retains a nonawait page; explicit cancellation/session/page close seals and drains it. No new VM, HTTP transport, credential owner or backing cache.",
+    "Exact JS_INJECTION2 template aliases/request/callback-cache discipline; explicit GET empty still receives injection. POST replaces prepared HTML once without reinjection; present empty has no WebJS bridge. Awaittrue reuses present prepared body; false retains existing DOM/URL reply.",
+    "One retained page AnalyzeRule with null Book/Chapter. Cancellable per-page Mutex serializes parser state; child runs on a distinct existing worker context, rejecting synchronous Rhino reentry. Production platform and persistence dynamically route to that child RuntimeTask while retaining same session HTTP/Cookie/cache owner.",
+    "Synchronous finite Java/cache and request(run/three already implemented helpers) return typed String/null/list/void. Async run null stringifies to literal null; direct cache missing remains true null; result lives only in existing RuleCache memory until JS2 consume/delete.",
+    "Single deadline timer handler seals and cancels only. Worker explicit close sends native cancellation then awaits issued child completion. Cancelled producer worker drains before terminal effect snapshot, including accepted ACK arriving after cancellation; finally also closes a late-cancelled producer. Bounded child facts merge into the still registered parent; a completed parent terminal is immutable."
+  ],
+  "actualVectors": [
+    "Public legacy+V2 explicitHTML; correct head insertion and empty GET preparation; POST once+replacement+empty-no-bridge; awaittrue body reuse and empty terminal failure.",
+    "Same session page survives nonawait producer completion; source variable/cache persistence and memory delete/read; retained AnalyzeRule content across requests; actual JSONPath; null Book/Chapter; run literal null and original script-error callback.",
+    "Parent source.browser Host callback remains blocked while independent child succeeds on same session; synchronous parent Rhino reentry rejects; forged/cross-session/closed page rejects; unsupported extra method rejects.",
+    "Actual loopback GET via same JVM HTTP, source Header and Cookie owner; no genericHTTPHost or credential store access.",
+    "Close waits an actually accepted state.commit Host callback, issues native task.cancel itself, preserves accepted effect on cancelled child, rejects late page work.",
+    "Parent awaiting browser cancellation returns cancellation call without waiting for held child; parent worker then cancels/drains and rejects late write.",
+    "Nonawait presented producer continues script then cancellation: same worker closes its page, waits accepted child callback, and its CANCELLED terminal preserves child StateCommitted facts.",
+    "cache.get onlyDisk=true returns actual persistent disk value despite explicit different same-owner memory overlay; default/false retain memory priority.",
+    "Original request accepts7 synthetic string params and truncates to original first6; callback result is consumed/deleted through existing memory."
+  ],
+  "history": [
+    {
+      "kind": "Actual production compile",
+      "attempt": 1,
+      "exitCode": 1,
+      "diagnostics": 4,
+      "testExecution": 0,
+      "reason": "Non-property constructor dispatch access plus dynamic Cookie owner getter smart casts; fixed before attempt2."
+    },
+    {
+      "kind": "Pre-compile shell preparation",
+      "exitCode": 1,
+      "testExecution": 0,
+      "reason": "PowerShell/python -c quoting syntax error generating attempt3 script; compiler was not invoked. Replaced by explicit Python source file."
+    },
+    {
+      "kind": "Assembly assertion",
+      "attempt": 1,
+      "testExecution": 0,
+      "reason": "Verifier reused ZipInfo objects mutated by output writestr, invalidating source archive offsets in that in-memory ZipFile. Immutable base JAR remained exact; assembly-v2 uses independent verification ZipFile. No JVM tests ran in failed assembly."
+    },
+    {
+      "kind": "Successful intermediate compiles",
+      "attempts": [
+        2,
+        3,
+        4
+      ],
+      "supersededBy": 5,
+      "reason": "Final adds producer-worker nonawait cancellation drain before terminal effects snapshot. All actual logs/hashes retained."
+    },
+    {
+      "kind": "Successful progressively strengthened ordinary consumers",
+      "passes": [
+        {
+          "publicCalls": 60,
+          "realHTTP": 3
+        },
+        {
+          "publicCalls": 63,
+          "realHTTP": 3
+        },
+        {
+          "publicCalls": 69,
+          "realHTTP": 5
+        }
+      ],
+      "supersededBy": "Final72-call consumer on final072f JAR",
+      "legacyLogLabel": "browserWireACK in those three logs is the count of source.browser Host invocations, NOT accepted UIKit presentations or UIKit evidence."
+    },
+    {
+      "kind": "Independent source review P2",
+      "supersededVersion": 1,
+      "changedSources": [
+        "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+        "Packages/LegadoRuntime/vendor/original-rule/manifest.json"
+      ],
+      "cause": "Direct cache.get silently ignored original second onlyDisk Boolean. Existing RuleCache already supports it.",
+      "fix": "Forward actual Boolean to same RuleCache.get; no cache owner/store added. Async request additionally retains original first-six truncation under explicit64-wire limit.",
+      "actualRegression": "Disk value plus different memory overlay: default/false returns memory; true returns disk. Seven async params truncate to original six and callback uses same cache consume/delete.",
+      "compilation": "Only Page Kotlin source recompiled in attempt6 against bound072f ordinary JAR. Other six candidate main source outputs are reused exact attempt5; final59 recompiled-union blobs and349 df6f retained blobs are separately bound.",
+      "unchangedValidation": "Prior60/63/69/72-call runs remain historical passes against their own exact JARs and sources. Final81-call run+six packaging guards use final89f770 JAR. No old JVM suite rerun."
+    }
+  ],
+  "evidence": [
+    {
+      "path": "snapshot-v1/evidence/interface-v1.json",
+      "bytes": 6879,
+      "sha256": "675973ee22dcb97f480ae513de63e375690713e3db0fede058744b86fd4d06f6",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/interface-v2.json",
+      "bytes": 7910,
+      "sha256": "b86c29253446f4de45e4455f1c81a0ddb257f22f331336fa7bff9b334746ba47",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/interface-v3.json",
+      "bytes": 8595,
+      "sha256": "5582c5e07a51dbb95a6d9022f066e8b34fd90b6711fde99f4e9a839b38415e7b",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/actual-jvm-compilation-inputs.json",
+      "bytes": 28387,
+      "sha256": "68c00d06e21c89b44567dec8ac78a514d2b3bb715c3570b152a4a56f3360c686",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-jar-inspected.json",
+      "bytes": 80317,
+      "sha256": "e7d41ceec731b3d42daf32f77aa4009835f6209fe3a463074a80a3e0681867d6",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-jar-inspected-v2.json",
+      "bytes": 80318,
+      "sha256": "93d06b0369dd9bfe087c3f7584a4830ce5c9480fb4d87998c0987b332681652e",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/packaging-tests.log",
+      "bytes": 1243,
+      "sha256": "f2fe89d62cbb218ead87591d552568baa145fb234c07a039e1b866d34cfaac94",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/packaging-tests-v2.log",
+      "bytes": 1243,
+      "sha256": "28d9652f0b2ea48daf90d0b9b4b015d5cc6385f644b8cdf99726a5417a977fd0",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/OrdinaryLocalWebJs.java",
+      "bytes": 21459,
+      "sha256": "bd88ff3bfbbe63fec5136a1d9927bae1157f8cc9c647fb7041d98e28d93bccdb",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/OrdinaryLocalWebJs-pass1.java",
+      "bytes": 16029,
+      "sha256": "684a82785cdd8be89a66483d34037bfdd1eef0cd6f696f2129aca2037a3ce4fd",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/OrdinaryLocalWebJs-pass2.java",
+      "bytes": 18369,
+      "sha256": "5525e0a27c844ff4117423e78e5aaca4c3760c05716df5b3a3ae2acc66317c40",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-production.py",
+      "bytes": 2351,
+      "sha256": "041fcb903e6ef42867111e3b61b20d81fc77fa92d068e18fe006a6856f429aa3",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-production-v2.py",
+      "bytes": 2351,
+      "sha256": "a8f2a2b8e165e5e7e56d54f6f766e9c6ecb7cfa79f63ea3d75f368ed9e55a4f4",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-production-v3.py",
+      "bytes": 231,
+      "sha256": "21957d349a1d43a2518951bfd5edf407de858a0786ee3426029251c8e61b312e",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-production-v4.py",
+      "bytes": 231,
+      "sha256": "115b54a03e2bece3993cbab3f84500ce4d895c7d588232baca3400487e0f7aaa",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-production-v5.py",
+      "bytes": 231,
+      "sha256": "7e5cc135e16b4767ef8ae2a21cc4e758a1e9d1ed5b13df28031c7014e0be65ac",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/assemble-ordinary-attempt1.py",
+      "bytes": 5109,
+      "sha256": "9e9dd6b5f5f76eb0484ca8799abc88837e49f31981ba4e77a4f0844644640fd2",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/assemble-ordinary.py",
+      "bytes": 5145,
+      "sha256": "e5e1c00027a86272e1b32690b0168e759db458f2be837e311e36ed7530736f83",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/assemble-ordinary-v3.py",
+      "bytes": 265,
+      "sha256": "4190d8dab739c8aebd79943b6c8a7bde2e3cdd84d9f1fb3912cff16fcb17532f",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/run-ordinary.py",
+      "bytes": 1441,
+      "sha256": "5527c6d06a494a7460599d55a71544aa91f0f287bd1d2dfdc303c7dffe3c8b35",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/run-ordinary-v2.py",
+      "bytes": 400,
+      "sha256": "96988045480c4b84799ccd252f900f1104d0600da83e2434cf99104e36add67b",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/run-ordinary-v3.py",
+      "bytes": 400,
+      "sha256": "835ec5210f6eddcd0d9395aa7abe7f1453bfa90f7f2f5d50b6fb19e2c207af56",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/run-ordinary-v4.py",
+      "bytes": 205,
+      "sha256": "a974fa8d2b3fb60719ffe7bceac5d4c1181f98d9a46c2e14dfc3c5006a1d813e",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/verify-packaging.py",
+      "bytes": 2454,
+      "sha256": "e08507aa5a0df9c36ba6ef0089b6466d14af7d1a05e5855ecff5559d903f2f91",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/verify-packaging-v2.py",
+      "bytes": 391,
+      "sha256": "90701931ee9bee1699eb1623deed987d823890380d21bf78228d532c0222d667",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/freeze-backend.py",
+      "bytes": 13359,
+      "sha256": "3e0d34e12bd8bf7c140ca876e04b2dfcb526a8f64f5fdaab476534a907893223",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/history/ordinary-pass3/OrdinaryLocalWebJs.java",
+      "bytes": 19261,
+      "sha256": "fa1d7538216887a5f7bb0a938de189fe73651e06f86de1b8a9eb1edb670532b7",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-attempt1/commands.json",
+      "bytes": 9327,
+      "sha256": "fddc8c594b1c5c1e937fb8f0a43fde01f1c5d391e57a7ed47a97fc7c9738157b",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-attempt1/compile.log",
+      "bytes": 1549,
+      "sha256": "aaa9990754ebf88d49f5a8f2a388c462afc988a5c8c3b9fe9d937fcf16685279",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-attempt2/commands.json",
+      "bytes": 9325,
+      "sha256": "a0ab9ef9835078bfe263265a27ade1ce0eb537d682cfdf1f4d143be9ec7efd8c",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-attempt2/compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-attempt3/commands.json",
+      "bytes": 9325,
+      "sha256": "77dafad8795870113f13bb709c550b93c33af4b7052c6b5b258d3eba41d48b6d",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-attempt3/compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-attempt4/commands.json",
+      "bytes": 9325,
+      "sha256": "4d6f3a53824ca2f256fee528186fd149f2210a9bfafc115ded8a9fe74f233fa6",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-attempt4/compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-attempt5/commands.json",
+      "bytes": 9325,
+      "sha256": "786fb35afa70a86f0f24a9dd02c121f7889dffe80a28a4b6bf1267d6e21e210b",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/compile-attempt5/compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v2/production-binding.json",
+      "bytes": 170737,
+      "sha256": "7d9791ca1d916466440e7c04acfeb431169eaeae1c00c2a0d98acdd97b719f98",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v2/ordinary-commands.json",
+      "bytes": 2400,
+      "sha256": "8d05dbc5a92cf4c38ec7892c47c6f3785294ae1e116ba168df8c876ce59ad95b",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v2/ordinary-commands-v2.json",
+      "bytes": 2413,
+      "sha256": "49ad13c57b80f2c1596d0d8e21f03ba9e950989d148de825f08ed07f16de822a",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v2/ordinary-commands-v3.json",
+      "bytes": 2413,
+      "sha256": "4188b7baf6f42f1b1d7e8e467ff91c812d7477a5d7a20f1e5827b07fd76ac90f",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v2/compile-consumer.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v2/execute-consumer.log",
+      "bytes": 416,
+      "sha256": "0ff9ebf4a021428e9de7dbe813c913509fa659bb5fb2d18267832928083de9d3",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v2/compile-consumer-v2.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v2/execute-consumer-v2.log",
+      "bytes": 416,
+      "sha256": "1d918c89f96da63ba58959f8f231d8c1fb9caae7af331c16dec20089024efcd3",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v2/compile-consumer-v3.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v2/execute-consumer-v3.log",
+      "bytes": 417,
+      "sha256": "21ee1f8c54bed706076243f3f7f4ff99cb19df493e8e60922222c01d5be4951a",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v3/production-binding.json",
+      "bytes": 170738,
+      "sha256": "836c3a1825ffab6fc3c75e1eb87ac4477d14b28fc767bc41f9b907f64cf9f040",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v3/ordinary-commands.json",
+      "bytes": 2401,
+      "sha256": "22efb03b3c84db14c319c019ffe217069dba1781843c6d1f51ee8584adc0a577",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v3/compile-consumer.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/ordinary-v3/execute-consumer.log",
+      "bytes": 453,
+      "sha256": "70755d3728755b62d0c53a0b1a1457659c81a7e8001f72b99d99d8cf254b2dde",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v1/evidence/history-v1.json",
+      "bytes": 1651,
+      "sha256": "aaae452d4c080531395c1bbfde97a1b82d5e5f10b3b7043a529888958514ce34",
+      "inheritedFromBackendV1": true
+    },
+    {
+      "path": "snapshot-v2/evidence/backend-final-v1.json",
+      "bytes": 27463,
+      "sha256": "68d4f51ed9e80c351d2da4be526e319c7273833268c940da49b08dc54e0ea26b"
+    },
+    {
+      "path": "snapshot-v2/evidence/interface-v4.json",
+      "bytes": 8788,
+      "sha256": "6c93808ac32392e3ac32a0e82b3e8a83df0e9dc5266e46316700717cd7dfd709"
+    },
+    {
+      "path": "snapshot-v2/evidence/prepare-interface-v4.py",
+      "bytes": 1098,
+      "sha256": "6f65ef84d1072362faecb978989be1bf863f346502db1b066f0bdd54aa31007d"
+    },
+    {
+      "path": "snapshot-v2/evidence/compile-production-v6.py",
+      "bytes": 823,
+      "sha256": "ee3f6a0a40e792eadd17a56f92d31c6e9e5d64ec7e3f927fba60d67d1e7be93e"
+    },
+    {
+      "path": "snapshot-v2/evidence/assemble-ordinary-v4.py",
+      "bytes": 1966,
+      "sha256": "603c5f1c94dc0ff4d5a07ddd3937361f11ad905dba83aad252d56f471262127c"
+    },
+    {
+      "path": "snapshot-v2/evidence/run-ordinary-v5.py",
+      "bytes": 205,
+      "sha256": "aaeed0d59f7858df16e751cb581048c27d7b23c9529137a6a7c25b3e283feda7"
+    },
+    {
+      "path": "snapshot-v2/evidence/verify-packaging-v3.py",
+      "bytes": 391,
+      "sha256": "c9948c4b73cec2df12f2fbf7a44d6f090839816706e6ad0a6c92a20137974752"
+    },
+    {
+      "path": "snapshot-v2/evidence/freeze-backend-v2.py",
+      "bytes": 6234,
+      "sha256": "d850bd36dc461bd5cb93226bc16fb182758e95b486ad55de2655c8c562b47f3b"
+    },
+    {
+      "path": "snapshot-v2/evidence/actual-jvm-compilation-inputs.json",
+      "bytes": 28387,
+      "sha256": "65e896a8a222033473fcfb56e509f1f642dbf7f2290ca5484f219a659707eab3"
+    },
+    {
+      "path": "snapshot-v2/evidence/ordinary-jar-inspected-v3.json",
+      "bytes": 80318,
+      "sha256": "9ff02839de58d3b404eec4cea6047391f0cd4acbff96361f15f9dc8d9de5e1ec"
+    },
+    {
+      "path": "snapshot-v2/evidence/packaging-tests-v3.log",
+      "bytes": 1243,
+      "sha256": "b773a34c77be5513ad57cb0f091e498826cdf8b28fe3ba2be18b3f9651731998"
+    },
+    {
+      "path": "snapshot-v2/evidence/OrdinaryLocalWebJs.java",
+      "bytes": 22701,
+      "sha256": "5e6c6ed3d56840345622ad27b6eadbdbf69cfd3bd10f10f9a680969b539434d2"
+    },
+    {
+      "path": "snapshot-v2/evidence/compile-attempt6/commands.json",
+      "bytes": 6318,
+      "sha256": "6d91298c9ebf628c88e575063a47f003a2c181b882f4e5f21a49a0779531731f"
+    },
+    {
+      "path": "snapshot-v2/evidence/compile-attempt6/compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "snapshot-v2/evidence/ordinary-v4/production-binding.json",
+      "bytes": 171148,
+      "sha256": "a50c3bb7ec5bb40ba7fc36a2b86177c813bb8a19b69ea31b0037235ab22fab3c"
+    },
+    {
+      "path": "snapshot-v2/evidence/ordinary-v4/ordinary-commands.json",
+      "bytes": 2400,
+      "sha256": "0414693b970e895468b10a669a49f5e32476ccc21f4d8e51825eac7960d6fd48"
+    },
+    {
+      "path": "snapshot-v2/evidence/ordinary-v4/compile-consumer.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "snapshot-v2/evidence/ordinary-v4/execute-consumer.log",
+      "bytes": 453,
+      "sha256": "b4e873a28accb60fa35fc2828ec683491339d163f8dddef6851302a3f09c8ade"
+    }
+  ],
+  "limits": [
+    "Precise combined seven-source K2 overlay on coherent df6f ordinary JAR, NOT fresh Gradle: six main outputs exact attempt5, Page review-P2 source exact attempt6 (one-source compiler on bound072f intermediateJAR). 118 other main source inputs and349 retained production blobs exact df6f. Existing module metadata retained; no new top-level declaration.",
+    "No Swift SDK/JNI/UIKit/device execution. Java source.browser callbacks model a Host wire boundary, never actual webpage rendering or successful UIKit ACK. Real Preview/Host/Presenter/WK integration and Native definition are owned by companion Swift stage.",
+    "Finite WebJS support only; remaining request functions, direct HTTP get/head/post overloads, file/download/crypto/general WebView, showBrowser, sheet configuration UI and verification-flight remain typed unsupported.",
+    "Page/request/child controls are embedding bounds:8pages/session,32concurrent children/page,4096requests/page,30s child timeout,4MiB child String result. Existing cache limits and HTTP authority stay unchanged.",
+    "Source revision/actual page binding validation resides in the existing Swift Host owner integration. Parent effect receipt is not retroactively rewritten after producer terminal; later nonawait page facts belong to its page lifetime."
+  ],
+  "claims": {
+    "fullFeatureParity": false,
+    "fullWebJS": false,
+    "freshFullGradle": false,
+    "SwiftSDKPassed": false,
+    "NativePassed": false,
+    "devicePassed": false
+  },
+  "mutations": {
+    "canonical": false,
+    "Git": false,
+    "cloud": false,
+    "tag": false,
+    "privateSourcesRead": false,
+    "newVM": false,
+    "newStore": false,
+    "newHTTP": false,
+    "newJSC": false
+  },
+  "supersedes": {
+    "path": ".build/original-local-html-webjs-step/implementation-v1/backend-final-v1.json",
+    "bytes": 27463,
+    "sha256": "68d4f51ed9e80c351d2da4be526e319c7273833268c940da49b08dc54e0ea26b"
+  }
+}

@@ -1,0 +1,22 @@
+--- a/scripts/reader-experience/native-smoke-tools.py
++++ b/scripts/reader-experience/native-smoke-tools.py
+@@ -55,7 +55,8 @@
+             'LegadoNativeOriginalLoginInfoTests/testNativeOriginalAwaitBrowserConfirmsThroughRealPageAndCancelsWithoutLateCredentialWrite',
+             'LegadoNativeOriginalLoginInfoTests/testNativeOriginalPostBrowserDisplaysPrefetchedHtmlAndReusesSingleHttpBody',
+             'LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginHeaderUsesExistingOwnersAndKeepsPartialCancellationFacts',
+-            'LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2BrowserUsesProductServiceAndExistingPageOwner')},
++            'LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2BrowserUsesProductServiceAndExistingPageOwner',
++            'LegadoNativeOriginalLoginInfoTests/testNativeOriginalLocalHTMLWebJSKeepsSameSessionAfterProducerAndDrainsAwaitCancellation')},
+ }
+ SOURCE_INPUTS = (
+     ".github/workflows/legado-native-reader-test.yml", "scripts/reader-experience/native-smoke-tools.py",
+@@ -401,6 +402,9 @@
+ )
+ SOURCE_INPUTS += tuple(path for path in ORIGINAL_LOGIN_HEADER_V2_BROWSER_INPUTS if path not in SOURCE_INPUTS)
+ assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 140
++ORIGINAL_SPD_WEBJS_COLD_INPUTS = ('Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift', 'Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift', 'Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift', '.github/workflows/legado-native-reader-test.yml', 'scripts/reader-experience/original-cold-process-tools.py', 'scripts/reader-experience/test-native-smoke-tools.py', 'scripts/reader-experience/test-original-cold-process-tools.py', 'scripts/xctest.sh', 'Tests/iOS/LegadoNativeOriginalReaderTests.swift', 'Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift', 'Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift', 'Modules/Core/BookSource/BookSourceStore.swift', 'Modules/Features/BookSource/JsBridgeBrowserView.swift', 'Modules/Features/BookSource/SourceBrowserPresenter.swift', 'Modules/Services/Online/LegadoMainJSSourceService.swift', 'Modules/Services/Online/LegadoPersistentStateHost.swift', 'Modules/Services/Online/LegadoPreviewStateOwner.swift', 'Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt', 'Packages/LegadoRuntime/vendor/original-rule/manifest.json')
++SOURCE_INPUTS += tuple(path for path in ORIGINAL_SPD_WEBJS_COLD_INPUTS if path not in SOURCE_INPUTS)
++assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 148
+
+ CACHE_CASES = {
+     'ChapterCacheMigrationTests': ('packageLoaderUpgradesDownloadedLegacyChapter()',
