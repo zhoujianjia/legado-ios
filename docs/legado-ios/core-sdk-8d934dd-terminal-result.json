@@ -1,0 +1,824 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-21",
+  "status": "terminal-portable-guard-and-App-compiler-failure",
+  "sourceCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
+  "runID": 39495414773,
+  "jobID": 118879092571,
+  "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39495414773",
+  "queryAgain": false,
+  "App": {
+    "intendedDefinitions": 463,
+    "intendedArgumentLeaves": 466,
+    "actualExecuted": 0,
+    "passed": 0,
+    "testNodes": 0,
+    "wrapperXcodebuildExit": 65,
+    "nativePhaseExit": 1,
+    "nativePhaseTimedOut": false,
+    "nativePhaseSeconds": 653.031086,
+    "compilerErrors": [
+      {
+        "path": "Modules/Services/Online/LegadoOriginalLoginUIForm.swift",
+        "line": 204,
+        "column": 9,
+        "message": "the compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions"
+      }
+    ],
+    "sourceInputHashesVerified": 330,
+    "producerSourceInputsVerified": 7,
+    "afterTestsAndFinalResultBlocked": true,
+    "mandatoryAppSDKSignerExecuted": false,
+    "fullCompilerLog": {
+      "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-tests.log",
+      "bytes": 6959042,
+      "sha256": "63978561874759fc31e9f4e3db7343926792a61f9b2c91c26a52fcf722844d4a"
+    },
+    "fullCompilerLogPreservedOnlyIgnored": true
+  },
+  "portable": {
+    "actualMethods": 76,
+    "passed": 74,
+    "failed": 2,
+    "failedMethods": [
+      {
+        "classname": "LoginUIExploreCheckpointSelectionTests",
+        "name": "test_reviewed_app_methods_and_ui_fixture_keep_exact_scope_and_parameter_identities",
+        "cause": "blank method regex missing async"
+      },
+      {
+        "classname": "RenewalProbeEvidenceTests",
+        "name": "test_currentcore_exact_ast_union_source_boundaries_arguments_and_one_new_budget",
+        "cause": "workflow prose expects23 while explicit loginv2 is24"
+      }
+    ],
+    "cloudAndLocalReproductionAgree": true,
+    "repairedInCanonical": "498144fceb3f5a9222f549ecd3d1ff1e15754473",
+    "repairScope": "Two exact stale assertions; no selector/count/phase/failure gate bypass.",
+    "repairTargetedMethodsPassed": 2,
+    "affectedPackagePortableGuardsPassed": 22,
+    "thisArchiveReranTests": false
+  },
+  "producer": {
+    "commandsPassed": 48,
+    "codesignPassed": 4,
+    "independentCMSVerificationsPassed": 4,
+    "publicOutputHashesVerified": 43,
+    "publicDirectoryFiles": 44,
+    "sourceInputsVerified": 7,
+    "searchListRestoredAndOwnedKeychainDeleted": true,
+    "privateSigningArtifactsCopied": 0,
+    "systemTrustChanged": false,
+    "AppleAccountUsed": false,
+    "SwiftAppSignerExecuted": false,
+    "syntheticProducerPassDoesNotEstablishInstallationOrAutomaticRenewal": true
+  },
+  "independentPackage": {
+    "mode": "original-api-package-currentcore-loginv2",
+    "passed": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "executionExit": 0,
+    "compilationInputs": 16,
+    "controls": 7,
+    "all23FrozenGitByteHashesVerified": true,
+    "exactXMLAndVerboseSelectionVerified": true,
+    "freshV2ModelsCompilationObserved": true,
+    "sourceOnly": true,
+    "AppSimulatorCases": 0,
+    "JVMExecuted": false,
+    "JNIExecuted": false,
+    "physicalDeviceExecuted": false,
+    "coversAppCompilerRepairOrAwaitUI": false
+  },
+  "phases": {
+    "count": 11,
+    "passed": [
+      "before-build",
+      "boot",
+      "build-settings",
+      "producer",
+      "stage",
+      "test-settings"
+    ],
+    "failed": [
+      "cases",
+      "export",
+      "native"
+    ],
+    "blocked": [
+      "after-tests",
+      "result"
+    ],
+    "sourceBeforeAfterEqualAll": true,
+    "noTimeoutObserved": true
+  },
+  "sourceBinding": {
+    "SDKInputs": 330,
+    "PackageCompilationInputs": 16,
+    "PackageControlInputs": 7,
+    "PackageAllInputs": 23,
+    "producerInputs": 7,
+    "uniqueHistoricalGitBlobs": 330,
+    "historicalCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
+    "sourceClosureSHA256": "a8c1b46a85601400661f7027d66501ca2904958b7a8d7a519be32c09c0e09393",
+    "allRecordedHistoricalGitBytesVerified": true
+  },
+  "compilerRepair": {
+    "status": "Independent source review approved candidate; future SDK compilation still required",
+    "sourcePath": "Modules/Services/Online/LegadoOriginalLoginUIForm.swift",
+    "preparation": ".build/sdk-8d-login-ui-form-typecheck-repair-step/final-v1.json",
+    "independentReview": ".build/sdk-8d-login-ui-form-typecheck-independent-review/review.json",
+    "scope": "Only the diagnosed legacy applying five-name-array expression split into typed arrays and ordered append; not a V2 behavior/UI/test change.",
+    "changesThisTerminalResult": false
+  },
+  "relatedNative": {
+    "runID": 39495414820,
+    "jobID": 118879092115,
+    "status": "completed",
+    "conclusion": "failure",
+    "detailedEvidenceArchivedBySeparateReview": false,
+    "archivePending": true,
+    "notLive": true,
+    "queryAgain": false
+  },
+  "independentReview": {
+    "source": {
+      "path": ".build/sdk-8d934dd-evidence-review/review.json",
+      "bytes": 17836,
+      "sha256": "5e4e3a97afa38ed1fa48fa8feaeae5900081f1d962dc891b55a2c5ac157bf42c"
+    },
+    "archivePath": "docs/legado-ios/evidence/sdk-8d934dd-terminal/independent-review.json",
+    "checks": 1062,
+    "failed": 0,
+    "role": "Actual evidence facts only; not future source design or execution approval."
+  },
+  "preservedEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/independent-review.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 17836,
+        "sha256": "5e4e3a97afa38ed1fa48fa8feaeae5900081f1d962dc891b55a2c5ac157bf42c"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-evidence-review/review.json",
+        "bytes": 17836,
+        "sha256": "5e4e3a97afa38ed1fa48fa8feaeae5900081f1d962dc891b55a2c5ac157bf42c"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/historical-git-source-binding.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 85206,
+        "sha256": "e2b9ca661a9456a750abaa6af2653fd1358daf85a0250ebd949f135d0658d75b"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-evidence-review/historical-git-source-binding.json",
+        "bytes": 85206,
+        "sha256": "e2b9ca661a9456a750abaa6af2653fd1358daf85a0250ebd949f135d0658d75b"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/source-inputs.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 107343,
+        "sha256": "00cea7e85fb182aa2e40fec8dd454038681ff7d0b1215b2517d180c05db246f4"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/source-inputs.json",
+        "bytes": 107343,
+        "sha256": "00cea7e85fb182aa2e40fec8dd454038681ff7d0b1215b2517d180c05db246f4"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/pipeline.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 157395,
+        "sha256": "b0fe07cf105d21a5f376758fe18ef6b8f1d426042b2f7a7a4a7cec3bb11a3ced"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-pipeline.json",
+        "bytes": 157395,
+        "sha256": "b0fe07cf105d21a5f376758fe18ef6b8f1d426042b2f7a7a4a7cec3bb11a3ced"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/completion.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 3827,
+        "sha256": "57d92468b536681539896ca7307e889801d9c6156cb337db3f732e57479446b1"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-completion.json",
+        "bytes": 3827,
+        "sha256": "57d92468b536681539896ca7307e889801d9c6156cb337db3f732e57479446b1"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/xcresult-summary.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 430,
+        "sha256": "ee22b0cd6d5197a997767c9395ae3582f74d6fe6f61c3016f8d31830dbecd868"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-summary.json",
+        "bytes": 430,
+        "sha256": "ee22b0cd6d5197a997767c9395ae3582f74d6fe6f61c3016f8d31830dbecd868"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/xcresult-tests.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 367,
+        "sha256": "2429e425b42400c05e5b7a87fac4883a36512e078d921878f64e992f26075789"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-tests.json",
+        "bytes": 367,
+        "sha256": "2429e425b42400c05e5b7a87fac4883a36512e078d921878f64e992f26075789"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/extraction.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 2696,
+        "sha256": "9c49734d8cae80986be46727f207ef2a5ac8a0200329a2f1175b9d68d25be269"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-extraction.json",
+        "bytes": 2696,
+        "sha256": "9c49734d8cae80986be46727f207ef2a5ac8a0200329a2f1175b9d68d25be269"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/native-runner-output.txt",
+      "baseline": null,
+      "candidate": {
+        "bytes": 453,
+        "sha256": "d82b9c7c3e89ff291c658f7044e38ac8768f3c00fb3a0dd10d0475f4dfe99e2c"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-native.log",
+        "bytes": 453,
+        "sha256": "d82b9c7c3e89ff291c658f7044e38ac8768f3c00fb3a0dd10d0475f4dfe99e2c"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/cases-stderr.txt",
+      "baseline": null,
+      "candidate": {
+        "bytes": 132,
+        "sha256": "477334415fa7a6a7b54117d60669bd13fc569f8871c12f91a089d5cb3a2f5aa7"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-cases.log.stderr.log",
+        "bytes": 132,
+        "sha256": "477334415fa7a6a7b54117d60669bd13fc569f8871c12f91a089d5cb3a2f5aa7"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/sdk-fixture-binding.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 9839,
+        "sha256": "59f7baf1d261cdeb18c0f078dea5a2325852995b9bfa76ec382cafbfa90ed399"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/sdk-fixture-binding.json",
+        "bytes": 9839,
+        "sha256": "59f7baf1d261cdeb18c0f078dea5a2325852995b9bfa76ec382cafbfa90ed399"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/sdk-fixture-before-build.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 316,
+        "sha256": "bcde153607152cd100f8232e0cef0934f9a00025f65169d0a6860175d4246431"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/sdk-fixture-before-build.json",
+        "bytes": 316,
+        "sha256": "bcde153607152cd100f8232e0cef0934f9a00025f65169d0a6860175d4246431"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/phases/currentcore-phase-after-tests.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 2507,
+        "sha256": "e690994c5602e76db0dfee3ec357930c24cdb8d7a2c1ec0eb9b43152dbce8e97"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-phase-after-tests.json",
+        "bytes": 2507,
+        "sha256": "e690994c5602e76db0dfee3ec357930c24cdb8d7a2c1ec0eb9b43152dbce8e97"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/phases/currentcore-phase-before-build.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 3198,
+        "sha256": "1c16908bd4a7342225e84deab7f573bc3fb8e19efbd4a3eab070f4b4312a3ab0"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-phase-before-build.json",
+        "bytes": 3198,
+        "sha256": "1c16908bd4a7342225e84deab7f573bc3fb8e19efbd4a3eab070f4b4312a3ab0"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/phases/currentcore-phase-boot.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 2737,
+        "sha256": "82ff24978f5461f9d7602c09a1755ff061d172410c4ec14816e1a8680b791ce3"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-phase-boot.json",
+        "bytes": 2737,
+        "sha256": "82ff24978f5461f9d7602c09a1755ff061d172410c4ec14816e1a8680b791ce3"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/phases/currentcore-phase-build-settings.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 4448,
+        "sha256": "a9b4f704d0fc92f2e8e5f2d5909a464a47260e43721d6ae869fef7c1047322cc"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-phase-build-settings.json",
+        "bytes": 4448,
+        "sha256": "a9b4f704d0fc92f2e8e5f2d5909a464a47260e43721d6ae869fef7c1047322cc"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/phases/currentcore-phase-cases.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 3447,
+        "sha256": "d945eaeafb714a7f31fcd516f33d2f34bd9f4065e4b638d9ec1feac9663c6c20"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-phase-cases.json",
+        "bytes": 3447,
+        "sha256": "d945eaeafb714a7f31fcd516f33d2f34bd9f4065e4b638d9ec1feac9663c6c20"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/phases/currentcore-phase-export.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 3238,
+        "sha256": "27ae42416cdc8e82a7a96a50588682720b290711a18e8941a61eec041af107a7"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-phase-export.json",
+        "bytes": 3238,
+        "sha256": "27ae42416cdc8e82a7a96a50588682720b290711a18e8941a61eec041af107a7"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/phases/currentcore-phase-native.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 115797,
+        "sha256": "6c278753c644128e28092f5f6b1321c24a61ddd08ca9604e3e18776b90448127"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-phase-native.json",
+        "bytes": 115797,
+        "sha256": "6c278753c644128e28092f5f6b1321c24a61ddd08ca9604e3e18776b90448127"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/phases/currentcore-phase-producer.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 3151,
+        "sha256": "56194cad7a78770b7ba0670cf09d2b0d9807b792ee2c1d0c8558ec9851f8f435"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-phase-producer.json",
+        "bytes": 3151,
+        "sha256": "56194cad7a78770b7ba0670cf09d2b0d9807b792ee2c1d0c8558ec9851f8f435"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/phases/currentcore-phase-result.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 2475,
+        "sha256": "923853c7e8fba9149db061621478934531feefaf30fad81058dfa8f893419eed"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-phase-result.json",
+        "bytes": 2475,
+        "sha256": "923853c7e8fba9149db061621478934531feefaf30fad81058dfa8f893419eed"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/phases/currentcore-phase-stage.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 3322,
+        "sha256": "a4161f7075f3f04b9c4ec039379c52e02d2752e2bbd7e368274dd63ccaf13f88"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-phase-stage.json",
+        "bytes": 3322,
+        "sha256": "a4161f7075f3f04b9c4ec039379c52e02d2752e2bbd7e368274dd63ccaf13f88"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/phases/currentcore-phase-test-settings.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 4492,
+        "sha256": "3c40f8dfe9018304106914fdcd791d54eaa31f69e85dd6f7f2692708e1aa5bb4"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-phase-test-settings.json",
+        "bytes": 4492,
+        "sha256": "3c40f8dfe9018304106914fdcd791d54eaa31f69e85dd6f7f2692708e1aa5bb4"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/package/execution.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 3258,
+        "sha256": "8de5b9897e8642e0c8dedced05fd4175a38182f6d7bc56cb8c43edd33eee4371"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/Package/extracted/reader-renewal-original-api/execution.json",
+        "bytes": 3258,
+        "sha256": "8de5b9897e8642e0c8dedced05fd4175a38182f6d7bc56cb8c43edd33eee4371"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/package/result.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 17745,
+        "sha256": "22f7086c259ef2378cb87afb1b6625ffec69acd7398011cfc28fd02eb2f87346"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/Package/extracted/reader-renewal-original-api/result.json",
+        "bytes": 17745,
+        "sha256": "22f7086c259ef2378cb87afb1b6625ffec69acd7398011cfc28fd02eb2f87346"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/package/source-inputs.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 10388,
+        "sha256": "c2b863636f6b5e8f26b64a6c80dba5795859fba5efa8440efd3771b361b7500e"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/Package/extracted/reader-renewal-original-api/source-inputs.json",
+        "bytes": 10388,
+        "sha256": "c2b863636f6b5e8f26b64a6c80dba5795859fba5efa8440efd3771b361b7500e"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/package/xunit.xml",
+      "baseline": null,
+      "candidate": {
+        "bytes": 4203,
+        "sha256": "5f316c71c9c3d264c9ad1fddffefb6a8c984302cb40223720c8fe751a760b25e"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/Package/extracted/reader-renewal-original-api/xunit.xml",
+        "bytes": 4203,
+        "sha256": "5f316c71c9c3d264c9ad1fddffefb6a8c984302cb40223720c8fe751a760b25e"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/package/tests.log",
+      "baseline": null,
+      "candidate": {
+        "bytes": 134787,
+        "sha256": "10e6a5aed4d38a1170b52c02cc5d03698f044bcf4390ce00d52eaf2cc0bac59a"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/Package/extracted/reader-renewal-original-api/tests.log",
+        "bytes": 134788,
+        "sha256": "31e740907b71203c32095915515dbe099fa2f4394706eb148644b2abc1382528"
+      },
+      "copy": "UTF8/LF trailing horizontal and empty EOF whitespace removed; immutable original evidence byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/package/swift-executable.log",
+      "baseline": null,
+      "candidate": {
+        "bytes": 98,
+        "sha256": "6a39ef22bfa22a4203e2b7fe93c32cb270cd8693bdb23e5e7a84608ed0ebb57e"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/Package/extracted/reader-renewal-original-api/swift-executable.log",
+        "bytes": 98,
+        "sha256": "6a39ef22bfa22a4203e2b7fe93c32cb270cd8693bdb23e5e7a84608ed0ebb57e"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/package/swift-test-help.log",
+      "baseline": null,
+      "candidate": {
+        "bytes": 10336,
+        "sha256": "0193bd97e4c15663f0b50bcff07a814d65e2bcce01c4c62b0c944fac4ff99c87"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/Package/extracted/reader-renewal-original-api/swift-test-help.log",
+        "bytes": 10337,
+        "sha256": "575de9d617c18eb4f76849d1885da0cb61286cc70dc1535237fc9fc56a5eb910"
+      },
+      "copy": "UTF8/LF trailing horizontal and empty EOF whitespace removed; immutable original evidence byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/package/swift-version.log",
+      "baseline": null,
+      "candidate": {
+        "bytes": 130,
+        "sha256": "62a7d9c76d4bd5f9cdf04b3ecab4308ae223232ab115b91e5a807e636621f0d7"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/Package/extracted/reader-renewal-original-api/swift-version.log",
+        "bytes": 130,
+        "sha256": "62a7d9c76d4bd5f9cdf04b3ecab4308ae223232ab115b91e5a807e636621f0d7"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/producer/sdk-produced-fixture-manifest.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 46009,
+        "sha256": "eac13c284ec518c21d451d3a47b978592d4b12793af41e1e927fd26f2148b55e"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/sdk-produced-public/sdk-produced-fixture-manifest.json",
+        "bytes": 46009,
+        "sha256": "eac13c284ec518c21d451d3a47b978592d4b12793af41e1e927fd26f2148b55e"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/producer/main.original-cms.log",
+      "baseline": null,
+      "candidate": {
+        "bytes": 28,
+        "sha256": "25b50603c259a4e3172ed0f6315497daa374b9935c92d78abcd3d2e2dce2b97e"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/sdk-produced-public/main.original-cms.log",
+        "bytes": 28,
+        "sha256": "25b50603c259a4e3172ed0f6315497daa374b9935c92d78abcd3d2e2dce2b97e"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/producer/share.original-cms.log",
+      "baseline": null,
+      "candidate": {
+        "bytes": 28,
+        "sha256": "25b50603c259a4e3172ed0f6315497daa374b9935c92d78abcd3d2e2dce2b97e"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/sdk-produced-public/share.original-cms.log",
+        "bytes": 28,
+        "sha256": "25b50603c259a4e3172ed0f6315497daa374b9935c92d78abcd3d2e2dce2b97e"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/producer/widget.original-cms.log",
+      "baseline": null,
+      "candidate": {
+        "bytes": 28,
+        "sha256": "25b50603c259a4e3172ed0f6315497daa374b9935c92d78abcd3d2e2dce2b97e"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/sdk-produced-public/widget.original-cms.log",
+        "bytes": 28,
+        "sha256": "25b50603c259a4e3172ed0f6315497daa374b9935c92d78abcd3d2e2dce2b97e"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/producer/framework.original-cms.log",
+      "baseline": null,
+      "candidate": {
+        "bytes": 28,
+        "sha256": "25b50603c259a4e3172ed0f6315497daa374b9935c92d78abcd3d2e2dce2b97e"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/sdk-produced-public/framework.original-cms.log",
+        "bytes": 28,
+        "sha256": "25b50603c259a4e3172ed0f6315497daa374b9935c92d78abcd3d2e2dce2b97e"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/producer/producer-output.txt",
+      "baseline": null,
+      "candidate": {
+        "bytes": 9915,
+        "sha256": "3ebc09f4da7fc2dad33381c8e2b2cb7fbcfb3bc196c083e687328d3d979f5271"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-producer.log",
+        "bytes": 9915,
+        "sha256": "3ebc09f4da7fc2dad33381c8e2b2cb7fbcfb3bc196c083e687328d3d979f5271"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/sdk-artifact-members.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 12655,
+        "sha256": "6baf5259a767c5af40424e53385043cca2e0d71357dd0147b0cfbc26c2a589be"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/SDK/member-inventory.json",
+        "bytes": 12655,
+        "sha256": "6baf5259a767c5af40424e53385043cca2e0d71357dd0147b0cfbc26c2a589be"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/package-artifact-members.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 774,
+        "sha256": "9faeb6878831201e9fa17e726c8877edadaf119a04e106af8f63038108458d11"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/Package/member-inventory.json",
+        "bytes": 774,
+        "sha256": "9faeb6878831201e9fa17e726c8877edadaf119a04e106af8f63038108458d11"
+      },
+      "copy": "raw exact bytes"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/producer/facts.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 2065,
+        "sha256": "73b6dc29d63a292a8b5bd37f47edcdfd0d78c32877d45f1f411298091621bd1a"
+      },
+      "copy": "derived factual JSON; raw inputs referenced by byte/hash"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/phase-summary.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 4472,
+        "sha256": "4a7c68473a36ea3da8381dc5cb9fe36e246d652ea433bddf3cc0abbd03423f26"
+      },
+      "copy": "derived factual JSON; raw inputs referenced by byte/hash"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/portable-failures.original-excerpt.txt",
+      "baseline": null,
+      "candidate": {
+        "bytes": 12758,
+        "sha256": "d93bf81d1b3d3fd2967142d4d8da2e1202cb6dbb4994bb9bcb4087aa1eb0667d"
+      },
+      "source": {
+        "path": ".build/sdk-8d934dd-terminal/decoded-job.log",
+        "bytes": 253470,
+        "sha256": "b82177efae588f93cef691419b0945f80d84653ccd7b62ed833125fbeb36f5af"
+      },
+      "excerpt": {
+        "firstLine": 372,
+        "lastLine": 397,
+        "wholeDecodedJobCopied": false,
+        "noClippingInsideSelectedLines": true
+      },
+      "copy": "UTF8/LF trailing horizontal and empty EOF whitespace removed; immutable original evidence byte facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/portable-failure-facts.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 1409,
+        "sha256": "43d6e259b6a28a60ae9e158d22a9848f352dbba8db8e45c44b340bf1fb880f2a"
+      },
+      "copy": "derived factual JSON; raw inputs referenced by byte/hash"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/compiler-error.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 1618,
+        "sha256": "9e689d1f60b10cc483b619c09ca9e178cbac241aafad50cd5996a8600fd73686"
+      },
+      "copy": "derived factual JSON; raw inputs referenced by byte/hash"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/package/facts.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 3240,
+        "sha256": "06e4ad1b5b3995805e5872962e7bb7d8a412c6080b638566ea1db5165bf1a3cc"
+      },
+      "copy": "derived factual JSON; raw inputs referenced by byte/hash"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/large-ignored-evidence-facts.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 1564,
+        "sha256": "86226034c7b2c4b68dd761b775fb734ee3d8341ada3f5f7c0edf1b03d38a92d8"
+      },
+      "copy": "derived factual JSON; raw inputs referenced by byte/hash"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-8d934dd-terminal/terminal-observation.json",
+      "baseline": null,
+      "candidate": {
+        "bytes": 781,
+        "sha256": "3eea2ae42ba61966803b3036ab15f1f44cfc8326fb8fb4943035523722cc3913"
+      },
+      "copy": "derived factual JSON; raw inputs referenced by byte/hash"
+    }
+  ],
+  "excludedLargeEvidence": [
+    {
+      "path": ".build/sdk-8d934dd-terminal/SDK/artifact.zip",
+      "bytes": 1145135,
+      "sha256": "96433c1454a5f36ec5818c7f3e675cd148024c5ae0ae249054a18b5e73efa8a3"
+    },
+    {
+      "path": ".build/sdk-8d934dd-terminal/Package/artifact.zip",
+      "bytes": 29145,
+      "sha256": "29c68f5fee5c585890533e00bce468a209a7f526989888f5c700cb80374c96c3"
+    },
+    {
+      "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-tests.log",
+      "bytes": 6959042,
+      "sha256": "63978561874759fc31e9f4e3db7343926792a61f9b2c91c26a52fcf722844d4a"
+    },
+    {
+      "path": ".build/sdk-8d934dd-terminal/decoded-job.log",
+      "bytes": 253470,
+      "sha256": "b82177efae588f93cef691419b0945f80d84653ccd7b62ed833125fbeb36f5af"
+    }
+  ],
+  "limits": [
+    "SDK producer compiled/signed only synthetic owned fixture binaries and verified their synthetic detached CMS; this is not production App signing, Apple account/provisioning, installation or renewal validation.",
+    "Fresh Package24 uses injected transport/typed DTOs on macOS. It did not run original JVM/JNI, UIKit/App Simulator or a physical device.",
+    "App463/466 were intended selections only; actual App execution is0 because Swift compilation failed. No successful App or renewal claim is supported.",
+    "before/after source state is exact and unchanged for each phase, but after-tests fixture verification and result commands were blocked; no nonexistent after-tests command pass is inferred.",
+    "Only artifact/Git read/checks were performed; no source self-review/approval, tests, compilation, canonical edits or cloud polling.",
+    "Native8d is also terminal failure; its detailed cause/result evidence is pending a separate review and is not inferred from SDK8d.",
+    "Later Browser/Await/compiler candidate snapshots are not validated by these historical330-source artifacts."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "archivePreparationHistory": "First exact reviewed raw archive staging was rejected by git diff --cached --check for whitespace in three original log/excerpt files; no commit occurred. Normalized only those whitespace bytes, retaining immutable original evidence and source facts. No tests or source edits repeated."
+}

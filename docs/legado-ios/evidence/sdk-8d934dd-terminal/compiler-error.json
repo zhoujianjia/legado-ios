@@ -1,0 +1,38 @@
+{
+  "fullLog": {
+    "path": ".build/sdk-8d934dd-terminal/SDK/extracted/reader-renewal-probe/currentcore-tests.log",
+    "bytes": 6959042,
+    "sha256": "63978561874759fc31e9f4e3db7343926792a61f9b2c91c26a52fcf722844d4a"
+  },
+  "fullLogCopied": false,
+  "diagnostics": [
+    {
+      "path": "Modules/Services/Online/LegadoOriginalLoginUIForm.swift",
+      "line": 204,
+      "column": 9,
+      "message": "the compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions"
+    }
+  ],
+  "additionalCompilerErrors": [],
+  "rawBlocks": [
+    {
+      "firstLine": 24891,
+      "lastLine": 24894,
+      "lines": [
+        "/Users/runner/work/legado-ios/legado-ios/Modules/Services/Online/LegadoOriginalLoginUIForm.swift:204:9: error: the compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions",
+        "        try validateNameBridge(rows.map(\\.name) + (layout?.names ?? [])",
+        "        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+        ""
+      ]
+    }
+  ],
+  "AppTestsExecuted": 0,
+  "repair": {
+    "sourcePath": "Modules/Services/Online/LegadoOriginalLoginUIForm.swift",
+    "candidateSHA256": "ce1cb1e734c6054c79003a565852a52b77fe42d7ee00d9f35b72e1d9363e7e28",
+    "approvedSourcePreparation": ".build/sdk-8d-login-ui-form-typecheck-repair-step/final-v1.json",
+    "independentSourceReview": ".build/sdk-8d-login-ui-form-typecheck-independent-review/review.json",
+    "futureSwiftSDKRequired": true,
+    "currentTerminalUpgraded": false
+  }
+}
