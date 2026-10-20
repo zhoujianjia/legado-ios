@@ -22,6 +22,11 @@ SHA = "a" * 40
 
 class OriginalAPIPackageEvidenceTests(unittest.TestCase):
     def setUp(self):
+        # Each fixture starts in the original ten-case mode. CI's currentcore
+        # selection must only apply inside tests that explicitly select it.
+        selection = patch.dict(os.environ, {"YUEDU_RENEWAL_SELECTION": "all"})
+        selection.start()
+        self.addCleanup(selection.stop)
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve()

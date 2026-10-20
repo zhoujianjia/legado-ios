@@ -1,0 +1,24 @@
+test_valid_xml_and_each_verbose_xctest_leaf_are_both_required (__main__.OriginalAPIPackageEvidenceTests.test_valid_xml_and_each_verbose_xctest_leaf_are_both_required) ... FAIL
+
+======================================================================
+FAIL: test_valid_xml_and_each_verbose_xctest_leaf_are_both_required (__main__.OriginalAPIPackageEvidenceTests.test_valid_xml_and_each_verbose_xctest_leaf_are_both_required)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "F:\yuedu-reader\scripts\reader-experience\test-original-api-package-tools.py", line 95, in test_valid_xml_and_each_verbose_xctest_leaf_are_both_required
+    self.assertEqual(result["passedCaseIdentifiers"], sorted(api.EXPECTED))
+AssertionError: Lists differ: ['Leg[17 chars]egadoCookieTextAPITests/testPartialSequentialE[1622 chars]rip'] != ['Leg[17 chars]egadoOriginalAPITests/testBusinessCodingPreser[904 chars]rip']
+
+First differing element 0:
+'Lega[16 chars]egadoCookieTextAPITests/testPartialSequentialE[50 chars]code'
+'Lega[16 chars]egadoOriginalAPITests/testBusinessCodingPreser[39 chars]Uuid'
+
+First list contains 6 additional elements.
+First extra element 10:
+'LegadoRuntimeTests.LegadoOriginalAPITests/testTypedBusinessApiDoesNotSelectTheExistingRoute'
+
+Diff is 1869 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 1 test in 0.059s
+
+FAILED (failures=1)
