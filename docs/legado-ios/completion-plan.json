@@ -580,13 +580,15 @@
           "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
           "implementationEvidence": [
             "docs/legado-ios/core-renewal-controlled-signing-step.json",
-            "docs/legado-ios/core-renewal-certificate-request-step.json"
+            "docs/legado-ios/core-renewal-certificate-request-step.json",
+            "docs/legado-ios/core-renewal-account-client-step.json"
           ],
           "implementedSubtasksZh": [
             "已接入单一actor签名材料库，使用既有KeychainHelper保存公开材料与代际日志；真实软件SecKey的生成、重开、profile双CMS及身份一致性验证、撤销和故障恢复已实现。7项原生方法待SDK；尚无Apple账号授权、二次认证、证书/profile远程申请或跨进程事务。",
-            "同一材料 Vault 已实现真实永久密钥重开的 PKCS#10 CSR 生成、签名与公钥自验，按 namespace/keyID/generation 校验当前记录，保持原材料错误分类；3 个原生回归定义、2 文件语法检查和修正后的源码独审已完成，SDK/Security 执行仍为 0。账号授权、证书/profile 远程申请刷新和跨进程事务仍未完成。"
+            "同一材料 Vault 已实现真实永久密钥重开的 PKCS#10 CSR 生成、签名与公钥自验，按 namespace/keyID/generation 校验当前记录，保持原材料错误分类；3 个原生回归定义、2 文件语法检查和修正后的源码独审已完成，SDK/Security 执行仍为 0。账号授权、证书/profile 远程申请刷新和跨进程事务仍未完成。",
+            "开发者服务客户端已实现会话/免费团队实查、同一 Vault 真实 CSR 提交、原 App ID/profile 获取和唯一材料发布；远程请求 intent 持久化，丢 ACK 禁止自动重发，发布后凭据保存失败保留真实 lease。3 源已审查、8 个原生回归仅定义，SDK/受控对端/真实 Apple 执行为 0；GSA 登录、二次认证、anisette、AppSession 单一实例接线及未知请求核对仍未完成。"
           ],
-          "nextActionZh": "集中执行新源码SDK方法并修复实际失败；继续同一材料库的真实整包重签租约接线，另行实现账号服务与材料刷新协议。"
+          "nextActionZh": "继续实现 GSA/SRP 登录与二次认证、可取消 anisette 提供端，再接到现有 AppSession/Vault 唯一生命周期；补远程未知结果核对和 issuer/撤销策略。当前客户端与 CSR 的 SDK 回归待集中执行，不能升级为已完成自动续签。"
         },
         {
           "id": "S3",
@@ -824,7 +826,8 @@
       "ownedSelfSignedIdentityMacResult": "docs/legado-ios/core-owned-sdk-producer-32fb9d8-result.json",
       "originalContentBatchAndCommonRateImplementation": "docs/legado-ios/core-original-content-batch-rate-step.json",
       "packagePortableFixtureEnvironmentRepair": "docs/legado-ios/core-package-guard-environment-step.json",
-      "currentCoreSDKTerminalResult": "docs/legado-ios/core-current-sdk-f51af09-result.json"
+      "currentCoreSDKTerminalResult": "docs/legado-ios/core-current-sdk-f51af09-result.json",
+      "developerAccountMaterialClientImplementation": "docs/legado-ios/core-renewal-account-client-step.json"
     }
   },
   "stages": [
@@ -4967,6 +4970,10 @@
     "current-core-sdk-f51af09-terminal": {
       "path": "docs/legado-ios/core-current-sdk-f51af09-result.json",
       "scope": "Actual227 historical Git inputs verified,16 independent source-only macOS Package XCTest leaves passed with both XML/verbose and6 evidence hashes; actual App SDK compile failed on one cookie-test expression, native0. Two portable fixture environment failures repaired07527e8; macro split here remains SDK-unverified. All full-gate failures retained."
+    },
+    "developer-account-material-client-implementation": {
+      "path": "docs/legado-ios/core-renewal-account-client-step.json",
+      "scope": "Actual3-source developer-services/session/CSR/profile client against same existing Vault; exact12 dependencies, independent source review and corrected terminal test wait;8 native definitions/grammar-only, SDK0. GSA/2FA/anisette/AppSession integration and real Apple authority unfinished."
     }
   },
   "retainedExistingWork": [

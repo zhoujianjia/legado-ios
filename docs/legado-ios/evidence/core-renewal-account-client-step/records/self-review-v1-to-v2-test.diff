@@ -1,0 +1,69 @@
+--- frozen-v1/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift
++++ work-v2/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift
+@@ -97,9 +97,27 @@
+         try await Self.fixture { f in
+             let client = try await f.client(); _ = try await client.connect(f.credentials)
+             await f.peer.set(.holdCSR)
+-            let task = Task { try await client.refreshMaterials(keyID: f.pending.id,
+-                expectedGeneration: f.pending.generation, machineName: "Owned") }
+-            await f.peer.waitForCSR()
++            let task = Task {
++                do {
++                    let lease = try await client.refreshMaterials(keyID: f.pending.id,
++                        expectedGeneration: f.pending.generation, machineName: "Owned")
++                    await f.peer.refreshFinished()
++                    return lease
++                } catch {
++                    await f.peer.refreshFinished()
++                    throw error
++                }
++            }
++            let firstEvent = await withTaskCancellationHandler {
++                await f.peer.waitForCSROrRefreshCompletion()
++            } onCancel: { task.cancel() }
++            if firstEvent == .refreshFinished {
++                // Read the ACTUAL completed task, preserving its original
++                // error. Even a pre-CSR failure now reaches fixture cleanup.
++                _ = try await task.value
++                Issue.record("Refresh completed before the controlled peer observed its CSR")
++                return
++            }
+             task.cancel()
+             do { _ = try await task.value; Issue.record("Cancelled remote enrollment was accepted") }
+             catch let error as Client.EnrollmentFailure {
+@@ -209,12 +227,24 @@
+         var paths: [String] = []
+         var validCSRs = 0, profileRequests = 0
+         var certificate: Data?
+-        var csrWaiters: [CheckedContinuation<Void, Never>] = []
++        enum EnrollmentEvent: Sendable, Equatable { case csrArrived, refreshFinished }
++        private var firstEnrollmentEvent: EnrollmentEvent?
++        private var enrollmentWaiters: [CheckedContinuation<EnrollmentEvent, Never>] = []
+         init(material: SelfRenewalApplicationMaterialVerifier.Materials, issuer: Vault.KeyMaterial, key: Vault.PendingKey, date: Date) {
+             self.material = material; self.issuer = issuer; self.key = key; self.date = date
+         }
+         func set(_ mode: Mode) { self.mode = mode }
+-        func waitForCSR() async { if validCSRs == 0 { await withCheckedContinuation { csrWaiters.append($0) } } }
++        func waitForCSROrRefreshCompletion() async -> EnrollmentEvent {
++            if let firstEnrollmentEvent { return firstEnrollmentEvent }
++            return await withCheckedContinuation { enrollmentWaiters.append($0) }
++        }
++        func refreshFinished() { observe(.refreshFinished) }
++        private func observe(_ event: EnrollmentEvent) {
++            guard firstEnrollmentEvent == nil else { return }
++            firstEnrollmentEvent = event
++            let waiting = enrollmentWaiters; enrollmentWaiters.removeAll()
++            waiting.forEach { $0.resume(returning: event) }
++        }
+         struct Facts: Sendable { let paths: [String]; let validCSRs: Int; let profileRequests: Int }
+         func facts() -> Facts { Facts(paths: paths, validCSRs: validCSRs, profileRequests: profileRequests) }
+         func statusCode() -> Int { mode == .redirect ? 302 : (mode == .unauthorized ? 401 : 200) }
+@@ -248,7 +278,7 @@
+                 let pem = try #require(body["csrContent"] as? String)
+                 try verifyCSR(pem)
+                 validCSRs += 1
+-                let waiting = csrWaiters; csrWaiters.removeAll(); waiting.forEach { $0.resume() }
++                observe(.csrArrived)
+                 if mode == .holdCSR {
+                     let pair = AsyncStream<Void>.makeStream()
+                     for await _ in pair.stream {}

@@ -1,0 +1,263 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUTC": "2026-10-20T09:58:24.542358+00:00",
+  "reviewerTask": "/root/owned_signer_shape_review",
+  "reviewerRelationship": "Original author performing the requested second, cross-module SELF-REVIEW. This is not an independent reviewer acceptance.",
+  "independentReview": false,
+  "preparation": {
+    "path": ".build/renewal-discovery/account-enrollment-step/preparation.json",
+    "bytes": 18630,
+    "sha256": "972b7eed861be2fac9d20decfb5a94ab2231e2c7782c799a09bf4b4d4f869274"
+  },
+  "sourceBinding": [
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "frozen": {
+        "path": ".build/renewal-discovery/account-enrollment-step/final-sources/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+        "bytes": 31414,
+        "sha256": "d160d6fad6903183a0691673ce7af8f8bde885a86b9b6bfb9aec4ecebb4245ae"
+      },
+      "workStillMatches": true,
+      "canonicalFileExists": false
+    },
+    {
+      "intendedPath": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
+      "frozen": {
+        "path": ".build/renewal-discovery/account-enrollment-step/final-sources/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
+        "bytes": 5050,
+        "sha256": "009704043b7a86351793e75e451951a77767a91516cb645715896bc756236f68"
+      },
+      "workStillMatches": true,
+      "canonicalFileExists": false
+    },
+    {
+      "intendedPath": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "frozen": {
+        "path": ".build/renewal-discovery/account-enrollment-step/final-sources/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+        "bytes": 29211,
+        "sha256": "50900d7cce0b0e4ed093415838a02f2d68248a314e9cd920204b850b858f86f0"
+      },
+      "workStillMatches": true,
+      "canonicalFileExists": false
+    }
+  ],
+  "status": "self-review-one-confirmed-test-hang-blocker-no-confirmed-production-blocker-SDK-unexecuted",
+  "confirmedProductionBlockers": 0,
+  "confirmedTestHarnessBlockers": 1,
+  "findings": [
+    {
+      "id": "S2-SELF-01",
+      "severity": "P1",
+      "category": "test-harness-terminal-state-hang",
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "line": 102,
+      "sourceSHA256": "50900d7cce0b0e4ed093415838a02f2d68248a314e9cd920204b850b858f86f0",
+      "relatedLines": [
+        100,
+        104,
+        217,
+        249,
+        250,
+        251
+      ],
+      "title": "Cancellation test waits forever if refresh fails before the CSR arrival signal",
+      "trigger": "In cancellationRetainsRemoteIntentAndPreventsDuplicateIssuance, any real pre-CSR Keychain/CSR failure, URLSession/request-body failure, stale operation, or peer CSR parse/verification failure completes the refresh task before validCSRs is incremented.",
+      "sourceFacts": [
+        "The test starts the actual refresh Task at lines100-101, awaits peer.waitForCSR at102, and only reads task.value at104 after that await returns.",
+        "Peer.waitForCSR at217 appends a CheckedContinuation<Void,Never> whenever validCSRs==0. It has no refresh-terminal/error signal and no cancellation termination path.",
+        "The only successful waiter resumption is after verifyCSR succeeds and validCSRs increments at249-251. If refresh or verifyCSR throws earlier, this event never arrives.",
+        "Therefore task failure cannot reach the test catch or fixture cleanup. The central outer runner deadline is the only eventual escape; no native execution was needed or performed to identify this source-level wait cycle."
+      ],
+      "impact": "A real regression in the intended cancellation path can consume the entire future SDK batch budget while concealing its actual error and delaying owned cleanup.",
+      "requiredCorrection": "Use one completion-aware event boundary that resumes with either actual CSR arrival or refresh termination/error, and observes cancellation. A terminal task must not leave an arrival-only continuation pending. Do not add a settle sleep or fabricate the CSR signal.",
+      "executionEvidence": "Source inspection only; actual Swift/SDK/test execution0.",
+      "frozenSourcesChanged": false
+    }
+  ],
+  "crossModuleSourceAudit": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "line": 133,
+      "fact": "Client.open calls the same injected Vault.resume(namespaceID, sealed identity), which compares the complete existing Vault identity before retaining the client. Only small immutable bundle targets and a deterministic sorted-key pin are retained; there is no new private-key owner."
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "line": 176,
+      "fact": "Candidate or restored credentials never encode an accepted-session Boolean. viewDeveloper and listTeams actually run before connect succeeds; later operations run them again. Person/email/DSID stay pinned and the team is derived from sealed original material and observed remote membership. No caller-provided Team object confers authorization."
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "line": 339,
+      "fact": "Requests use the actual pinned developer-services XML-plist protocol and fixed actions. Local expiry, task cancellation and actor epoch are checked before dispatch, including after obtaining fresh anisette. Numeric portal1100 and HTTP401/403 reject session use; remote error strings are not surfaced."
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "line": 222,
+      "fact": "The actual request-intent Keychain save precedes possible CSR dispatch. A pending record blocks another refresh after restart. The phase/certificate fingerprint is updated only after a real returned certificate matches the actual sealed CSR public-key hash. A retained CSR alone cannot publish."
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "line": 237,
+      "fact": "Only exact registered original bundle IDs are used. No new App ID, bundle rename, group rewrite, certificate revocation or alternate signer is performed. All actual profile bytes go to the original same-Vault validator."
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "line": 249,
+      "fact": "The account/team are re-observed and the current real persisted key is re-opened through the Vault CSR method after network awaits. The final Vault.publish still performs actual chain/date/key/profile double-CMS/identity/generation checks; no client success Boolean bypass is present."
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "line": 254,
+      "fact": "The acknowledged Vault publication is distinct from the later account-journal save. A later save or observed cancellation error retains the actual accepted lease in PublicationFinalizationFailure, instead of reporting rollback. finalizeObservedPublication requires a real current lease with the matching key, exact next generation and actual leaf fingerprint and issues no remote request."
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "line": 281,
+      "fact": "Finalization fails closed if live material is missing/expired/revoked/stale. It cannot manufacture or restore a lease. The existing Vault still rejects an observed changed manifest; neither client compare/save nor this review claims cross-process atomic CAS."
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "line": 298,
+      "fact": "All mutating async entry points retain the actor busy gate across awaits; logout refuses busy before changing epoch. This avoids promising atomic logout while another actor may commit Vault publication. Pending-state reads are nonmutating. Auth invalidation disables current in-memory credentials before its storage write and retains both session/storage failures if that write fails."
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "line": 10,
+      "fact": "The production credential adapter reuses KeychainHelper with the dedicated namespace UUID/service, nonsynchronizable AfterFirstUnlockThisDeviceOnly storage and bounded strict reads. Credential/anisette descriptions are redacted. No passwords, private-key exports, account/OTP logging or persisted OTP are added in these3 sources."
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
+      "line": 15,
+      "fact": "The account transport owns one reused ephemeral URLSession. Global cookie/cache/credential stores are disabled. Fixed HTTPS host checks, default genuine server-trust handling, rejected interactive HTTP auth and nil redirect forwarding remain mandatory. No caller-facing host/trust-all switch is added."
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
+      "line": 51,
+      "fact": "The actual AsyncBytes task is cancelled on all exits. HTTP envelope and expected length are checked, and actual streamed response accumulation is bounded by the existing1MiB decoder limit. Transport errors are mapped to fixed typed codes rather than raw URLSession diagnostics."
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "line": 12,
+      "fact": "The8 new test methods remain definitions only. Their owned URLProtocol intercepts the actual URLSession/client path and uses real existing Vault/CSR/PKI/profile validators in the definitions. That interception bypasses genuine network/TLS and cannot prove Apple account, current-server behavior, device installation or renewal."
+    }
+  ],
+  "compilationAndDefinitionReview": {
+    "currentDependencyHashesVerified": [
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+        "bytes": 38453,
+        "sha256": "f8d754a50c0b011e325b4a3c5e2e910cb8a6bf48e0ca39bc3c80988e57d78e19"
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift",
+        "bytes": 7785,
+        "sha256": "254d22cb63322addecf71b85b2be757bbe514df7370ad80dc75995afa9af6ca2"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+        "bytes": 46088,
+        "sha256": "4dd0922c904ed0bfd7e08bd3a638f9ccc5c5e6c8fd4a620e09f9620004477e38"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift",
+        "bytes": 25565,
+        "sha256": "d835a75bdeb280173b388a943a018a672476898d50b309b1c21a04aaa28c9c57"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalDERPropertyList.swift",
+        "bytes": 8386,
+        "sha256": "93461f503492f663854eb97569efb010fb57257f3f29ac75605ef8ea874b5666"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalApplicationMaterialVerifier.swift",
+        "bytes": 12873,
+        "sha256": "395fb5baf2b0f0c093cc0d2eb8ac0526a1e0080f0f3b8ada06aa3996b69913f1"
+      },
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalProvisioningProfileVerifier.swift",
+        "bytes": 16456,
+        "sha256": "e7fc2366b6149ff5a5b1dde04e3f0c854cc3a8205135a8ed4dd60c42c934b8d2"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+        "bytes": 31526,
+        "sha256": "939f7029ccee43b09414f7d6ed5591a9b1fa8ea114a07b5c3e8f77f25c0d370d"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift",
+        "bytes": 9327,
+        "sha256": "86f6804669188243b3b7d24da999c427e79c13c20d60caf3636c870e6e7e26a1"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalApplicationMaterialFixture.swift",
+        "bytes": 140748,
+        "sha256": "eb9b966c9843518796926c5df2b932f571c88c8549e24531281eab1aa42f11f7"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalCMSFixture.swift",
+        "bytes": 42388,
+        "sha256": "a1ea510648fd0f0a748ad83b9f6ec0253bde44360e1d6fcf5e288525f6bd562e"
+      },
+      {
+        "path": "Yuedu-Reader.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved",
+        "bytes": 7779,
+        "sha256": "c75489cf86de2c4d29140463da3aa310783290d8df66c70c0ac99cb93671168e"
+      }
+    ],
+    "existingVaultSignaturesChecked": [
+      "resume(namespaceID:identity:)",
+      "certificateSigningRequest(in:keyID:expectedGeneration:commonName:emailAddress:)",
+      "publish(in:keyID:expectedGeneration:certificateChainDER:profiles:)",
+      "lease(in:)",
+      "validate(_:for:)"
+    ],
+    "buildSettingsObserved": "Current project remains Swift5.0; App has no default actor-isolation setting; tests enable approachable concurrency. No settings changed.",
+    "newExhaustiveExistingEnumChanges": 0,
+    "sourceCompileClaim": "No additional concrete compiler error was proven from this source pass. Actual Swift name lookup, SDK availability, macro typechecking, URLSession/URLProtocol behavior and Security runtime remain unexecuted; grammar0 is not typechecking.",
+    "existingGrammarReused": {
+      "path": ".build/renewal-discovery/account-enrollment-step/grammar-final-v1.json",
+      "bytes": 1024,
+      "sha256": "47a5ba438108c6ae03171d47c22f53bdf9808ca8aca17f46a31a0e0f8d8c2094"
+    },
+    "nativeDefinitions": [
+      "submitsRealVaultCSRAndPublishesOnlyVerifiedOriginalIdentity()",
+      "rejectsWrongCertificateKeyBeforeProfileRequests()",
+      "rejectsTamperedRemoteProfilesWithoutChangingPublication()",
+      "invalidatesExpiredOrChangedPortalSession()",
+      "cancellationRetainsRemoteIntentAndPreventsDuplicateIssuance()",
+      "retainsCommittedPublicationWhenAccountFinalizationFails()",
+      "rejectsStaleKeysAndMissingOriginalAppIDsBeforeRemoteMutation()",
+      "rejectsUnsafeResponseEnvelopesAndRedactsCredentialDescriptions()"
+    ],
+    "nativeDefinitionsAcceptedAsRuntimeResults": false
+  },
+  "knownIntegrationAndCompletionGates": [
+    "The3 new source files remain ignored. Canonical AppSession, AppDependencies and UI have no reference to the new client; no App lifetime retains its one instance or arbitrates account publication against the current persistent S5 transaction phase. This is an explicit unfinished integration gate, not completed product behavior.",
+    "The candidate token and fresh-anisette closure have no real producer yet. GSA SRP/M2/HMAC/SPD/app-token crypto, 2FA, token refresh, and on-device/otherwise authorized anisette provisioning remain required production work, not a fake-token authorization gate.",
+    "Arbitrary fresh-anisette provider errors and an uncooperative provider are not normalized/bounded by this client. The real provider must enforce typed secret-free diagnostics, cancellation and deadlines before it is wired. No log leak from an actual provider is claimed: none is implemented or called here.",
+    "Caller-provided issuer-chain configuration is structurally length-bounded but its actual DER/trust is finally checked by the original Vault after remote requests. The future App configuration/issuer-acquisition owner must reject known-malformed local configuration before authorizing an irreversible issue; this review does not call the configured bytes Apple trust.",
+    "Only the existing original registered App IDs are supported. Free-team expired/fresh registration, device/capability/group policy, official issuer rotation, remote certificate revocation and full certificate-list/unknown-issue reconciliation remain incomplete.",
+    "The current conservative pending gate does not automatically retry or discard a request on a definitive portal error. A lifecycle reconciliation step is still required; the existing local actual-publication finalizer is narrower.",
+    "Current and earlier submitted SDK results exclude these3 frozen sources. They cannot accept this new client or its8 methods. A corrected controlled-peer batch and genuine SDK compilation/runtime are required before any execution claim."
+  ],
+  "sourceOnlySafetyBoundary": "The audit found no confirmed added production trust bypass or fake account/install authority. This is not a runtime correctness, privacy-completeness, current Apple protocol or S2 completion acceptance.",
+  "executedDuringThisSelfReview": {
+    "sourceInspection": true,
+    "newGrammarExecutions": 0,
+    "behaviorTests": 0,
+    "SwiftSDKOrCompiler": 0,
+    "SecurityKeychain": 0,
+    "OpenSSL": 0,
+    "controlledHTTPPeer": 0,
+    "realNetworkRequests": 0,
+    "realAppleAccountsOrCredentials": 0,
+    "physicalDevice": 0,
+    "CIQueriesOrTriggers": 0,
+    "GitCommands": 0,
+    "canonicalOrFrozenSourceWrites": 0
+  },
+  "automaticSelfRenewalImplemented": false,
+  "allNonDeviceWorkComplete": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}
