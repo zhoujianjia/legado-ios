@@ -1,0 +1,43 @@
+{
+  "rawWholeLog": {
+    "path": ".build/sdk-fc3b01c-terminal/extracted-12307712232/reader-renewal-probe/currentcore-tests.log",
+    "bytes": 15758720,
+    "sha256": "fbbecd58423da137e1ea1a198b556bc2bb489fea1c8d8ef1f42c7496b4ed5dc5"
+  },
+  "matches": [
+    {
+      "line": 57140,
+      "text": "✘ Test \"one due trigger captures current Bundle, really signs, persists and sends exact candidate with all three owners\" recorded an issue at SelfRenewalAutomaticRenewalTests.swift:86:6: Caught error: missingMutualAuthentication"
+    },
+    {
+      "line": 66248,
+      "text": "✘ Test \"lost actual Upgrade response reopens durable owner and fresh vault for Lookup only\" recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:50:6: Caught error: missingMutualAuthentication"
+    },
+    {
+      "line": 71128,
+      "text": "✘ Test \"actual interrupted package upload reopens its journal and only cleans its owned path\" recorded an issue at SelfRenewalControlledRenewalCoordinatorTests.swift:180:6: Caught error: missingMutualAuthentication"
+    },
+    {
+      "line": 97586,
+      "text": "✘ Test \"the actual App owner downgrades revoked upload material and preserves manual owned cleanup without automatic submission\" recorded an issue at SelfRenewalForegroundMaterialRevalidationTests.swift:117:6: Caught error: missingMutualAuthentication"
+    },
+    {
+      "line": 99993,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalInstallationRecoveryTests.swift:135:17: Expectation failed: ((staleError as? Recovery.RecoveryFailure)?.underlying as? Journal.Failure → .invalidTransition) == .staleSnapshot"
+    },
+    {
+      "line": 99994,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalInstallationRecoveryTests.swift:142:17: Expectation failed: ((wrongError as? Recovery.RecoveryFailure)?.underlying as? Recovery.Failure → nil) == .wrongDevice"
+    },
+    {
+      "line": 99995,
+      "text": "yuedu_appTests/SelfRenewalInstallationRecoveryTests.swift:149: Fatal error: Unexpectedly found nil while unwrapping an Optional value"
+    },
+    {
+      "line": 99996,
+      "text": "2026-10-20 23:17:07.225599+0000 YueduReader[37799:402653] yuedu_appTests/SelfRenewalInstallationRecoveryTests.swift:149: Fatal error: Unexpectedly found nil while unwrapping an Optional value"
+    }
+  ],
+  "actualStateOrRoleCapturedInLog": false,
+  "sourceInferenceNotLocalTLSPass": true
+}

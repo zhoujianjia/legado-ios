@@ -2,7 +2,8 @@ import CryptoKit
 import Foundation
 import Security
 
-/// Bounded DER SignedData verification using public iOS Security APIs. Trust is
+/// Bounded CMS SignedData verification using public iOS Security APIs. BER
+/// envelope lengths are separate from the mandatory DER signed attributes. Trust is
 /// exclusively relative to explicit anchors, never an assertion of Apple account,
 /// provisioning authority, entitlement authorization, timestamp or revocation.
 enum SelfRenewalCMSVerifier {
@@ -93,24 +94,24 @@ enum SelfRenewalCMSVerifier {
               anchors.allSatisfy({ !$0.isEmpty && $0.count <= Limits.certificateBytes }),
               Set(anchors).count == anchors.count, date.timeIntervalSince1970.isFinite else { throw Failure.invalidAnchors }
         let anchorCertificates = try anchors.map { try certificate($0) }
-        let outer = try children(try single(message, tag: 0x30))
+        let outer = try children(try single(message, tag: 0x30, envelope: true), envelope: true)
         guard outer.count == 2, outer[0].tag == 0x06, outer[0].body == OID.signedData,
               outer[1].tag == 0xa0 else { throw Failure.unsupportedCMS }
-        let signed = try children(try single(outer[1].body, tag: 0x30))
+        let signed = try children(try single(outer[1].body, tag: 0x30, envelope: true), envelope: true)
         guard signed.count == 5, signed[0].tag == 0x02,
               signed[0].body == Data([1]) || signed[0].body == Data([3]),
               signed[1].tag == 0x31, signed[2].tag == 0x30,
               signed[3].tag == 0xa0, signed[4].tag == 0x31 else { throw Failure.unsupportedCMS }
         let digestAlgorithms = try children(signed[1]).map { try digestAlgorithm($0) }
         guard !digestAlgorithms.isEmpty, Set(digestAlgorithms).count == digestAlgorithms.count else { throw Failure.unsupportedAlgorithm }
-        let contentFields = try children(signed[2])
+        let contentFields = try children(signed[2], envelope: true)
         guard !contentFields.isEmpty, contentFields[0].tag == 0x06,
               contentFields[0].body == OID.data, contentFields.count <= 2 else { throw Failure.unsupportedCMS }
         let content: Data
         if contentFields.count == 2 {
             guard detachedContent == nil else { throw Failure.ambiguousContent }
             guard contentFields[1].tag == 0xa0 else { throw Failure.unsupportedCMS }
-            content = try single(contentFields[1].body, tag: 0x04).body
+            content = try contentOctets(contentFields[1].body)
         } else {
             guard let detachedContent else { throw Failure.missingContent }
             content = detachedContent
@@ -120,13 +121,13 @@ enum SelfRenewalCMSVerifier {
         guard !certificateNodes.isEmpty, certificateNodes.count <= Limits.certificates else { throw Failure.certificateLimit }
         guard Set(certificateNodes.map(\.full)).count == certificateNodes.count else { throw Failure.malformedCertificate }
         let certificates = try certificateNodes.map { try certificate($0.full) }
-        let signerNodes = try children(signed[4])
+        let signerNodes = try children(signed[4], envelope: true)
         guard !signerNodes.isEmpty, signerNodes.count <= Limits.signers else { throw Failure.unsupportedCMS }
         var results: [Signer] = []
         var seenSigners = Set<Data>()
         for node in signerNodes {
             try Task.checkCancellation()
-            let fields = try children(node)
+            let fields = try children(node, envelope: true)
             guard node.tag == 0x30, fields.count >= 5, fields[0].tag == 0x02 else { throw Failure.unsupportedCMS }
             let sid = fields[1]
             guard (sid.tag == 0x30 && fields[0].body == Data([1])) ||
@@ -160,7 +161,7 @@ enum SelfRenewalCMSVerifier {
             if fields.count == position + 3 {
                 guard fields[position + 2].tag == 0xa1 else { throw Failure.unsupportedCMS }
                 // Timestamp/countersignature attributes convey no trust here.
-                _ = try children(fields[position + 2])
+                _ = try children(fields[position + 2], envelope: true)
             }
             let algorithm = try signatureAlgorithm(fields[position], digest: digest)
             guard let key = SecCertificateCopyKey(leaf),
@@ -262,6 +263,10 @@ enum SelfRenewalCMSVerifier {
     }
     private static func validateAttributes(_ node: Node, content: Data, digest: Digest) throws
         -> (encoded: Data, attributes: [SignedAttribute]) {
+        // RFC5652 5.3/5.4: signedAttrs MUST remain canonical DER even when
+        // ContentInfo/SignedData use BER. Preserve its exact original length
+        // and bytes for signature verification; never normalize signed input.
+        _ = try single(node.full, tag: 0xa0)
         let attributes = try children(node)
         guard !attributes.isEmpty, attributes.count <= Limits.attributes else { throw Failure.invalidAttributes }
         var previous: Data?
@@ -394,22 +399,99 @@ enum SelfRenewalCMSVerifier {
         let full: Data
         let body: Data
     }
-    private static func single(_ data: Data, tag: UInt8) throws -> Node {
+    private static func single(_ data: Data, tag: UInt8, envelope: Bool = false) throws -> Node {
         var offset = 0
-        let node = try next(data, offset: &offset)
+        var nodes = 0
+        let node: Node
+        if envelope {
+            node = try nextEnvelope(data, offset: &offset, depth: 0, nodes: &nodes)
+        } else {
+            node = try next(data, offset: &offset)
+        }
         guard node.tag == tag, offset == data.count else { throw Failure.malformedDER }
         return node
     }
-    private static func children(_ node: Node) throws -> [Node] {
+    private static func children(_ node: Node, envelope: Bool = false) throws -> [Node] {
         guard node.tag & 0x20 != 0 else { throw Failure.malformedDER }
         var result: [Node] = []
         var offset = 0
+        var nodes = 0
         while offset < node.body.count {
             try Task.checkCancellation()
             guard result.count < Limits.children else { throw Failure.sizeLimit }
-            result.append(try next(node.body, offset: &offset))
+            if envelope {
+                result.append(try nextEnvelope(node.body, offset: &offset, depth: 0, nodes: &nodes))
+            } else {
+                result.append(try next(node.body, offset: &offset))
+            }
         }
         return result
+    }
+
+    /// BER is permitted only for the CMS envelope entry. Definite lengths still
+    /// use the existing strict DER reader. All constructed contents are bounded
+    /// once here, including EOCs nested below definite wrappers. EOC is never
+    /// accepted as a standalone node or as content of a definite container.
+    private static func nextEnvelope(_ data: Data, offset: inout Int, depth: Int, nodes: inout Int) throws -> Node {
+        try Task.checkCancellation()
+        nodes += 1
+        guard depth <= 16, nodes <= 4_096 else { throw Failure.sizeLimit }
+        let start = offset
+        guard offset <= data.count - 2 else { throw Failure.malformedDER }
+        let tag = data[data.startIndex + offset]
+        guard tag != 0, tag & 0x1f != 0x1f else { throw Failure.malformedDER }
+        if data[data.startIndex + offset + 1] != 0x80 {
+            let node = try next(data, offset: &offset)
+            if tag & 0x20 != 0 {
+                var childOffset = 0
+                var count = 0
+                while childOffset < node.body.count {
+                    guard count < Limits.children else { throw Failure.sizeLimit }
+                    _ = try nextEnvelope(node.body, offset: &childOffset, depth: depth + 1, nodes: &nodes)
+                    count += 1
+                }
+            }
+            return node
+        }
+        guard tag & 0x20 != 0 else { throw Failure.malformedDER }
+        offset += 2
+        let bodyStart = offset
+        var count = 0
+        while true {
+            guard offset <= data.count - 2 else { throw Failure.malformedDER }
+            if data[data.startIndex + offset] == 0 && data[data.startIndex + offset + 1] == 0 {
+                let bodyEnd = offset
+                offset += 2
+                return Node(tag: tag,
+                    full: Data(data[(data.startIndex + start)..<(data.startIndex + offset)]),
+                    body: Data(data[(data.startIndex + bodyStart)..<(data.startIndex + bodyEnd)]))
+            }
+            guard count < Limits.children else { throw Failure.sizeLimit }
+            _ = try nextEnvelope(data, offset: &offset, depth: depth + 1, nodes: &nodes)
+            count += 1
+        }
+    }
+
+    /// BER constructed OCTET STRING only concatenates actual octets. Its
+    /// encoding is never used as signature input; digest checks authenticate
+    /// the resulting content exactly as for the primitive original form.
+    private static func contentOctets(_ data: Data) throws -> Data {
+        var offset = 0, nodes = 0
+        let node = try nextEnvelope(data, offset: &offset, depth: 0, nodes: &nodes)
+        guard offset == data.count else { throw Failure.malformedDER }
+        var content = Data()
+        func append(_ node: Node, depth: Int) throws {
+            try Task.checkCancellation()
+            guard depth <= 16 else { throw Failure.sizeLimit }
+            if node.tag == 0x04 {
+                guard node.body.count <= Limits.contentBytes - content.count else { throw Failure.sizeLimit }
+                content.append(node.body)
+            } else if node.tag == 0x24 {
+                for child in try children(node, envelope: true) { try append(child, depth: depth + 1) }
+            } else { throw Failure.unsupportedCMS }
+        }
+        try append(node, depth: 0)
+        return content
     }
     private static func next(_ data: Data, offset: inout Int) throws -> Node {
         let start = offset

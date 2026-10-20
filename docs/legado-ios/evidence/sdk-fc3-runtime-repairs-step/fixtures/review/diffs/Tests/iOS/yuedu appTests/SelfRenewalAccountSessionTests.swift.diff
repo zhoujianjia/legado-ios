@@ -1,0 +1,22 @@
+--- a/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift
++++ b/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift
+@@ -501,15 +501,16 @@
+                         })
+                         Issue.record("Owned boundary stop returned an install receipt")
+                     } catch let failure as SelfRenewalAuthenticatedInstallationClient.OperationFailure {
+-                        #expect(failure.underlying is EnrollmentFixtureStop)
+-                        #expect(!failure.upgradeMayHaveExecuted)
++                        try #require(failure.underlying is EnrollmentFixtureStop)
++                        try #require(!failure.upgradeMayHaveExecuted)
+                     }
+                     let observed = peer.observed.snapshot
+                     #expect(observed.openedFileHandles == 0 && observed.upgradeRequests == 0)
+                 }
+                 let checkpoint = try await journal.load()
+                 let loaded = try #require(checkpoint)
+-                #expect(loaded.record.phase == .uploadIntent && loaded.record.remoteHistory == .started)
++                // A failed TLS prerequisite must stop this case before any enrollment request.
++                try #require(loaded.record.phase == .uploadIntent && loaded.record.remoteHistory == .started)
+                 try await journal.close()
+             } catch { do { try await journal.close() } catch { Issue.record(error) }; throw error }
+             let transactionURL = journalRoot.appendingPathComponent("transaction.json")

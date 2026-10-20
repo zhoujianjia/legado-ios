@@ -171,10 +171,11 @@ struct SelfRenewalAnisetteV3ProviderTests {
     @Test("endpoint selection is local, schema-1 compatible, and excludes private registration state")
     func endpointSelectionIsLocalAndBackwardCompatible() async throws {
         try await Task.detached {
-            let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-            try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true,
+            let parent = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+            try FileManager.default.createDirectory(at: parent, withIntermediateDirectories: false,
                 attributes: [.posixPermissions: 0o700])
-            defer { do { try FileManager.default.removeItem(at: root) } catch { Issue.record("fixture cleanup failed") } }
+            defer { do { try FileManager.default.removeItem(at: parent) } catch { Issue.record("fixture cleanup failed") } }
+            let root = parent.appendingPathComponent("SelfRenewalApp", isDirectory: true)
             let handoff = await MainActor.run { SelfRenewalUserDataHandoff() }
             var session = SelfRenewalAppSession(root: root)
             _ = try await session.bootstrap(handoff: handoff)

@@ -1,0 +1,192 @@
+{
+  "schema": 1,
+  "stage": "sdk-fc3-cms-ber-envelope-repair",
+  "candidateStatus": "source candidate; independent review and future actual Swift/Security SDK regression required",
+  "sourceRoot": ".build/sdk-fc3-cms-ber-envelope-repair-step/snapshot-v1/work",
+  "baselineRoot": ".build/sdk-fc3-cms-ber-envelope-repair-step/snapshot-v1/rawbaseline",
+  "files": [
+    {
+      "source": "Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift",
+      "baseline": {
+        "path": ".build/sdk-fc3-cms-ber-envelope-repair-step/snapshot-v1/rawbaseline/Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift",
+        "bytes": 25565,
+        "sha256": "d835a75bdeb280173b388a943a018a672476898d50b309b1c21a04aaa28c9c57"
+      },
+      "candidate": {
+        "path": ".build/sdk-fc3-cms-ber-envelope-repair-step/snapshot-v1/work/Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift",
+        "bytes": 29782,
+        "sha256": "688e95c2eed047414fc1113ead036f95e81bbafc8733229105ac387221026e12"
+      },
+      "diff": {
+        "path": ".build/sdk-fc3-cms-ber-envelope-repair-step/evidence/production.diff",
+        "bytes": 10027,
+        "sha256": "6b769f40862df8e6127b3be8b8fd9f50dafdeb630a5e625dc3c832e90774fb13"
+      }
+    },
+    {
+      "source": "Tests/iOS/yuedu appTests/SelfRenewalCMSVerifierTests.swift",
+      "baseline": {
+        "path": ".build/sdk-fc3-cms-ber-envelope-repair-step/snapshot-v1/rawbaseline/Tests/iOS/yuedu appTests/SelfRenewalCMSVerifierTests.swift",
+        "bytes": 7474,
+        "sha256": "8bc4a8346c0e4c2e0f8b6f3e0fd454305a0241a096ad600bbc3ddb7ef9eaa8e9"
+      },
+      "candidate": {
+        "path": ".build/sdk-fc3-cms-ber-envelope-repair-step/snapshot-v1/work/Tests/iOS/yuedu appTests/SelfRenewalCMSVerifierTests.swift",
+        "bytes": 58618,
+        "sha256": "0b0be00e2fb72050206f5f762958cf3a45c9b519acfa9525fd114a5ad15e6e29"
+      },
+      "diff": {
+        "path": ".build/sdk-fc3-cms-ber-envelope-repair-step/evidence/tests.diff",
+        "bytes": 52968,
+        "sha256": "d642a7c87e0df79c4eec22325ee9d4248f521ad49ca7ed2fdb4e5bd2f40d22ee"
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "path": ".build/sdk-fc3-cms-ber-envelope-repair-step/snapshot-v1/evidence/actual-counterexample.json",
+      "bytes": 1535,
+      "sha256": "db7e6dc5d36fcb2c8d5bcb349b369c053d8e13d9298dfc860e08299e45f1ba9c"
+    },
+    {
+      "path": ".build/sdk-fc3-cms-ber-envelope-repair-step/snapshot-v1/evidence/actual-sdk-required-signer-failure-excerpt.txt",
+      "bytes": 2971,
+      "sha256": "9051d37706ec5ee91043f11d798947235a96de32c5636b4272926dfa2ae5844f"
+    },
+    {
+      "path": ".build/sdk-fc3-cms-ber-envelope-repair-step/snapshot-v1/evidence/grammar-v1.json",
+      "bytes": 1786,
+      "sha256": "a4dad90de1d757253e687778c723e73cf1775debac60ba31b89b7fd9c61d0bae"
+    },
+    {
+      "path": ".build/sdk-fc3-cms-ber-envelope-repair-step/snapshot-v1/evidence/independent-math-and-boundaries.json",
+      "bytes": 9391,
+      "sha256": "f27285c37318382fac712390ee988e58c6024e1cba5540f9d805f273a94ab355"
+    },
+    {
+      "path": ".build/sdk-fc3-cms-ber-envelope-repair-step/snapshot-v1/evidence/production.diff",
+      "bytes": 10027,
+      "sha256": "6b769f40862df8e6127b3be8b8fd9f50dafdeb630a5e625dc3c832e90774fb13"
+    },
+    {
+      "path": ".build/sdk-fc3-cms-ber-envelope-repair-step/snapshot-v1/evidence/public-vectors.json",
+      "bytes": 50308,
+      "sha256": "3c4b40fa991f0460856bd53f67caafb580d55e48c03e1f2ea5dd7050e2539901"
+    },
+    {
+      "path": ".build/sdk-fc3-cms-ber-envelope-repair-step/snapshot-v1/evidence/source-function-bindings.json",
+      "bytes": 7384,
+      "sha256": "37c42e95c1e0cbc995c1ec70d92548bd7a5203ae4876654247ecc42bb63deb79"
+    },
+    {
+      "path": ".build/sdk-fc3-cms-ber-envelope-repair-step/snapshot-v1/evidence/test-fixture-binding.json",
+      "bytes": 342,
+      "sha256": "6160b598c00a488634b3d5c8c602d8aed9f9a8006ad5c867b4a736ec3642116c"
+    },
+    {
+      "path": ".build/sdk-fc3-cms-ber-envelope-repair-step/snapshot-v1/evidence/tests.diff",
+      "bytes": 52968,
+      "sha256": "d642a7c87e0df79c4eec22325ee9d4248f521ad49ca7ed2fdb4e5bd2f40d22ee"
+    }
+  ],
+  "actualCause": {
+    "failure": "signsSDKProducedMainExtensionsAndFrameworkInSameJob caught malformedDER",
+    "actualLog": {
+      "path": ".build/sdk-fc3b01c-terminal/extracted-12307712232/reader-renewal-probe/currentcore-tests.log",
+      "bytes": 15758720,
+      "sha256": "fbbecd58423da137e1ea1a198b556bc2bb489fea1c8d8ef1f42c7496b4ed5dc5"
+    },
+    "actualExcerpt": {
+      "path": ".build/sdk-fc3-cms-ber-envelope-repair-step/evidence/actual-sdk-required-signer-failure-excerpt.txt",
+      "bytes": 2971,
+      "sha256": "9051d37706ec5ee91043f11d798947235a96de32c5636b4272926dfa2ae5844f"
+    },
+    "producerManifest": {
+      "path": ".build/sdk-fc3b01c-terminal/extracted-12307712232/reader-renewal-probe/sdk-produced-public/sdk-produced-fixture-manifest.json",
+      "bytes": 46004,
+      "sha256": "d24427fe7405149da7e0e15d1f9d4d7a6804eafd27febbe5e13a3accde67b6e4"
+    },
+    "actualProducerCommands": 48,
+    "actualPublicOutputs": 43,
+    "actualMachOs": 4,
+    "producerSuccessDoesNotEstablishAppSigning": true,
+    "initialBytesHex": "308006092a864886f70d010702a0803080020101310f300d",
+    "oldStrictFailure": {
+      "byteOffset": 0,
+      "tagHex": "30",
+      "lengthOctetHex": "80",
+      "cause": "existing next requires long length width > 0; BER indefinite has width 0"
+    },
+    "ownedAnchorOnly": true,
+    "primaryStandards": [
+      {
+        "url": "https://www.rfc-editor.org/rfc/rfc5652.html",
+        "sections": [
+          "3 (BER/indefinite encodings)",
+          "5.3 and 5.4 (signedAttrs DER and exact signature encoding)"
+        ]
+      }
+    ]
+  },
+  "changes": [
+    "CMS envelope entry permits bounded constructed indefinite-length BER; ordinary definite lengths retain shortest encoding checks",
+    "Constructed eContent OCTET STRING concatenates authenticated actual octets only",
+    "Signed attributes must still pass exact original DER wrapper, recursive canonical encoding and SET ordering; exact original signed bytes retained",
+    "Original SecKey algorithms/signature verification and explicit-anchor SecTrust block unchanged"
+  ],
+  "bounds": {
+    "messageBytes": 2097152,
+    "contentBytes": 1048576,
+    "certificateBytes": 65536,
+    "depth": 16,
+    "nodes": 4096,
+    "children": 256,
+    "certificates": 16,
+    "signers": 8,
+    "attributes": 64
+  },
+  "validation": {
+    "independentPublicCMSCryptographicChecks": 4,
+    "independentMathAndBoundaryChecks": 26,
+    "treeSitterRoots": 4,
+    "syntaxErrors": 0,
+    "existingTestDefinitions": 7,
+    "newTestDefinitions": 0,
+    "modifiedExistingTestDefinitions": 2,
+    "sourcePreparationExecutions": 2,
+    "sourcePreparationPassed": 2,
+    "SwiftSDKTestsExecuted": 0,
+    "AppleSecurityRuntimeExecuted": 0,
+    "deviceExecuted": 0
+  },
+  "preserved": {
+    "strictDERNextAndPublicParseExact": true,
+    "cryptoTrustVerificationBlock": {
+      "bytes": 2429,
+      "sha256": "769aef23386758d23b5ecf8a0def4abf3c4ec8cf45d6c8914d9fee6977457617",
+      "exact": true,
+      "contents": "SecKeyVerifySignature, explicit anchor-only trust, no network, date, chain and cancellation checks"
+    },
+    "sevenOriginalTestIdentities": true,
+    "privateKeys": 0
+  },
+  "limits": [
+    "This supports bounded constructed indefinite BER envelopes with canonical definite length encodings; it is not a general ASN.1 BER implementation",
+    "Python cryptography and a bounded parser model establish public-fixture math, not Swift/Security/App runtime success",
+    "No Apple account, provisioning authority, real installation or automatic-renewal claim follows from the owned producer certificate",
+    "Actual Swift SDK execution including same-job required signer remains pending"
+  ],
+  "flags": {
+    "realAppleAccountUsed": false,
+    "appleProvisioningAuthorityEstablished": false,
+    "replacementAuthorized": false,
+    "realDeviceValidated": false
+  },
+  "failedChecks": 0,
+  "remainingConfirmedFindings": [],
+  "mutations": {
+    "canonical": false,
+    "git": false,
+    "cloud": false
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "files": [
+    {
+      "root": "Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift",
+      "unchangedFunctions": [
+        {
+          "name": "hash",
+          "signature": "func hash(_ data: Data) -> Data",
+          "sha256": "dd77502721d36ab9d35a5d40935d627f8e42ad1143c9b6b27f784e760a1ef4e3",
+          "startLine": 201
+        },
+        {
+          "name": "certificate",
+          "signature": "private static func certificate(_ data: Data) throws -> SecCertificate",
+          "sha256": "c3b86488616d59f2656e5c290a234127abd8a478bc6789299fd46aaf8c4fe82f",
+          "startLine": 226
+        },
+        {
+          "name": "algorithmFields",
+          "signature": "private static func algorithmFields(_ node: Node) throws -> [Node]",
+          "sha256": "5de128b41c7c3dabc0bc934c167e922ba37c1ba5aaca3868462d48dbf3507fcf",
+          "startLine": 231
+        },
+        {
+          "name": "digestAlgorithm",
+          "signature": "private static func digestAlgorithm(_ node: Node) throws -> Digest",
+          "sha256": "313de2b0303f489d75bdad7e22d94f4d12809a731f93a2145c1ae1c7c6b39f0e",
+          "startLine": 237
+        },
+        {
+          "name": "signatureAlgorithm",
+          "signature": "private static func signatureAlgorithm(_ node: Node, digest: Digest) throws -> SecKeyAlgorithm",
+          "sha256": "6104b33d157e7984178f8bf7b2bd6a166c981f495b2bcfbb4145e9009a8aa1a6",
+          "startLine": 248
+        },
+        {
+          "name": "children",
+          "signature": "static func children(of value: SignedAttribute.Value) throws -> [SignedAttribute.Value]",
+          "sha256": "d537254bfe1b07198afe96e4906b9911bb19b61c68d0d8dedebb3a789beb1e24",
+          "startLine": 302
+        },
+        {
+          "name": "parseDER",
+          "signature": "static func parseDER(_ data: Data) throws -> SignedAttribute.Value",
+          "sha256": "2305a4a0bb33bdb5e92a7684821e10b736ffce4bb245a6474655787839c6d709",
+          "startLine": 309
+        },
+        {
+          "name": "validateAttributeDER",
+          "signature": "private static func validateAttributeDER(_ node: Node, depth: Int, nodes: inout Int) throws",
+          "sha256": "bf370167f4dc6fee4703c50e32d8476f4dfd5732a232562f0e38f1d31f8095ab",
+          "startLine": 319
+        },
+        {
+          "name": "matchesSigner",
+          "signature": "private static func matchesSigner(_ sid: Node, certificate: Node) throws -> Bool",
+          "sha256": "7f20b25c9bed4326139f781d0534b0418408510f9a5be1faef894e364011f6d2",
+          "startLine": 366
+        },
+        {
+          "name": "next",
+          "signature": "private static func next(_ data: Data, offset: inout Int) throws -> Node",
+          "sha256": "8c801469715f7129ef3e62bf69db0e05a713191dbc2633905772a27b89b87c79",
+          "startLine": 414
+        }
+      ],
+      "changedFunctions": [
+        {
+          "name": "verify",
+          "signature": "static func verify(_ message: Data, detachedContent: Data? = nil,\n        anchors: [Data], at date: Date) throws -> VerifiedContent",
+          "sha256": "d7b682d01630fbdef49cdd5d066800b14c1ea744b7c45ae058692e51d5cdfb1a",
+          "startLine": 81
+        },
+        {
+          "name": "validateAttributes",
+          "signature": "private static func validateAttributes(_ node: Node, content: Data, digest: Digest) throws\n        -> (encoded: Data, attributes: [SignedAttribute])",
+          "sha256": "190e097c889b3c42642b114b3a9d210936dcaa42d1ef7ee97eca05761eb30a41",
+          "startLine": 263
+        },
+        {
+          "name": "single",
+          "signature": "private static func single(_ data: Data, tag: UInt8) throws -> Node",
+          "sha256": "771d99400c6785eaf14e25674c15469b170d6fb522dea684a420c425ce4458ab",
+          "startLine": 397
+        },
+        {
+          "name": "children",
+          "signature": "private static func children(_ node: Node) throws -> [Node]",
+          "sha256": "ee1068f75b3d3022ae4174b5d84adce9c499b6dc6980ca48e529072f6362feb9",
+          "startLine": 403
+        }
+      ],
+      "baselineFunctions": 14,
+      "candidateFunctions": 17
+    },
+    {
+      "root": "Tests/iOS/yuedu appTests/SelfRenewalCMSVerifierTests.swift",
+      "unchangedFunctions": [
+        {
+          "name": "verifiesECDSAAndEverySigner",
+          "signature": "@Test(\"ECDSA SHA384 and two different signer certificates are independently verified\")\n    func verifiesECDSAAndEverySigner() async throws",
+          "sha256": "2025e1f5dcffc6f9c2c36fa4f8825b4d9c7b111c9c571e5dfc58b0d36de1d351",
+          "startLine": 31
+        },
+        {
+          "name": "rejectsChangedContentAndSignatures",
+          "signature": "@Test(\"Changed content and direct signature bytes fail actual cryptographic verification\")\n    func rejectsChangedContentAndSignatures() async throws",
+          "sha256": "cfd644adc82d93f6f80ad4fdc4bd5c3d94b69ff014907c7e982fcec800959280",
+          "startLine": 43
+        },
+        {
+          "name": "rejectsUntrustedAndExpiredChains",
+          "signature": "@Test(\"Unrelated anchors and expired certificates cannot pass generic chain validation\")\n    func rejectsUntrustedAndExpiredChains() async throws",
+          "sha256": "1bfa65a8d6983d7908e0c2d6631743a20c75559f7de998723ee321f4205b9532",
+          "startLine": 66
+        },
+        {
+          "name": "rejectsMissingAndAmbiguousContent",
+          "signature": "@Test(\"Detached and encapsulated content are never confused or silently substituted\")\n    func rejectsMissingAndAmbiguousContent() async throws",
+          "sha256": "a2e5f2a9b76ac11fe2f10a727e9c267319b4d85b4857c3f2e82c32bd9cd47f5b",
+          "startLine": 82
+        },
+        {
+          "name": "rejectsCancelledVerification",
+          "signature": "@Test(\"Cancellation is checked before the first CMS or certificate operation\")\n    func rejectsCancelledVerification() async throws",
+          "sha256": "4d9cdaa98156d20f212a5777adb579ce4bde1b655d1b4f653e50f19c04e6d40c",
+          "startLine": 125
+        }
+      ],
+      "changedFunctions": [
+        {
+          "name": "verifiesIndependentRSAAndDetachedVectors",
+          "signature": "@Test(\"OpenSSL RSA attributed, direct, detached and SKI signatures verify actual bytes\")\n    func verifiesIndependentRSAAndDetachedVectors() async throws",
+          "sha256": "92cc68151f560c6e3c97904ca32b90139c8063ea2740d85db0af2589fe692029",
+          "startLine": 11
+        },
+        {
+          "name": "rejectsMalformedDERAndOversizedInputs",
+          "signature": "@Test(\"DER truncation, trailing bytes, indefinite lengths and hard bounds reject input\")\n    func rejectsMalformedDERAndOversizedInputs() async throws",
+          "sha256": "d0c8cf4ce5cf5343b799c9167e6e775f9a49cc7a190f46096c275a0b6338bacd",
+          "startLine": 95
+        }
+      ],
+      "baselineFunctions": 7,
+      "candidateFunctions": 7
+    }
+  ],
+  "cryptoTrustVerificationBlock": {
+    "bytes": 2429,
+    "sha256": "769aef23386758d23b5ecf8a0def4abf3c4ec8cf45d6c8914d9fee6977457617",
+    "exact": true,
+    "contents": "SecKeyVerifySignature, explicit anchor-only trust, no network, date, chain and cancellation checks"
+  },
+  "unchangedTestDefinitions": 7,
+  "newTestDefinitions": 0
+}

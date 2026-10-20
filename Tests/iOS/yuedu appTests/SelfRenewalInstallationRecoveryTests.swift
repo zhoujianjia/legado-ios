@@ -16,7 +16,7 @@ struct SelfRenewalInstallationRecoveryTests {
     func removesPersistedOwnedUploadAfterFreshMutualTLSAndClearsJournalPhase() async throws {
         try await Fixture.withPeer(.partialUploadThenRecover) { c in
             try await Self.withJournal(c) { journal, state, root in
-                let original = await Self.interrupt(c, state: state, partial: false)
+                let original = try await Self.interrupt(c, state: state, partial: false)
                 let failure = try #require(original as? Client.OperationFailure)
                 #expect(!failure.upgradeMayHaveExecuted)
                 let before = await state.value()
@@ -64,7 +64,7 @@ struct SelfRenewalInstallationRecoveryTests {
         for mode: Fixture.Mode in [.cleanupAlreadyAbsent, .cleanupStopDisconnectThenRetry] {
             try await Fixture.withPeer(mode) { c in
                 try await Self.withJournal(c) { journal, state, _ in
-                    _ = await Self.interrupt(c, state: state)
+                    _ = try await Self.interrupt(c, state: state)
                     let expected = await state.value()
                     if mode == .cleanupStopDisconnectThenRetry {
                         let error = await Self.rejected {
@@ -127,7 +127,7 @@ struct SelfRenewalInstallationRecoveryTests {
         try await Fixture.withPeer(.cleanupAfterInterruptedUpload) { c in
             try await Self.withJournal(c) { journal, state, root in
                 let stale = await state.value()
-                _ = await Self.interrupt(c, state: state)
+                _ = try await Self.interrupt(c, state: state)
                 let expected = await state.value()
                 let staleError = await Self.rejected {
                     try await Recovery.cleanup(journal: journal, expected: stale, pairing: c.pairing, lockdownEndpoint: c.endpoint, at: c.date)
@@ -144,9 +144,10 @@ struct SelfRenewalInstallationRecoveryTests {
                 // and UUID syntax decode. No Grant or Outcome is constructed here.
                 let recordURL = root.appendingPathComponent("transaction.json")
                 let original = try Data(contentsOf: recordURL)
+                let submission = try #require(expected.record.submission)
                 var changed = expected.record
                 changed.submission = Journal.Submission(remotePackagePath: "PublicStaging/reader-renewal-00000000-0000-1000-8000-000000000000.ipa",
-                    deviceCertificateSHA256: expected.record.submission!.deviceCertificateSHA256)
+                    deviceCertificateSHA256: submission.deviceCertificateSHA256)
                 try Self.replaceRecord(try JSONEncoder().encode(changed), at: recordURL)
                 do {
                     let loadedRecord7 = try await journal.load()
@@ -163,7 +164,7 @@ struct SelfRenewalInstallationRecoveryTests {
         }
         try await Fixture.withPeer(.cleanupWrongServerCertificate) { c in
             try await Self.withJournal(c) { journal, state, _ in
-                _ = await Self.interrupt(c, state: state)
+                _ = try await Self.interrupt(c, state: state)
                 let expected = await state.value()
                 let error = await Self.rejected {
                     try await Recovery.cleanup(journal: journal, expected: expected, pairing: c.pairing, lockdownEndpoint: c.endpoint, at: c.date)
@@ -180,7 +181,7 @@ struct SelfRenewalInstallationRecoveryTests {
         for cancel in [true, false] {
             try await Fixture.withPeer(.cleanupStallThenRetry) { c in
                 try await Self.withJournal(c) { journal, state, _ in
-                    _ = await Self.interrupt(c, state: state)
+                    _ = try await Self.interrupt(c, state: state)
                     let expected = await state.value()
                     let running = Task {
                         try await Recovery.cleanup(journal: journal, expected: expected, pairing: c.pairing,
@@ -188,7 +189,8 @@ struct SelfRenewalInstallationRecoveryTests {
                     }
                     var events = c.recoveryRemoveRequestReceived.makeAsyncIterator()
                     let event = await events.next()
-                    #expect(event == true)
+                    if event != true { running.cancel(); _ = await running.result }
+                    try #require(event == true)
                     let closeError = await Self.rejected { try await journal.close() }
                     #expect(closeError as? Journal.Failure == .activeTransaction)
                     let grantError = await Self.rejected { try await journal.acquireRemoteCleanup(expected) }
@@ -211,7 +213,7 @@ struct SelfRenewalInstallationRecoveryTests {
     func keepsOriginalErrorSeparateFromRemoteCleanupAndJournalFailures() async throws {
         try await Fixture.withPeer(.cleanupRemoveDeniedThenRetry) { c in
             try await Self.withJournal(c) { journal, state, _ in
-                _ = await Self.interrupt(c, state: state)
+                _ = try await Self.interrupt(c, state: state)
                 let expected = await state.value()
                 let error = await Self.rejected {
                     try await Recovery.cleanup(journal: journal, expected: expected, pairing: c.pairing, lockdownEndpoint: c.endpoint,
@@ -227,7 +229,7 @@ struct SelfRenewalInstallationRecoveryTests {
         let fault = WriteFault()
         try await Fixture.withPeer(.cleanupAfterInterruptedUpload, beforeRecoveryRemoveReply: { try fault.denyWrite() }) { c in
             try await Self.withJournal(c) { journal, state, root in
-                _ = await Self.interrupt(c, state: state)
+                _ = try await Self.interrupt(c, state: state)
                 let expected = await state.value()
                 fault.arm(root)
                 let error = await Self.rejected {
@@ -292,12 +294,18 @@ struct SelfRenewalInstallationRecoveryTests {
             try FileManager.default.removeItem(at: parent)
         }.value
     }
-    private static func interrupt(_ c: Fixture.Context, state: State, partial: Bool = true) async -> Error {
+    private static func interrupt(_ c: Fixture.Context, state: State, partial: Bool = true) async throws -> Error {
         let archive = partial ? Client.ArchiveInput(byteCount: c.bytes.count, sha256: c.archive.sha256) { offset, count in
             if offset > 0 { withUnsafeCurrentTask { $0?.cancel() }; throw CancellationError() }
             return Data(c.bytes[offset..<(offset + count)])
         } : c.archive
-        return await rejected { try await c.upgrade(archive: archive, beforeCreation: { try await state.plan($0) }) }
+        let error = await rejected { try await c.upgrade(archive: archive, beforeCreation: { try await state.plan($0) }) }
+        // Recovery checks require a real owned remote intent. A prior TLS or
+        // service failure is a failed precondition, not cleanup/delete authority.
+        let current = await state.value()
+        try #require(current.record.phase == .uploadIntent)
+        _ = try #require(current.record.submission)
+        return error
     }
     private static func rejected<T>(_ action: () async throws -> T) async -> Error {
         do { _ = try await action(); Issue.record("Expected a rejected real operation"); return TestFailure.expectedFailure }

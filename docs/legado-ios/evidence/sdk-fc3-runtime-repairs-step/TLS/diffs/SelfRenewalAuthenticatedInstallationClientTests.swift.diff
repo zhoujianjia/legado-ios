@@ -1,0 +1,30 @@
+--- a/Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift
++++ b/Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift
+@@ -229,7 +229,8 @@
+             let operation = Task { try await context.upgrade(timeout: 8) }
+             var events = context.sessionRequestReceived.makeAsyncIterator()
+             let received = await events.next()
+-            #expect(received != nil)
++            if received != true { operation.cancel(); _ = await operation.result }
++            try #require(received == true)
+             operation.cancel()
+             let error = await Self.rejected { try await operation.value }
+             let underlying = (error as? Client.OperationFailure)?.underlying as? Transport.Failure
+@@ -244,10 +245,16 @@
+             let operation = Task { try await context.lookup() }
+             var replies = context.lookupRepliesSent.makeAsyncIterator()
+             let sent = await replies.next()
+-            #expect(sent != nil && context.observed.snapshot.lookupRepliesSent == 1)
++            let replyCount = context.observed.snapshot.lookupRepliesSent
++            if sent != true || replyCount != 1 { operation.cancel(); _ = await operation.result }
++            try #require(sent == true && replyCount == 1)
+             operation.cancel()
+             let error = await Self.rejected { try await operation.value }
+             #expect(error as? Transport.Failure == .cancelled)
++            // The actual socket peer has exited after cancellation. Its event
++            // stream must terminate before the enclosing action returns.
++            let finished = await replies.next()
++            #expect(finished == nil)
+             #expect(context.observed.snapshot.upgradeRequests == 0)
+             #expect(context.observed.snapshot.stoppedSessions.isEmpty)
+         }

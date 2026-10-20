@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "scope": "Three fixture repairs for actual fc3 SDK failures; production ownership and trust checks unchanged.",
+  "sourceCommit": "fc3b01ce980f6bdcdc8a3b7559dac5b1d57fc64a",
+  "files": [
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+      "baseline": {
+        "bytes": 94894,
+        "sha256": "5a66a0ec9b30099edae1ac7d877c373e967b1feab0127edec6f573f74c70c28f"
+      },
+      "candidate": {
+        "bytes": 94898,
+        "sha256": "4a36eda937c9c514472cbf49dc728cbf2099fbd1635721765d1bd18fb6dd3023"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAnisetteV3ProviderTests.swift",
+      "baseline": {
+        "bytes": 23032,
+        "sha256": "05dfb0f5de2c7706254bc153765a53dffdeb4fee3a586bccc4941a62ad0296de"
+      },
+      "candidate": {
+        "bytes": 23129,
+        "sha256": "74b4ffbe8fe01ac689b07dfb1c96099b46ced9c37dbe8787ba07286e41745f20"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "baseline": {
+        "bytes": 68187,
+        "sha256": "27ab345e48c2bc52cbb12f35d952d3e5899d6da01d864baa2b1d27d073966c28"
+      },
+      "candidate": {
+        "bytes": 68298,
+        "sha256": "f30cc3d7726491897a50f784b95bc502a20660aeb237034e8180d506b7d0c22e"
+      }
+    }
+  ],
+  "evidence": {
+    "runID": 39507170170,
+    "jobID": 118918888695,
+    "log": ".build/sdk-fc3b01c-terminal/extracted-12307712232/reader-renewal-probe/currentcore-tests.log",
+    "storageCases": [
+      "endpointSelectionIsLocalAndBackwardCompatible",
+      "appSessionAuthenticatesThroughSameVaultAndReopensStoredSession",
+      "appOwnerCancellationClearsTheSamePendingChallenge"
+    ],
+    "actualFailure": "SDK storage exceptions from wrong requested basename; AccountSession test logged POSIX54 and missing uploadIntent but continued into remote enrollment and profileExpired."
+  },
+  "limits": [
+    "No Swift compiler or Apple SDK on this Windows host; existing cases require unified SDK execution.",
+    "TLS root cause is separate and remains under repair. No new tests or selected-case counts."
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "failure": "signsSDKProducedMainExtensionsAndFrameworkInSameJob caught malformedDER",
+  "actualLog": {
+    "path": ".build/sdk-fc3b01c-terminal/extracted-12307712232/reader-renewal-probe/currentcore-tests.log",
+    "bytes": 15758720,
+    "sha256": "fbbecd58423da137e1ea1a198b556bc2bb489fea1c8d8ef1f42c7496b4ed5dc5"
+  },
+  "actualExcerpt": {
+    "path": ".build/sdk-fc3-cms-ber-envelope-repair-step/evidence/actual-sdk-required-signer-failure-excerpt.txt",
+    "bytes": 2971,
+    "sha256": "9051d37706ec5ee91043f11d798947235a96de32c5636b4272926dfa2ae5844f"
+  },
+  "producerManifest": {
+    "path": ".build/sdk-fc3b01c-terminal/extracted-12307712232/reader-renewal-probe/sdk-produced-public/sdk-produced-fixture-manifest.json",
+    "bytes": 46004,
+    "sha256": "d24427fe7405149da7e0e15d1f9d4d7a6804eafd27febbe5e13a3accde67b6e4"
+  },
+  "actualProducerCommands": 48,
+  "actualPublicOutputs": 43,
+  "actualMachOs": 4,
+  "producerSuccessDoesNotEstablishAppSigning": true,
+  "initialBytesHex": "308006092a864886f70d010702a0803080020101310f300d",
+  "oldStrictFailure": {
+    "byteOffset": 0,
+    "tagHex": "30",
+    "lengthOctetHex": "80",
+    "cause": "existing next requires long length width > 0; BER indefinite has width 0"
+  },
+  "ownedAnchorOnly": true,
+  "primaryStandards": [
+    {
+      "url": "https://www.rfc-editor.org/rfc/rfc5652.html",
+      "sections": [
+        "3 (BER/indefinite encodings)",
+        "5.3 and 5.4 (signedAttrs DER and exact signature encoding)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+--- a/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift
++++ b/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift
+@@ -484,7 +484,7 @@
+             return Auth(account: client, transport: transport, freshAnisette: anisette, clock: { date }, random: { try vector.bytes(vector.privateA) })
+         }
+         func appInputs() throws -> (root: URL, configuration: URL, services: SelfRenewalAppSession.DeveloperServices) {
+-            let root = directory.appendingPathComponent("AppSession")
++            let root = directory.appendingPathComponent("SelfRenewalApp")
+             try FileManager.default.createDirectory(at: root, withIntermediateDirectories: false,
+                 attributes: [.posixPermissions: 0o700])
+             let configuration = directory.appendingPathComponent("app-session-configuration.json")

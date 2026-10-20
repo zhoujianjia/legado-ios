@@ -1,0 +1,19 @@
+{
+  "primaryBinding": {
+    "path": ".build/renewal-fc3-tls-recovery-repair-step/snapshot-v1/primary-binding.json",
+    "bytes": 4480,
+    "sha256": "2bec0e4aa20c2301c1ef62f5afa4bd0afc055d052fde3bf3ffab3cf21178364f"
+  },
+  "serverPublicHeaderPromisesSent": true,
+  "completePinnedDirectoryCSourceCount": 9,
+  "clientStateAssignments": [
+    {
+      "path": "tlsCallbacks.c",
+      "line": 69,
+      "text": "myCtx->clientCertState = kSSLClientCertRequested;"
+    }
+  ],
+  "assignmentRoleAssertion": "tlsCallbacks.c67 asserts kSSLClientSide before the only assignment",
+  "serverGetter": "sslContext.c1744-1754 reports Sent only when internal clientCertState was Requested plus peerSecTrust exists",
+  "scope": "Primary implementation explains why a server-only readiness decision must use actual fresh pinned client trust and completed mutual handshake, not the client-only state field. Raw role/state was not captured in historical fc3; future actual SDK remains necessary."
+}

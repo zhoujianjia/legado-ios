@@ -215,6 +215,9 @@ enum SelfRenewalAuthenticatedInstallationFixture {
             let peerHost = mode == .wrongHostCertificate ? wrong.certificate : host.certificate
             let peers: [Task<PeerResult, Never>] = [
                 peerTask {
+                    // The event producer owns termination even when the action
+                    // is waiting for an event this peer failed before emitting.
+                    defer { signal.continuation.finish() }
                     for round in 0..<mode.sessionCount {
                     let stream = try lockdown.accept(cancellation: cancellation, deadline: deadline); defer { stream.close() }
                     let channel = Client.PlistChannel(stream)
@@ -257,6 +260,9 @@ enum SelfRenewalAuthenticatedInstallationFixture {
                     }
                 },
                 peerTask {
+                    // The event producer owns termination even when the action
+                    // is waiting for an event this peer failed before emitting.
+                    defer { removalSignal.continuation.finish() }
                     var path: Data?
                     var remoteExists = false
                     for round in 0..<mode.cleanupSessionCount {
@@ -345,6 +351,9 @@ enum SelfRenewalAuthenticatedInstallationFixture {
                     }
                 },
                 peerTask {
+                    // The event producer owns termination even when the action
+                    // is waiting for an event this peer failed before emitting.
+                    defer { lookupSignal.continuation.finish() }
                     for round in 0..<(mode.isUnknownUpgradeRecovery ? 2 : 1) {
                     let stream = try proxy.accept(cancellation: cancellation, deadline: deadline); defer { stream.close() }
                     try stream.authenticate(identity: device.identity, expectedPeerDER: peerHost, rootDER: root, at: date, server: true)

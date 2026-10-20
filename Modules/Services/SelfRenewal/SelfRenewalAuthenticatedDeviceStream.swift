@@ -292,12 +292,23 @@ enum SelfRenewalAuthenticatedDeviceTransport {
                 // Always repeat against this context's actual peer chain after
                 // handshake completion, even if a platform cache changes behavior.
                 try verifyPeer(tls, expectedPeerDER: expectedPeerDER, rootDER: rootDER, at: date)
-                guard var clientState = (SSLClientCertificateState(rawValue: 0) as SSLClientCertificateState?) else {
-                    throw Failure.missingMutualAuthentication
+                if !server {
+                    guard var clientState = (SSLClientCertificateState(rawValue: 0) as SSLClientCertificateState?) else {
+                        throw Failure.missingMutualAuthentication
+                    }
+                    try status(SSLGetClientCertificateState(tls, &clientState))
+                    // The client must have received CertificateRequest and sent
+                    // its configured identity (public header: CertSent = 2).
+                    guard clientState.rawValue == 2 else { throw Failure.missingMutualAuthentication }
                 }
-                try status(SSLGetClientCertificateState(tls, &clientState))
-                // Public header: None=0, Requested=1, Sent=2, Rejected=3.
-                guard clientState.rawValue == 2 else { throw Failure.missingMutualAuthentication }
+                // Server authentication is established by alwaysAuthenticate,
+                // the fresh client-auth break, the actual pinned peer chain
+                // verified above and completion of the TLS proof of possession.
+                // Apple's SecureTransport implementation writes clientCertState
+                // only in its client-side CertificateRequest callback; using
+                // that field here rejects an otherwise authenticated server.
+                // See Apple Security db15acbe, tlsCallbacks.c/sslContext.c.
+                // No absent or mismatched client certificate passes verifyPeer.
                 var version = SSLProtocol.tlsProtocol12
                 try status(SSLGetNegotiatedProtocolVersion(tls, &version))
                 guard version == .tlsProtocol12 else { throw Failure.tls(errSSLNegotiation) }
