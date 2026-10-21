@@ -1,0 +1,54 @@
+{
+  "raw": {
+    "path": ".build/native-630c1b3-terminal/artifact-12334382401/.build/s3-full-application-signing/full-application-test-build.log",
+    "bytes": 7634966,
+    "sha256": "315c0d58399be012af2b3bb7df6d67741833ce9562069ccdc125075d98ed64d8"
+  },
+  "firstFailure": {
+    "phase": "full-application-test-build",
+    "exitCode": 1,
+    "timedOut": false,
+    "reportedXcodeStatus": 65,
+    "uniqueCompilerErrors": 1,
+    "sourceLocation": "Tests/iOS/LegadoNativeOriginalReaderTests.swift:1761:66",
+    "rawLogLine": 29228,
+    "message": "enum case 'horizontal' is not available due to missing import of defining module 'YueduCoreText'",
+    "actualFullApplicationSignerTests": 0
+  },
+  "excerpt": [
+    {
+      "line": 29228,
+      "text": "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/LegadoNativeOriginalReaderTests.swift:1761:66: error: enum case 'horizontal' is not available due to missing import of defining module 'YueduCoreText'"
+    },
+    {
+      "line": 29229,
+      "text": "            footerHeight: 0, contentInsets: .zero, writingMode: .horizontal)"
+    },
+    {
+      "line": 29230,
+      "text": "                                                                 ^"
+    },
+    {
+      "line": 29231,
+      "text": "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/LegadoNativeOriginalReaderTests.swift:12:1: note: add import of module 'YueduCoreText'"
+    },
+    {
+      "line": 29457,
+      "text": "Testing failed:"
+    },
+    {
+      "line": 29458,
+      "text": "\tEnum case 'horizontal' is not available due to missing import of defining module 'YueduCoreText'"
+    },
+    {
+      "line": 29459,
+      "text": "\tTesting cancelled because the build failed."
+    },
+    {
+      "line": 29461,
+      "text": "** TEST FAILED **"
+    }
+  ],
+  "testStartEvents": 0,
+  "laterImportFixDoesNotChangeHistoricalSource": true
+}

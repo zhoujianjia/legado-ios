@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
+  "sourceTag": "legado-native-reader-test-630c1b3",
+  "runID": 39564545728,
+  "jobID": 119103568067,
+  "status": "completed",
+  "conclusion": "failure",
+  "queryAgain": false,
+  "factualReview": {
+    "path": "docs/legado-ios/evidence/native-630c1b3-terminal/factual-review-v1.json",
+    "bytes": 5903,
+    "sha256": "a801bcd606207d318bfeb7ae136c13b408bb035d27ff27d97f7edddab3d68521"
+  },
+  "actualJVM": {
+    "xmlFiles": 58,
+    "uniqueMethods": 378,
+    "actualExecutions": 378,
+    "passed": 378,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "actualPortable": {
+    "selected": 101,
+    "passed": 100,
+    "skipped": 1,
+    "failures": 0,
+    "errors": 0
+  },
+  "actualMacPackageDiagnostics": {
+    "platform": "macOS",
+    "suite": "LegadoRuntimeTests",
+    "selected": 17,
+    "passed": 17,
+    "failures": 0,
+    "skipped": 0,
+    "actualJNIOrAppHost": 0
+  },
+  "completeDeviceBuilds": 1,
+  "fullProducer": {
+    "accepted": true,
+    "commands": 50,
+    "commandsPassed": 50,
+    "nativeComponents": 8,
+    "appBundles": 3,
+    "frameworks": 5,
+    "publicOutputFacts": 28,
+    "inputFiles": 17553,
+    "javaClassResources": 16614,
+    "archiveBytes": 287383849,
+    "archiveSHA256": "5de97bbcd7e9e38087cbb113563e469f1dd312bd26f817f6053138b82f83ea92",
+    "rawIPAInArtifact": false,
+    "preControlledSigningInputShapes": {
+      "singleArm64FAT32": 5,
+      "thin64": 3
+    },
+    "SwiftProductionPackageSignerExecuted": false
+  },
+  "firstFailure": {
+    "phase": "full-application-test-build",
+    "exitCode": 1,
+    "timedOut": false,
+    "reportedXcodeStatus": 65,
+    "uniqueCompilerErrors": 1,
+    "sourceLocation": "Tests/iOS/LegadoNativeOriginalReaderTests.swift:1761:66",
+    "rawLogLine": 29228,
+    "message": "enum case 'horizontal' is not available due to missing import of defining module 'YueduCoreText'",
+    "actualFullApplicationSignerTests": 0
+  },
+  "actualFullApplicationSigner": 0,
+  "actualMainJS": 0,
+  "actualNative": 0,
+  "actualCold": 0,
+  "nativeSourceStampProduced": true,
+  "historicalNativeInputsBound": 282,
+  "deviceProjectOverlayRestored": true,
+  "ordinaryJarRawRehash": false,
+  "SDKHandleChanged": false,
+  "measuredCompatibilityPercent": null,
+  "limits": [
+    "Complete device build and controlled original Apple codesign producer succeeded; production Swift PackageSigner/Vault/Verifier S3 case did not execute. These are distinct facts.",
+    "Actual pre-controlled-code-signing input shape records are available, but no input/output Mach-O, full IPA or raw JAR bytes were uploaded. Hashes are metadata facts, not independent binary rehash.",
+    "Missing YueduCoreText import is the same already reviewed later source fix; that fix does not change this historical630 result.",
+    "Both source630 CI tasks are terminal according to Root; this archive closes Native only and does not re-query or rewrite the separately archived SDK.",
+    "No real Apple authorization, physical installation, same-device/noVPN route, automatic renewal or measured90percent compatibility acceptance established."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

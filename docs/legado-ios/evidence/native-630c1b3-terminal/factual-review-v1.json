@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
+  "runID": 39564545728,
+  "jobID": 119103568067,
+  "status": "completed",
+  "conclusion": "failure",
+  "queryAgain": false,
+  "actualJVM": {
+    "xmlFiles": 58,
+    "uniqueMethods": 378,
+    "actualExecutions": 378,
+    "passed": 378,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "actualPortable": {
+    "selected": 101,
+    "passed": 100,
+    "skipped": 1,
+    "failures": 0,
+    "errors": 0
+  },
+  "actualMacPackageDiagnostics": {
+    "platform": "macOS",
+    "suite": "LegadoRuntimeTests",
+    "selected": 17,
+    "passed": 17,
+    "failures": 0,
+    "skipped": 0,
+    "actualJNIOrAppHost": 0
+  },
+  "phases": {
+    "device-runtime-stage": {
+      "timeoutSeconds": 300,
+      "timedOut": false,
+      "exitCode": 0,
+      "output": {
+        "path": "device-runtime-stage.log",
+        "bytes": 3781,
+        "sha256": "cbe7a1d859c8562fba415276ad4bc05d2c668198076df55d67ec6a44f372b6c8"
+      },
+      "argvOmittedFromPublicArchive": true
+    },
+    "full-device-build": {
+      "timeoutSeconds": 3600,
+      "timedOut": false,
+      "exitCode": 0,
+      "output": {
+        "path": "full-device-build.log",
+        "bytes": 6574028,
+        "sha256": "8c5563c2a0434236ece87ba5495a2543edf2c1837c854c9beb46b3e961124a35"
+      },
+      "argvOmittedFromPublicArchive": true
+    },
+    "full-owned-producer": {
+      "timeoutSeconds": 360,
+      "timedOut": false,
+      "exitCode": 0,
+      "output": {
+        "path": "full-owned-producer.log",
+        "bytes": 11962,
+        "sha256": "ed54613b72e6daf187c2c743fd07c2de4cc0a2a3492e156e00927e22ddcab71a"
+      },
+      "argvOmittedFromPublicArchive": true
+    },
+    "full-application-test": {
+      "timeoutSeconds": 3660,
+      "timedOut": false,
+      "exitCode": 1,
+      "output": {
+        "path": "full-application-test.log",
+        "bytes": 427,
+        "sha256": "27289bae6737ef9024d820052071c5a7c4ad7f18bec71abeb6472a2d69eb363d"
+      },
+      "argvOmittedFromPublicArchive": true
+    },
+    "full-application-summary": {
+      "timeoutSeconds": 60,
+      "timedOut": false,
+      "exitCode": 0,
+      "output": {
+        "path": "full-application-summary.log",
+        "bytes": 430,
+        "sha256": "8fdccc25b584fe61bf18771dc8836a437f8b55cbd251d41f8a1ce05b9267072e"
+      },
+      "argvOmittedFromPublicArchive": true
+    },
+    "full-application-tests": {
+      "timeoutSeconds": 60,
+      "timedOut": false,
+      "exitCode": 0,
+      "output": {
+        "path": "full-application-tests.log",
+        "bytes": 367,
+        "sha256": "2429e425b42400c05e5b7a87fac4883a36512e078d921878f64e992f26075789"
+      },
+      "argvOmittedFromPublicArchive": true
+    }
+  },
+  "fullDeviceBuildPassed": true,
+  "completeDeviceBuilds": 1,
+  "fullProducer": {
+    "accepted": true,
+    "commands": 50,
+    "commandsPassed": 50,
+    "nativeComponents": 8,
+    "appBundles": 3,
+    "frameworks": 5,
+    "publicOutputFacts": 28,
+    "inputFiles": 17553,
+    "javaClassResources": 16614,
+    "archiveBytes": 287383849,
+    "archiveSHA256": "5de97bbcd7e9e38087cbb113563e469f1dd312bd26f817f6053138b82f83ea92",
+    "rawIPAInArtifact": false,
+    "preControlledSigningInputShapes": {
+      "singleArm64FAT32": 5,
+      "thin64": 3
+    },
+    "SwiftProductionPackageSignerExecuted": false
+  },
+  "firstFailure": {
+    "phase": "full-application-test-build",
+    "exitCode": 1,
+    "timedOut": false,
+    "reportedXcodeStatus": 65,
+    "uniqueCompilerErrors": 1,
+    "sourceLocation": "Tests/iOS/LegadoNativeOriginalReaderTests.swift:1761:66",
+    "rawLogLine": 29228,
+    "message": "enum case 'horizontal' is not available due to missing import of defining module 'YueduCoreText'",
+    "actualFullApplicationSignerTests": 0
+  },
+  "actualFullApplicationSigner": 0,
+  "actualSimulatorTestHosts": 0,
+  "actualMainJS": 0,
+  "actualOriginalNative": 0,
+  "actualCold": 0,
+  "actualInstallation": 0,
+  "nativeSourceStampProduced": true,
+  "historicalGitInputsBound": 282,
+  "deviceProjectOverlayRestoredAndHistoricalGitExact": true,
+  "ordinaryJar": {
+    "metadataCopiesConsistent": 4,
+    "bytes": 10960540,
+    "sha256": "1289634be715a891e6b743c81c1077771c17c39a167415bc493ef97f8957f131",
+    "testClassesIncluded": false,
+    "rawJarAvailableInArtifact": false,
+    "rawJarRehashedByArchivePreparer": false
+  },
+  "archiveIntegrity": {
+    "artifactID": 12334382401,
+    "zipBytes": 773892,
+    "zipSHA256": "7c5e2405c4a8f38c60cea1ef91f588c3873be6f245d186c91c12b9c1ffc89e3b",
+    "memberCount": 98,
+    "uncompressedBytes": 14553009,
+    "crcVerified": true,
+    "safePathsCasefoldUniquenessNoSymlinkNoEncryption": true,
+    "windowsExtendedAbsolutePathUsed": true,
+    "downloadAttempts": 1
+  },
+  "integrityVerificationPerformedBy": "Root download-once; reused, not repeated",
+  "measuredCompatibilityPercent": null,
+  "limits": [
+    "Complete device build and controlled original Apple codesign producer succeeded; production Swift PackageSigner/Vault/Verifier S3 case did not execute. These are distinct facts.",
+    "Actual pre-controlled-code-signing input shape records are available, but no input/output Mach-O, full IPA or raw JAR bytes were uploaded. Hashes are metadata facts, not independent binary rehash.",
+    "Missing YueduCoreText import is the same already reviewed later source fix; that fix does not change this historical630 result.",
+    "Both source630 CI tasks are terminal according to Root; this archive closes Native only and does not re-query or rewrite the separately archived SDK.",
+    "No real Apple authorization, physical installation, same-device/noVPN route, automatic renewal or measured90percent compatibility acceptance established."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}
