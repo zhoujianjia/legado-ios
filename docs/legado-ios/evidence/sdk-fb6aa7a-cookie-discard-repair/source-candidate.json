@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "status": "minimal-production-source-candidate-awaiting-independent-review-and-SDK",
+  "sourceRoot": ".build/sdk-fb6aa7a-cookie-discard-repair-step/snapshot-v1/work",
+  "parentSourceRoster": {
+    "path": ".build/native-fb6aa7a-fat32-integration/source-rosters-final.json",
+    "bytes": 233508,
+    "sha256": "39d2e02f56da059610a6dbce0524c4ee414569a28702745d56915eb594b7f7a6"
+  },
+  "files": [
+    {
+      "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "baseline": {
+        "path": ".build/sdk-fb6aa7a-cookie-discard-repair-step/rawbaseline/Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 128497,
+        "sha256": "fb16a41a1c1fbb20484d3017386edc3528c31f0efdfbd851b6204e0635f1d832"
+      },
+      "candidate": {
+        "path": ".build/sdk-fb6aa7a-cookie-discard-repair-step/snapshot-v1/work/Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 128584,
+        "sha256": "a6c86904b7c8e58dcdbd464a9dcf3129df107d9246204f7ecc6cc4e6ebe04faa"
+      },
+      "diff": {
+        "path": ".build/sdk-fb6aa7a-cookie-discard-repair-step/diffs/Modules/Services/Online/LegadoPersistentStateHost.swift.diff",
+        "bytes": 1229,
+        "sha256": "659badb14f7fb5d4f71ed33814e93c929fb1f322e8036e34d65c9b8d0408e8ff"
+      }
+    }
+  ],
+  "sourceChecks": {
+    "path": ".build/sdk-fb6aa7a-cookie-discard-repair-step/source-checks-v1.json",
+    "bytes": 480,
+    "sha256": "f9380f735acd07c58ab4648b608a1295d3bda0a10f7f2fa9ae6e629d6a2d89be"
+  },
+  "actualFailureEvidence": {
+    "path": ".build/sdk-fb6aa7a-cookie-discard-repair-step/actual-failures-v1.json",
+    "bytes": 1433,
+    "sha256": "d8e10d6500b5bd33641fca1113555b389211613761811a53882ae6742b133e15"
+  },
+  "primaryFacts": {
+    "path": ".build/sdk-fb6aa7a-cookie-discard-repair-step/primary-facts-v1.json",
+    "bytes": 1606,
+    "sha256": "f9b8fc0ba728a071119ed76fa016de6bdc521702e9d1a66afcfc795a06aaad68"
+  },
+  "diagnosis": "Both real failures arise in originalResponseCookies before ownership commit: a real parsed persistent response seed has session=false/expiry=true, but rebuilding after inserting optional discard=NSNumber(false) yields session=true/expiry=false. Omit discard for persistent version0; keep true only for session. Private Foundation coercion internals remain unproven.",
+  "change": "One hunk only. Persistent reconstruction removes discard; session reconstruction still sets NSNumber(true). No retry/fallback, no fixed native flag/expiry substitution and no condition is loosened.",
+  "preserved": [
+    "All eight byte/flag checks: name, value, domain, path, secure, HttpOnly, session and exact absolute expiry.",
+    "Raw HTTP response provenance/parser, host-only relationship, bounded fields and record exact native roundtrip.",
+    "The original absolute millisecond deadline, Int64.min mapping, removal of relative Max-Age and explicit version0; no Date clock or expiry policy change.",
+    "Original DB/session-text separation, rich/native cookie ownership, cancellation/revision admission, actual atomic owner write and error reporting.",
+    "Every existing test definition, source, selector, timeout and assertion is unchanged."
+  ],
+  "existingRegressionCoverage": {
+    "source": {
+      "path": "Tests/iOS/yuedu appTests/LegadoCookieTextHostTests.swift",
+      "bytes": 20112,
+      "sha256": "330efdbfa5f5bd356c48dfd9d13fc6fa17cc51012c99bf7261649fe98a712060"
+    },
+    "unchangedOwner": {
+      "path": "Modules/Core/RuleEngine/ModernParser/CookiePersistenceOwner.swift",
+      "bytes": 43599,
+      "sha256": "e3faed0e0b4d22d9463a702c0e1fc76fe9ad4a83ccd300d25744bbf7dab9b08b"
+    },
+    "failedMethods": [
+      "LegadoCookieTextHostTests/responseTextPrecedenceAndNativeMetadataSurviveTheirCorrectLifetimes",
+      "LegadoCookieTextHostTests/originalRawExpiryAndRandomPruningBoundaryRemainExplicit"
+    ],
+    "authoredExistingAssertions": "2099 persistent metadata including Secure/HttpOnly/domain/path, actual session with no expiry, reopen lifetime distinction, Max-Age retaining the original millisecond absolute deadline, and1970 expired rich-cookie suppression while original raw text remains. Existing malformed HttpOnly, failure/cancel/revoke checks remain.",
+    "newDefinitions": 0,
+    "modifiedTestSources": 0
+  },
+  "actualValidation": {
+    "literalSourceChecksOnly": true,
+    "SwiftParser": 0,
+    "SwiftCompilation": 0,
+    "tests": 0,
+    "DarwinOrAppleRuntime": 0,
+    "cloudQueries": 0,
+    "primaryWebLookups": 1,
+    "canonicalMutations": 0
+  },
+  "limits": [
+    "The actual two failed SDK cases remain failed historical evidence; this source candidate has not executed on Darwin or Swift.",
+    "The next actual SDK run must verify both exact session/expiry assertions and all other attributes. Primary API usage and source checks are not a native behavioral pass.",
+    "No broader Cookie policy, binary cache, browser, source ownership or completion claim is changed."
+  ]
+}

@@ -1,0 +1,193 @@
+{
+  "sourceCommit": "fb6aa7a14680135f5e7271f10b61ad9561801c19",
+  "sourceCount": 418,
+  "sourceBeforeAfterAll11Equal": true,
+  "phases": [
+    {
+      "phase": "producer",
+      "state": "succeeded",
+      "budgetSeconds": 600,
+      "elapsedSeconds": 29.328305,
+      "blockedBy": [],
+      "command": {
+        "exitCode": 0,
+        "timedOut": false,
+        "oversized": false,
+        "output": "currentcore-producer.log",
+        "bytes": 9915,
+        "sha256": "4a1bcb8cab377c80bc46ea51f3c3683a2cf072b7afcf2b54e54b8bbe45f22d62"
+      }
+    },
+    {
+      "phase": "stage",
+      "state": "succeeded",
+      "budgetSeconds": 90,
+      "elapsedSeconds": 8.428092,
+      "blockedBy": [],
+      "command": {
+        "exitCode": 0,
+        "timedOut": false,
+        "oversized": false,
+        "output": "currentcore-stage.log",
+        "bytes": 9839,
+        "sha256": "1632122ba9d1d08aa8c5d9bafa2ec9107b7e1f301bba9038b757cb54ee8be514"
+      }
+    },
+    {
+      "phase": "before-build",
+      "state": "succeeded",
+      "budgetSeconds": 90,
+      "elapsedSeconds": 8.88197,
+      "blockedBy": [],
+      "command": {
+        "exitCode": 0,
+        "timedOut": false,
+        "oversized": false,
+        "output": "currentcore-before-build.log",
+        "bytes": 316,
+        "sha256": "75493189855c04dc62481bc5c3908a4839dbabca4e5c00f64e6967c1e4666e63"
+      }
+    },
+    {
+      "phase": "boot",
+      "state": "succeeded",
+      "budgetSeconds": 180,
+      "elapsedSeconds": 236.786181,
+      "blockedBy": [],
+      "command": {
+        "exitCode": 0,
+        "timedOut": false,
+        "oversized": false,
+        "output": "currentcore-boot.log",
+        "bytes": 13827,
+        "sha256": "8ea6d43b18ef509fff9c502bfefc9576c5222fda340b1c5d9336d2d879591f2a"
+      }
+    },
+    {
+      "phase": "native",
+      "state": "failed",
+      "budgetSeconds": 3720,
+      "elapsedSeconds": 3754.442857,
+      "blockedBy": [],
+      "command": {
+        "exitCode": -9,
+        "timedOut": true,
+        "oversized": false,
+        "output": "currentcore-native.log",
+        "bytes": 143,
+        "sha256": "74f25f9879f9c23207b47906efac9d4d114a70c5c19ac24209fa7193bae75483"
+      }
+    },
+    {
+      "phase": "export",
+      "state": "failed",
+      "budgetSeconds": 330,
+      "elapsedSeconds": 20.382419,
+      "blockedBy": [],
+      "command": {
+        "exitCode": 1,
+        "timedOut": false,
+        "oversized": false,
+        "output": "currentcore-export.log",
+        "bytes": 2693,
+        "sha256": "189d38533a274539404f3a4be0476ec478cc73ce2f95c65e93b5a560a2b40d65"
+      }
+    },
+    {
+      "phase": "cases",
+      "state": "failed",
+      "budgetSeconds": 90,
+      "elapsedSeconds": 9.725047,
+      "blockedBy": [],
+      "command": {
+        "exitCode": 1,
+        "timedOut": false,
+        "oversized": false,
+        "output": "currentcore-cases.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "phase": "test-settings",
+      "state": "succeeded",
+      "budgetSeconds": 120,
+      "elapsedSeconds": 51.176107,
+      "blockedBy": [],
+      "command": {
+        "exitCode": 0,
+        "timedOut": false,
+        "oversized": false,
+        "output": "sdk-test-build-settings.json",
+        "bytes": 131794,
+        "sha256": "fb3d0a1346c43435e6ee7a35659552c5259f7166c6cdf530b64f8a7032419d27"
+      }
+    },
+    {
+      "phase": "after-tests",
+      "state": "blocked",
+      "budgetSeconds": 120,
+      "elapsedSeconds": 17.108264,
+      "blockedBy": [
+        "native",
+        "export",
+        "cases"
+      ],
+      "command": null
+    },
+    {
+      "phase": "build-settings",
+      "state": "succeeded",
+      "budgetSeconds": 120,
+      "elapsedSeconds": 17.973714,
+      "blockedBy": [],
+      "command": {
+        "exitCode": 0,
+        "timedOut": false,
+        "oversized": false,
+        "output": "build-settings.json",
+        "bytes": 43804,
+        "sha256": "6fd47b3287e515885af74058252c0f8ec84d24ea2881a42cff19b1a19183d6f8"
+      }
+    },
+    {
+      "phase": "result",
+      "state": "blocked",
+      "budgetSeconds": 180,
+      "elapsedSeconds": 9.654769,
+      "blockedBy": [
+        "native",
+        "export",
+        "cases",
+        "after-tests"
+      ],
+      "command": null
+    }
+  ],
+  "originalSourceState": {
+    "sourceCommit": "fb6aa7a14680135f5e7271f10b61ad9561801c19",
+    "sourceTag": "reader-renewal-fb6aa7a",
+    "sourceInputCount": 418,
+    "sourceInputsSHA256": "41296255e4b4b91fd2e3d5778209bada276fe5dbd116eefe248af73a35a0d19a",
+    "preparation": {
+      "path": "source-inputs.json",
+      "bytes": 127715,
+      "sha256": "2ff6abcf1a6f55f0523bed7c10a1bf8713184ef7060589a7785c46fc5504d4b9"
+    },
+    "overlays": {
+      "path": "overlays.json",
+      "bytes": 2624,
+      "sha256": "27e03026cb9077ea4e68e30b500888ed8814fa514b28c493ccacef1beabcce22"
+    },
+    "xcodeVersion": {
+      "path": "xcode-version.log",
+      "bytes": 31,
+      "sha256": "9fec9509a0037736274232072cadc58613fa6ddcafd55fa0915151df641590d3"
+    },
+    "runtimeSourceOnly": true,
+    "developerDirectory": "/Applications/Xcode_26.2.0.app/Contents/Developer",
+    "simulatorDestination": "id=4C675116-265D-488F-BFFA-836A4545674C",
+    "requiredPortableGuardsOutcome": "success"
+  },
+  "afterTestsFixtureVerification": "blocked; not performed"
+}

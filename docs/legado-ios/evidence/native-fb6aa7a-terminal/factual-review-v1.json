@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "fb6aa7a14680135f5e7271f10b61ad9561801c19",
+  "runID": 39553639579,
+  "jobID": 119068228619,
+  "status": "completed",
+  "conclusion": "failure",
+  "queryAgain": false,
+  "actualJVM": {
+    "xmlFiles": 58,
+    "uniqueMethods": 378,
+    "actualExecutions": 378,
+    "passed": 378,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "actualPortable": {
+    "selected": 101,
+    "passed": 100,
+    "skipped": 1,
+    "failures": 0,
+    "errors": 0
+  },
+  "devicePreparationPhases": {
+    "device-runtime-stage": {
+      "timeoutSeconds": 300,
+      "timedOut": false,
+      "exitCode": 0,
+      "output": {
+        "path": "device-runtime-stage.log",
+        "bytes": 3781,
+        "sha256": "588db407ae349fa738d3d6b8fc103f503d0254d6bf8d504e5fdf7e5eed8cbb7b"
+      },
+      "argvOmittedFromPublicArchive": true
+    },
+    "full-device-build": {
+      "timeoutSeconds": 3600,
+      "timedOut": false,
+      "exitCode": 0,
+      "output": {
+        "path": "full-device-build.log",
+        "bytes": 6574031,
+        "sha256": "a3ed3226687a9589d6aafbe6fe63dd1f5d9fc984a6015f274f6ef8e2ac32f560"
+      },
+      "argvOmittedFromPublicArchive": true
+    },
+    "full-owned-producer": {
+      "timeoutSeconds": 360,
+      "timedOut": false,
+      "exitCode": 1,
+      "output": {
+        "path": "full-owned-producer.log",
+        "bytes": 10793,
+        "sha256": "05ec01f276be311bfaad48f9f7e90a76077f12a724d7c610d4129045914f6d3d"
+      },
+      "argvOmittedFromPublicArchive": true
+    }
+  },
+  "actualFullDeviceBuilds": 1,
+  "fullDeviceBuildPassed": true,
+  "firstFailure": {
+    "phase": "full-owned-producer",
+    "exitCode": 1,
+    "timedOut": false,
+    "errorType": "ValueError",
+    "message": "ValueError: full-app native component is not thin device Mach-O",
+    "sourceLocation": "scripts/reader-experience/owned-package-fixture/full-application-package.py:81"
+  },
+  "actualFullProducerAccepted": 0,
+  "actualFullApplicationSigner": 0,
+  "actualSimulatorHosts": 0,
+  "actualMainJS": 0,
+  "actualOriginalNative": 0,
+  "actualCold": 0,
+  "actualInstallation": 0,
+  "nativeSourceStampProduced": false,
+  "historicalGitInputsBound": 263,
+  "sourceOverlayRestored": true,
+  "restoredProjectMatchesHistoricalGit": true,
+  "ordinaryJar": {
+    "metadataCopiesConsistent": 3,
+    "bytes": 10960540,
+    "sha256": "b442147b9056a18faad82a83a4b348fb408c33c55214998d7dac8d5dbe5d0c3d",
+    "testClassesIncluded": false,
+    "rawJarAvailableInArtifact": false,
+    "rawJarRehashedByArchivePreparer": false
+  },
+  "archiveIntegrity": {
+    "artifactID": 12327350686,
+    "zipBytes": 396050,
+    "zipSHA256": "5c1bfc13a53091fcf6d3fd32d41cde1ce311f75fdfd48f1b32408053b292b2f7",
+    "memberCount": 80,
+    "uncompressedBytes": 6767686,
+    "crcVerified": true,
+    "safePathsCasefoldUniquenessNoSymlinkNoEncryption": true
+  },
+  "integrityVerificationPerformedBy": "Root download-once verification; reused, not repeated",
+  "limits": [
+    "No artifact/private download response, ZIP, class/bin, key/P12, IPA or full compiler/producer log is included in public files.",
+    "The successful iPhoneOS build is distinct from full-App signing acceptance. Minimal48/4MachO producer success is not substituted.",
+    "This closes only the exact Native handle. Same-source SDK remains independently owned/live according to Root; no SDK status is queried or changed.",
+    "Queued worker/CoreText/current440 repairs are outside this historical fb6 source263 Native run.",
+    "No real Apple authorization, physical install, same-device/noVPN proof, measured90percent compatibility or automatic renewal acceptance is established."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

@@ -1,0 +1,54 @@
+{
+  "sourceCommit": "fb6aa7a14680135f5e7271f10b61ad9561801c19",
+  "runID": 39553639579,
+  "jobID": 119068228619,
+  "queryAgain": false,
+  "deviceBuild": {
+    "execution": {
+      "path": ".build/native-fb6aa7a-terminal/artifact-12327350686/.build/s3-full-application-signing/full-device-build-execution.json",
+      "bytes": 337,
+      "sha256": "75269fe21355f5e21160bf18d1f832e7010c34f621c07366978c2c03cf76cf16"
+    },
+    "log": {
+      "path": ".build/native-fb6aa7a-terminal/artifact-12327350686/.build/s3-full-application-signing/full-device-build.log",
+      "bytes": 6574031,
+      "sha256": "a3ed3226687a9589d6aafbe6fe63dd1f5d9fc984a6015f274f6ef8e2ac32f560"
+    },
+    "exitCode": 0,
+    "timedOut": false,
+    "buildSucceededRawLine": 17554
+  },
+  "producer": {
+    "execution": {
+      "path": ".build/native-fb6aa7a-terminal/artifact-12327350686/.build/s3-full-application-signing/full-owned-producer-execution.json",
+      "bytes": 672,
+      "sha256": "d7bbd5555a3e376903c0570242d77c9c348f2f839a02fa85df4b5cd6c2df8eae"
+    },
+    "log": {
+      "path": ".build/native-fb6aa7a-terminal/artifact-12327350686/.build/s3-full-application-signing/full-owned-producer.log",
+      "bytes": 10793,
+      "sha256": "05ec01f276be311bfaad48f9f7e90a76077f12a724d7c610d4129045914f6d3d"
+    },
+    "exitCode": 1,
+    "timedOut": false,
+    "failure": "full-application-package.py81 thin-device magic rejection; original error did not identify path/magic"
+  },
+  "actualBuildExcerpt": {
+    "rawLineRange": [
+      14509,
+      14515
+    ],
+    "lines": [
+      "Copy <DerivedData>/Build/Products/Release-iphoneos/YueduReader.app/Frameworks/FirebaseFirestoreInternal.framework <DerivedData>/SourcePackages/artifacts/firebase-ios-sdk/FirebaseFirestoreInternal/FirebaseFirestoreInternal.xcframework/ios-arm64/FirebaseFirestoreInternal.framework (in target 'yuedu app' from project 'Yuedu-Reader')",
+      "    cd /Users/runner/work/legado-ios/legado-ios",
+      "    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \\*.tbd -bitcode-strip all -bitcode-strip-tool <SelectedXcode>/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip -resolve-src-symlinks -remove-static-executable <DerivedData>/SourcePackages/artifacts/firebase-ios-sdk/FirebaseFirestoreInternal/FirebaseFirestoreInternal.xcframework/ios-arm64/FirebaseFirestoreInternal.framework <DerivedData>/Build/Products/Release-iphoneos/YueduReader.app/Frameworks",
+      "note: Injecting stub binary into codeless framework (in target 'yuedu app' from project 'Yuedu-Reader')",
+      "    <SelectedXcode>/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot <SelectedXcode>/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.2.sdk -x c -c /dev/null -target arm64-apple-ios100.0 -o /private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/swbuild.tmp.tZ6BO12J/Data.noindex/arm64-apple.o",
+      "    <SelectedXcode>/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -isysroot <SelectedXcode>/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.2.sdk -dynamiclib -Xlinker -adhoc_codesign -target arm64-apple-ios100.0 -o /private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/swbuild.tmp.tZ6BO12J/Data.noindex/arm64-apple /private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/swbuild.tmp.tZ6BO12J/Data.noindex/arm64-apple.o",
+      "    <SelectedXcode>/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo -create -output <DerivedData>/Build/Products/Release-iphoneos/YueduReader.app/Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal /private/var/folders/nj/vtw8zd2j31d1gdrtntc5y4600000gn/T/swbuild.tmp.tZ6BO12J/Data.noindex/arm64-apple"
+    ]
+  },
+  "actualFinalBinaryAvailable": false,
+  "actualRejectedComponentAndMagicRecorded": false,
+  "scope": "Actual command sequence removes upstream static executable, injects native arm64 dylib stub, then lipo -create. It does not prove this later signer path passed."
+}

@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-21T07:17:37.222972+00:00",
+  "status": "frozen producer single-arm64 FAT32 support; independent review and actual fullNative pending",
+  "sourceRoot": ".build/native-fb6aa7a-full-component-repair-step/snapshot-v1/work",
+  "files": [
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/full-application-package.py",
+      "baseline": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/rawbaseline/scripts/reader-experience/owned-package-fixture/full-application-package.py",
+        "bytes": 11840,
+        "sha256": "48b23fe98339680a29329108b04e85674a7ba8e5b554923b691a79bbc3579d52"
+      },
+      "candidate": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/snapshot-v1/work/scripts/reader-experience/owned-package-fixture/full-application-package.py",
+        "bytes": 14984,
+        "sha256": "f818f85a412842060188f0258ce5cc6b99125944b35f7e51ff84fa4e0ea40bea"
+      },
+      "diff": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/diffs-v1/scripts/reader-experience/owned-package-fixture/full-application-package.py.diff",
+        "bytes": 5194,
+        "sha256": "a7ded7d98b4eca819c652fcdc45e0667be8e89de44fe004a858e74afbd5a804b"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-full-application-signing-tools.py",
+      "baseline": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/rawbaseline/scripts/reader-experience/test-full-application-signing-tools.py",
+        "bytes": 10850,
+        "sha256": "7d51841496234b4104d1e6fd753ae028f26b107e49828ad3d585bee3bbad8724"
+      },
+      "candidate": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/snapshot-v1/work/scripts/reader-experience/test-full-application-signing-tools.py",
+        "bytes": 13718,
+        "sha256": "db6a8ee81b9f5a210bad65a78dbc318be663f1725c02306db0b93d21de7706a8"
+      },
+      "diff": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/diffs-v1/scripts/reader-experience/test-full-application-signing-tools.py.diff",
+        "bytes": 3613,
+        "sha256": "e1d1d36587b1bbd203a3b2bd69f41fb0b5c8bc94f158f5f68c01f47e29b8aaf4"
+      }
+    }
+  ],
+  "sourceCount": 2,
+  "productionControlChanges": 1,
+  "testChanges": 1,
+  "newTestDefinitions": 0,
+  "newHostsOrSelectors": 0,
+  "actualFailure": "Actual full device build succeeded, then producer thin-only guard refused. CI final App/magic absent. Actual Xcode copy/stub/lipo commands and pinned Apple lipo source substantiate the single-slice FAT32 support direction without claiming recovered bytes.",
+  "admissionContract": [
+    "Only thin little-endian MachO64 or big-endian FAT32 with exactly one arm64 ordinary-subtype/little-endian MachO64 slice. FAT64/multislice/ar/unknown remain rejected.",
+    "File <= existing signer256MiB; FAT table28B minimum; positive in-bounds slice; alignment exponent<=30 and offset aligned; slice end equals original file end; CPU/subtype exactly agrees with contained header; bounded command declarations and MH_EXECUTE/MH_DYLIB role checks.",
+    "Original bytes/container/offset/padding and all App files preserved; no selection, flattening, architecture/platform rewrite, deletion or replacement product.",
+    "Actual xcrun vtool -show-build remains required and exactly one IOS platform line must be observed. Shape-only portable admission does not establish device platform or signing.",
+    "Malformed/unknown future component refusal includes bounded public relative path/prefix/file-byte/reason diagnostic."
+  ],
+  "unchangedGuards": "Same same-job manifest/freshJAR/nativeRestore, original3bundles/entitlements/identity, vtoolIOS, actual Apple codesign--deep--strict, full unchanged-file comparison, exact archive/hash budgets, resource staging and required1case gates. Minimal producer and orchestration/workflow bytes unmodified.",
+  "testProtection": {
+    "testDefinitionsBeforeAfter": 4,
+    "changedExistingMethods": [
+      "test_producer_minimal_default_body_is_unchanged_and_full_branch_is_explicit"
+    ],
+    "other3MethodASTExact": true,
+    "actualPortableMethods": 1,
+    "actualPortableExecutions": 1,
+    "passed": 1,
+    "newShapeVectors": {
+      "valid": 2,
+      "rejected": 15
+    },
+    "testScope": "Existing method retains prior producer/minimal/phase-budget/source-selection/fact-growth guards; adds shape-only FAT1/thin positives and rejection branches."
+  },
+  "evidence": [
+    {
+      "path": ".build/native-fb6aa7a-full-component-repair-step/baseline-v1.json",
+      "bytes": 1315,
+      "sha256": "d201c858ff909a4564e2f6c7aff5465d99e35cb64252fd1fbbae0eca9a31c917"
+    },
+    {
+      "path": ".build/native-fb6aa7a-full-component-repair-step/actual-failure-facts-v1.json",
+      "bytes": 4124,
+      "sha256": "d837fa133b6048f4ca67719b65a76a498fc4308715e7d5fe25f89f601d6b5b09"
+    },
+    {
+      "path": ".build/native-fb6aa7a-full-component-repair-step/primary-facts-compact-v1.json",
+      "bytes": 3915,
+      "sha256": "71ebef70bc863a2d956550fcbfbbe06950fad16c1e7089492af008ae7c8685ab"
+    },
+    {
+      "path": ".build/native-fb6aa7a-full-component-repair-step/execution-v1/execution.json",
+      "bytes": 1777,
+      "sha256": "81fe5bf526648316977c69c9c62120cd325d75d8dec17342e9ef2b94a8416e2c"
+    },
+    {
+      "path": ".build/native-fb6aa7a-full-component-repair-step/execution-v1/test.log",
+      "bytes": 309,
+      "sha256": "6892320879e6e12715e3487d06479aef5abb0b18f0c9f59a566d05d2b45f973a"
+    }
+  ],
+  "ignoredPrimaryRawNotForCanonical": [
+    {
+      "path": ".build/native-fb6aa7a-full-component-repair-step/primary/FirebaseFirestoreInternal.zip",
+      "bytes": 31588717,
+      "sha256": "28d4f75f8c07892157546a50151f5b6110e03d4f62dddadf35ef19197bf8b617"
+    },
+    {
+      "path": ".build/native-fb6aa7a-full-component-repair-step/primary/apple-cctools-lipo.c",
+      "bytes": 85496,
+      "sha256": "bfbfc3e03c6efb1551df39aaccba5b035aa7592f24813fa35e436cb6b9c0883f"
+    },
+    {
+      "path": ".build/native-fb6aa7a-full-component-repair-step/primary/firebase-Package.swift",
+      "bytes": 52727,
+      "sha256": "86b9b5e54a8acfe39a92028e503a6c9feeef5df7e20b956dc66408b0bd68d86f"
+    },
+    {
+      "path": ".build/native-fb6aa7a-full-component-repair-step/primary/grpc-Package.swift",
+      "bytes": 2334,
+      "sha256": "a2316f5ba2425234a03f56434606628f9c7338f576fd62ba06447c036114593c"
+    },
+    {
+      "path": ".build/native-fb6aa7a-full-component-repair-step/primary/abseil-Package.swift",
+      "bytes": 1170,
+      "sha256": "f08e12d1038083efaf7d80a7a14cf86e429efb4b2b96320705e52a605764c10d"
+    }
+  ],
+  "limits": [
+    "Actual post-lipo CI component/magic not uploaded, so exact failing path is not asserted.",
+    "Upstream Firestore static ar proves original input only; Xcode explicitly removes it and injects a stub. No ar shortcut.",
+    "Actual Apple/vtool/codesign/full IPA/Swift/JNI0 in this candidate; require the separately authored production signer FAT32 support and coherent next fullNative verification.",
+    "No current or closed cloud handle queried, no re-download of CI artifact, no actual signing/install/Apple authority pass."
+  ],
+  "actualValidation": {
+    "portableDistinctMethods": 1,
+    "portableExecutions": 1,
+    "portablePassed": 1,
+    "AppleTools": 0,
+    "SwiftCompiler": 0,
+    "SDK": 0,
+    "cloudQueries": 0
+  },
+  "canonicalChanged": false,
+  "GitMutated": false,
+  "cloudTriggered": false
+}

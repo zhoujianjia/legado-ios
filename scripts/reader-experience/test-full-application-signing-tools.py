@@ -6,6 +6,7 @@ import hashlib
 import importlib.util
 import json
 from pathlib import Path
+import struct
 import tempfile
 from types import SimpleNamespace
 import unittest
@@ -108,6 +109,49 @@ class FullApplicationSigningProtocolTests(unittest.TestCase):
         self.assertIn("--full-application-build", text)
         self.assertIn("full.validate_input", text)
         self.assertIn("full.produce", text)
+        # The Xcode full-device build replaces static SPM binaries with a
+        # codeless-framework arm64 stub and lipo -create preserves a FAT32
+        # wrapper even for one architecture. Inspect without flattening it.
+        full_spec = importlib.util.spec_from_file_location("full_component_shape_guard",
+            HERE / 'owned-package-fixture/full-application-package.py')
+        full = importlib.util.module_from_spec(full_spec)
+        full_spec.loader.exec_module(full)
+        cpu = 0x0100000c
+        thin = struct.pack('<8I', 0xfeedfacf, cpu, 0, 6, 1, 24, 0, 0) + struct.pack('<6I', 0x32, 24, 2, 0, 0, 0)
+        offset = 4096
+        fat = struct.pack('>7I', 0xcafebabe, 1, cpu, 0, offset, len(thin), 12) + bytes(offset - 28) + thin
+        with tempfile.TemporaryDirectory() as name:
+            binary = Path(name) / 'native-component'
+            for raw, container, start in [(thin, 'thin64', 0), (fat, 'fat32-single-arm64', offset)]:
+                binary.write_bytes(raw)
+                shape = full.native_component_shape(binary)
+                self.assertEqual((shape['container'], shape['architectures'], shape['sliceOffset']), (container, 1, start))
+                self.assertEqual((shape['cpuType'], shape['cpuSubtype'], shape['fileType']), (cpu, 0, 6))
+                self.assertEqual(shape['sliceBytes'], len(thin))
+                self.assertEqual(binary.read_bytes(), raw)  # no slice selection, stripping or rewriting
+            def patched(raw, index, value, order):
+                result = bytearray(raw); struct.pack_into(order + 'I', result, index, value); return bytes(result)
+            variants = {
+                'ar-is-not-code': b'!<arch>\n' + bytes(48),
+                'fat64': patched(fat, 0, 0xcafebabf, '>'),
+                'multiple-architectures': patched(fat, 4, 2, '>'),
+                'wrong-outer-cpu': patched(fat, 8, 0x01000007, '>'),
+                'wrong-outer-subtype': patched(fat, 12, 2, '>'),
+                'overlapping-table': patched(fat, 16, 16, '>'),
+                'misaligned-offset': patched(fat, 16, offset + 1, '>'),
+                'alignment-overflow': patched(fat, 24, 31, '>'),
+                'truncated-slice': fat[:-1],
+                'trailing-bytes': fat + b'x',
+                'wrong-inner-cpu': patched(thin, 4, 0x01000007, '<'),
+                'arm64e-is-not-admitted': patched(thin, 8, 2, '<'),
+                'object-is-not-executable': patched(thin, 12, 1, '<'),
+                'commands-outside-slice': patched(thin, 20, 1048577, '<'),
+                'unknown-container': b'\x7fELF' + thin[4:],
+            }
+            for label, raw in variants.items():
+                with self.subTest(nativeShape=label), self.assertRaises(ValueError):
+                    binary.write_bytes(raw)
+                    full.native_component_shape(binary)
         # These are execution-policy contracts, not completed Apple builds.
         # Device compilation and the independently compiled one-case Simulator
         # signer both receive a bounded hour; its parent retains 60s headroom.

@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "fb6aa7a14680135f5e7271f10b61ad9561801c19",
+  "sourceTag": "reader-renewal-fb6aa7a",
+  "runID": 39553639652,
+  "jobID": 119068228859,
+  "status": "completed",
+  "conclusion": "failure",
+  "queryAgain": false,
+  "actualApp": {
+    "selectedDefinitions": 479,
+    "selectedArgumentLeaves": 482,
+    "observedStartedUniqueDefinitions": 242,
+    "observedReportedPassedDefinitions": 238,
+    "observedTerminalFailedDefinitions": 2,
+    "recordedAllowanceFailureWithoutTerminal": 1,
+    "incompleteStartedDefinitions": 1,
+    "notObservedStartedDefinitions": 237,
+    "observedStartedLeaves": 244,
+    "observedReportedPassedLeaves": 240,
+    "selectedButNotObservedStartedLeaves": 238,
+    "observedBoolPairs": 2,
+    "selectedBoolPairs": 3,
+    "unknownContextDistinctLocations": 2,
+    "unknownContextRawOccurrences": 4,
+    "unknownIssuesExtraCaseCount": null,
+    "cleanSuiteAcceptance": false,
+    "finalXcresultCountsAvailable": false,
+    "compilerErrorsObserved": 0
+  },
+  "firstFailure": {
+    "phase": "native",
+    "pipelineExitCode": 124,
+    "commandExitCode": -9,
+    "timedOut": true,
+    "phaseBudgetSeconds": 3720,
+    "elapsedSeconds": 3754.442857,
+    "actualFinalXcodeExitCode": null
+  },
+  "extraction": {
+    "summaryBytes": 0,
+    "testsBytes": 0,
+    "summaryCommandExitCode": 64,
+    "testsCommandExitCode": 64,
+    "error": "xcresult Info.plist absent",
+    "parameterExportsError": "Expecting value:line1column1(char0)",
+    "casesGatePassed": false,
+    "afterTestsState": "blocked",
+    "resultProduced": false
+  },
+  "actualPackage": {
+    "methods": 24,
+    "passed": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "XMLVerboseResultSelectedIdentitiesExact": true,
+    "packageInputs": 23,
+    "AppOrJNIProof": false
+  },
+  "minimalProducer": {
+    "commands": 48,
+    "publicOutputs": 43,
+    "MachOs": 4,
+    "allCommandExitZeroNonTimeout": true,
+    "allPublicOutputBytesHashesVerified": true,
+    "cleanupRecorded": {
+      "ownedKeychainDeleted": true,
+      "originalSearchListRestoredOwnedAbsent": true
+    },
+    "AppSignerExecutedByProducer": false
+  },
+  "requiredPortableMethodsPassed": 200,
+  "sourceInputs": {
+    "historicalCore": 418,
+    "all418GitBytesMatched": true,
+    "Package23Subset": true,
+    "producer7Subset": true,
+    "uniqueRepositoryInputs": 418,
+    "all11PhaseStatesSameSource": true,
+    "admissionRecord": "docs/legado-ios/core-sdk-fb6aa7a-request.json",
+    "current440RosterNotUsed": true,
+    "notAllXcodeTransitiveDependencies": true
+  },
+  "resultProduced": false,
+  "evidence": "docs/legado-ios/evidence/sdk-fb6aa7a-terminal/factual-review-v1.json",
+  "actualFailures": "docs/legado-ios/evidence/sdk-fb6aa7a-terminal/actual-failure-signatures.json",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "temporaryCompatibilityTargetPercent": 90,
+  "measuredCompatibilityPercent": null,
+  "limits": [
+    "No valid final App summary/tree; counts are exact source-mapped partial raw observations, not479/482 completion or clean suite pass.",
+    "Known unknown-context assertions remain failed evidence even when associated method reports Passed.",
+    "Only2/3 Bool pairs reached. Unstarted tests have no result and no claimed zero skip/failure.",
+    "Package24/minimal producer200portable scopes cannot establish App signer/JNI/actual install/Apple/unattended acceptance.",
+    "Later source corrections never relabel this closed source result; no reviewer tests/compiler/cloud/download."
+  ]
+}

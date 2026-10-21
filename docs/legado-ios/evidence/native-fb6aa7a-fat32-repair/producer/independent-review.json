@@ -1,0 +1,229 @@
+{
+  "schemaVersion": 1,
+  "reviewedUTC": "2026-10-21T07:21:40.779424+00:00",
+  "decision": "approved source-only",
+  "final": {
+    "path": ".build/native-fb6aa7a-full-component-repair-step/final-v1.json",
+    "bytes": 7467,
+    "sha256": "417282de531ce785b41984345c2558ec89d425d2dcdede39d509c509feba0029"
+  },
+  "sourceRoot": ".build/native-fb6aa7a-full-component-repair-step/snapshot-v1/work",
+  "files": [
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/full-application-package.py",
+      "baseline": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/rawbaseline/scripts/reader-experience/owned-package-fixture/full-application-package.py",
+        "bytes": 11840,
+        "sha256": "48b23fe98339680a29329108b04e85674a7ba8e5b554923b691a79bbc3579d52"
+      },
+      "candidate": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/snapshot-v1/work/scripts/reader-experience/owned-package-fixture/full-application-package.py",
+        "bytes": 14984,
+        "sha256": "f818f85a412842060188f0258ce5cc6b99125944b35f7e51ff84fa4e0ea40bea"
+      },
+      "diff": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/diffs-v1/scripts/reader-experience/owned-package-fixture/full-application-package.py.diff",
+        "bytes": 5194,
+        "sha256": "a7ded7d98b4eca819c652fcdc45e0667be8e89de44fe004a858e74afbd5a804b"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-full-application-signing-tools.py",
+      "baseline": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/rawbaseline/scripts/reader-experience/test-full-application-signing-tools.py",
+        "bytes": 10850,
+        "sha256": "7d51841496234b4104d1e6fd753ae028f26b107e49828ad3d585bee3bbad8724"
+      },
+      "candidate": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/snapshot-v1/work/scripts/reader-experience/test-full-application-signing-tools.py",
+        "bytes": 13718,
+        "sha256": "db6a8ee81b9f5a210bad65a78dbc318be663f1725c02306db0b93d21de7706a8"
+      },
+      "diff": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/diffs-v1/scripts/reader-experience/test-full-application-signing-tools.py.diff",
+        "bytes": 3613,
+        "sha256": "e1d1d36587b1bbd203a3b2bd69f41fb0b5c8bc94f158f5f68c01f47e29b8aaf4"
+      }
+    }
+  ],
+  "checks": [
+    {
+      "name": "exact frozen final",
+      "passed": true
+    },
+    {
+      "name": "exact two source paths",
+      "passed": true
+    },
+    {
+      "name": "scripts/reader-experience/owned-package-fixture/full-application-package.py baseline bytes",
+      "passed": true
+    },
+    {
+      "name": "scripts/reader-experience/owned-package-fixture/full-application-package.py candidate bytes",
+      "passed": true
+    },
+    {
+      "name": "scripts/reader-experience/owned-package-fixture/full-application-package.py diff bytes",
+      "passed": true
+    },
+    {
+      "name": "scripts/reader-experience/owned-package-fixture/full-application-package.py tracked baseline",
+      "passed": true
+    },
+    {
+      "name": "scripts/reader-experience/test-full-application-signing-tools.py baseline bytes",
+      "passed": true
+    },
+    {
+      "name": "scripts/reader-experience/test-full-application-signing-tools.py candidate bytes",
+      "passed": true
+    },
+    {
+      "name": "scripts/reader-experience/test-full-application-signing-tools.py diff bytes",
+      "passed": true
+    },
+    {
+      "name": "scripts/reader-experience/test-full-application-signing-tools.py tracked baseline",
+      "passed": true
+    },
+    {
+      "name": "only one producer helper added",
+      "passed": true
+    },
+    {
+      "name": "all other producer functions exact AST",
+      "passed": true
+    },
+    {
+      "name": "whole producer reverses to baseline outside narrow changes",
+      "passed": true
+    },
+    {
+      "name": "helper has no write, conversion, HTTP, or subprocess call",
+      "passed": true
+    },
+    {
+      "name": "unchanged vtool IOS and Apple codesign strict gates",
+      "passed": true
+    },
+    {
+      "name": "shape admission bounded and role checked",
+      "passed": true
+    },
+    {
+      "name": "four old definitions retained",
+      "passed": true
+    },
+    {
+      "name": "three other test methods exact AST",
+      "passed": true
+    },
+    {
+      "name": "whole test source reverses to baseline",
+      "passed": true
+    },
+    {
+      "name": "15 explicit reject vectors use actual helper",
+      "passed": true
+    },
+    {
+      "name": "evidence bytes .build/native-fb6aa7a-full-component-repair-step/baseline-v1.json",
+      "passed": true
+    },
+    {
+      "name": "evidence bytes .build/native-fb6aa7a-full-component-repair-step/actual-failure-facts-v1.json",
+      "passed": true
+    },
+    {
+      "name": "evidence bytes .build/native-fb6aa7a-full-component-repair-step/primary-facts-compact-v1.json",
+      "passed": true
+    },
+    {
+      "name": "evidence bytes .build/native-fb6aa7a-full-component-repair-step/execution-v1/execution.json",
+      "passed": true
+    },
+    {
+      "name": "evidence bytes .build/native-fb6aa7a-full-component-repair-step/execution-v1/test.log",
+      "passed": true
+    },
+    {
+      "name": "observed one existing portable method passed",
+      "passed": true
+    },
+    {
+      "name": "observed executed bytes equal frozen bytes",
+      "passed": true
+    },
+    {
+      "name": "pinned Apple lipo raw identity",
+      "passed": true
+    },
+    {
+      "name": "Apple lipo pinned excerpts exact lines",
+      "passed": true
+    },
+    {
+      "name": "actual failure evidence retains binary unknown boundary",
+      "passed": true
+    }
+  ],
+  "failedChecks": 0,
+  "remainingConfirmedFindings": [],
+  "sourceReview": [
+    "Only exact one-slice big-endian FAT32 wrapping ordinary arm64 little-endian Mach-O64 is added; existing thin64 remains. No ar/FAT64/multislice acceptance.",
+    "Read-only header admission validates terminal in-file slice, alignment, matching outer/inner CPU and subtype, command declaration bounds, and bundle file type. It preserves all container bytes and performs no architecture or platform conversion.",
+    "Fresh same-job source/runtime admission, exact three bundles, vtool IOS, Apple deep strict codesign, resource identity/unchanged-file gates and archive bounds remain unchanged.",
+    "One existing portable method adds two valid and fifteen rejected shape vectors through the production helper; prior method body assertions and all other test methods are retained."
+  ],
+  "actualPortableEvidence": {
+    "execution": {
+      "path": ".build/native-fb6aa7a-full-component-repair-step/execution-v1/execution.json",
+      "bytes": 1777,
+      "sha256": "81fe5bf526648316977c69c9c62120cd325d75d8dec17342e9ef2b94a8416e2c"
+    },
+    "log": {
+      "path": ".build/native-fb6aa7a-full-component-repair-step/execution-v1/test.log",
+      "bytes": 309,
+      "sha256": "6892320879e6e12715e3487d06479aef5abb0b18f0c9f59a566d05d2b45f973a"
+    },
+    "methods": 1,
+    "executions": 1,
+    "passed": 1,
+    "rerunByReviewer": false
+  },
+  "primary": {
+    "facts": {
+      "path": ".build/native-fb6aa7a-full-component-repair-step/primary-facts-compact-v1.json",
+      "bytes": 3915,
+      "sha256": "71ebef70bc863a2d956550fcbfbbe06950fad16c1e7089492af008ae7c8685ab"
+    },
+    "appleLipo": {
+      "url": "https://raw.githubusercontent.com/apple-oss-distributions/cctools/e0d56624eca2a76c2ace4c21850df9e666de4ca5/misc/lipo.c",
+      "revision": "e0d56624eca2a76c2ace4c21850df9e666de4ca5",
+      "path": ".build/native-fb6aa7a-full-component-repair-step/primary/apple-cctools-lipo.c",
+      "bytes": 85496,
+      "sha256": "bfbfc3e03c6efb1551df39aaccba5b035aa7592f24813fa35e436cb6b9c0883f"
+    },
+    "failureFacts": {
+      "path": ".build/native-fb6aa7a-full-component-repair-step/actual-failure-facts-v1.json",
+      "bytes": 4124,
+      "sha256": "d837fa133b6048f4ca67719b65a76a498fc4308715e7d5fe25f89f601d6b5b09"
+    }
+  },
+  "limits": [
+    "Actual CI device build succeeded and old thin-only producer failed, but final rejected component/path/magic were not uploaded. The repair direction is supported by actual stub/lipo commands and pinned Apple source, not recovered final executable bytes.",
+    "Portable shape vectors do not run vtool/codesign/Swift or establish full IPA signing, device execution, Apple account authority, or compatibility of the separate production FAT32 signer candidate.",
+    "No tests, parser of Swift, cloud queries/downloads, canonical writes or Git mutation performed by this reviewer."
+  ],
+  "actualReviewerTests": 0,
+  "actualAppleTools": 0,
+  "actualSwiftSDK": 0,
+  "queryAgain": false,
+  "completionFlags": {
+    "fullCompatibility": false,
+    "selfRenewalComplete": false,
+    "realDeviceVerified": false,
+    "automaticRenewalVerified": false
+  }
+}

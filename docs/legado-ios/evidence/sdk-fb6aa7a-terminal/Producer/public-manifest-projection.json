@@ -1,0 +1,1216 @@
+{
+  "schema": 1,
+  "sourceInputs": [
+    {
+      "path": "generate-sdk-owned-package.py",
+      "bytes": 73458,
+      "sha256": "d8144d8bd05fb3b1043f4a3b7212243ebe3849f231cd0494f51501d2b923b249"
+    },
+    {
+      "path": "ImportOwnedIdentity.swift",
+      "bytes": 30240,
+      "sha256": "b271f8761b92b2cc74b16ea5c8cb0a4b74084385749bbb2e15be3dc78719e849"
+    },
+    {
+      "path": "OwnedIdentitySearch.h",
+      "bytes": 3976,
+      "sha256": "038ca6bbef96cd2b1511967dce4daa8c55ba6403a758272132d809be55cab7a8"
+    },
+    {
+      "path": "OwnedIdentitySearch.c",
+      "bytes": 37981,
+      "sha256": "d7451a4ecdae1a7a10b960046a588dfafd398369517e1dea74183b9791e9ac20"
+    },
+    {
+      "path": "main.c",
+      "bytes": 180,
+      "sha256": "0f1f097060993b3b25b4da50f31a4ef5a1d8077084d64ca561dbfc3a743a86f7"
+    },
+    {
+      "path": "extension.c",
+      "bytes": 186,
+      "sha256": "79636265b4cdbf74aff701991aa425a6454fe6cd9049a9652c094b767eba7609"
+    },
+    {
+      "path": "framework.c",
+      "bytes": 156,
+      "sha256": "4d6d77e995c1740eeb510f39830683aa31e050e0ebd97881f3e68643970b79ef"
+    }
+  ],
+  "generatedAt": "2026-10-21T06:10:45+00:00",
+  "archiveSHA256": "1d5196065c58e50a09037427d6cfc77d2359942e993b624add54ee9a4d046ff5",
+  "archiveBytes": 306892,
+  "privateKeyFilesOutsideKeychain": 0,
+  "temporaryOwnedKeychainDeleted": true,
+  "temporaryUserSearchListRegistered": true,
+  "temporaryUserSearchListRestoredAndOwnedAbsent": true,
+  "userAdminSystemTrustChanged": false,
+  "privateMaterialArtifacts": 0,
+  "realAppleAccountUsed": false,
+  "SwiftPackageCoordinatorExecuted": false,
+  "producerToolBudgetSeconds": 300,
+  "ownedToolBudgetsSeconds": {
+    "openssl": 30,
+    "xcodebuild": 20,
+    "xcrun": 120,
+    "security": 15,
+    "codesign": 45,
+    "import-owned-identity": 20
+  },
+  "cleanupToolBudgetSeconds": 10,
+  "commands": [
+    {
+      "index": 0,
+      "program": "openssl",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.006106833000018241,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 1,
+      "program": "xcodebuild",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 20,
+      "timedOut": false,
+      "elapsedSeconds": 0.19242233299999612,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 2,
+      "program": "xcrun",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 1.4246833330000186,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 3,
+      "program": "xcrun",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 1.0985260829999959,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 4,
+      "program": "openssl",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.08995687500001281,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 5,
+      "program": "openssl",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.01827995900001156,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 6,
+      "program": "openssl",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.024466625000002296,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 7,
+      "program": "openssl",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.017532167000013033,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 8,
+      "program": "openssl",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.013580749999988484,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 9,
+      "program": "openssl",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.024221749999981057,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 10,
+      "program": "xcrun",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 2.8649527910000074,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 11,
+      "program": "xcrun",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 11.371759916999991,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 12,
+      "program": "import-owned-identity",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 20,
+      "timedOut": false,
+      "elapsedSeconds": 0.17285691699999006,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 13,
+      "program": "import-owned-identity",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 20,
+      "timedOut": false,
+      "elapsedSeconds": 0.06255425000000514,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 14,
+      "program": "import-owned-identity",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 20,
+      "timedOut": false,
+      "elapsedSeconds": 0.03744354099998759,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 15,
+      "program": "import-owned-identity",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 20,
+      "timedOut": false,
+      "elapsedSeconds": 0.025097833999979002,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 16,
+      "program": "security",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 15,
+      "timedOut": false,
+      "elapsedSeconds": 0.08636883300002296,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 17,
+      "program": "security",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 15,
+      "timedOut": false,
+      "elapsedSeconds": 0.017268875000013395,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 18,
+      "program": "security",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 15,
+      "timedOut": false,
+      "elapsedSeconds": 0.012350708999974813,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 19,
+      "program": "security",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 15,
+      "timedOut": false,
+      "elapsedSeconds": 0.016431209000018043,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 20,
+      "program": "security",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 15,
+      "timedOut": false,
+      "elapsedSeconds": 0.021462457999973594,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 21,
+      "program": "security",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 15,
+      "timedOut": false,
+      "elapsedSeconds": 0.021874332999971102,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 22,
+      "program": "xcrun",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 0.1380370409999614,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 23,
+      "program": "codesign",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 45,
+      "timedOut": false,
+      "elapsedSeconds": 0.07976216600002317,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 24,
+      "program": "xcrun",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 0.058277209000038965,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 25,
+      "program": "openssl",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.03585929199999782,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 26,
+      "program": "openssl",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.016519959000049766,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 27,
+      "program": "codesign",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 45,
+      "timedOut": false,
+      "elapsedSeconds": 0.04538812499998812,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 28,
+      "program": "xcrun",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 0.06484770800000206,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 29,
+      "program": "openssl",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.008923333000041112,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 30,
+      "program": "openssl",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.009157333000018753,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 31,
+      "program": "codesign",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 45,
+      "timedOut": false,
+      "elapsedSeconds": 0.056573291999995945,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 32,
+      "program": "xcrun",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 0.06364925000002586,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 33,
+      "program": "openssl",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.008708416999979818,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 34,
+      "program": "openssl",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.01321725000002516,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 35,
+      "program": "codesign",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 45,
+      "timedOut": false,
+      "elapsedSeconds": 0.05241162500004748,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 36,
+      "program": "openssl",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.007898624999995718,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 37,
+      "program": "xcrun",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 0.945881208000003,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 38,
+      "program": "openssl",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.012441999999964537,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 39,
+      "program": "xcrun",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 0.024017333000017516,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 40,
+      "program": "openssl",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.011146708000012495,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 41,
+      "program": "xcrun",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 0.019908541999996032,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 42,
+      "program": "openssl",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 30,
+      "timedOut": false,
+      "elapsedSeconds": 0.009851125000011507,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 43,
+      "program": "xcrun",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 120,
+      "timedOut": false,
+      "elapsedSeconds": 0.02054883300002075,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 44,
+      "program": "security",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 10,
+      "timedOut": false,
+      "elapsedSeconds": 0.013910750000036387,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 45,
+      "program": "security",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 10,
+      "timedOut": false,
+      "elapsedSeconds": 0.010856208000006973,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 46,
+      "program": "security",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 10,
+      "timedOut": false,
+      "elapsedSeconds": 0.00969750000001568,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    },
+    {
+      "index": 47,
+      "program": "security",
+      "argvOmitted": true,
+      "exitCode": 0,
+      "privateInputBytesRetained": false,
+      "timeoutSeconds": 10,
+      "timedOut": false,
+      "elapsedSeconds": 0.01287012499994944,
+      "processCleanup": {
+        "hardKillAttempted": false,
+        "drained": true,
+        "childReaped": true,
+        "pipesClosed": true,
+        "issues": []
+      }
+    }
+  ],
+  "publicOutputs": [
+    {
+      "path": "clang-version.log",
+      "bytes": 205,
+      "sha256": "ad80af3802c0b5ab5826459477dc844b14ca968734496feb4477b51423d556fc"
+    },
+    {
+      "path": "framework-clang.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "framework.detached.cms",
+      "bytes": 1798,
+      "sha256": "b6fa9e604984f937e47946add15f0ea86a56f454595bd029412d1759dc3321a0"
+    },
+    {
+      "path": "framework.macho",
+      "bytes": 68112,
+      "sha256": "e330ae05c6fb341a5d4324adff8bbe7d4db5ab62994687c7946ae44bcba7f951"
+    },
+    {
+      "path": "framework.original-cms.log",
+      "bytes": 28,
+      "sha256": "25b50603c259a4e3172ed0f6315497daa374b9935c92d78abcd3d2e2dce2b97e"
+    },
+    {
+      "path": "framework.otool.log",
+      "bytes": 3816,
+      "sha256": "5e3c0857a74590cbd1937371ee33db017cdecf4dca556a17eb8de16112bd4a9e"
+    },
+    {
+      "path": "framework.primary.cd",
+      "bytes": 628,
+      "sha256": "aec624e0842c43afde475d79191a3ff4ac228769d3d37896a8bc700946c04ff5"
+    },
+    {
+      "path": "framework.verified.cd",
+      "bytes": 628,
+      "sha256": "aec624e0842c43afde475d79191a3ff4ac228769d3d37896a8bc700946c04ff5"
+    },
+    {
+      "path": "import-tool-compile.log",
+      "bytes": 37378,
+      "sha256": "d2e3624f37b8c8a1c01cf383da38e7f4975661ab2a6d998d1c840720183576bf"
+    },
+    {
+      "path": "leaf.cert.der",
+      "bytes": 883,
+      "sha256": "ea8b594364a7b1d3bb5f9a3fc022deabf2fb1a4c653d5e18eb83b295e1e491a9"
+    },
+    {
+      "path": "leaf.cert.pem",
+      "bytes": 1253,
+      "sha256": "8d158fb9cd6a5f18865efe6cbf461aa9b03315c235d7a6a4c6f4289fe21e4120"
+    },
+    {
+      "path": "main.detached.cms",
+      "bytes": 1798,
+      "sha256": "f1bf882da117a1c62aef38c886c084a3de4d85d2a2d5e67949f1e00f0fc2df77"
+    },
+    {
+      "path": "main.macho",
+      "bytes": 69280,
+      "sha256": "2cadf04e5608859fdab494f67b86c4a5de2be8aec1d23814d47d19922d2d779c"
+    },
+    {
+      "path": "main.original-cms.log",
+      "bytes": 28,
+      "sha256": "25b50603c259a4e3172ed0f6315497daa374b9935c92d78abcd3d2e2dce2b97e"
+    },
+    {
+      "path": "main.otool.log",
+      "bytes": 4291,
+      "sha256": "1558dd537edd49c1e890c6482960589f0c7761dda4fcd997e0e9d0396e2943e9"
+    },
+    {
+      "path": "main.primary.cd",
+      "bytes": 746,
+      "sha256": "57ebfbfa0e934de248e95d126d46c5e62aa43e9ba44f05ddd8601adfb758ae72"
+    },
+    {
+      "path": "main.verified.cd",
+      "bytes": 746,
+      "sha256": "57ebfbfa0e934de248e95d126d46c5e62aa43e9ba44f05ddd8601adfb758ae72"
+    },
+    {
+      "path": "openssl-version.log",
+      "bytes": 63,
+      "sha256": "3a5f6bea0ec8eaab2f5b7d17b2613ff078121589bc7f2aac6453066d76019700"
+    },
+    {
+      "path": "owned-certificate-chain.log",
+      "bytes": 101,
+      "sha256": "76aaed2f50a376f2f662f4b19e6dc34b3ec9277536d4e3a99ff38a230dd71492"
+    },
+    {
+      "path": "owned-sdk-package.ipa",
+      "bytes": 306892,
+      "sha256": "1d5196065c58e50a09037427d6cfc77d2359942e993b624add54ee9a4d046ff5"
+    },
+    {
+      "path": "owned-sdk-package.json",
+      "bytes": 411619,
+      "sha256": "9a560594e0bb703e3016c0036b85f865db324e3fb79948cce5392238981382f6"
+    },
+    {
+      "path": "root.cert.der",
+      "bytes": 883,
+      "sha256": "ea8b594364a7b1d3bb5f9a3fc022deabf2fb1a4c653d5e18eb83b295e1e491a9"
+    },
+    {
+      "path": "root.cert.pem",
+      "bytes": 1253,
+      "sha256": "8d158fb9cd6a5f18865efe6cbf461aa9b03315c235d7a6a4c6f4289fe21e4120"
+    },
+    {
+      "path": "share.detached.cms",
+      "bytes": 1798,
+      "sha256": "0c3aec1790bd69395f9aeec25c06d5af267bda3a1fa7f6083033ae76c81aa4b0"
+    },
+    {
+      "path": "share.macho",
+      "bytes": 69312,
+      "sha256": "c4559de9f372076c74856c99f80daf29f26f3c2b02d7ca396cbd3b29cb513986"
+    },
+    {
+      "path": "share.original-cms.log",
+      "bytes": 28,
+      "sha256": "25b50603c259a4e3172ed0f6315497daa374b9935c92d78abcd3d2e2dce2b97e"
+    },
+    {
+      "path": "share.otool.log",
+      "bytes": 4322,
+      "sha256": "310f10d0d792e4d21184e82ee4e4897a43fc85da284638d9f29e6f6b64ce9526"
+    },
+    {
+      "path": "share.primary.cd",
+      "bytes": 752,
+      "sha256": "beb4caf2b039c2eaa49c4707d0990f623064628fa1b7a71f46f5460a261bcc55"
+    },
+    {
+      "path": "share.verified.cd",
+      "bytes": 752,
+      "sha256": "beb4caf2b039c2eaa49c4707d0990f623064628fa1b7a71f46f5460a261bcc55"
+    },
+    {
+      "path": "test.owned.reader.clang.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test.owned.reader.codesign.log",
+      "bytes": 158,
+      "sha256": "22061c0431b48286867caca2903cb58e5fdcf5bc259ab9a365587c6d0b3db93c"
+    },
+    {
+      "path": "test.owned.reader.framework.codesign.log",
+      "bytes": 200,
+      "sha256": "cda9e9e979251783eb3fcf6c26a612dce5fcd57cac47775708ecece1bc0569b6"
+    },
+    {
+      "path": "test.owned.reader.share.clang.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test.owned.reader.share.codesign.log",
+      "bytes": 185,
+      "sha256": "bc2e7fb325c76870d6029b01ddac399bd478cb25d6557aa223d9998061ac0d94"
+    },
+    {
+      "path": "test.owned.reader.widget.clang.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test.owned.reader.widget.codesign.log",
+      "bytes": 187,
+      "sha256": "764073193b1d1d1af8d9d4cecbbea8a2036b075035cdf36635329d067158282a"
+    },
+    {
+      "path": "widget.detached.cms",
+      "bytes": 1798,
+      "sha256": "20d3467db3b0d45485af25400322b6f3587eb36d19ae10b58a8ada12f1b49586"
+    },
+    {
+      "path": "widget.macho",
+      "bytes": 69312,
+      "sha256": "322a9c7c0648695910f38d2c8a7e873c3db03c84ad68b386bc2744a5da63a627"
+    },
+    {
+      "path": "widget.original-cms.log",
+      "bytes": 28,
+      "sha256": "25b50603c259a4e3172ed0f6315497daa374b9935c92d78abcd3d2e2dce2b97e"
+    },
+    {
+      "path": "widget.otool.log",
+      "bytes": 4323,
+      "sha256": "0e8c367d3689dec755252d7fa8df7f96fce475910c38e0790bfaf37416cdf2d4"
+    },
+    {
+      "path": "widget.primary.cd",
+      "bytes": 753,
+      "sha256": "26ab1f249e6298c4b84df918816cc9617ae3b7a6b5e3f067eb987239d689cb79"
+    },
+    {
+      "path": "widget.verified.cd",
+      "bytes": 753,
+      "sha256": "26ab1f249e6298c4b84df918816cc9617ae3b7a6b5e3f067eb987239d689cb79"
+    },
+    {
+      "path": "xcode-version.log",
+      "bytes": 31,
+      "sha256": "9fec9509a0037736274232072cadc58613fa6ddcafd55fa0915151df641590d3"
+    }
+  ],
+  "actualSDKProducedMachOs": [
+    {
+      "role": "main",
+      "bytes": 69280,
+      "sha256": "2cadf04e5608859fdab494f67b86c4a5de2be8aec1d23814d47d19922d2d779c",
+      "fileType": 2,
+      "loadCommands": [
+        25,
+        25,
+        25,
+        25,
+        2147483700,
+        2147483699,
+        2,
+        11,
+        14,
+        27,
+        50,
+        42,
+        2147483688,
+        44,
+        12,
+        12,
+        2147483676,
+        38,
+        41,
+        29
+      ],
+      "originalDetachedCMSActuallyVerified": true
+    },
+    {
+      "role": "share",
+      "bytes": 69312,
+      "sha256": "c4559de9f372076c74856c99f80daf29f26f3c2b02d7ca396cbd3b29cb513986",
+      "fileType": 2,
+      "loadCommands": [
+        25,
+        25,
+        25,
+        25,
+        2147483700,
+        2147483699,
+        2,
+        11,
+        14,
+        27,
+        50,
+        42,
+        2147483688,
+        44,
+        12,
+        12,
+        2147483676,
+        38,
+        41,
+        29
+      ],
+      "originalDetachedCMSActuallyVerified": true
+    },
+    {
+      "role": "widget",
+      "bytes": 69312,
+      "sha256": "322a9c7c0648695910f38d2c8a7e873c3db03c84ad68b386bc2744a5da63a627",
+      "fileType": 2,
+      "loadCommands": [
+        25,
+        25,
+        25,
+        25,
+        2147483700,
+        2147483699,
+        2,
+        11,
+        14,
+        27,
+        50,
+        42,
+        2147483688,
+        44,
+        12,
+        12,
+        2147483676,
+        38,
+        41,
+        29
+      ],
+      "originalDetachedCMSActuallyVerified": true
+    },
+    {
+      "role": "framework",
+      "bytes": 68112,
+      "sha256": "e330ae05c6fb341a5d4324adff8bbe7d4db5ab62994687c7946ae44bcba7f951",
+      "fileType": 6,
+      "loadCommands": [
+        25,
+        25,
+        25,
+        13,
+        2147483700,
+        2147483699,
+        2,
+        11,
+        27,
+        50,
+        42,
+        44,
+        12,
+        38,
+        41,
+        29
+      ],
+      "originalDetachedCMSActuallyVerified": true
+    }
+  ],
+  "projection": "All producer argv omitted; original raw manifest hash retained. No PKI/IPA/body/private command copied.",
+  "rawManifest": {
+    "path": ".build/sdk-fb6aa7a-terminal/artifact-12327294957/reader-renewal-probe/sdk-produced-public/sdk-produced-fixture-manifest.json",
+    "bytes": 46013,
+    "sha256": "6289aa358b41abc41b37b505e1b08a4eb5d8fa11b658c26b39593329e83fe15b"
+  }
+}

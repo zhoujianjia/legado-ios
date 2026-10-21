@@ -1,0 +1,84 @@
+{
+  "appleLipo": {
+    "repository": "apple-oss-distributions/cctools",
+    "revision": "e0d56624eca2a76c2ace4c21850df9e666de4ca5",
+    "url": "https://raw.githubusercontent.com/apple-oss-distributions/cctools/e0d56624eca2a76c2ace4c21850df9e666de4ca5/misc/lipo.c",
+    "path": ".build/native-fb6aa7a-full-component-repair-step/primary/apple-cctools-lipo.c",
+    "bytes": 85496,
+    "sha256": "bfbfc3e03c6efb1551df39aaccba5b035aa7592f24813fa35e436cb6b9c0883f",
+    "scope": "Published Apple source; exact Xcode26.2 shipped tool version not attested.",
+    "necessaryExcerpts": {
+      "542-546": [
+        "\tif(create_flag){",
+        "\t    /* check to make sure no two files have the same architectures */",
+        "\t    uint64_t lastOffset = 0;",
+        "\t    enum bool mainExecuteable = FALSE;",
+        "\t    for(i = 0; i < nthin_files; i++) {"
+      ],
+      "580-584": [
+        "\t    // automatically switch to fat64 if needed",
+        "\t    if (!mainExecuteable && (lastOffset > 0xFFFFFFFF))",
+        "\t\tfat64_flag = TRUE;",
+        "\t    create_fat();",
+        "\t}"
+      ],
+      "980-985": [
+        "\t/* Fill in the fat header and the fat_arch's offsets. */",
+        "\tif(fat64_flag == TRUE)",
+        "\t    fat_header.magic = FAT_MAGIC_64;",
+        "\telse",
+        "\t    fat_header.magic = FAT_MAGIC;",
+        "\tfat_header.nfat_arch = nthin_files;"
+      ],
+      "1040-1049": [
+        "\t/*",
+        "\t * If this is an extract_family_flag operation and the is just one",
+        "\t * thin file on the list don't create a fat file.",
+        "\t */",
+        "\tif(extract_family_flag != TRUE || nthin_files != 1){",
+        "#ifdef __LITTLE_ENDIAN__",
+        "\t    swap_fat_header(&fat_header, BIG_ENDIAN_BYTE_SEX);",
+        "#endif /* __LITTLE_ENDIAN__ */",
+        "\t    if(write64(fd, &fat_header, sizeof(struct fat_header)) !=",
+        "\t       sizeof(struct fat_header))"
+      ]
+    },
+    "conclusion": "-create always enters create_fat; FAT_MAGIC + count are emitted. Only extract_family with1slice omits the FAT header.",
+    "limit": "Published Apple source is pinned; exact shipped Xcode26.2 lipo build not independently attested."
+  },
+  "pinnedFirestoreUpstream": {
+    "url": "https://dl.google.com/firebase/ios/bin/firestore/12.14.0/rc1/FirebaseFirestoreInternal.zip",
+    "archiveBytes": 31588717,
+    "sha256": "28d4f75f8c07892157546a50151f5b6110e03d4f62dddadf35ef19197bf8b617",
+    "matchesPinnedSwiftPMChecksum": true,
+    "members": [
+      {
+        "member": "FirebaseFirestoreInternal.xcframework/ios-arm64/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal",
+        "bytes": 13581144,
+        "prefixHex": "213c617263683e0a23312f32302020202020202020202020302020202020202020202020302020202020302020202020313030363434202032363331323034202020600a5f5f2e53594d444546000000",
+        "startsAr": true,
+        "prefixOnlyRead": true
+      },
+      {
+        "member": "FirebaseFirestoreInternal.xcframework/ios-arm64/FirebaseFirestoreInternal.framework/Info.plist",
+        "bytes": 1565,
+        "sha256": "5dc6b8cf58d95be3fce089a2be3dffd70178c2e64723860740359f918b4befad",
+        "bundleExecutable": "FirebaseFirestoreInternal",
+        "packageType": "FMWK",
+        "supportedPlatforms": [
+          "iPhoneOS"
+        ]
+      }
+    ],
+    "durationSeconds": 6.594000000040978,
+    "scope": "Official pinned upstream archive, not a recovered CI App binary. Exact post-lipo CI executable bytes/magic not uploaded."
+  },
+  "inference": "CI actual remove-static -> inject arm64 dynamic stub -> lipo command is consistent with single-arm64 FAT32 output. Upstream ar is not actual CI final format; no static-as-resource shortcut is implemented.",
+  "excludedFromPublicEvidence": [
+    "31MB binary ZIP",
+    "full upstream manifests",
+    "full lipo.c",
+    "private download metadata",
+    "fullApp/IPA/private signing material"
+  ]
+}

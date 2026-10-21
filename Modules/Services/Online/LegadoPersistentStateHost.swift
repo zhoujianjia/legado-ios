@@ -1567,10 +1567,11 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
             // Replaying its relative value here would start a second clock.
             properties.removeValue(forKey: .maximumAge)
             properties[.version] = "0"
-            // Use the Boolean discard representation from WebKit's Cocoa
-            // Cookie constructor. The strict native attribute checks below
-            // still reject a platform that cannot preserve this exact flag.
-            properties[.discard] = NSNumber(value: !persistent)
+            // Discard is optional. Version0 defaults to persistent when the
+            // key is absent; WebKit emits its true value only for session cookies.
+            // Never supply an explicit false NSNumber for a persistent cookie.
+            if persistent { properties.removeValue(forKey: .discard) }
+            else { properties[.discard] = NSNumber(value: true) }
             let nativeExpiry = expiresAt == Int64.min ? Date(timeIntervalSince1970: 0)
                 : Date(timeIntervalSince1970: Double(expiresAt) / 1000)
             if persistent { properties[.expires] = nativeExpiry }

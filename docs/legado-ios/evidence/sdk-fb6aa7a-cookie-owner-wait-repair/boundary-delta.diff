@@ -1,0 +1,34 @@
+--- v1/Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift
++++ v2/Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift
+@@ -425,6 +425,7 @@
+             let server = try CookieOwnerHTTPServer()
+             let root = try await server.start(); defer { server.stop() }
+             let gate = CookieOwnerDecisionGate()
++            let stageStarted = SourcePerfTrace.now
+             let fetcher = WebViewFetcher(cookieOwner: f.owner, poolSize: 1, websiteDataStore: .nonPersistent(),
+                 afterResponseCookieCommit: { try await gate.pauseOnce() })
+             let old = Task { @MainActor in
+@@ -437,12 +438,15 @@
+                     throw error
+                 }
+             }
++            SourcePerfTrace.record("cookie-owner.stale-webview", "stage=old-issued", since: stageStarted, thresholdMs: 0)
+             do {
+                 try await gate.waitUntilEntered()
++                SourcePerfTrace.record("cookie-owner.stale-webview", "stage=gate-entered", since: stageStarted, thresholdMs: 0)
+                 old.cancel()
+                 do { _ = try await old.value; Issue.record("The old navigation was cancelled") }
+                 catch is CancellationError {}
+                 catch let error as NSError { #expect(error.code == NSURLErrorCancelled) }
++                SourcePerfTrace.record("cookie-owner.stale-webview", "stage=oldcancel-returned", since: stageStarted, thresholdMs: 0)
+                 let newer = Task { @MainActor in
+                     do {
+                         let body = try await fetcher.fetchHTML(url: root.appendingPathComponent("held"), timeout: 20, jsWait: 0)
+@@ -455,6 +459,7 @@
+                 }
+                 do {
+                     try await server.waitForRequest("/held")
++                    SourcePerfTrace.record("cookie-owner.stale-webview", "stage=new-held", since: stageStarted, thresholdMs: 0)
+                     await gate.release(failing: failOldDecision)
+                     server.releaseHeldResponse()
+                     let body = try await newer.value

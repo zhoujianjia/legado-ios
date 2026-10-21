@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-21T07:36:26.789440+00:00",
+  "status": "test-only causal wait repair; source review and actual SDK execution pending",
+  "sourceRoot": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/snapshot-v2/work",
+  "files": [
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+      "baseline": {
+        "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/rawbaseline/Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+        "bytes": 36831,
+        "sha256": "05ac0c443f50ed3cb726577825f38a5c459bc93b53398cc2f40b847efc00359b"
+      },
+      "candidate": {
+        "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/snapshot-v2/work/Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+        "bytes": 40389,
+        "sha256": "d8a791f91e4818f69ccf86a29c70f4737be1f567532b84e8304fb5d1412d3e90"
+      },
+      "diff": {
+        "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/diffs-v2/Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift.diff",
+        "bytes": 8949,
+        "sha256": "900b18ea755705c7dd8bfd867c52d6a551bd88f8c2deb43ee2015f8f25a245cd"
+      }
+    }
+  ],
+  "sourceChecks": {
+    "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/source-checks-v2.json",
+    "bytes": 676,
+    "sha256": "bb074a61ba6ac65c8ed5637267b35b536e7cddeaee4ceb9aec8bbcd19b0d9047"
+  },
+  "readOnlyDependencies": [
+    {
+      "path": "Modules/Services/Network/WebViewFetcher.swift",
+      "bytes": 38085,
+      "sha256": "be24f92602ba6f81ced27a16c3b8446292cd07c2a442b5fe7cf5a3a618213b45"
+    },
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/CookieStore.swift",
+      "bytes": 11229,
+      "sha256": "26aaa57b348497d67ac3f2be4682a538cfc3345a82f43af8dde2432c235a38f6"
+    },
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/CookiePersistenceOwner.swift",
+      "bytes": 43599,
+      "sha256": "e3faed0e0b4d22d9463a702c0e1fc76fe9ad4a83ccd300d25744bbf7dab9b08b"
+    },
+    {
+      "path": "Modules/Services/Network/CookieStore+WebKit.swift",
+      "bytes": 14333,
+      "sha256": "ddcfab7e764d556a9fef86299b6f35e8af0bf0e0867c13687cad00124af0a2b4"
+    },
+    {
+      "path": "Modules/Core/BookSource/SourcePerfTrace.swift",
+      "bytes": 3788,
+      "sha256": "d77b01929cde847fb62c9a4820c9135286abc783d4af1f94056dc0c476f0a934"
+    }
+  ],
+  "actualFailure": {
+    "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/actual-failure-excerpt-v1.json",
+    "bytes": 1121,
+    "sha256": "33098a93040ca1a54cb0ffe0185d81f5567b1e925a00450c355d87e39c8f5031"
+  },
+  "diagnosis": [
+    "Actual fb6 case started at raw39000 and records 60-second allowance at39010; raw does not locate the pending await.",
+    "Original fixture waits only for after-response-Cookie-commit entry and /held HTTP arrival. Either underlying real WK task can finish first with an error while its independent continuation is never resumed, replacing the useful error with a one-minute hang.",
+    "This actual path uses WebViewFetcher plus the directly constructed CookieStore/Record owner, not LegadoPersistentStateHost.originalResponseCookies. The separate persistent-discard Host fix cannot be asserted as this case cause."
+  ],
+  "change": [
+    "Both original real navigation Tasks publish their actual terminal outcome to the existing causal signal owner. Early failure rethrows the exact original error; unexpected early success is a fixture invariant failure.",
+    "Existing signal owners remember failure even if task termination wins before waiter registration. Real request or gate entry still wins only when actually observed.",
+    "Unexpected failure cancels and awaits the existing navigation tasks and releases the injected hold. Existing server stop seals outstanding request continuations with cancellation. The actual WK two-branch schedule, Cookie commit and lease isolation assertions remain."
+  ],
+  "testInventory": {
+    "owner": "LegadoCookieOwnerTests",
+    "changedMethod": "staleWebViewCookieDecisionCannotEndReusedLease",
+    "allDefinitionsBeforeAfter": 13,
+    "newDefinitions": 0,
+    "newHosts": 0,
+    "budgets": {
+      "methodSeconds": 60,
+      "eachRealNavigationSeconds": 20
+    }
+  },
+  "actualValidation": {
+    "SwiftCompiler": 0,
+    "SwiftParser": 0,
+    "tests": 0,
+    "cloudQueries": 0,
+    "downloads": 0
+  },
+  "limits": [
+    "This repairs an independently demonstrable fixture wait/terminal-signal hole. It does not establish which await caused the observed run or claim all possible WebKit stalls fixed.",
+    "Four boundary records localize a future genuine native stall, including preparation before the existing 20-second group starts. This still does not establish the original stalled boundary.",
+    "If a real native WK operation never returns, its genuine pending state remains a failure; no extra timer, retry, skip, catch-to-success, timeout extension or speculative production change is added.",
+    "No local Swift compiler/parser/platform execution. The next actual SDK run must determine the underlying navigation outcome and whether the unchanged production cancellation behavior succeeds."
+  ],
+  "fourCompletionFlags": {
+    "allNonDeviceWorkComplete": false,
+    "automaticSelfRenewalImplemented": false,
+    "fullLegadoCompatibilityEstablished": false,
+    "legalRedistributionClearanceEstablished": false
+  },
+  "canonicalChanged": false,
+  "GitMutated": false,
+  "queryAgain": false,
+  "supersedes": {
+    "final": {
+      "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/final-v1.json",
+      "bytes": 5066,
+      "sha256": "0df8bc6a2090c1547102c798c88e0909cb8c3ff77c4651585fa147357412e7e8"
+    },
+    "why": "Root-requested four actual test boundary markers; v1 source and all prior evidence remain immutable."
+  },
+  "incrementalDiff": {
+    "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/delta-v1-to-v2.diff",
+    "bytes": 2044,
+    "sha256": "6f7a4cc890413b8283e9acd522f4e50cd637a5763e4448c7f8d2c3dacba00bc8"
+  },
+  "boundaryMarkers": {
+    "name": "cookie-owner.stale-webview",
+    "thresholdMs": 0,
+    "stages": [
+      "old-issued",
+      "gate-entered",
+      "oldcancel-returned",
+      "new-held"
+    ],
+    "scope": "Actual Task issuance, actual Cookie commit gate entry, old cancellation await return, and actual held request callback only. No HTTP-issued/terminal-success claim from task issuance. Static stages only; no URL/Cookie/user data."
+  }
+}

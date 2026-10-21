@@ -1,0 +1,440 @@
+{
+  "schemaVersion": 1,
+  "reviewedUTC": "2026-10-21T07:26:09.196429+00:00",
+  "decision": "approved source-only",
+  "final": {
+    "path": ".build/native-fb6aa7a-fat32-single-slice-repair-step/final-v1.json",
+    "bytes": 13596,
+    "sha256": "73101df1e15980095f3742690b5ba66331e9e82881bac8d6c35aa99a948ab45d"
+  },
+  "sourceRoot": ".build/native-fb6aa7a-fat32-single-slice-repair-step/snapshot-v1/work",
+  "files": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalControlledMachOSigner.swift",
+      "baseline": {
+        "path": ".build/native-fb6aa7a-fat32-single-slice-repair-step/rawbaseline/Modules/Services/SelfRenewal/SelfRenewalControlledMachOSigner.swift",
+        "bytes": 38420,
+        "sha256": "589d216940be5c7a07cf0f3705c84d2a4e71b89d3f207baa1d87df24f7c6b72f"
+      },
+      "candidate": {
+        "path": ".build/native-fb6aa7a-fat32-single-slice-repair-step/snapshot-v1/work/Modules/Services/SelfRenewal/SelfRenewalControlledMachOSigner.swift",
+        "bytes": 43585,
+        "sha256": "0298d4707ecbe2c5cab37a45161aaa9990b6dbee0d162e10a86b67cda1da074b"
+      },
+      "diff": {
+        "path": ".build/native-fb6aa7a-fat32-single-slice-repair-step/diffs/Modules/Services/SelfRenewal/SelfRenewalControlledMachOSigner.swift.diff",
+        "bytes": 7093,
+        "sha256": "a83efe5febbfb768bbc0437f8ddc45c040ba3b3587298eb9bb5282d3b3c58762"
+      }
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift",
+      "baseline": {
+        "path": ".build/native-fb6aa7a-fat32-single-slice-repair-step/rawbaseline/Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift",
+        "bytes": 20980,
+        "sha256": "2fc11e30e8e6823c5aacde67d3e20a5a1c73a2c0b351cbcf3a57b04c238a46a1"
+      },
+      "candidate": {
+        "path": ".build/native-fb6aa7a-fat32-single-slice-repair-step/snapshot-v1/work/Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift",
+        "bytes": 21767,
+        "sha256": "5ac84da3ac52c9eacab78f9026bfe7e1d303440625922c0ab2aed8377e151256"
+      },
+      "diff": {
+        "path": ".build/native-fb6aa7a-fat32-single-slice-repair-step/diffs/Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift.diff",
+        "bytes": 2795,
+        "sha256": "edbee303f1312b74dc9deefa243adc2ee8ca25aae80cc78c9910d7981fcb25f1"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalControlledMachOSignerTests.swift",
+      "baseline": {
+        "path": ".build/native-fb6aa7a-fat32-single-slice-repair-step/rawbaseline/Tests/iOS/yuedu appTests/SelfRenewalControlledMachOSignerTests.swift",
+        "bytes": 17372,
+        "sha256": "1dab5cb7bac5a581b7c21beeea4934591547a11892716d735324c8ec3c64ed26"
+      },
+      "candidate": {
+        "path": ".build/native-fb6aa7a-fat32-single-slice-repair-step/snapshot-v1/work/Tests/iOS/yuedu appTests/SelfRenewalControlledMachOSignerTests.swift",
+        "bytes": 23385,
+        "sha256": "0335dc4d225785b407a7c0673326477c83bddd4193595495e88db3319d28a345"
+      },
+      "diff": {
+        "path": ".build/native-fb6aa7a-fat32-single-slice-repair-step/diffs/Tests/iOS/yuedu appTests/SelfRenewalControlledMachOSignerTests.swift.diff",
+        "bytes": 8038,
+        "sha256": "d266064c706cecfd8aead68f7447010a12cb486e76a584c5ba3097b487e7316b"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift",
+      "baseline": {
+        "path": ".build/native-fb6aa7a-fat32-single-slice-repair-step/rawbaseline/Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift",
+        "bytes": 21683,
+        "sha256": "f5d74f9661ea4888a1f0096e94a7ac1958ce8874c94322b3b655c3cc29451ae9"
+      },
+      "candidate": {
+        "path": ".build/native-fb6aa7a-fat32-single-slice-repair-step/snapshot-v1/work/Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift",
+        "bytes": 22554,
+        "sha256": "b88ea6c43c98e56ab94b031f39f9d31398f55fdb2eda2a79933353c983da7233"
+      },
+      "diff": {
+        "path": ".build/native-fb6aa7a-fat32-single-slice-repair-step/diffs/Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift.diff",
+        "bytes": 2548,
+        "sha256": "aebb0b04f4280d545f2681eb65844c3e940e1798016cbf9a0be57338a0805688"
+      }
+    }
+  ],
+  "supersedes": {
+    "review": {
+      "path": ".build/native-fb6aa7a-fat32-single-slice-independent-review/review-v1.json",
+      "bytes": 17859,
+      "sha256": "279f28f9108f71238cbb5d0cff0aa82b93d4a6983a67b8d301a841695cd98088"
+    },
+    "why": "Reviewer literal reversal initially retained one inserted blank line, producing one false source-check mismatch. Only that reconstruction is corrected; candidate sources and evidence are unchanged, no tests rerun."
+  },
+  "checks": [
+    {
+      "name": "frozen final identity",
+      "passed": true
+    },
+    {
+      "name": "four existing source paths only",
+      "passed": true
+    },
+    {
+      "name": "Modules/Services/SelfRenewal/SelfRenewalControlledMachOSigner.swift baseline",
+      "passed": true
+    },
+    {
+      "name": "Modules/Services/SelfRenewal/SelfRenewalControlledMachOSigner.swift candidate",
+      "passed": true
+    },
+    {
+      "name": "Modules/Services/SelfRenewal/SelfRenewalControlledMachOSigner.swift diff",
+      "passed": true
+    },
+    {
+      "name": "Modules/Services/SelfRenewal/SelfRenewalControlledMachOSigner.swift tracked baseline",
+      "passed": true
+    },
+    {
+      "name": "Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift baseline",
+      "passed": true
+    },
+    {
+      "name": "Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift candidate",
+      "passed": true
+    },
+    {
+      "name": "Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift diff",
+      "passed": true
+    },
+    {
+      "name": "Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift tracked baseline",
+      "passed": true
+    },
+    {
+      "name": "Tests/iOS/yuedu appTests/SelfRenewalControlledMachOSignerTests.swift baseline",
+      "passed": true
+    },
+    {
+      "name": "Tests/iOS/yuedu appTests/SelfRenewalControlledMachOSignerTests.swift candidate",
+      "passed": true
+    },
+    {
+      "name": "Tests/iOS/yuedu appTests/SelfRenewalControlledMachOSignerTests.swift diff",
+      "passed": true
+    },
+    {
+      "name": "Tests/iOS/yuedu appTests/SelfRenewalControlledMachOSignerTests.swift tracked baseline",
+      "passed": true
+    },
+    {
+      "name": "Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift baseline",
+      "passed": true
+    },
+    {
+      "name": "Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift candidate",
+      "passed": true
+    },
+    {
+      "name": "Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift diff",
+      "passed": true
+    },
+    {
+      "name": "Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift tracked baseline",
+      "passed": true
+    },
+    {
+      "name": "authored source-only checks exact bytes",
+      "passed": true
+    },
+    {
+      "name": "read-only dependency Modules/Services/SelfRenewal/SelfRenewalMaterialInventory.swift",
+      "passed": true
+    },
+    {
+      "name": "read-only dependency Modules/Services/SelfRenewal/SelfRenewalMachOSignatureReader.swift",
+      "passed": true
+    },
+    {
+      "name": "read-only dependency Modules/Services/SelfRenewal/SelfRenewalCodeDirectoryHashVerifier.swift",
+      "passed": true
+    },
+    {
+      "name": "read-only dependency Modules/Services/SelfRenewal/SelfRenewalSignedCodeVerifier.swift",
+      "passed": true
+    },
+    {
+      "name": "read-only dependency Modules/Services/SelfRenewal/SelfRenewalResourceSealVerifier.swift",
+      "passed": true
+    },
+    {
+      "name": "read-only dependency Modules/Services/SelfRenewal/SelfRenewalApplicationMaterialVerifier.swift",
+      "passed": true
+    },
+    {
+      "name": "read-only dependency scripts/reader-experience/owned-package-fixture/full-application-package.py",
+      "passed": true
+    },
+    {
+      "name": "read-only dependency Yuedu-Reader.xcodeproj/project.pbxproj",
+      "passed": true
+    },
+    {
+      "name": "read-only dependency Yuedu-Reader.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved",
+      "passed": true
+    },
+    {
+      "name": "read-only dependency .build/native-fb6aa7a-full-component-repair-step/primary/firestore-device-format-facts-v1.json",
+      "passed": true
+    },
+    {
+      "name": "read-only dependency .build/native-fb6aa7a-full-component-repair-step/primary/apple-cctools-lipo.c",
+      "passed": true
+    },
+    {
+      "name": "read-only dependency .build/native-fb6aa7a-full-component-repair-step/final-v1.json",
+      "passed": true
+    },
+    {
+      "name": "read-only dependency .build/native-fb6aa7a-terminal/artifact-12327350686/.build/s3-full-application-signing/full-device-build-execution.json",
+      "passed": true
+    },
+    {
+      "name": "read-only dependency .build/native-fb6aa7a-terminal/artifact-12327350686/.build/s3-full-application-signing/full-device-build.log",
+      "passed": true
+    },
+    {
+      "name": "read-only dependency .build/native-fb6aa7a-terminal/artifact-12327350686/.build/s3-full-application-signing/full-owned-producer-execution.json",
+      "passed": true
+    },
+    {
+      "name": "read-only dependency .build/native-fb6aa7a-terminal/artifact-12327350686/.build/s3-full-application-signing/full-owned-producer.log",
+      "passed": true
+    },
+    {
+      "name": "existing async worker and cancellation owner byte exact",
+      "passed": true
+    },
+    {
+      "name": "existing thin transformer exact after removing only dispatch",
+      "passed": true
+    },
+    {
+      "name": "all existing verify layout crypto serialization write helpers byte exact",
+      "passed": true
+    },
+    {
+      "name": "complete supplied container verified before thin transformation",
+      "passed": true
+    },
+    {
+      "name": "complete output independently verified after rebuilding",
+      "passed": true
+    },
+    {
+      "name": "prefix copied and only size field rewritten",
+      "passed": true
+    },
+    {
+      "name": "full file output remains bounded",
+      "passed": true
+    },
+    {
+      "name": "raw BE container admission and terminal sole arm64 slice",
+      "passed": true
+    },
+    {
+      "name": "complete result proof coordinates replace thin coordinates",
+      "passed": true
+    },
+    {
+      "name": "package BE check precedes first scoped mutation",
+      "passed": true
+    },
+    {
+      "name": "preflight resolves exact original authenticated code material",
+      "passed": true
+    },
+    {
+      "name": "entire package owner reverses exactly outside two admission hunks",
+      "passed": true
+    },
+    {
+      "name": "all seven existing signer test identities and order unchanged",
+      "passed": true
+    },
+    {
+      "name": "all previous test vectors and helpers exact outside two additions",
+      "passed": true
+    },
+    {
+      "name": "new positive tests use genuine old CMS fixture and independent full verifier",
+      "passed": true
+    },
+    {
+      "name": "added negative tests cover parsed forbidden containers and real content tamper",
+      "passed": true
+    },
+    {
+      "name": "full S3 entire original test and all other helpers byte exact",
+      "passed": true
+    },
+    {
+      "name": "full S3 one original definition retained",
+      "passed": true
+    },
+    {
+      "name": "S3 platform uses actual slice coordinates and exact original IOS gate",
+      "passed": true
+    }
+  ],
+  "failedChecks": 0,
+  "remainingConfirmedFindings": [],
+  "reviewedImplementation": [
+    "Existing structural reader owns table alignment, outer/inner architecture agreement and range bounds. New admission is only BE FAT32 count1, LE64 ordinary arm64, terminal sole slice, and existing full-file ceiling.",
+    "Complete supplied container is hash/CMS-verified before the unchanged thin transformer is invoked; the original signature, external special slots, key/certificate matching, command/layout and cancellation gates stay in that transformer.",
+    "Rebuild copies every prefix/padding/table byte and changes only big-endian fat_arch.size. The output uses original slice offset, bounded full file size, complete independent hash/CMS verification and complete-file Result signature/proof coordinates.",
+    "Package preflight matches the original verified code material, rejects swapped FAT32 before any staged mutation, then retains scoped CAS replacement, child-first resource hashing, profile and lease checks, unchanged-file comparison and final independent whole package verification.",
+    "Full-App consumer keeps its only original test body and all other helpers exact. Its changed helper uses the existing reader solely to locate the unique admitted slice, then independently requires the original actual LC_BUILD_VERSION platform == IOS."
+  ],
+  "authoredTests": {
+    "existingSignerDefinitions": 7,
+    "changedSignerMethods": [
+      "allocatesBeforeHashingAndErasesOldSignatureTail",
+      "rejectsUnsupportedLayoutAndUnboundInputs"
+    ],
+    "existingFullAppDefinitions": 1,
+    "newDefinitions": 0,
+    "newHosts": 0,
+    "executed": 0
+  },
+  "producerCompanion": {
+    "final": {
+      "path": ".build/native-fb6aa7a-full-component-repair-step/final-v1.json",
+      "bytes": 7467,
+      "sha256": "417282de531ce785b41984345c2558ec89d425d2dcdede39d509c509feba0029"
+    },
+    "independentReview": {
+      "path": ".build/native-fb6aa7a-full-component-repair-independent-review/review-v1.json",
+      "bytes": 8891,
+      "sha256": "221ecc64d544b70dc5f5b212788bdea50083658cd2d1ab6f586f0df838b9b1e8"
+    },
+    "portableMethodsAlreadyExecutedByAuthor": 1
+  },
+  "readOnlyDependenciesAndEvidence": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalMaterialInventory.swift",
+      "bytes": 21268,
+      "sha256": "8aac99356d13991803f5e2db10882622fc1c9c176b0b8201b521358f4f95dbd0"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalMachOSignatureReader.swift",
+      "bytes": 35801,
+      "sha256": "503ccc6ccf2916be26100095e01760416f80db52fee1744a422596a6480eace9"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalCodeDirectoryHashVerifier.swift",
+      "bytes": 13572,
+      "sha256": "49bb4f1008ec93cecfe99b69cb542aa03dbefe917f4474e4a2e2687e0f274a7c"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalSignedCodeVerifier.swift",
+      "bytes": 12752,
+      "sha256": "f62872ca82474ddfad24ef7a588312f4db78e6ddbe55e7541120d7fb3884ba3d"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalResourceSealVerifier.swift",
+      "bytes": 31344,
+      "sha256": "eb6b9a8315386e00869f8abaa49db58da207a3db661bd5f47ec885d4a8dd53b6"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalApplicationMaterialVerifier.swift",
+      "bytes": 12873,
+      "sha256": "395fb5baf2b0f0c093cc0d2eb8ac0526a1e0080f0f3b8ada06aa3996b69913f1"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/full-application-package.py",
+      "bytes": 11840,
+      "sha256": "48b23fe98339680a29329108b04e85674a7ba8e5b554923b691a79bbc3579d52"
+    },
+    {
+      "path": "Yuedu-Reader.xcodeproj/project.pbxproj",
+      "bytes": 55843,
+      "sha256": "51dc69ae13c60bb330d1f61222c7b36e5e5c5e2576fe900061121f913920871e"
+    },
+    {
+      "path": "Yuedu-Reader.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved",
+      "bytes": 7779,
+      "sha256": "c75489cf86de2c4d29140463da3aa310783290d8df66c70c0ac99cb93671168e"
+    },
+    {
+      "path": ".build/native-fb6aa7a-full-component-repair-step/primary/firestore-device-format-facts-v1.json",
+      "bytes": 1224,
+      "sha256": "e9f07b02b771d6fb764279c669a837ba423c5114760ed44d393b5fc26c79c52c"
+    },
+    {
+      "path": ".build/native-fb6aa7a-full-component-repair-step/primary/apple-cctools-lipo.c",
+      "bytes": 85496,
+      "sha256": "bfbfc3e03c6efb1551df39aaccba5b035aa7592f24813fa35e436cb6b9c0883f"
+    },
+    {
+      "path": ".build/native-fb6aa7a-full-component-repair-step/final-v1.json",
+      "bytes": 7467,
+      "sha256": "417282de531ce785b41984345c2558ec89d425d2dcdede39d509c509feba0029"
+    },
+    {
+      "path": ".build/native-fb6aa7a-terminal/artifact-12327350686/.build/s3-full-application-signing/full-device-build-execution.json",
+      "bytes": 337,
+      "sha256": "75269fe21355f5e21160bf18d1f832e7010c34f621c07366978c2c03cf76cf16"
+    },
+    {
+      "path": ".build/native-fb6aa7a-terminal/artifact-12327350686/.build/s3-full-application-signing/full-device-build.log",
+      "bytes": 6574031,
+      "sha256": "a3ed3226687a9589d6aafbe6fe63dd1f5d9fc984a6015f274f6ef8e2ac32f560"
+    },
+    {
+      "path": ".build/native-fb6aa7a-terminal/artifact-12327350686/.build/s3-full-application-signing/full-owned-producer-execution.json",
+      "bytes": 672,
+      "sha256": "d7bbd5555a3e376903c0570242d77c9c348f2f839a02fa85df4b5cd6c2df8eae"
+    },
+    {
+      "path": ".build/native-fb6aa7a-terminal/artifact-12327350686/.build/s3-full-application-signing/full-owned-producer.log",
+      "bytes": 10793,
+      "sha256": "05ec01f276be311bfaad48f9f7e90a76077f12a724d7c610d4129045914f6d3d"
+    }
+  ],
+  "limits": [
+    "No Swift parser, compiler, tests, Apple tools, cloud queries/downloads, canonical changes or Git mutations performed for this review. Source approval is not SDK acceptance.",
+    "Existing real CMS-signed controlled fixtures and new FAT32 vectors are authored, not executed. Full same-job iPhoneOS/JVM App re-sign and independent verification still require the next actual full Native run.",
+    "Actual prior CI rejected component/path/magic are unavailable. Actual remove-static/stub/lipo commands and pinned Apple implementation support this repair direction but do not recover the final binary or establish Apple account/installation authority."
+  ],
+  "actualReviewerTests": 0,
+  "actualSwiftSDK": 0,
+  "queryAgain": false,
+  "fourCompletionFlags": {
+    "allNonDeviceWorkComplete": false,
+    "automaticSelfRenewalImplemented": false,
+    "fullLegadoCompatibilityEstablished": false,
+    "legalRedistributionClearanceEstablished": false
+  }
+}

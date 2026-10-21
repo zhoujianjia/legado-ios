@@ -1,0 +1,77 @@
+{
+  "sourceCommit": "fb6aa7a14680135f5e7271f10b61ad9561801c19",
+  "actualQualifiedFailureSignatures": [
+    {
+      "id": "LegadoCookieOwnerTests/staleWebViewCookieDecisionCannotEndReusedLease",
+      "source": "Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift:408",
+      "rawLogLines": [
+        39000,
+        39010
+      ],
+      "failure": "Per-method time allowance exceeded60s; no normal failed-after event; runner later restarts.",
+      "kind": "actual recorded allowance failure"
+    },
+    {
+      "id": "LegadoCookieTextHostTests/responseTextPrecedenceAndNativeMetadataSurviveTheirCorrectLifetimes",
+      "source": "Tests/iOS/yuedu appTests/LegadoCookieTextHostTests.swift:125",
+      "rawLogLines": [
+        39121,
+        39122
+      ],
+      "failure": "UNSUPPORTED_CAPABILITY: Parsed original Cookie [session,expiry], persistent=true seedSession=false seedExpiry=true nativeSession=true nativeExpiry=false",
+      "kind": "actual failed terminal method"
+    },
+    {
+      "id": "LegadoCookieTextHostTests/originalRawExpiryAndRandomPruningBoundaryRemainExplicit",
+      "source": "Tests/iOS/yuedu appTests/LegadoCookieTextHostTests.swift:180",
+      "rawLogLines": [
+        39126,
+        39127
+      ],
+      "failure": "UNSUPPORTED_CAPABILITY: Parsed original Cookie [session,expiry], persistent=true seedSession=false seedExpiry=true nativeSession=true nativeExpiry=false",
+      "kind": "actual failed terminal method"
+    }
+  ],
+  "unknownContextIssues": [
+    {
+      "source": "Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift:283:13",
+      "expression": "#expect(observedWorkers == 1)",
+      "rawLogLines": [
+        51172,
+        51173
+      ],
+      "rawOccurrences": 2,
+      "associatedSelectedMethod": "SelfRenewalAppOwnerTests/latestActivationWaitsForBootstrapAndRunsOnce",
+      "rawContext": "unknown",
+      "methodReportedPassed": true,
+      "cleanAcceptance": false
+    },
+    {
+      "source": "Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift:287:13",
+      "expression": "#expect(afterOldCleanup == 1)",
+      "rawLogLines": [
+        51174,
+        51175
+      ],
+      "rawOccurrences": 2,
+      "associatedSelectedMethod": "SelfRenewalAppOwnerTests/latestActivationWaitsForBootstrapAndRunsOnce",
+      "rawContext": "unknown",
+      "methodReportedPassed": true,
+      "cleanAcceptance": false
+    }
+  ],
+  "unknownContextDistinctLocations": 2,
+  "unknownContextRawOccurrences": 4,
+  "lastIncompleteMethod": {
+    "id": "SelfRenewalAppOwnerTests/backgroundGrantUsesSameWorkerAndSurvivesSceneCleanup",
+    "startedRawLine": 51177,
+    "terminalOutcome": null,
+    "sourceFindingLink": "docs/legado-ios/core-renewal-disabled-worker-lifecycle-repair.json",
+    "causalityLimit": "Actual last started method matches already independently identified source gate conflict; no recovered hang stack or later source success claimed."
+  },
+  "rawTestsLog": {
+    "path": ".build/sdk-fb6aa7a-terminal/artifact-12327294957/reader-renewal-probe/currentcore-tests.log",
+    "bytes": 10095176,
+    "sha256": "2f4c238b01308256ad2a9d6152e746340772ce2bb004d3eac3744a90a5de6e98"
+  }
+}

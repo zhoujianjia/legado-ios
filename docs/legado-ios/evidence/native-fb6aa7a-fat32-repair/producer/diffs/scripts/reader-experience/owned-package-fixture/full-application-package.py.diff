@@ -1,0 +1,78 @@
+--- a/scripts/reader-experience/owned-package-fixture/full-application-package.py
++++ b/scripts/reader-experience/owned-package-fixture/full-application-package.py
+@@ -4,9 +4,46 @@
+ the same temporary Keychain and supplies its existing CMS/codesign callbacks.
+ """
+ from pathlib import Path
+-import hashlib,importlib.util,json,os,plistlib,re,shutil,stat,zipfile
++import hashlib,importlib.util,json,os,plistlib,re,shutil,stat,struct,zipfile
+
+ MAX_ARCHIVE=536_870_912
++MAX_NATIVE_FILE=268_435_456
++
++def native_component_shape(binary):
++    """Bounded shape admission only; the actual vtool IOS check stays required.
++
++    Xcode can replace a static framework's executable with an arm64 dylib stub
++    and run lipo -create even for one slice. Keep that FAT32 container intact.
++    Never select/drop architectures or treat an ar archive as executable code.
++    """
++    with binary.open('rb') as stream:
++        size=os.fstat(stream.fileno()).st_size
++        if not 32<=size<=MAX_NATIVE_FILE:raise ValueError('native file size outside signer bound')
++        header=stream.read(32)
++        if len(header)!=32:raise ValueError('truncated native header')
++        prefix=header[:4]
++        offset=0;slice_size=size;outer=None;container='thin64'
++        if prefix==b'\xca\xfe\xba\xbe':
++            magic,count,cpu,subtype,offset,slice_size,alignment=struct.unpack('>7I',header[:28])
++            if count!=1:raise ValueError('FAT32 requires exactly one architecture')
++            if (alignment>30 or offset<28 or offset%(1<<alignment)!=0
++                or slice_size<32 or offset>size or slice_size!=size-offset):
++                raise ValueError('FAT32 slice bounds or alignment invalid')
++            outer=(cpu,subtype);container='fat32-single-arm64'
++            stream.seek(offset);header=stream.read(32)
++        elif prefix!=b'\xcf\xfa\xed\xfe':
++            raise ValueError('unsupported native container magic '+prefix.hex())
++        if len(header)!=32 or header[:4]!=b'\xcf\xfa\xed\xfe':
++            raise ValueError('slice is not little-endian Mach-O64')
++        magic,cpu,subtype,filetype,commands,command_bytes,flags,reserved=struct.unpack('<8I',header)
++        if cpu!=0x0100000c or subtype&0x00ffffff!=0 or (outer is not None and outer!=(cpu,subtype)):
++            raise ValueError('native CPU/subtype mismatch or unsupported architecture')
++        if filetype not in (2,6):raise ValueError('native file is not MH_EXECUTE or MH_DYLIB')
++        if not 0<commands<=4096 or not commands*8<=command_bytes<=1048576 or command_bytes>slice_size-32 or reserved!=0:
++            raise ValueError('native command header outside structural bounds')
++        if os.fstat(stream.fileno()).st_size!=size:raise ValueError('native file changed during header read')
++        return {'container':container,'architectures':1,'cpuType':cpu,'cpuSubtype':subtype,
++            'sliceOffset':offset,'sliceBytes':slice_size,'fileBytes':size,'fileType':filetype}
+
+ def digest(path):
+     with path.open('rb') as stream:return hashlib.file_digest(stream,'sha256').hexdigest()
+@@ -76,9 +113,6 @@
+         info=plistlib.loads(path.read_bytes());executable=info.get('CFBundleExecutable')
+         if not isinstance(executable,str) or '/' in executable or not (path.parent/executable).is_file():continue
+         binary=path.parent/executable
+-        with binary.open('rb') as f:magic=f.read(4)
+-        if magic!=b'\xcf\xfa\xed\xfe':
+-            raise ValueError('full-app native component is not thin device Mach-O')
+         relative_bundle=path.parent.relative_to(app).as_posix()
+         kind=info.get('CFBundlePackageType')
+         if relative_bundle not in expected and kind!='FMWK':raise ValueError('full-app unknown native component')
+@@ -86,6 +120,17 @@
+             raise ValueError('full-app must preserve real device platform')
+         identifier=info.get('CFBundleIdentifier')
+         if not isinstance(identifier,str) or not re.fullmatch('[A-Za-z0-9.-]{1,255}',identifier):raise ValueError('full-app malformed identity')
++        try:
++            shape=native_component_shape(binary)
++            if shape['fileType']!=(6 if kind=='FMWK' else 2):raise ValueError('native file type disagrees with bundle role')
++        except ValueError as error:
++            # Only public relative path/header facts: make a future refusal
++            # attributable without exporting a full App or private build files.
++            with binary.open('rb') as stream:prefix=stream.read(8).hex()
++            raise ValueError('full-app native component rejected '+json.dumps({
++                'path':binary.relative_to(app).as_posix(),'prefixHex':prefix,
++                'bytes':binary.stat().st_size,'reason':str(error)},sort_keys=True)) from error
++        print('FULL_APPLICATION_NATIVE_COMPONENT '+json.dumps({'path':binary.relative_to(app).as_posix(),**shape},sort_keys=True),flush=True)
+         # Public Apple tool inspects the actual Mach-O, independently of plist.
+         build_log=base.run(['xcrun','vtool','-show-build',binary],public_log=out/(str(len(components))+'.device-platform.log')).decode()
+         platforms=re.findall(r'^\s*platform\s+(\S+)\s*$',build_log,re.M)

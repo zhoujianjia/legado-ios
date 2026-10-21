@@ -1,0 +1,23 @@
+{
+  "kind": "literal-only; no parser/compiler/test",
+  "parentChecks": {
+    "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/source-checks-v1.json",
+    "bytes": 1585,
+    "sha256": "4f3433e0dd98fa5e901e14ebe5d067d4df290d31aea2da21e044094c81abd25b"
+  },
+  "checks": [
+    {
+      "name": "removing exactly one timestamp and four static records restores entire v1 candidate",
+      "passed": true
+    },
+    {
+      "name": "only static stage strings and zero trace threshold; no URL/Cookie/user details",
+      "passed": true
+    },
+    {
+      "name": "no new definition/budget/request/guard/production edits",
+      "passed": true
+    }
+  ],
+  "failedChecks": 0
+}

@@ -1,0 +1,25 @@
+{
+  "apple": {
+    "url": "https://developer.apple.com/documentation/foundation/nshttpcookiediscard",
+    "verifiedVia": "Official Apple documentation web lookup in this task; no SDK execution",
+    "directFacts": [
+      "The documented input value is NSString with TRUE/FALSE spellings.",
+      "The key is optional. Omission defaults to false for the explicit version0 used here; the version1-without-Max-Age exception is not this path.",
+      "The linked property documentation accepts NSDate or NSString for expires; the current absolute Date assignment is retained."
+    ]
+  },
+  "webKit": {
+    "url": "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebCore/platform/network/cocoa/CookieCocoa.mm",
+    "existingPinnedSource": {
+      "path": ".build/sdk-d820-source-group-repair-step/primary/CookieCocoa.mm",
+      "bytes": 8633,
+      "sha256": "11a20d40436559c7779115cae1b9bdd3bbbb48e51cd540e49476e9ee8d2cf4b5"
+    },
+    "lines": "161–176",
+    "directFacts": [
+      "The Cocoa construction uses NSDate for an actual expires value.",
+      "It sets NSHTTPCookieDiscard to NSNumber true only inside the session condition; no false assignment is made for persistent cookies."
+    ]
+  },
+  "diagnosisBoundary": "Actual fb6 output proves the parsed persistent seed has an expiry and is not session-only, while our rebuilt object loses expiry and becomes session-only. An explicit false NSNumber for the optional discard key is the source mismatch. The private Foundation mechanism that maps that input to the observed flags is not established."
+}

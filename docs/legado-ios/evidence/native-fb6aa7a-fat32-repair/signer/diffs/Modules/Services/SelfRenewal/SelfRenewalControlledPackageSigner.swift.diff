@@ -1,0 +1,32 @@
+--- a/Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift
++++ b/Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift
+@@ -83,8 +83,15 @@
+                 let infoPath = path(component.relativePath, "Info.plist")
+                 oldInfo[component.relativePath] = try await scope.read(infoPath, maximumBytes: Inventory.Limits.plistBytes)
+                 oldResources[component.relativePath] = try await scope.read(resources.relativePath, maximumBytes: SelfRenewalResourceSealVerifier.Limits.envelopeBytes)
+-                oldExecutables[component.relativePath] = try await scope.read(executable.file.relativePath,
++                let oldCode = try await scope.read(executable.file.relativePath,
+                     maximumBytes: SelfRenewalControlledMachOSigner.Limits.fileBytes)
++                // Structural admission above uses the existing verified reader.
++                // Before any staged mutation, keep the actual FAT32 scope to the
++                // big-endian wrapper emitted by this Xcode lipo path.
++                if executable.header == .fat32, !oldCode.starts(with: [0xca, 0xfe, 0xba, 0xbe]) {
++                    throw Failure.unsupportedCode(component.relativePath)
++                }
++                oldExecutables[component.relativePath] = oldCode
+                 if let profile = component.embeddedProvisioningProfile {
+                     guard let input = lease.profileInputs.first(where: { $0.componentRelativePath == component.relativePath }) else { throw Failure.missingMaterial(component.relativePath) }
+                     profileInputs[component.relativePath] = input.bytes; allowedChanges.insert(profile.relativePath)
+@@ -210,7 +217,11 @@
+         try resolved(original)
+         for component in inventory.components {
+             guard component.kind == .application || component.kind == .appExtension || component.kind == .framework,
+-                  let code = component.executable, code.header == .thin64, inventory.codeFiles.contains(code),
++                  let code = component.executable, code.header == .thin64 || code.header == .fat32,
++                  inventory.codeFiles.contains(code),
++                  let material = original.resources.executableMaterials.code.first(where: { $0.file == code.file }),
++                  SelfRenewalControlledMachOSigner.supportsSingleArm64Container(material.structure,
++                    fileByteCount: UInt64(code.file.byteCount)),
+                   let metadata = component.metadata, component.codeResources != nil else { throw Failure.unsupportedCode(component.relativePath) }
+             if component.kind == .framework {
+                 guard component.embeddedProvisioningProfile == nil else { throw Failure.unsupportedCode(component.relativePath) }

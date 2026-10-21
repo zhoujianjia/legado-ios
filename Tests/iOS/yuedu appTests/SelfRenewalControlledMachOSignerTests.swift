@@ -117,6 +117,43 @@ struct SelfRenewalControlledMachOSignerTests {
             #expect(result.contentHashes.directories[0].codeBytesHashed == 16384)
             if encoded == Fixture.largeTailBase64 { #expect(result.signedMachO.count < input.count) }
         }
+        // An actual signed thin fixture becomes the only FAT32 slice, as in the
+        // current Xcode codeless-framework stub. Authenticate the full wrapper,
+        // retain nonzero prefix bytes and independently verify the whole output.
+        for encoded in [Fixture.sha256Base64, Fixture.largeTailBase64] {
+            let thin = try Fixture.data(encoded)
+            let input = Self.fatFixture([thin])
+            let old = try Self.structure(input)
+            let resources = Data("owned replacement resource bound inside FAT32".utf8)
+            let result = try await Self.sign(input, identity: identity, replacementResources: resources)
+            let current = try Self.structure(result.signedMachO)
+            #expect(current.container == .fat32 && current.slices.count == 1)
+            let slice = try #require(current.slices.first)
+            #expect(slice.range.offset == 4096 && slice.range.end == UInt64(result.signedMachO.count))
+            #expect(slice.cpuType == old.slices[0].cpuType && slice.cpuSubtype == old.slices[0].cpuSubtype)
+            var oldPrefix = Data(input.prefix(4096))
+            var newPrefix = Data(result.signedMachO.prefix(4096))
+            Self.putBig32(&oldPrefix, 20, 0); Self.putBig32(&newPrefix, 20, 0)
+            #expect(oldPrefix == newPrefix)
+            #expect(slice.range.byteCount == result.signedMachO.count - 4096)
+            let signature = try #require(slice.signature)
+            #expect(result.signatureOffset == Int(signature.range.offset))
+            #expect(result.signatureOffset == 4096 + 16384)
+            #expect(result.originalSignatures.slices[0].sliceOffset == 4096)
+            #expect(result.signatures.slices[0].sliceOffset == 4096)
+            #expect(result.contentHashes.directories.allSatisfy { $0.sliceOffset == 4096 })
+            let verified = try await Task.detached {
+                try Self.verify(result.signedMachO, anchors: identity.certificateChainDER,
+                    externalSlots: [1: try Fixture.data(Fixture.infoBase64), 3: resources])
+            }.value
+            #expect(verified.allLoadedDirectoriesAuthenticated)
+            #expect(verified.slices.count == 1 && verified.slices[0].sliceOffset == 4096)
+            #expect(result.originalSignatures.allLoadedDirectoriesAuthenticated)
+            let resourceDigest = try Hashes.digest(resources, hashType: 2)
+            #expect(result.signedCodeResourcesSHA256 == resourceDigest)
+            #expect(result.originalCodeResourcesSHA256 != result.signedCodeResourcesSHA256)
+            #expect(!result.appleSigningAuthorityEstablished && !result.replacementAuthorized)
+        }
     }
 
     @Test("Wrong private key certificate trust date or original byte tampering cannot produce a verified result")
@@ -146,7 +183,7 @@ struct SelfRenewalControlledMachOSignerTests {
         #expect(rejected)
     }
 
-    @Test("Only supported thin arm64 terminal unencrypted layouts are transformed")
+    @Test("Only supported thin or single-slice FAT32 arm64 terminal unencrypted layouts are transformed")
     func rejectsUnsupportedLayoutAndUnboundInputs() async throws {
         let input = try Fixture.data(Fixture.sha256Base64); let identity = try await Self.identity(ec: false)
         var architecture = input; Self.put32(&architecture, 4, 0x01000007)
@@ -163,6 +200,28 @@ struct SelfRenewalControlledMachOSignerTests {
         await Self.rejects(.malformedLayout) { try await Self.sign(overlap, identity: identity) }
         var fat = input; fat.replaceSubrange(0..<4, with: Data([0xca, 0xfe, 0xba, 0xbe]))
         await Self.rejects { try await Self.sign(fat, identity: identity) }
+        // Parsed but unsupported containers and unclassified trailing bytes do
+        // not fall back to extracting or normalizing a convenient thin slice.
+        let wide = Self.fatFixture([input], wide: true)
+        #expect(try Self.structure(wide).container == .fat64)
+        await Self.rejects(.unsupportedArchitecture) { try await Self.sign(wide, identity: identity) }
+        var otherCPU = input; Self.put32(&otherCPU, 4, 0x0100_0007)
+        let multiple = Self.fatFixture([input, otherCPU])
+        #expect(try Self.structure(multiple).slices.count == 2)
+        await Self.rejects(.unsupportedArchitecture) { try await Self.sign(multiple, identity: identity) }
+        var littleWrapper = Self.fatFixture([input])
+        for offset in stride(from: 0, through: 24, by: 4) {
+            let word = Data(littleWrapper[offset..<(offset + 4)].reversed())
+            littleWrapper.replaceSubrange(offset..<(offset + 4), with: word)
+        }
+        #expect(try Self.structure(littleWrapper).container == .fat32)
+        await Self.rejects(.unsupportedArchitecture) { try await Self.sign(littleWrapper, identity: identity) }
+        var fatTail = Self.fatFixture([input]); fatTail.append(0x7f)
+        await Self.rejects(.unsupportedArchitecture) { try await Self.sign(fatTail, identity: identity) }
+        var fatTampered = Self.fatFixture([input]); fatTampered[4096 + 4096] ^= 1
+        await Self.rejects { try await Self.sign(fatTampered, identity: identity) }
+        let archive = Data("!<arch>\nunknown archive member".utf8)
+        await Self.rejects { try await Self.sign(archive, identity: identity) }
         await Self.rejects(.unsupportedDigestCombination) { try await Self.sign(Fixture.data(Fixture.oidCollisionBase64), identity: identity) }
         var adHoc = input
         let primary = try Self.structure(input).slices[0].signature!.codeDirectories.first { $0.slot == 0 }!
@@ -222,6 +281,36 @@ struct SelfRenewalControlledMachOSignerTests {
             externalSpecialSlot: { slot, _ in material[slot] })
         return try SelfRenewalSignedCodeVerifier.bind(hashes, anchors: anchors, at: date, readRange: read)
     }
+    /// Builds ordinary universal-file table fixtures, not a production parser.
+    /// Every positive payload remains a genuinely CMS-signed existing Mach-O.
+    private static func fatFixture(_ slices: [Data], wide: Bool = false) -> Data {
+        var output = Data(repeating: 0x5a, count: 4096)
+        Self.putBig32(&output, 0, wide ? 0xcafe_babf : 0xcafe_babe)
+        Self.putBig32(&output, 4, UInt32(slices.count))
+        for (index, slice) in slices.enumerated() {
+            let offset = output.count
+            let start = 8 + index * (wide ? 32 : 20)
+            let cpu = index == 0 ? UInt32(0x0100_000c) : UInt32(0x0100_0007)
+            Self.putBig32(&output, start, cpu); Self.putBig32(&output, start + 4, 0)
+            if wide {
+                Self.putBig32(&output, start + 8, 0); Self.putBig32(&output, start + 12, UInt32(offset))
+                Self.putBig32(&output, start + 16, 0); Self.putBig32(&output, start + 20, UInt32(slice.count))
+                Self.putBig32(&output, start + 24, 12); Self.putBig32(&output, start + 28, 0)
+            } else {
+                Self.putBig32(&output, start + 8, UInt32(offset))
+                Self.putBig32(&output, start + 12, UInt32(slice.count)); Self.putBig32(&output, start + 16, 12)
+            }
+            output.append(slice)
+            if index + 1 < slices.count {
+                output.append(Data(repeating: 0, count: (4096 - output.count % 4096) % 4096))
+            }
+        }
+        return output
+    }
+    private static func putBig32(_ data: inout Data, _ offset: Int, _ value: UInt32) {
+        data.replaceSubrange(offset..<(offset + 4), with: (0..<4).map { UInt8(truncatingIfNeeded: value >> (8 * (3 - $0))) })
+    }
+
     private static func put32(_ data: inout Data, _ offset: Int, _ value: UInt32) {
         data.replaceSubrange(offset..<(offset + 4), with: (0..<4).map { UInt8(truncatingIfNeeded: value >> ($0 * 8)) })
     }

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "status": "source-review-approved-actual-SDK-pending",
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "parent": {
+    "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/final-v2.json",
+    "bytes": 6441,
+    "sha256": "83ce0eebf87eeea5869fec12c7de98a1ed96a2566747864adfacf4e667fe9b98"
+  },
+  "sourceRoot": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/snapshot-v2/work",
+  "source": {
+    "path": "Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+    "baseline": {
+      "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/rawbaseline/Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+      "bytes": 36831,
+      "sha256": "05ac0c443f50ed3cb726577825f38a5c459bc93b53398cc2f40b847efc00359b"
+    },
+    "candidate": {
+      "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/snapshot-v2/work/Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+      "bytes": 40389,
+      "sha256": "d8a791f91e4818f69ccf86a29c70f4737be1f567532b84e8304fb5d1412d3e90"
+    },
+    "diff": {
+      "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/diffs-v2/Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift.diff",
+      "bytes": 8949,
+      "sha256": "900b18ea755705c7dd8bfd867c52d6a551bd88f8c2deb43ee2015f8f25a245cd"
+    }
+  },
+  "conclusions": [
+    "The actor gate has one actual caller waiter. Gate entry is committed before resume and is remembered; early navigation termination stores the original error (unexpected success becomes an explicit fixture error). Actor operations have no suspension between checking/storing/taking continuation, so registration-before/after-terminal is covered and the same continuation is not taken twice.",
+    "The /held request and navigation terminal result arbitrate under the same lock. Request arrival wins only when actually recorded; otherwise the original terminal error is stored and all matching waiters are removed before resumption. Request callback, terminal callback and stop take the same waiter list, preventing duplicate resume.",
+    "Existing production WebViewNavigationWait cancellation resumes the old navigation independently of the suspended afterCommit callback. Awaiting old/new task results does not require the actor hold to be released by those tasks. MainActor awaits permit reentrancy for cancellation and pool callbacks.",
+    "On thrown setup/wait/navigation errors, the candidate cancels and awaits the actual owned navigation task and releases the injected hold; server defer cancels its owned connections and drains existing request waiters. No catch-to-success, timeout extension, fake callback, retry or skip is added.",
+    "Both failOldDecision branches, the 60-second allowance, two20-second navigation deadlines, original body/nonempty/request-sequence/peak-pool assertions, other test bodies, original response-decision once subcase and real HTTP payloads are byte preserved."
+  ],
+  "diagnosticRecommendation": {
+    "resolvedBy": "Exact five-line successor: stage clock plus four bounded actual-boundary SourcePerfTrace markers",
+    "v1SourceByteExactAfterRemovingOnlyMarkerLines": true,
+    "actualExecution": 0
+  },
+  "actualEvidence": {
+    "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/actual-failure-excerpt-v1.json",
+    "bytes": 1121,
+    "sha256": "33098a93040ca1a54cb0ffe0185d81f5567b1e925a00450c355d87e39c8f5031"
+  },
+  "limits": [
+    "Raw fb6 only reports this case exceeding60seconds; the actual await and production cause are unknown.",
+    "Early real WK errors now propagate instead of being hidden by signal-only fixture waits. A genuinely nonreturning WK operation may still fail; no actual native schedule has been executed here.",
+    "Source approval does not claim the historic failed case now passes; any marker-only successor requires an exact incremental binding."
+  ],
+  "actualReview": {
+    "tests": 0,
+    "SwiftParser": 0,
+    "SwiftCompilation": 0,
+    "cloudQueries": 0,
+    "downloads": 0,
+    "canonicalMutations": 0
+  },
+  "metadataCorrection": {
+    "supersedes": {
+      "path": ".build/sdk-fb6aa7a-cookie-owner-wait-independent-review/review-v1.json",
+      "bytes": 4586,
+      "sha256": "6a9f4ed940f47fb6c98121176eb61a821733b132ccee3a5231e21f7afaa94b12"
+    },
+    "reason": "Initial independent literal checks mistakenly included newly added private server/gate methods as test definitions and compared assertion indentation changed by do/catch nesting. Corrected scope to the existing suite and normalized only assertion indentation. Actual13 test identities/order and all original assertions are exact. No source change or test/parser execution."
+  },
+  "incrementalReview": {
+    "from": {
+      "path": ".build/sdk-fb6aa7a-cookie-owner-wait-independent-review/review-v2.json",
+      "bytes": 5158,
+      "sha256": "27b0c46d720a6c64e15c309f77a0392cb0ec1f94ad29c0120ba16630639b6dd8"
+    },
+    "onlyMarkerDelta": true,
+    "noSourceSafetyFinding": true
+  }
+}

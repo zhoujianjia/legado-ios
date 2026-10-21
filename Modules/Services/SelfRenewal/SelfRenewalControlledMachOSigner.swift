@@ -2,8 +2,8 @@ import Foundation
 import Security
 
 /// A byte transformer for caller-owned, quiescent staging material. This first
-/// implementation deliberately handles an existing, terminal signature on a
-/// thin little-endian arm64 MH_EXECUTE or MH_DYLIB.
+/// implementation handles an existing, terminal signature on a little-endian
+/// arm64 MH_EXECUTE or MH_DYLIB, either thin or the only terminal slice in FAT32.
 /// Dynamic symbol table ranges are checked and retained at their original offsets. It neither writes a file nor authorizes
 /// installation. Package resource/profile ordering belongs to its caller.
 enum SelfRenewalControlledMachOSigner {
@@ -59,6 +59,27 @@ enum SelfRenewalControlledMachOSigner {
             self.identifier = identifier; teamIdentifier = team
             originalCodeResourcesSHA256 = oldResources; signedCodeResourcesSHA256 = signedResources
         }
+        fileprivate init(wrapping thin: Result, bytes: Data, before: Signed.Verification,
+            afterHashes: Hashes.Verification, after: Signed.Verification, signatureOffset: Int) {
+            signedMachO = bytes; codeDirectories = thin.codeDirectories; detachedCMS = thin.detachedCMS
+            originalSignatures = before; contentHashes = afterHashes; signatures = after
+            self.signatureOffset = signatureOffset; allocatedSignatureBytes = thin.allocatedSignatureBytes
+            identifier = thin.identifier; teamIdentifier = thin.teamIdentifier
+            originalCodeResourcesSHA256 = thin.originalCodeResourcesSHA256
+            signedCodeResourcesSHA256 = thin.signedCodeResourcesSHA256
+        }
+    }
+
+    /// The package preflight uses the same already-parsed slice admission. The
+    /// structural reader owns architecture/table/range/alignment validation.
+    static func supportsSingleArm64Container(_ parsed: Reader.ParsedFile, fileByteCount: UInt64) -> Bool {
+        guard fileByteCount <= UInt64(Limits.fileBytes),
+              parsed.container == .thin64 || parsed.container == .fat32,
+              parsed.slices.count == 1, let slice = parsed.slices.first,
+              slice.cpuType == 0x0100_000c, slice.cpuSubtype & 0x00ff_ffff == 0,
+              slice.byteOrder == .little, slice.is64Bit else { return false }
+        // No unclassified tail can be dropped or reinterpreted when rebuilding.
+        return parsed.container != .fat32 || slice.range.end == fileByteCount
     }
 
     nonisolated static func resign(_ input: Data, identity: KeyMaterial,
@@ -96,6 +117,12 @@ enum SelfRenewalControlledMachOSigner {
         }
         let input = Data(supplied)
         let parsed = try Reader.parse(fileByteCount: UInt64(input.count)) { try bytes(input, $0) }
+        if parsed.container == .fat32 {
+            return try resignSingleFat32(input, structure: parsed, identity: identity,
+                originalAnchors: originalAnchors, replacementAnchors: replacementAnchors, at: date,
+                externalSpecialSlots: externalSpecialSlots,
+                replacementExternalSpecialSlots: replacementExternalSpecialSlots)
+        }
         guard parsed.container == .thin64, parsed.slices.count == 1,
               let slice = parsed.slices.first, slice.cpuType == 0x0100_000c,
               slice.cpuSubtype & 0x00ff_ffff == 0, slice.byteOrder == .little,
@@ -228,6 +255,50 @@ enum SelfRenewalControlledMachOSigner {
             afterHashes: after.hashes.verification, after: after.signed, layout: layout,
             capacity: allocation, identifier: primary.identifier, team: primary.teamIdentifier,
             oldResources: oldResourceDigest, signedResources: signedResourceDigest)
+    }
+
+    /// Preserve the existing FAT32 header and all pre-slice bytes. Only the
+    /// validated sole fat_arch size changes; the original thin transformer still
+    /// owns load commands, signature allocation and authenticated byte rewriting.
+    private static func resignSingleFat32(_ input: Data, structure: Reader.ParsedFile, identity: KeyMaterial,
+        originalAnchors: [Data], replacementAnchors: [Data], at date: Date,
+        externalSpecialSlots: [UInt32: Data], replacementExternalSpecialSlots: [UInt32: Data]) throws -> Result {
+        guard supportsSingleArm64Container(structure, fileByteCount: UInt64(input.count)),
+              let slice = structure.slices.first,
+              try u32(input, 0, false) == 0xcafe_babe else { throw Failure.unsupportedArchitecture }
+        let original = try verify(input, anchors: originalAnchors, at: date, external: externalSpecialSlots)
+        guard original.signed.allLoadedDirectoriesAuthenticated, original.signed.slices.count == 1,
+              original.signed.slices.allSatisfy({ !$0.isAdHoc && $0.selectedDirectoryAuthenticated }) else {
+            throw Failure.unauthenticatedOriginal
+        }
+        let offset = Int(slice.range.offset)
+        let thin = try resignSynchronously(input.subdata(in: offset..<input.count), identity: identity,
+            originalAnchors: originalAnchors, replacementAnchors: replacementAnchors, at: date,
+            externalSpecialSlots: externalSpecialSlots,
+            replacementExternalSpecialSlots: replacementExternalSpecialSlots)
+        guard thin.signedMachO.count <= Limits.fileBytes - offset,
+              thin.signedMachO.count <= Int(UInt32.max) else { throw Failure.sizeLimit }
+        var output = Data(input.prefix(offset))
+        // The actual Xcode lipo wrapper is big-endian FAT_MAGIC. Its complete
+        // table was validated by Reader.parse; only fat_arch.size changes.
+        try write32(&output, 20, UInt32(thin.signedMachO.count), little: false)
+        output.append(thin.signedMachO)
+        var freshExternal = externalSpecialSlots
+        if let resource = replacementExternalSpecialSlots[3] { freshExternal[3] = resource }
+        let after = try verify(output, anchors: replacementAnchors, at: date, external: freshExternal)
+        guard after.hashes.structure.container == .fat32,
+              supportsSingleArm64Container(after.hashes.structure, fileByteCount: UInt64(output.count)),
+              let current = after.hashes.structure.slices.first,
+              current.range.offset == slice.range.offset, current.range.byteCount == thin.signedMachO.count,
+              current.cpuType == slice.cpuType, current.cpuSubtype == slice.cpuSubtype,
+              let signature = current.signature,
+              after.signed.allLoadedDirectoriesAuthenticated, after.signed.slices.count == 1,
+              after.signed.slices.allSatisfy({ !$0.isAdHoc && $0.selectedDirectoryAuthenticated }) else {
+            throw Failure.postVerificationFailed
+        }
+        try Task.checkCancellation()
+        return Result(wrapping: thin, bytes: output, before: original.signed,
+            afterHashes: after.hashes.verification, after: after.signed, signatureOffset: Int(signature.range.offset))
     }
 
     private static func verify(_ data: Data, anchors: [Data], at date: Date, external: [UInt32: Data]) throws

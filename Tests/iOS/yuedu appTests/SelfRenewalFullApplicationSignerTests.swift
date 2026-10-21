@@ -243,13 +243,23 @@ private struct FullApplicationSigningInput: Sendable {
     /// Only characterizes the real native load-command bytes. No platform flag
     /// is patched and a Simulator object with an iPhoneOS plist still fails.
     nonisolated static func requireDevicePlatform(_ bytes: Data) throws {
-        func word(_ offset: Int) throws -> UInt32 {
-            guard offset >= 0, offset <= bytes.count - 4 else { throw CocoaError(.coderInvalidValue) }
-            return (0..<4).reduce(UInt32(0)) { $0 | UInt32(bytes[offset + $1]) << (8 * $1) }
+        let structure = try SelfRenewalMachOSignatureReader.parse(fileByteCount: UInt64(bytes.count)) { range in
+            guard range.offset <= UInt64(bytes.count), range.byteCount >= 0,
+                  UInt64(range.byteCount) <= UInt64(bytes.count) - range.offset else { throw CocoaError(.coderInvalidValue) }
+            let start = Int(range.offset)
+            return bytes.subdata(in: start..<(start + range.byteCount))
         }
-        guard bytes.count >= 32, try word(0) == 0xfeedfacf, try word(4) == 0x0100000c else { throw CocoaError(.coderInvalidValue) }
+        guard SelfRenewalControlledMachOSigner.supportsSingleArm64Container(structure, fileByteCount: UInt64(bytes.count)),
+              let slice = structure.slices.first else { throw CocoaError(.coderInvalidValue) }
+        if structure.container == .fat32, !bytes.starts(with: [0xca, 0xfe, 0xba, 0xbe]) { throw CocoaError(.coderInvalidValue) }
+        let base = Int(slice.range.offset), sliceBytes = slice.range.byteCount
+        func word(_ offset: Int) throws -> UInt32 {
+            guard offset >= 0, offset <= sliceBytes - 4 else { throw CocoaError(.coderInvalidValue) }
+            return (0..<4).reduce(UInt32(0)) { $0 | UInt32(bytes[base + offset + $1]) << (8 * $1) }
+        }
+        guard sliceBytes >= 32, try word(0) == 0xfeedfacf, try word(4) == 0x0100000c else { throw CocoaError(.coderInvalidValue) }
         let count = Int(try word(16)), size = Int(try word(20))
-        guard count > 0, count <= 16_384, size >= 8, size <= 1_048_576, size <= bytes.count - 32 else { throw CocoaError(.coderInvalidValue) }
+        guard count > 0, count <= 16_384, size >= 8, size <= 1_048_576, size <= sliceBytes - 32 else { throw CocoaError(.coderInvalidValue) }
         var cursor = 32, platforms: [UInt32] = []
         for _ in 0..<count {
             guard cursor <= 32 + size - 8 else { throw CocoaError(.coderInvalidValue) }

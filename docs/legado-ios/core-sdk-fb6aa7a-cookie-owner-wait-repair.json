@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "status": "reviewed-test-causal-wait-and-boundary-diagnostics-integrated-actual-SDK-pending",
+  "actualFailure": [
+    "Actual fb6 case started at raw39000 and records 60-second allowance at39010; raw does not locate the pending await.",
+    "Original fixture waits only for after-response-Cookie-commit entry and /held HTTP arrival. Either underlying real WK task can finish first with an error while its independent continuation is never resumed, replacing the useful error with a one-minute hang.",
+    "This actual path uses WebViewFetcher plus the directly constructed CookieStore/Record owner, not LegadoPersistentStateHost.originalResponseCookies. The separate persistent-discard Host fix cannot be asserted as this case cause."
+  ],
+  "change": [
+    "Both original real navigation Tasks publish their actual terminal outcome to the existing causal signal owner. Early failure rethrows the exact original error; unexpected early success is a fixture invariant failure.",
+    "Existing signal owners remember failure even if task termination wins before waiter registration. Real request or gate entry still wins only when actually observed.",
+    "Unexpected failure cancels and awaits the existing navigation tasks and releases the injected hold. Existing server stop seals outstanding request continuations with cancellation. The actual WK two-branch schedule, Cookie commit and lease isolation assertions remain."
+  ],
+  "testInventory": {
+    "owner": "LegadoCookieOwnerTests",
+    "changedMethod": "staleWebViewCookieDecisionCannotEndReusedLease",
+    "allDefinitionsBeforeAfter": 13,
+    "newDefinitions": 0,
+    "newHosts": 0,
+    "budgets": {
+      "methodSeconds": 60,
+      "eachRealNavigationSeconds": 20
+    }
+  },
+  "changedExistingTestSources": [
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+      "bytes": 40389,
+      "sha256": "d8a791f91e4818f69ccf86a29c70f4737be1f567532b84e8304fb5d1412d3e90"
+    }
+  ],
+  "productionChanged": 0,
+  "newTestDefinitions": 0,
+  "actualNewTests": 0,
+  "actualSwiftCompilerOrParser": 0,
+  "newTagsOrRuns": 0,
+  "publicEvidence": [
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/sdk-fb6aa7a-cookie-owner-wait-repair/source-candidate.json",
+        "bytes": 6441,
+        "sha256": "83ce0eebf87eeea5869fec12c7de98a1ed96a2566747864adfacf4e667fe9b98"
+      },
+      "original": {
+        "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/final-v2.json",
+        "bytes": 6441,
+        "sha256": "83ce0eebf87eeea5869fec12c7de98a1ed96a2566747864adfacf4e667fe9b98"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/sdk-fb6aa7a-cookie-owner-wait-repair/independent-review.json",
+        "bytes": 4978,
+        "sha256": "7dd61e40e74e0cfb5b80d34fd57414cec6404c2fce7897c5f5c92bf8d0a5ad33"
+      },
+      "original": {
+        "path": ".build/sdk-fb6aa7a-cookie-owner-wait-independent-review/review-v3.json",
+        "bytes": 4978,
+        "sha256": "7dd61e40e74e0cfb5b80d34fd57414cec6404c2fce7897c5f5c92bf8d0a5ad33"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/sdk-fb6aa7a-cookie-owner-wait-repair/root-boundary-review.json",
+        "bytes": 1803,
+        "sha256": "f9f2bbba204601fd5a2004d63b6e7b887f756c98c0ef8d56a2261ac6836aedd1"
+      },
+      "original": {
+        "path": ".build/sdk-fb6aa7a-cookie-owner-wait-independent-review/root-boundary-delta-v3.json",
+        "bytes": 1803,
+        "sha256": "f9f2bbba204601fd5a2004d63b6e7b887f756c98c0ef8d56a2261ac6836aedd1"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/sdk-fb6aa7a-cookie-owner-wait-repair/cookie-owner.diff",
+        "bytes": 8947,
+        "sha256": "597219aa24a825e4a4a8d60336d065395abb23944afb7353fca0501cfe6266da"
+      },
+      "original": {
+        "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/diffs-v2/Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift.diff",
+        "bytes": 8949,
+        "sha256": "900b18ea755705c7dd8bfd867c52d6a551bd88f8c2deb43ee2015f8f25a245cd"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/sdk-fb6aa7a-cookie-owner-wait-repair/source-checks.json",
+        "bytes": 676,
+        "sha256": "bb074a61ba6ac65c8ed5637267b35b536e7cddeaee4ceb9aec8bbcd19b0d9047"
+      },
+      "original": {
+        "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/source-checks-v2.json",
+        "bytes": 676,
+        "sha256": "bb074a61ba6ac65c8ed5637267b35b536e7cddeaee4ceb9aec8bbcd19b0d9047"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/sdk-fb6aa7a-cookie-owner-wait-repair/actual-failure.json",
+        "bytes": 1121,
+        "sha256": "33098a93040ca1a54cb0ffe0185d81f5567b1e925a00450c355d87e39c8f5031"
+      },
+      "original": {
+        "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/actual-failure-excerpt-v1.json",
+        "bytes": 1121,
+        "sha256": "33098a93040ca1a54cb0ffe0185d81f5567b1e925a00450c355d87e39c8f5031"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/sdk-fb6aa7a-cookie-owner-wait-repair/boundary-delta.diff",
+        "bytes": 2044,
+        "sha256": "6f7a4cc890413b8283e9acd522f4e50cd637a5763e4448c7f8d2c3dacba00bc8"
+      },
+      "original": {
+        "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/delta-v1-to-v2.diff",
+        "bytes": 2044,
+        "sha256": "6f7a4cc890413b8283e9acd522f4e50cd637a5763e4448c7f8d2c3dacba00bc8"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    }
+  ],
+  "limits": [
+    "This repairs an independently demonstrable fixture wait/terminal-signal hole. It does not establish which await caused the observed run or claim all possible WebKit stalls fixed.",
+    "Four boundary records localize a future genuine native stall, including preparation before the existing 20-second group starts. This still does not establish the original stalled boundary.",
+    "If a real native WK operation never returns, its genuine pending state remains a failure; no extra timer, retry, skip, catch-to-success, timeout extension or speculative production change is added.",
+    "No local Swift compiler/parser/platform execution. The next actual SDK run must determine the underlying navigation outcome and whether the unchanged production cancellation behavior succeeds."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

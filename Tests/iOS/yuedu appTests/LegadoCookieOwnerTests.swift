@@ -57,7 +57,8 @@ private actor CookieOwnerDecisionGate {
     private var entered = false
     private var released = false
     private var fail = false
-    private var entryWaiter: CheckedContinuation<Void, Never>?
+    private var entryFailure: Error?
+    private var entryWaiter: CheckedContinuation<Void, Error>?
     private var releaseWaiter: CheckedContinuation<Void, Never>?
     func pauseOnce() async throws {
         guard !entered else { return }
@@ -66,8 +67,19 @@ private actor CookieOwnerDecisionGate {
         if !released { await withCheckedContinuation { releaseWaiter = $0 } }
         if fail { throw CookieOwnerError(code: "STATE_IO", message: "Injected old Cookie decision failure") }
     }
-    func waitUntilEntered() async {
-        if !entered { await withCheckedContinuation { entryWaiter = $0 } }
+    func waitUntilEntered() async throws {
+        if entered { return }
+        if let entryFailure { throw entryFailure }
+        try await withCheckedThrowingContinuation { entryWaiter = $0 }
+    }
+    /// The actual navigation must reach this boundary or publish its original
+    /// terminal error. A failed WK/Cookie operation cannot strand this waiter.
+    func navigationFinished(error: Error?) {
+        guard !entered else { return }
+        let failure = error ?? CookieOwnerError(code: "TEST_NAVIGATION_FINISHED",
+            message: "The owned navigation finished before its Cookie response commit gate")
+        entryFailure = failure
+        entryWaiter?.resume(throwing: failure); entryWaiter = nil
     }
     func release(failing: Bool) {
         fail = failing; released = true
@@ -413,22 +425,59 @@ struct LegadoCookieOwnerTests {
             let server = try CookieOwnerHTTPServer()
             let root = try await server.start(); defer { server.stop() }
             let gate = CookieOwnerDecisionGate()
+            let stageStarted = SourcePerfTrace.now
             let fetcher = WebViewFetcher(cookieOwner: f.owner, poolSize: 1, websiteDataStore: .nonPersistent(),
                 afterResponseCookieCommit: { try await gate.pauseOnce() })
-            let old = Task { @MainActor in try await fetcher.fetchHTML(url: root.appendingPathComponent("private/final"), timeout: 20, jsWait: 0) }
-            await gate.waitUntilEntered()
-            old.cancel()
-            do { _ = try await old.value; Issue.record("The old navigation was cancelled") }
-            catch is CancellationError {}
-            catch let error as NSError { #expect(error.code == NSURLErrorCancelled) }
-            let newer = Task { @MainActor in try await fetcher.fetchHTML(url: root.appendingPathComponent("held"), timeout: 20, jsWait: 0) }
-            await server.waitForRequest("/held")
-            await gate.release(failing: failOldDecision)
-            server.releaseHeldResponse()
-            let body = try await newer.value
-            #expect(body.contains("held-next-lease"))
-            #expect(server.requests.map(\.path) == ["/private/final", "/held"])
-            #expect(fetcher.performanceSnapshot().peakActiveCount == 1)
+            let old = Task { @MainActor in
+                do {
+                    let body = try await fetcher.fetchHTML(url: root.appendingPathComponent("private/final"), timeout: 20, jsWait: 0)
+                    await gate.navigationFinished(error: nil)
+                    return body
+                } catch {
+                    await gate.navigationFinished(error: error)
+                    throw error
+                }
+            }
+            SourcePerfTrace.record("cookie-owner.stale-webview", "stage=old-issued", since: stageStarted, thresholdMs: 0)
+            do {
+                try await gate.waitUntilEntered()
+                SourcePerfTrace.record("cookie-owner.stale-webview", "stage=gate-entered", since: stageStarted, thresholdMs: 0)
+                old.cancel()
+                do { _ = try await old.value; Issue.record("The old navigation was cancelled") }
+                catch is CancellationError {}
+                catch let error as NSError { #expect(error.code == NSURLErrorCancelled) }
+                SourcePerfTrace.record("cookie-owner.stale-webview", "stage=oldcancel-returned", since: stageStarted, thresholdMs: 0)
+                let newer = Task { @MainActor in
+                    do {
+                        let body = try await fetcher.fetchHTML(url: root.appendingPathComponent("held"), timeout: 20, jsWait: 0)
+                        server.navigationFinished(beforeRequest: "/held", error: nil)
+                        return body
+                    } catch {
+                        server.navigationFinished(beforeRequest: "/held", error: error)
+                        throw error
+                    }
+                }
+                do {
+                    try await server.waitForRequest("/held")
+                    SourcePerfTrace.record("cookie-owner.stale-webview", "stage=new-held", since: stageStarted, thresholdMs: 0)
+                    await gate.release(failing: failOldDecision)
+                    server.releaseHeldResponse()
+                    let body = try await newer.value
+                    #expect(body.contains("held-next-lease"))
+                    #expect(server.requests.map(\.path) == ["/private/final", "/held"])
+                    #expect(fetcher.performanceSnapshot().peakActiveCount == 1)
+                } catch {
+                    newer.cancel()
+                    await gate.release(failing: false)
+                    _ = await newer.result
+                    throw error
+                }
+            } catch {
+                old.cancel()
+                await gate.release(failing: false)
+                _ = await old.result
+                throw error
+            }
         }
     }
 
@@ -495,7 +544,8 @@ private final class CookieOwnerHTTPServer: @unchecked Sendable {
     private var continuation: CheckedContinuation<URL, Error>?
     private var connections: [NWConnection] = []
     private var received: [Request] = []
-    private var requestWaiters: [String: [CheckedContinuation<Void, Never>]] = [:]
+    private var requestWaiters: [String: [CheckedContinuation<Void, Error>]] = [:]
+    private var requestFailures: [String: Error] = [:]
     private var heldConnection: NWConnection?
     var requests: [Request] { lock.withLock { received } }
 
@@ -530,14 +580,33 @@ private final class CookieOwnerHTTPServer: @unchecked Sendable {
     func stop() {
         listener.cancel()
         lock.withLock { connections }.forEach { $0.cancel() }
+        let pending = lock.withLock {
+            let value = requestWaiters.values.flatMap { $0 }
+            requestWaiters.removeAll()
+            return value
+        }
+        pending.forEach { $0.resume(throwing: CancellationError()) }
     }
-    func waitForRequest(_ path: String) async {
-        await withCheckedContinuation { pending in
+    func waitForRequest(_ path: String) async throws {
+        try await withCheckedThrowingContinuation { pending in
             lock.withLock {
                 if received.contains(where: { $0.path == path }) { pending.resume() }
+                else if let failure = requestFailures[path] { pending.resume(throwing: failure) }
                 else { requestWaiters[path, default: []].append(pending) }
             }
         }
+    }
+    /// Race the real request callback against the real navigation's terminal
+    /// result, including failures before WebKit has issued any HTTP request.
+    func navigationFinished(beforeRequest path: String, error: Error?) {
+        let failure = error ?? CookieOwnerError(code: "TEST_NAVIGATION_FINISHED",
+            message: "The owned navigation finished before its expected loopback request")
+        let pending = lock.withLock { () -> [CheckedContinuation<Void, Error>] in
+            guard !received.contains(where: { $0.path == path }) else { return [] }
+            requestFailures[path] = failure
+            return requestWaiters.removeValue(forKey: path) ?? []
+        }
+        pending.forEach { $0.resume(throwing: failure) }
     }
     func releaseHeldResponse() {
         let connection = lock.withLock { let value = heldConnection; heldConnection = nil; return value }
@@ -564,7 +633,7 @@ private final class CookieOwnerHTTPServer: @unchecked Sendable {
             let lines = text.components(separatedBy: "\r\n")
             let path = lines.first?.split(separator: " ").dropFirst().first.map(String.init) ?? ""
             let cookie = lines.first { $0.lowercased().hasPrefix("cookie:") }.map { String($0.dropFirst(7)).trimmingCharacters(in: .whitespaces) }
-            let waiting = self.lock.withLock { () -> [CheckedContinuation<Void, Never>] in
+            let waiting = self.lock.withLock { () -> [CheckedContinuation<Void, Error>] in
                 self.received.append(Request(path: path, cookie: cookie))
                 if path == "/held" { self.heldConnection = connection }
                 return self.requestWaiters.removeValue(forKey: path) ?? []

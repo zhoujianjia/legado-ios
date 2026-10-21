@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "reviewedBy": "Root independent of candidate author; five-line delta over approved causal-wait review",
+  "reviewedAtUTC": "2026-10-21T07:37:28.953216+00:00",
+  "candidate": {
+    "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/final-v2.json",
+    "bytes": 6441,
+    "sha256": "83ce0eebf87eeea5869fec12c7de98a1ed96a2566747864adfacf4e667fe9b98"
+  },
+  "priorCandidate": {
+    "path": ".build/sdk-fb6aa7a-cookie-owner-wait-repair-step/final-v1.json",
+    "bytes": 5066,
+    "sha256": "0df8bc6a2090c1547102c798c88e0909cb8c3ff77c4651585fa147357412e7e8"
+  },
+  "priorIndependentReview": {
+    "path": ".build/sdk-fb6aa7a-cookie-owner-wait-independent-review/review-v2.json",
+    "bytes": 5158,
+    "sha256": "27b0c46d720a6c64e15c309f77a0392cb0ec1f94ad29c0120ba16630639b6dd8"
+  },
+  "verified": [
+    "Removing exactly one timestamp and four bounded static trace calls restores all approved v1 candidate bytes.",
+    "Trace boundaries follow real task creation, awaited gate entry, awaited cancellation return and awaited request arrival.",
+    "No URL, Cookie value or user data enters the four static stage details.",
+    "All original assertions, dual real WK branches, definitions and20/60second budgets are unchanged.",
+    "The underlying SDK timeout boundary remains unknown; this only improves causal error propagation and diagnostics."
+  ],
+  "actualSwiftCompilation": 0,
+  "actualSwiftParser": 0,
+  "actualTests": 0,
+  "cloudQueries": 0,
+  "limits": [
+    "Prior review approves source lifecycle only; it is not proof that the actual WK navigation now succeeds.",
+    "A future genuine native stall remains a test failure; no timer extension, retry, skip or success substitution exists."
+  ]
+}

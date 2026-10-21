@@ -1,0 +1,34 @@
+{
+  "raw": {
+    "path": ".build/native-fb6aa7a-terminal/artifact-12327350686/.build/s3-full-application-signing/full-owned-producer.log",
+    "bytes": 10793,
+    "sha256": "05ec01f276be311bfaad48f9f7e90a76077f12a724d7c610d4129045914f6d3d"
+  },
+  "execution": {
+    "timeoutSeconds": 360,
+    "timedOut": false,
+    "exitCode": 1,
+    "output": {
+      "path": "full-owned-producer.log",
+      "bytes": 10793,
+      "sha256": "05ec01f276be311bfaad48f9f7e90a76077f12a724d7c610d4129045914f6d3d"
+    },
+    "argvOmittedFromPublicArchive": true
+  },
+  "excerpt": [
+    {
+      "line": 16,
+      "text": "Traceback (most recent call last):"
+    },
+    {
+      "line": 23,
+      "text": "  File \"/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/full-application-package.py\", line 81, in produce"
+    },
+    {
+      "line": 25,
+      "text": "ValueError: full-app native component is not thin device Mach-O"
+    }
+  ],
+  "classification": "Full application producer rejected a native component at its thin-device-Mach-O gate; not a timeout or a compiler failure.",
+  "unavailable": "The rejected component bytes/path classification are not in the public artifact; no architecture diagnosis is inferred."
+}

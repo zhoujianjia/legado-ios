@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "reviewedBy": "Root independent of cookie candidate author",
+  "reviewedAtUTC": "2026-10-21T07:30:33.625406+00:00",
+  "candidate": {
+    "path": ".build/sdk-fb6aa7a-cookie-discard-repair-step/final-v1.json",
+    "bytes": 4989,
+    "sha256": "16ba497bf79868fb984e7b33457b378991153a72996811e7cb4d8925d3c98736"
+  },
+  "verified": [
+    "Exact one-hunk reverse reconstruction restores all production baseline bytes.",
+    "Persistent cookie omits optional discard; session retains prior true representation.",
+    "The eight attribute checks, exact absolute expiry, version0, removal of relative Max-Age, owner publication and cancellation paths remain byte-exact.",
+    "Unchanged existing CookieText test and persistence owner facts match; no test definitions, timeout or assertion is changed.",
+    "Actual fb6 raw lines39121/39126 contain both reported persistent-seed/reconstructed-native mismatches.",
+    "Pinned WebKit original source hash matches; its session-only discard usage is distinct from unproven private Foundation coercion.",
+    "All440 parent inputs match before mutation; no source/path count is enlarged."
+  ],
+  "actualTests": 0,
+  "actualSwiftCompilerOrParser": 0,
+  "actualDarwin": 0,
+  "cloudQueries": 0,
+  "limits": [
+    "A source review and documented API usage are not proof that the repaired native behavior passes.",
+    "Existing actual SDK failures remain failed; future SDK must exercise both unchanged methods and all strict attribute checks.",
+    "No compatibility percentage or automatic renewal acceptance is inferred."
+  ]
+}

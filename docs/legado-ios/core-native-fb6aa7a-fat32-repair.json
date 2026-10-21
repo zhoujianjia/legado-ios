@@ -1,0 +1,300 @@
+{
+  "schemaVersion": 1,
+  "status": "reviewed-source-integrated-actual-SDK-and-full-Native-pending",
+  "actualFailureRecord": "docs/legado-ios/core-native-fb6aa7a-terminal-result.json",
+  "diagnosis": {
+    "proven": [
+      "Actual fb6 device build exit0/not timed out. Actual full-owned producer exit1/not timed out at full-application-package.py80: only four-byte thin64 magic was accepted. The failing executable path/magic was not included in that error.",
+      "Pinned checksum-matching Firebase input contains a static ar FMWK. Actual Xcode log14479–14515 removes static executable then injects a native MH_DYLIB stub and invokes lipo -create for exactly five framework destinations. This is not evidence that the final CI App contains ar executables.",
+      "Pinned Apple cctools lipo source builds FAT_MAGIC and writes its header even with one input for -create; only a different extract_family path has the single-input thin exception.",
+      "Production inventory/reader already distinguish FAT32/FAT64 and rigorously check each slice. Package preflight, the actual code transformer and full-S3 platform helper independently required thin64. Merely broadening or skipping the producer would leave actual production rejection."
+    ],
+    "inference": "The recorded single-arm64 stub→lipo commands strongly explain a valid single-slice FAT32 wrapper rejected by the producer. Exact post-lipo CI binary bytes were not uploaded, so the actual offending file/header is not independently recovered.",
+    "notJustified": "No evidence establishes a bad manual App embed configuration. Existing project has SPM framework linkage and only an explicit extension copy phase. Removing standard framework destinations, treating ar as executable Mach-O, skipping unknown components or stripping wrappers would obscure this failure and can lose resources/shape."
+  },
+  "implementation": [
+    "The existing Reader parses the complete original container. Only BE FAT32 with one little-endian64 arm64/subtype-low24zero slice terminating at the full file end is added. FAT64, multiple slices, swapped outer byte order, unknown/ar and unclassified trailing bytes still fail.",
+    "Complete supplied FAT32 bytes go through the existing content-hash/CMS verifier first. The same original thin transformer re-signs the sole validated slice with all original load-command, key/certificate, external slot, terminal signature and cancellation checks intact.",
+    "All pre-slice header/table/padding bytes are copied verbatim; only the fat_arch.size field is updated. CPU/subtype, sole architecture and offset are retained. The complete output including wrapper is bounded by the existing268MiB ceiling and independently re-read/hash/CMS-verified.",
+    "Result.originalSignatures/contentHashes/signatures use complete-file reader coordinates; signatureOffset is the output full-file signature.range.offset. The public async owner and thin transformation/crypto helper bytes are unchanged.",
+    "Package structural preflight admits only the existing verified single-arm64 thin/FAT32 structure. Before any scoped staged mutation, raw FAT32 must be BE. Existing child-first resource updates hash whole wrapped executable bytes; profile/lease/CAS/archive/final independent verification gates remain.",
+    "Full S3 platform checking uses the same structural reader to locate its unique slice, then retains the independent actual LC_BUILD_VERSION count/length/platforms==[IOS] check. No plist platform, deployment target, code bytes or permissions are patched."
+  ],
+  "changedExistingSources": [
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/full-application-package.py",
+      "bytes": 14984,
+      "sha256": "f818f85a412842060188f0258ce5cc6b99125944b35f7e51ff84fa4e0ea40bea"
+    },
+    {
+      "path": "scripts/reader-experience/test-full-application-signing-tools.py",
+      "bytes": 13718,
+      "sha256": "db6a8ee81b9f5a210bad65a78dbc318be663f1725c02306db0b93d21de7706a8"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalControlledMachOSigner.swift",
+      "bytes": 43585,
+      "sha256": "0298d4707ecbe2c5cab37a45161aaa9990b6dbee0d162e10a86b67cda1da074b"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift",
+      "bytes": 21767,
+      "sha256": "5ac84da3ac52c9eacab78f9026bfe7e1d303440625922c0ab2aed8377e151256"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalControlledMachOSignerTests.swift",
+      "bytes": 23385,
+      "sha256": "0335dc4d225785b407a7c0673326477c83bddd4193595495e88db3319d28a345"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift",
+      "bytes": 22554,
+      "sha256": "b88ea6c43c98e56ab94b031f39f9d31398f55fdb2eda2a79933353c983da7233"
+    }
+  ],
+  "productionSwift": 2,
+  "producerControls": 1,
+  "testSources": 3,
+  "newTestDefinitions": 0,
+  "newHostsSelectorsOrWorkflows": 0,
+  "sourceCounts": {
+    "core": 418,
+    "native": 282,
+    "union": 440,
+    "package": 23
+  },
+  "actualValidation": {
+    "existingPortableMethodsPassed": 1,
+    "portableExecutions": 1,
+    "formatAdmissionVectors": 17,
+    "newSwiftCompilerOrTests": 0,
+    "newAppleTools": 0,
+    "newCloudRuns": 0
+  },
+  "sourceClosure": {
+    "path": ".build/native-fb6aa7a-fat32-integration/source-rosters-final.json",
+    "bytes": 233508,
+    "sha256": "39d2e02f56da059610a6dbce0524c4ee414569a28702745d56915eb594b7f7a6"
+  },
+  "publicEvidence": [
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/native-fb6aa7a-fat32-repair/producer/source-candidate.json",
+        "bytes": 7467,
+        "sha256": "417282de531ce785b41984345c2558ec89d425d2dcdede39d509c509feba0029"
+      },
+      "original": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/final-v1.json",
+        "bytes": 7467,
+        "sha256": "417282de531ce785b41984345c2558ec89d425d2dcdede39d509c509feba0029"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/native-fb6aa7a-fat32-repair/producer/independent-review.json",
+        "bytes": 8891,
+        "sha256": "221ecc64d544b70dc5f5b212788bdea50083658cd2d1ab6f586f0df838b9b1e8"
+      },
+      "original": {
+        "path": ".build/native-fb6aa7a-full-component-repair-independent-review/review-v1.json",
+        "bytes": 8891,
+        "sha256": "221ecc64d544b70dc5f5b212788bdea50083658cd2d1ab6f586f0df838b9b1e8"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/native-fb6aa7a-fat32-repair/producer/diffs/scripts/reader-experience/owned-package-fixture/full-application-package.py.diff",
+        "bytes": 5192,
+        "sha256": "28876c1e78b56616735e71dff7c0feac157dcc4bb413d5ec78f34fb9494c1ae1"
+      },
+      "original": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/diffs-v1/scripts/reader-experience/owned-package-fixture/full-application-package.py.diff",
+        "bytes": 5194,
+        "sha256": "a7ded7d98b4eca819c652fcdc45e0667be8e89de44fe004a858e74afbd5a804b"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/native-fb6aa7a-fat32-repair/producer/diffs/scripts/reader-experience/test-full-application-signing-tools.py.diff",
+        "bytes": 3613,
+        "sha256": "e1d1d36587b1bbd203a3b2bd69f41fb0b5c8bc94f158f5f68c01f47e29b8aaf4"
+      },
+      "original": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/diffs-v1/scripts/reader-experience/test-full-application-signing-tools.py.diff",
+        "bytes": 3613,
+        "sha256": "e1d1d36587b1bbd203a3b2bd69f41fb0b5c8bc94f158f5f68c01f47e29b8aaf4"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/native-fb6aa7a-fat32-repair/signer/source-candidate.json",
+        "bytes": 13596,
+        "sha256": "73101df1e15980095f3742690b5ba66331e9e82881bac8d6c35aa99a948ab45d"
+      },
+      "original": {
+        "path": ".build/native-fb6aa7a-fat32-single-slice-repair-step/final-v1.json",
+        "bytes": 13596,
+        "sha256": "73101df1e15980095f3742690b5ba66331e9e82881bac8d6c35aa99a948ab45d"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/native-fb6aa7a-fat32-repair/signer/independent-review.json",
+        "bytes": 18336,
+        "sha256": "3583a272c499c45c27070d816e604ba0fb11f8533a6457e1e064faeb1f1f9680"
+      },
+      "original": {
+        "path": ".build/native-fb6aa7a-fat32-single-slice-independent-review/review-v2.json",
+        "bytes": 18336,
+        "sha256": "3583a272c499c45c27070d816e604ba0fb11f8533a6457e1e064faeb1f1f9680"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/native-fb6aa7a-fat32-repair/signer/diffs/Modules/Services/SelfRenewal/SelfRenewalControlledMachOSigner.swift.diff",
+        "bytes": 7090,
+        "sha256": "50fbef5e7af49679cf8a3e162d7f1c59ac11e264c96abe314edbbdb63c5d7f79"
+      },
+      "original": {
+        "path": ".build/native-fb6aa7a-fat32-single-slice-repair-step/diffs/Modules/Services/SelfRenewal/SelfRenewalControlledMachOSigner.swift.diff",
+        "bytes": 7093,
+        "sha256": "a83efe5febbfb768bbc0437f8ddc45c040ba3b3587298eb9bb5282d3b3c58762"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/native-fb6aa7a-fat32-repair/signer/diffs/Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift.diff",
+        "bytes": 2795,
+        "sha256": "edbee303f1312b74dc9deefa243adc2ee8ca25aae80cc78c9910d7981fcb25f1"
+      },
+      "original": {
+        "path": ".build/native-fb6aa7a-fat32-single-slice-repair-step/diffs/Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift.diff",
+        "bytes": 2795,
+        "sha256": "edbee303f1312b74dc9deefa243adc2ee8ca25aae80cc78c9910d7981fcb25f1"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/native-fb6aa7a-fat32-repair/signer/diffs/Tests/iOS/yuedu appTests/SelfRenewalControlledMachOSignerTests.swift.diff",
+        "bytes": 8036,
+        "sha256": "89e60a304c77153ec28d7c7a20a7c61f4053c5103c68ceb8ab47f7da8853d70b"
+      },
+      "original": {
+        "path": ".build/native-fb6aa7a-fat32-single-slice-repair-step/diffs/Tests/iOS/yuedu appTests/SelfRenewalControlledMachOSignerTests.swift.diff",
+        "bytes": 8038,
+        "sha256": "d266064c706cecfd8aead68f7447010a12cb486e76a584c5ba3097b487e7316b"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/native-fb6aa7a-fat32-repair/signer/diffs/Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift.diff",
+        "bytes": 2548,
+        "sha256": "aebb0b04f4280d545f2681eb65844c3e940e1798016cbf9a0be57338a0805688"
+      },
+      "original": {
+        "path": ".build/native-fb6aa7a-fat32-single-slice-repair-step/diffs/Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift.diff",
+        "bytes": 2548,
+        "sha256": "aebb0b04f4280d545f2681eb65844c3e940e1798016cbf9a0be57338a0805688"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/native-fb6aa7a-fat32-repair/producer/baseline-v1.json",
+        "bytes": 1315,
+        "sha256": "d201c858ff909a4564e2f6c7aff5465d99e35cb64252fd1fbbae0eca9a31c917"
+      },
+      "original": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/baseline-v1.json",
+        "bytes": 1315,
+        "sha256": "d201c858ff909a4564e2f6c7aff5465d99e35cb64252fd1fbbae0eca9a31c917"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/native-fb6aa7a-fat32-repair/producer/actual-failure-facts-v1.json",
+        "bytes": 4124,
+        "sha256": "d837fa133b6048f4ca67719b65a76a498fc4308715e7d5fe25f89f601d6b5b09"
+      },
+      "original": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/actual-failure-facts-v1.json",
+        "bytes": 4124,
+        "sha256": "d837fa133b6048f4ca67719b65a76a498fc4308715e7d5fe25f89f601d6b5b09"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/native-fb6aa7a-fat32-repair/producer/primary-facts-compact-v1.json",
+        "bytes": 3915,
+        "sha256": "71ebef70bc863a2d956550fcbfbbe06950fad16c1e7089492af008ae7c8685ab"
+      },
+      "original": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/primary-facts-compact-v1.json",
+        "bytes": 3915,
+        "sha256": "71ebef70bc863a2d956550fcbfbbe06950fad16c1e7089492af008ae7c8685ab"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/native-fb6aa7a-fat32-repair/producer/execution.json",
+        "bytes": 1777,
+        "sha256": "81fe5bf526648316977c69c9c62120cd325d75d8dec17342e9ef2b94a8416e2c"
+      },
+      "original": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/execution-v1/execution.json",
+        "bytes": 1777,
+        "sha256": "81fe5bf526648316977c69c9c62120cd325d75d8dec17342e9ef2b94a8416e2c"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/native-fb6aa7a-fat32-repair/producer/test.log",
+        "bytes": 303,
+        "sha256": "00cf5b3559aea25dd9284b505e650b21e1caaf69a4c927b38d45dca6dc15847f"
+      },
+      "original": {
+        "path": ".build/native-fb6aa7a-full-component-repair-step/execution-v1/test.log",
+        "bytes": 309,
+        "sha256": "6892320879e6e12715e3487d06479aef5abb0b18f0c9f59a566d05d2b45f973a"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    },
+    {
+      "public": {
+        "path": "docs/legado-ios/evidence/native-fb6aa7a-fat32-repair/signer/source-checks.json",
+        "bytes": 3313,
+        "sha256": "bc372e1805924e5104d46dcd9616006295f71f854e6af9e1474a6e1d30af32ab"
+      },
+      "original": {
+        "path": ".build/native-fb6aa7a-fat32-single-slice-repair-step/source-checks-v1.json",
+        "bytes": 3313,
+        "sha256": "bc372e1805924e5104d46dcd9616006295f71f854e6af9e1474a6e1d30af32ab"
+      },
+      "normalization": "UTF-8 LF; trailing horizontal whitespace only"
+    }
+  ],
+  "limits": [
+    "The old CI rejected component bytes were not uploaded; recorded Xcode stub/lipo commands plus pinned Apple source explain the format hypothesis, but exact offending header is unobserved.",
+    "Only BE FAT32 with one terminal little-endian64 arm64 slice is added; FAT64, swapped outer byte order, multiple slices, unknown/archive bytes and trailing data remain unsupported.",
+    "Whole wrapped files are re-parsed and verified through the existing hash/CMS owners; prefix preservation does not claim that FAT metadata itself is CodeDirectory-signed.",
+    "No fixture file/component/architecture is removed. Full App signer, JNI/CoreText reader and cold process execution still require actual successor evidence.",
+    "No actual Apple authorization, same-device installation, measured90percent compatibility or automatic renewal is established."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}
