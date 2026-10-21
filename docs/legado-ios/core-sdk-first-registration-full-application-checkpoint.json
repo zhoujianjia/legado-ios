@@ -1,0 +1,276 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T03:15:44.222388+00:00",
+  "status": "reviewed-source-bound-ready-for-one-coherent-SDK-Native-checkpoint",
+  "independentSourceReviewApproved": true,
+  "independentReview": {
+    "path": "docs/legado-ios/evidence/sdk-first-registration-full-application-checkpoint/independent-review.json",
+    "bytes": 22269,
+    "sha256": "dcb402ef1d43c159b6a1037e6ba686293babad262004b10bc9de3c320836fa95"
+  },
+  "sourceCounts": {
+    "core": 418,
+    "native": 262,
+    "union": 427,
+    "currentcoreDefinitions": 475,
+    "currentcoreLeaves": 478,
+    "originalMethods": 32,
+    "MainJS": 1,
+    "coldIndependent": 2,
+    "S3Definitions": 1,
+    "S3Leaves": 1,
+    "PackageDefinitions": 24,
+    "PackageInputs": 23,
+    "boolPairs": 3,
+    "originalProduct": 29,
+    "platformCharacterization": 3,
+    "fullApplicationDefinitions": 1,
+    "fullApplicationLeaves": 1
+  },
+  "sourceByteBinding": {
+    "coreUnique": 418,
+    "nativeUnique": 262,
+    "unionUnique": 427,
+    "canonicalNonControlInputs": 420,
+    "reviewedControls": 7,
+    "actualChangedControls": 6,
+    "mismatches": 0,
+    "S3NativeWorkflow": "Exact already-integrated S3 final-v2 bytes; no control mutation."
+  },
+  "canonicalControlSources": [
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "bytes": 212133,
+      "sha256": "61bc1747cb54a426e22a557e7203861139565377eb643d4615d2427a28943ef0"
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "bytes": 193082,
+      "sha256": "bfa3c5b6452277dcd5af76ee7746004133c7d4da236b348f77cccaa713ea467b"
+    },
+    {
+      "path": "scripts/reader-experience/native-smoke-tools.py",
+      "bytes": 73454,
+      "sha256": "a606f649dd4aa5adb7bf289526b98bdc7302f79bf99d4bc1971039531f41192f"
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "bytes": 35829,
+      "sha256": "8ba12fc891dcf40e6a9a70035e4eefe901118b1c2d4dbad090535beabe691c9c"
+    },
+    {
+      "path": ".github/workflows/reader-renewal-probe.yml",
+      "bytes": 10695,
+      "sha256": "e6a920669da9b1b198cac1cf2c5d2b17df447b6b43cd1528750296b9f0469f98"
+    },
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "bytes": 11827,
+      "sha256": "19409e77f7a9a24ac96328ebdf9b7afacb56499de59dd8bc36fb254ccbfec4f2"
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tests.sh",
+      "bytes": 43377,
+      "sha256": "35bcd7f50e0ba3a3437ec71858d7e323d266e8e52a086877a8420554294dbdc6"
+    }
+  ],
+  "actualChangedControlPaths": [
+    "scripts/reader-experience/renewal-probe-tools.py",
+    "scripts/reader-experience/test-renewal-probe-tools.py",
+    "scripts/reader-experience/native-smoke-tools.py",
+    "scripts/reader-experience/test-native-smoke-tools.py",
+    ".github/workflows/reader-renewal-probe.yml",
+    "scripts/reader-experience/renewal-probe-tests.sh"
+  ],
+  "sourceClosures": {
+    "path": "docs/legado-ios/evidence/sdk-first-registration-full-application-checkpoint/source-closures.json",
+    "bytes": 222484,
+    "sha256": "6f6e709e2eb91c0f619d88602fe4d43329cdd204dc9b3bec32beea1d69120c11"
+  },
+  "productionParents": {
+    "firstRegistration": {
+      "path": ".build/s2-first-registration-step/final-v1.json",
+      "bytes": 14538,
+      "sha256": "b6c52da211bbab7289cab08744bee628c6be1625d873328bbe7009fa9743ab1e"
+    },
+    "fullApplication": {
+      "path": ".build/s3-full-application-signing-step/final-v2.json",
+      "bytes": 11431,
+      "sha256": "b7f18927b30064716402cfc0ff19882d5ac0e9b54c5c799de77480cce151510e"
+    },
+    "vaultAPIRepair": {
+      "path": "docs/legado-ios/core-sdk-f481-vault-value-api-repair.json",
+      "bytes": 3200,
+      "sha256": "71ca429b2bc7bf46dad0ca2dfeeaefb7d8e8e1c1325b87e04e2ad932ac9f10f2"
+    },
+    "proxyFixtureRepair": {
+      "path": "docs/legado-ios/core-native-f481e89-proxy-fixture-repair.json",
+      "bytes": 6250,
+      "sha256": "7e67c7583ac336d15995aa537514adf0af50b09848a66c281cd863e6a6c78789"
+    }
+  },
+  "selectorsAdded": {
+    "AppCurrentcore": {
+      "SelfRenewalDeveloperAccountClientTests": [
+        "registersOriginalPortalScopeAndReusesObservedRemoteIdentity",
+        "registrationFailuresRetainScopeAndAcceptedFactsBeforeCSR"
+      ],
+      "SelfRenewalAccountSessionTests": [
+        "appSessionRegistersOnlyItsConfiguredPairedTargetBeforeFirstProfiles"
+      ],
+      "SelfRenewalAuthenticatedInstallationClientTests": [
+        "registrationDeviceObservationUsesAuthenticatedSessionAndExpiresAtStop"
+      ]
+    },
+    "separateNativeJobFullPackage": "SelfRenewalFullApplicationSignerTests/signsFullCurrentIPhoneOSJVMApplicationThroughSameProductionOwners()",
+    "NativeOriginal": []
+  },
+  "preservedControls": "All471 prior currentcore methods retained; only4 exact first-registration methods add to475 definitions/478 leaves. Same3 Bool matrices, mandatory same-job SDK signer, one3600-second invocation/xcresult, budgets, phase/exit gates and every historical mode remain. Original32=29 product+3 platform/MainJS1/cold2 retained in original order and independent hosts. Package24/23 and old modes remain unchanged. S3 is a separate required same-job1-definition/1-leaf selection, not currentcore.",
+  "fullApplicationRequiredGate": "native.result requires same source/run/prepared/result, producer cleanup/resources and owner source bindings, precise restored source receipt, six successful bounded command/output hashes, actual exported summary exactly1 definition/1 execution and exact single non-skipped case from the separate xcresult. It never accepts a JSON success Boolean alone.",
+  "actualPortableValidation": {
+    "result": {
+      "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/affected-validation-v1.json",
+      "bytes": 2586,
+      "sha256": "9261365e28d13600925564cffb7914e6688efd5c8c4f39a7832f8eb70b768fe0"
+    },
+    "actualExecutions": 5,
+    "distinctMethods": 5,
+    "passed": 5,
+    "failed": 0,
+    "logs": [
+      {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/affected-core-v1.log",
+        "bytes": 544,
+        "sha256": "9d96e86c73b5684483487a15f2375ec27696273727d4c94c276a5b53be0397c4"
+      },
+      {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/affected-native-v1.log",
+        "bytes": 671,
+        "sha256": "7b4f45bddb23989683f1cf78d68a71b57458551a5635cf90f3de978f9ccf928c"
+      }
+    ],
+    "actualS3ProducerGuardsReused": 4,
+    "sourceAuthoredOnly": true
+  },
+  "actualNewSDKTests": 0,
+  "actualNewNativeTests": 0,
+  "actualFullApplicationSigningTests": 0,
+  "sourceAuthoredFirstRegistrationTests": 4,
+  "firstRegistrationIncluded": true,
+  "fullApplicationSigningIncluded": true,
+  "resourceProductionActivated": false,
+  "longTailBookSourceWorkDeferred": true,
+  "compatibilityTargetPercent": 90,
+  "measuredCompatibilityPercent": null,
+  "scopeLimits": [
+    "5 portable guards use synthetic protocol/source fixtures, not Apple/Simulator/JVM/IPA functional execution. No old suite, S3 four guards, package tests or Java tests rerun.",
+    "S3 full device build/signing acceptance remains unexecuted until the future actual job. Real layout, trust, platform, entitlement and budget failures remain failures, not minimal fallback.",
+    "First-registration paired target observation does not prove same physical running App device or automatic installation authority.",
+    "The f481 SDK App0 compiler failure and Native378/1failed/Native0 remain historical terminal failures; new source is not a retroactive pass."
+  ],
+  "evidence": [
+    {
+      "path": "docs/legado-ios/evidence/sdk-first-registration-full-application-checkpoint/reviewed-candidate.json",
+      "bytes": 48361,
+      "sha256": "6d75f1d30b8fc90c2dc17e2bcd1bdbe3e0939776113c6eee5df9e0cbd6ce74fd",
+      "original": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/final-v2.json",
+        "bytes": 48361,
+        "sha256": "6d75f1d30b8fc90c2dc17e2bcd1bdbe3e0939776113c6eee5df9e0cbd6ce74fd"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original byte facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-first-registration-full-application-checkpoint/independent-review.json",
+      "bytes": 22269,
+      "sha256": "dcb402ef1d43c159b6a1037e6ba686293babad262004b10bc9de3c320836fa95",
+      "original": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-independent-review/review-v1.json",
+        "bytes": 22269,
+        "sha256": "dcb402ef1d43c159b6a1037e6ba686293babad262004b10bc9de3c320836fa95"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original byte facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-first-registration-full-application-checkpoint/source-closures.json",
+      "bytes": 222484,
+      "sha256": "6f6e709e2eb91c0f619d88602fe4d43329cdd204dc9b3bec32beea1d69120c11",
+      "original": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/source-closures-final-v1.json",
+        "bytes": 222484,
+        "sha256": "6f6e709e2eb91c0f619d88602fe4d43329cdd204dc9b3bec32beea1d69120c11"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original byte facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-first-registration-full-application-checkpoint/package-source-inputs.json",
+      "bytes": 7352,
+      "sha256": "8cb0dc06127a3bb6a63415ee279ec4926cf587f154b975c063e27dc3e41aa07f",
+      "original": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/package-source-inputs-v1.json",
+        "bytes": 7352,
+        "sha256": "8cb0dc06127a3bb6a63415ee279ec4926cf587f154b975c063e27dc3e41aa07f"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original byte facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-first-registration-full-application-checkpoint/actual-portable-validation.json",
+      "bytes": 2586,
+      "sha256": "9261365e28d13600925564cffb7914e6688efd5c8c4f39a7832f8eb70b768fe0",
+      "original": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/affected-validation-v1.json",
+        "bytes": 2586,
+        "sha256": "9261365e28d13600925564cffb7914e6688efd5c8c4f39a7832f8eb70b768fe0"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original byte facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-first-registration-full-application-checkpoint/actual-core-guards.log",
+      "bytes": 537,
+      "sha256": "3bd3e80280e0c92af3ebcbda2f5129523e4ede464dea0059ffba95e35ddb7396",
+      "original": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/affected-core-v1.log",
+        "bytes": 544,
+        "sha256": "9d96e86c73b5684483487a15f2375ec27696273727d4c94c276a5b53be0397c4"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original byte facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-first-registration-full-application-checkpoint/actual-native-guards.log",
+      "bytes": 663,
+      "sha256": "fd5864957264e8c52b312217184ffecf382f521f696d06a9820c7baf3dcfcfcf",
+      "original": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/affected-native-v1.log",
+        "bytes": 671,
+        "sha256": "7b4f45bddb23989683f1cf78d68a71b57458551a5635cf90f3de978f9ccf928c"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original byte facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-first-registration-full-application-checkpoint/preparation-history.json",
+      "bytes": 430,
+      "sha256": "f683647a3f7362099d77de8e6c7d12b13a48ece7810a2111a33ded7c4882491f",
+      "original": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/preparation-history-v1.json",
+        "bytes": 430,
+        "sha256": "f683647a3f7362099d77de8e6c7d12b13a48ece7810a2111a33ded7c4882491f"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original byte facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-first-registration-full-application-checkpoint/root-integration.py",
+      "bytes": 7405,
+      "sha256": "d04b0b5e139dd8bec55f2dc6ed0a948c5bb67654d13d9cadc7cd0c1c30a932ae",
+      "original": {
+        "path": ".build/integrate-first-registration-full-application-controls.py",
+        "bytes": 7405,
+        "sha256": "d04b0b5e139dd8bec55f2dc6ed0a948c5bb67654d13d9cadc7cd0c1c30a932ae"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original byte facts retained."
+    }
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

@@ -76,7 +76,8 @@ class NativeSmokeProvenanceTests(unittest.TestCase):
                 patch.object(native.smoke, "read_json", side_effect=lambda path: records[path.name]), \
                 patch.object(native.smoke, "review_overlays"), \
                 patch.object(native.smoke.config, "verify_jvm_payload", return_value={"synthetic": True}), \
-                patch.object(native, "verify_group", side_effect=lambda work, group: {"summary": {"expectedTests": len(native.NATIVE_GROUPS[group]["methods"])}}):
+                patch.object(native, "verify_group", side_effect=lambda work, group: {"summary": {"expectedTests": len(native.NATIVE_GROUPS[group]["methods"])}}), \
+                patch.object(native, "verify_full_application_signing", return_value={"portableProtocolOnly": True}):
             result = native.result(self.root)
             self.assertEqual(result["sourceCommitStamped"], SOURCE)
             self.assertEqual(result["sourceOverlays"]["infoOverlay"]["sourceCommitStamped"], SOURCE)
@@ -260,10 +261,91 @@ class NativeSmokeProvenanceTests(unittest.TestCase):
             with self.assertRaises(ValueError): native.verify_cache(summary, tree, self.root)
         source.write_bytes(original)
 
+    def test_complete_application_result_requires_actual_same_job_case_outputs_and_resources(self):
+        # Protocol metadata only; these bytes are intentionally not an IPA.
+        # No Apple build, signing, or functional acceptance is claimed here.
+        full = native.load('complete_package_protocol_fixture', Path(__file__).with_name('full-application-signing-tools.py'))
+        evidence = self.root / full.WORK
+        evidence.mkdir(parents=True)
+        resources = self.root / full.RESOURCE_ROOT
+        resources.mkdir(parents=True)
+        (resources / full.RESOURCE_NAMES[1]).write_bytes(b'protocol-not-an-IPA')
+        archive = full.fact(resources / full.RESOURCE_NAMES[1])
+        meta = {'schema': 1, 'kind': 'full-current-source-iphoneos-jvm-application', 'sourceCommit': SOURCE,
+            'archiveFile': full.RESOURCE_NAMES[1], 'archiveBytes': archive['bytes'], 'archiveSHA256': archive['sha256'],
+            'privateMaterialArtifacts': 0, 'realAppleAccountUsed': False, 'controlledOriginalSigningOnly': True,
+            'realDeviceExecution': False, 'allUnrelatedDeviceBuildFilesPreserved': True}
+        (resources / full.RESOURCE_NAMES[0]).write_text(json.dumps(meta))
+        bound = {name: full.fact(resources / name) for name in full.RESOURCE_NAMES}
+        producer = {'fullApplication': meta, 'temporaryOwnedKeychainDeleted': True,
+            'temporaryUserSearchListRestoredAndOwnedAbsent': True, 'privateMaterialArtifacts': 0,
+            'privateKeyFilesOutsideKeychain': 0, 'userAdminSystemTrustChanged': False,
+            'publicOutputs': [{'path': name, **value} for name, value in bound.items()]}
+        summary = {'totalTestCount': 1, 'passedTests': 1, 'failedTests': 0, 'skippedTests': 0, 'expectedFailures': 0,
+            'devicesAndConfigurations': [{'passedTests': 1, 'failedTests': 0, 'skippedTests': 0, 'expectedFailures': 0}]}
+        tree = {'testNodes': [{'nodeType': 'Test Case', 'nodeIdentifier': 'yuedu appTests/' + full.CASE + '()', 'result': 'Passed'}]}
+        payloads = {'full-sdk-produced-fixture-manifest.json': producer,
+            'full-application-summary.log': summary, 'full-application-tests.log': tree,
+            'device-source-overlay-restoration.json': {'restored': True}}
+        for name, value in payloads.items():
+            (evidence / name).write_text(json.dumps(value))
+        for phase, budget in [('device-runtime-stage',300),('full-device-build',1800),('full-owned-producer',360),
+                             ('full-application-test',1860),('full-application-summary',60),('full-application-tests',60)]:
+            output = evidence / (phase + '.log')
+            if not output.exists(): output.write_text('protocol-only\n')
+            argv = ['protocol-only']
+            if phase == 'full-application-test':
+                argv = ['bash', 'scripts/xctest.sh', '-t', '1800', '--', '-resultBundlePath', str(evidence / 'full-application.xcresult'),
+                    '-only-testing:yuedu appTests/' + full.CASE + '()']
+            elif phase in ('full-application-summary','full-application-tests'):
+                argv = ['xcrun','xcresulttool','get','test-results','summary' if phase.endswith('summary') else 'tests','--path',str(evidence/'full-application.xcresult')]
+            (evidence / (phase + '-execution.json')).write_text(json.dumps({'argv': argv, 'timeoutSeconds': budget, 'timedOut': False,
+                'exitCode': 0, 'output': {'path': output.name, **full.fact(output)}}))
+        prepared = {'sourceCommit': SOURCE, 'workflowRunID': 'same-job', 'requiredCase': full.CASE,
+            'completeApplicationBuilt': True, 'controlledSigningExecuted': True, 'producerManifest': full.fact(evidence/'full-sdk-produced-fixture-manifest.json'),
+            'resources': bound, 'signingSourceInputs': []}
+        result = {'sourceCommit': SOURCE, 'workflowRunID': 'same-job', 'status': 'passed', 'resources': bound,
+            'productionControlledPackageSignerExecuted': True, 'independentArchiveVerificationExecuted': True,
+            'actualDeviceIPARun': False, 'realAppleAccountUsed': False, 'completeAutomaticRenewalVerified': False, 'deviceValidationPassed': False,
+            'summary': native.smoke.verify_summary(summary,1,1), 'cases': [full.CASE]}
+        (evidence/'prepared.json').write_text(json.dumps(prepared));(evidence/'result.json').write_text(json.dumps(result))
+        originals = {p.name: p.read_bytes() for p in evidence.iterdir() if p.is_file()}
+        with patch.object(native,'load',return_value=full), patch.object(native.smoke.config,'REPO',self.root), \
+                patch.object(full,'signing_source_inputs',return_value=[]), patch.dict(os.environ,{'GITHUB_RUN_ID':'same-job'}):
+            self.assertEqual(native.verify_full_application_signing(self.root/'native',SOURCE)['summary']['expectedExecutions'],1)
+            for fault in ('source','job','result','timeout','exit','output','selector','summaryGrain','skip','duplicate','resources','owners','restoration'):
+                for name, value in originals.items(): (evidence/name).write_bytes(value)
+                name='result.json'; value=copy.deepcopy(result)
+                if fault=='source':value['sourceCommit']='b'*40
+                elif fault=='job':value['workflowRunID']='other-job'
+                elif fault=='result':value['status']='failed'
+                elif fault in ('timeout','exit','output','selector'):
+                    name='full-application-test-execution.json';value=json.loads(originals[name])
+                    if fault=='timeout':value['timedOut']=True
+                    elif fault=='exit':value['exitCode']=1
+                    elif fault=='output':value['output']['sha256']='f'*64
+                    else:value['argv'][-1]='-only-testing:Other/test()'
+                elif fault in ('summaryGrain','skip','duplicate'):
+                    name='full-application-summary.log' if fault=='summaryGrain' else 'full-application-tests.log';value=json.loads(originals[name])
+                    if fault=='summaryGrain':value['devicesAndConfigurations'][0]['passedTests']=0
+                    elif fault=='skip':value['testNodes'][0]['result']='Skipped'
+                    else:value['testNodes']*=2
+                elif fault in ('resources','owners'):
+                    name='prepared.json';value=copy.deepcopy(prepared);value['resources' if fault=='resources' else 'signingSourceInputs']={}
+                else:name='device-source-overlay-restoration.json';value={'restored':False}
+                (evidence/name).write_text(json.dumps(value))
+                # Let modified raw summary/tree reach their semantic gates,
+                # while retaining the separate output-hash negative above.
+                if fault in ('summaryGrain','skip','duplicate'):
+                    phase='full-application-summary' if fault=='summaryGrain' else 'full-application-tests'
+                    p=evidence/(phase+'-execution.json');v=json.loads(p.read_bytes());v['output']={'path':name,**full.fact(evidence/name)};p.write_text(json.dumps(v))
+                with self.subTest(fault=fault),self.assertRaises(ValueError):native.verify_full_application_signing(self.root/'native',SOURCE)
+
+
     def test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging(self):
         repo = Path(__file__).resolve().parents[2]
         workflow = (repo / ".github/workflows/legado-native-reader-test.yml").read_text(encoding="utf-8")
-        self.assertEqual(len(native.SOURCE_INPUTS), 180)
+        self.assertEqual(len(native.SOURCE_INPUTS), 262)
         self.assertEqual(len(native.ORIGINAL_LOGIN_ACTION_MATERIAL_INPUTS), 23)
         self.assertTrue(set(native.ORIGINAL_LOGIN_ACTION_MATERIAL_INPUTS) <= set(native.SOURCE_INPUTS))
         self.assertIn("Execute1 MainJS and32 original methods in separate required hosts", workflow)
@@ -277,6 +359,7 @@ class NativeSmokeProvenanceTests(unittest.TestCase):
         self.assertTrue(set(native.ORIGINAL_SPD_WEBJS_COLD_INPUTS) <= set(native.SOURCE_INPUTS))
         self.assertEqual(len(native.ORIGINAL_GENERAL_WEBJS_RUNTIME_REPAIR_INPUTS), 30)
         self.assertTrue(set(native.ORIGINAL_GENERAL_WEBJS_RUNTIME_REPAIR_INPUTS) <= set(native.SOURCE_INPUTS))
+        self.assertTrue(set(native.ORIGINAL_FIRST_REGISTRATION_FULL_APPLICATION_INPUTS) <= set(native.SOURCE_INPUTS))
         self.assertEqual(len(native.ORIGINAL_PROXY_REMOTE_CERTIFICATE_PREUPDATE_INPUTS), 35)
         self.assertTrue(set(native.ORIGINAL_PROXY_REMOTE_CERTIFICATE_PREUPDATE_INPUTS) <= set(native.SOURCE_INPUTS))
         self.assertIn('LegadoNativeOriginalReaderTests/testNativeOriginalPreUpdateRefreshKeepsPublicBookIdentityAndProgressWithNewURLContext', native.NATIVE_GROUPS["original"]["methods"])

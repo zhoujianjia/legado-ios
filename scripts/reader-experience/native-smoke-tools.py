@@ -557,6 +557,11 @@ SOURCE_INPUTS += tuple(path for path in ORIGINAL_PROXY_REMOTE_CERTIFICATE_PREUPD
 assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 180
 
 
+ORIGINAL_FIRST_REGISTRATION_FULL_APPLICATION_INPUTS = ('.github/workflows/legado-native-reader-test.yml', 'Modules/Core/BookSource/SourcePerfTrace.swift', 'Modules/Services/SelfRenewal/SelfRenewalAnisetteV3Provider.swift', 'Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift', 'Modules/Services/SelfRenewal/SelfRenewalAppSession.swift', 'Modules/Services/SelfRenewal/SelfRenewalApplicationMaterialVerifier.swift', 'Modules/Services/SelfRenewal/SelfRenewalAuthenticatedDeviceStream.swift', 'Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift', 'Modules/Services/SelfRenewal/SelfRenewalBackgroundTaskBridge.swift', 'Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift', 'Modules/Services/SelfRenewal/SelfRenewalCodeDirectoryHashVerifier.swift', 'Modules/Services/SelfRenewal/SelfRenewalControlledMachOSigner.swift', 'Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift', 'Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift', 'Modules/Services/SelfRenewal/SelfRenewalDERPropertyList.swift', 'Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift', 'Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift', 'Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift', 'Modules/Services/SelfRenewal/SelfRenewalGSASRP.swift', 'Modules/Services/SelfRenewal/SelfRenewalIPAArchiveValidator.swift', 'Modules/Services/SelfRenewal/SelfRenewalIPAUnpacker.swift', 'Modules/Services/SelfRenewal/SelfRenewalInstallationRecovery.swift', 'Modules/Services/SelfRenewal/SelfRenewalInstalledMaterialObserver.swift', 'Modules/Services/SelfRenewal/SelfRenewalMachOSignatureReader.swift', 'Modules/Services/SelfRenewal/SelfRenewalMaterialInventory.swift', 'Modules/Services/SelfRenewal/SelfRenewalNestedCodeRequirementsVerifier.swift', 'Modules/Services/SelfRenewal/SelfRenewalPackageResourceUpdater.swift', 'Modules/Services/SelfRenewal/SelfRenewalPairingIdentityImport.swift', 'Modules/Services/SelfRenewal/SelfRenewalProvisioningProfileVerifier.swift', 'Modules/Services/SelfRenewal/SelfRenewalReplacementPolicy.swift', 'Modules/Services/SelfRenewal/SelfRenewalResourceSealVerifier.swift', 'Modules/Services/SelfRenewal/SelfRenewalSignedCodeVerifier.swift', 'Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift', 'Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift', 'Modules/Services/SelfRenewal/SelfRenewalUserDataHandoff.swift', 'Packages/LegadoRuntime/Package.swift', 'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalProxyExecutionTest.kt', 'Packages/LegadoRuntime/vendor/openjdk-notices/ios-tools/LICENSE', 'Packages/LegadoRuntime/vendor/openjdk-notices/libffi/LICENSE', 'Packages/LegadoRuntime/vendor/openjdk-notices/manifest.json', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/ADDITIONAL_LICENSE_INFO', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/ASSEMBLY_EXCEPTION', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/LICENSE', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.base/share/legal/c-libutl.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.base/share/legal/cldr.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.base/share/legal/gcc.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.base/share/legal/icu.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.base/share/legal/public_suffix.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.base/share/legal/siphash.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.base/share/legal/unicode.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.base/share/legal/zlib.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.base/windows/legal/wepoll.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.desktop/share/legal/colorimaging.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.desktop/share/legal/freetype.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.desktop/share/legal/giflib.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.desktop/share/legal/harfbuzz.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.desktop/share/legal/jpeg.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.desktop/share/legal/lcms.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.desktop/share/legal/libpng.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.desktop/share/legal/mesa3d.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.desktop/unix/legal/pipewire.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.desktop/unix/legal/xwd.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.xml/share/legal/bcel.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.xml/share/legal/dom.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.xml/share/legal/jcup.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.xml/share/legal/schema10part1.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.xml/share/legal/schema10part2.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.xml/share/legal/xalan.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.xml/share/legal/xerces.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.xml/share/legal/xhtml10.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.xml/share/legal/xhtml10schema.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.xml/share/legal/xhtml11.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.xml/share/legal/xhtml11schema.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.xml/share/legal/xmlspec.md', 'Packages/LegadoRuntime/vendor/openjdk-notices/openjdk/src/java.xml/share/legal/xmlxsd.md', 'Packages/LegadoRuntime/vendor/original-rule/manifest.json', 'Packages/LegadoRuntime/vendor/runtime-http/manifest.json', 'Resources/Yuedu-Reader.entitlements', 'ShareExtension/Yuedu-Reader-ShareExtension.entitlements', 'Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift', 'Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift', 'Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift', 'Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift', 'Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift', 'Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift', 'Widget/Yuedu-Reader-Widget.entitlements', 'Yuedu-Reader.xcodeproj/project.pbxproj', 'Yuedu-Reader.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved', 'scripts/legado-ios/runtime-lock.json', 'scripts/legado-ios/stage-runtime.py', 'scripts/legado-ios/verify-native-exports.py', 'scripts/legado-ios/verify-native-reuse.py', 'scripts/legado-ios/verify-runtime.py', 'scripts/reader-experience/build.sh', 'scripts/reader-experience/full-application-signing-tools.py', 'scripts/reader-experience/native-smoke-tools.py', 'scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift', 'scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c', 'scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.h', 'scripts/reader-experience/owned-package-fixture/extension.c', 'scripts/reader-experience/owned-package-fixture/framework.c', 'scripts/reader-experience/owned-package-fixture/full-application-package.py', 'scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py', 'scripts/reader-experience/owned-package-fixture/main.c', 'scripts/reader-experience/runtime-notices.py', 'scripts/reader-experience/runtime-packaging.py', 'scripts/reader-experience/smoke-tools.py', 'scripts/reader-experience/stage-config.py', 'scripts/reader-experience/test-full-application-signing-tools.py', 'scripts/sim.sh', 'scripts/xctest.sh')
+SOURCE_INPUTS += tuple(path for path in ORIGINAL_FIRST_REGISTRATION_FULL_APPLICATION_INPUTS if path not in SOURCE_INPUTS)
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 262
+
+
 def source_inputs():
     records = []
     for relative in SOURCE_INPUTS:
@@ -768,6 +773,67 @@ def prepare(work):
         smoke.validate_tag = original_validate
 
 
+def verify_full_application_signing(work, source):
+    """The required full device package uses its own actual Simulator result.
+
+    This does not add the resource-dependent method to currentcore or to the
+    original32/MainJS/cold groups. Those retain their independent hosts.
+    """
+    full = load("native_required_complete_package", HERE / "full-application-signing-tools.py")
+    evidence = smoke.config.checked_path(smoke.config.REPO / full.WORK)
+    prepared = smoke.read_json(evidence / "prepared.json")
+    result = smoke.read_json(evidence / "result.json")
+    producer_path = evidence / "full-sdk-produced-fixture-manifest.json"
+    producer = smoke.read_json(producer_path)
+    run_id = os.environ.get("GITHUB_RUN_ID")
+    if (not run_id or prepared.get("sourceCommit") != source or result.get("sourceCommit") != source
+            or prepared.get("workflowRunID") != run_id or result.get("workflowRunID") != run_id
+            or result.get("status") != "passed" or prepared.get("requiredCase") != full.CASE
+            or prepared.get("completeApplicationBuilt") is not True
+            or prepared.get("controlledSigningExecuted") is not True
+            or prepared.get("producerManifest") != _fact(producer_path)
+            or any(result.get(k) is not True for k in ("productionControlledPackageSignerExecuted", "independentArchiveVerificationExecuted"))
+            or any(result.get(k) is not False for k in ("actualDeviceIPARun", "realAppleAccountUsed", "completeAutomaticRenewalVerified", "deviceValidationPassed"))):
+        raise ValueError("Missing or stale same-job complete application signing result")
+    resources = full.resource_binding(smoke.config.REPO / full.RESOURCE_ROOT, source, producer)
+    if (prepared.get("resources") != resources or result.get("resources") != resources
+            or prepared.get("signingSourceInputs") != full.signing_source_inputs()
+            or smoke.read_json(evidence / "device-source-overlay-restoration.json").get("restored") is not True):
+        raise ValueError("Complete signing resources, owners or device overlay restoration changed")
+    commands = []
+    phases = (("device-runtime-stage", 300), ("full-device-build", 1800), ("full-owned-producer", 360),
+        ("full-application-test", 1860), ("full-application-summary", 60), ("full-application-tests", 60))
+    for phase, budget in phases:
+        path = evidence / (phase + "-execution.json")
+        row = smoke.read_json(path)
+        output = evidence / (phase + ".log")
+        if (type(row.get("exitCode")) is not int or row["exitCode"] != 0 or row.get("timedOut") is not False
+                or type(row.get("timeoutSeconds")) is not int or row["timeoutSeconds"] != budget
+                or row.get("output") != {"path": output.name, **_fact(output)}
+                or not isinstance(row.get("argv"), list) or not row["argv"]):
+            raise ValueError("Complete application phase failed or its actual evidence changed: " + phase)
+        argv = row["argv"]
+        if phase == "full-application-test":
+            selected = [arg for arg in argv if isinstance(arg, str) and arg.startswith("-only-testing:")]
+            if (selected != ["-only-testing:yuedu appTests/" + full.CASE + "()"]
+                    or argv.count("-t") != 1 or argv[argv.index("-t") + 1] != "1800"
+                    or argv.count("-resultBundlePath") != 1
+                    or argv[argv.index("-resultBundlePath") + 1] != str(evidence / "full-application.xcresult")):
+                raise ValueError("Complete signing requires its exact independent test and bounded invocation")
+        elif phase in ("full-application-summary", "full-application-tests"):
+            kind = "summary" if phase.endswith("summary") else "tests"
+            if argv != ["xcrun", "xcresulttool", "get", "test-results", kind, "--path", str(evidence / "full-application.xcresult")]:
+                raise ValueError("Complete signing requires exports from its actual result bundle")
+        commands.append({"phase": phase, "execution": _fact(path), "output": _fact(output)})
+    summary = smoke.verify_summary(smoke.read_json(evidence / "full-application-summary.log"), 1, 1)
+    cases = full.verify_cases(smoke.read_json(evidence / "full-application-tests.log"))
+    if result.get("summary") != summary or result.get("cases") != cases:
+        raise ValueError("Complete signing result differs from actual one-definition one-leaf evidence")
+    return {"sourceCommit": source, "workflowRunID": run_id, "status": "passed", "summary": summary,
+        "passedQualifiedMethods": cases, "result": _fact(evidence / "result.json"), "resources": resources,
+        "actualCommandEvidence": commands, "deviceValidationPassed": False, "automaticRenewalVerified": False}
+
+
 def result(work):
     source = validate_tag()
     audit = smoke.read_json(work / "overlays.json")
@@ -797,11 +863,13 @@ def result(work):
     if smoke.read_json(work / "native-restore.json").get("sourceCommit") != source:
         raise ValueError("Native restoration source differs from the tested checkout")
     groups = {group: verify_group(work, group) for group in NATIVE_GROUPS}
+    complete_package = verify_full_application_signing(work, source)
     return {"schemaVersion": 1, "sourceCommit": source, "status": "passed",
             "sourceCommitStamped": source,
             "executionPlatform": "ios-simulator", "configuration": "Debug",
             "targetedTests": groups["mainjs"]["summary"],
             "originalReaderTests": groups["original"]["summary"], "nativeExecutionGroups": groups,
+            "completeCurrentIPhoneOSPackageSigning": complete_package,
             "testedApp": str(app), "testedInfoSHA256": smoke.config.digest(app / "Info.plist"),
             "runtime": smoke.config.verify_jvm_payload(app), "sourceOverlays": audit,
             "nativeProductChainExecuted": True,

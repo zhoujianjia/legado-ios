@@ -1,0 +1,466 @@
+{
+  "schemaVersion": 1,
+  "reviewedUTC": "2026-10-21T03:15:23.695467+00:00",
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "parent": {
+    "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/final-v2.json",
+    "bytes": 48361,
+    "sha256": "6d75f1d30b8fc90c2dc17e2bcd1bdbe3e0939776113c6eee5df9e0cbd6ce74fd"
+  },
+  "sourceRoot": ".build/consolidated-sdk-first-registration-full-application-checkpoint/snapshot-v1/work",
+  "metadataSuccessor": {
+    "priorParent": {
+      "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/final-v1.json",
+      "bytes": 47337,
+      "sha256": "8e590af0b66f3088d20009b9d4902f629584863cdd45de84927e13e069c96f5f"
+    },
+    "exactOnlyOwnerRowChanged": [
+      "scripts/reader-experience/native-smoke-tools.py"
+    ],
+    "allSevenControlsAndSourceClosuresAndLogsUnchanged": true,
+    "authorFacts": {
+      "parent": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/final-v1.json",
+        "bytes": 47337,
+        "sha256": "8e590af0b66f3088d20009b9d4902f629584863cdd45de84927e13e069c96f5f"
+      },
+      "reason": "The overlapping native-smoke-tools.py owner row now names the exact frozen final control candidate rather than its canonical parent. All7 control rows,6 changed source bytes,427-source closure and5 actual portable guard records stay unchanged.",
+      "changedBinding": {
+        "path": "scripts/reader-experience/native-smoke-tools.py",
+        "before": {
+          "path": "scripts/reader-experience/native-smoke-tools.py",
+          "bytes": 60271,
+          "sha256": "e5635fe59d32f2036b87d5fb5c8dbfdaecfa01b25dc8de3bd62e63cbb01c164a"
+        },
+        "after": {
+          "path": "scripts/reader-experience/native-smoke-tools.py",
+          "bytes": 73454,
+          "sha256": "a606f649dd4aa5adb7bf289526b98bdc7302f79bf99d4bc1971039531f41192f"
+        }
+      }
+    }
+  },
+  "baselineCanonicalCommit": "e0fa4146fc1841f6d6e2cf51cc3537d2476ac423",
+  "controlFiles": [
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "baseline": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/rawbaseline/scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 202971,
+        "sha256": "c6c0556a059e49a3999ed356dcef206884af68a0dfddc68c87f119914f52bf28"
+      },
+      "candidate": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/snapshot-v1/work/scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 212133,
+        "sha256": "61bc1747cb54a426e22a557e7203861139565377eb643d4615d2427a28943ef0"
+      },
+      "diff": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/diffs/scripts/reader-experience/renewal-probe-tools.py.diff",
+        "bytes": 12447,
+        "sha256": "b06e4babbdcaab7c70f18fd59d33713a63fb42515c7769510f4f27ebc7a34e4b"
+      },
+      "changed": true
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "baseline": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/rawbaseline/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 191975,
+        "sha256": "651289600d33a7446b5f00a28fd3cc961d4cd8086fb317d5a5b6d0c9063bc6b9"
+      },
+      "candidate": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/snapshot-v1/work/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 193082,
+        "sha256": "bfa3c5b6452277dcd5af76ee7746004133c7d4da236b348f77cccaa713ea467b"
+      },
+      "diff": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/diffs/scripts/reader-experience/test-renewal-probe-tools.py.diff",
+        "bytes": 45243,
+        "sha256": "b43a24154a8265d2c0d7e5475a1a76323c320618cef47b44c5dd2ea93ff14fd0"
+      },
+      "changed": true
+    },
+    {
+      "path": "scripts/reader-experience/native-smoke-tools.py",
+      "baseline": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/rawbaseline/scripts/reader-experience/native-smoke-tools.py",
+        "bytes": 60271,
+        "sha256": "e5635fe59d32f2036b87d5fb5c8dbfdaecfa01b25dc8de3bd62e63cbb01c164a"
+      },
+      "candidate": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/snapshot-v1/work/scripts/reader-experience/native-smoke-tools.py",
+        "bytes": 73454,
+        "sha256": "a606f649dd4aa5adb7bf289526b98bdc7302f79bf99d4bc1971039531f41192f"
+      },
+      "diff": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/diffs/scripts/reader-experience/native-smoke-tools.py.diff",
+        "bytes": 14556,
+        "sha256": "3b2bca8215e516ccc87cbd6a955cb283e6357982b8657f83482bd812cdfdba1f"
+      },
+      "changed": true
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "baseline": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/rawbaseline/scripts/reader-experience/test-native-smoke-tools.py",
+        "bytes": 28366,
+        "sha256": "6dc9f02cfc2ffb515e09fdf2cf8ec56ef3479839825ea3b89938ab2631c97596"
+      },
+      "candidate": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/snapshot-v1/work/scripts/reader-experience/test-native-smoke-tools.py",
+        "bytes": 35829,
+        "sha256": "8ba12fc891dcf40e6a9a70035e4eefe901118b1c2d4dbad090535beabe691c9c"
+      },
+      "diff": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/diffs/scripts/reader-experience/test-native-smoke-tools.py.diff",
+        "bytes": 10044,
+        "sha256": "9fea7f829d3eefb04e2a05649828942b401b978c9501d0392af81dc294ae349f"
+      },
+      "changed": true
+    },
+    {
+      "path": ".github/workflows/reader-renewal-probe.yml",
+      "baseline": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/rawbaseline/.github/workflows/reader-renewal-probe.yml",
+        "bytes": 10695,
+        "sha256": "b387c332640ba30b8493137cf70faea2e799092301180066dabfe7043a050c7c"
+      },
+      "candidate": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/snapshot-v1/work/.github/workflows/reader-renewal-probe.yml",
+        "bytes": 10695,
+        "sha256": "e6a920669da9b1b198cac1cf2c5d2b17df447b6b43cd1528750296b9f0469f98"
+      },
+      "diff": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/diffs/.github/workflows/reader-renewal-probe.yml.diff",
+        "bytes": 8465,
+        "sha256": "53e766fd0e585068b5d7ebea0c61494c5374fecb3653726542823044c6858fb9"
+      },
+      "changed": true
+    },
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "baseline": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/rawbaseline/.github/workflows/legado-native-reader-test.yml",
+        "bytes": 11827,
+        "sha256": "19409e77f7a9a24ac96328ebdf9b7afacb56499de59dd8bc36fb254ccbfec4f2"
+      },
+      "candidate": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/snapshot-v1/work/.github/workflows/legado-native-reader-test.yml",
+        "bytes": 11827,
+        "sha256": "19409e77f7a9a24ac96328ebdf9b7afacb56499de59dd8bc36fb254ccbfec4f2"
+      },
+      "diff": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/diffs/.github/workflows/legado-native-reader-test.yml.diff",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "changed": false
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tests.sh",
+      "baseline": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/rawbaseline/scripts/reader-experience/renewal-probe-tests.sh",
+        "bytes": 43377,
+        "sha256": "21d348053a21c12ddea5110c6bd54624257ce81b8e83f609a6a4416e064838cb"
+      },
+      "candidate": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/snapshot-v1/work/scripts/reader-experience/renewal-probe-tests.sh",
+        "bytes": 43377,
+        "sha256": "35bcd7f50e0ba3a3437ec71858d7e323d266e8e52a086877a8420554294dbdc6"
+      },
+      "diff": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/diffs/scripts/reader-experience/renewal-probe-tests.sh.diff",
+        "bytes": 730,
+        "sha256": "c0c81196a5a5ab9e6c03534cc60b4e48e9fc10cad759770d197569b308edb947"
+      },
+      "changed": true
+    }
+  ],
+  "sourceBinding": {
+    "coreInputs": 418,
+    "nativeInputs": 262,
+    "uniqueUnion": 427,
+    "canonicalNonControlInputs": 420,
+    "productionOwnerBindings": 111,
+    "declaredInventoriesIndependentlyDerived": true,
+    "allFrozenValidationAndCanonicalBytesExact": true,
+    "allOldInputPrefixesPreserved": true,
+    "roster": {
+      "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/source-closures-final-v1.json",
+      "bytes": 222484,
+      "sha256": "6f6e709e2eb91c0f619d88602fe4d43329cdd204dc9b3bec32beea1d69120c11"
+    },
+    "scope": "Declared validation/provenance inventory, not an exhaustive transitive SDK or Gradle source whitelist."
+  },
+  "selection": {
+    "currentcoreDefinitions": 475,
+    "currentcoreLeaves": 478,
+    "newAppQualifiedMethods": [
+      "SelfRenewalAccountSessionTests/appSessionRegistersOnlyItsConfiguredPairedTargetBeforeFirstProfiles",
+      "SelfRenewalAuthenticatedInstallationClientTests/registrationDeviceObservationUsesAuthenticatedSessionAndExpiresAtStop",
+      "SelfRenewalDeveloperAccountClientTests/registersOriginalPortalScopeAndReusesObservedRemoteIdentity",
+      "SelfRenewalDeveloperAccountClientTests/registrationFailuresRetainScopeAndAcceptedFactsBeforeCSR"
+    ],
+    "priorCurrentcoreRetained": 471,
+    "unchangedOtherCaseGroups": [
+      {
+        "group": "unit",
+        "methods": 8
+      },
+      {
+        "group": "discovery",
+        "methods": 16
+      },
+      {
+        "group": "replacement",
+        "methods": 5
+      },
+      {
+        "group": "materials",
+        "methods": 6
+      },
+      {
+        "group": "signature",
+        "methods": 9
+      },
+      {
+        "group": "ui",
+        "methods": 1
+      },
+      {
+        "group": "cryptography",
+        "methods": 25
+      },
+      {
+        "group": "sealedmaterials",
+        "methods": 48
+      },
+      {
+        "group": "boundmaterials",
+        "methods": 78
+      },
+      {
+        "group": "controlledsigning",
+        "methods": 23
+      },
+      {
+        "group": "integratedrenewal",
+        "methods": 140
+      },
+      {
+        "group": "transactionrenewal",
+        "methods": 178
+      },
+      {
+        "group": "handoffrenewal",
+        "methods": 253
+      }
+    ],
+    "BoolParameterNames": {
+      "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit": "interrupt",
+      "AozoraTXTTests/storedV6LocationsMigrateOnce": "interrupt",
+      "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll": "nestedBackdrop"
+    },
+    "allBoolValues": [
+      false,
+      true
+    ],
+    "originalNative": 32,
+    "originalProduct": 29,
+    "platformCharacterization": 3,
+    "MainJSIndependent": 1,
+    "coldHostsIndependent": 2,
+    "S3FullPackageIndependentDefinition": 1,
+    "S3FullPackageIndependentLeaf": 1,
+    "S3ExcludedFromSDKAndOriginalGroups": true,
+    "PackageDefinitions": 24,
+    "PackageInputFacts": 23,
+    "PackageSourceChangesInThisDelta": [
+      ".github/workflows/reader-renewal-probe.yml"
+    ],
+    "freshPackageRequired": true
+  },
+  "productionFunctionAST": {
+    "scripts/reader-experience/renewal-probe-tools.py": {
+      "changed": [
+        "_currentcore_source_state",
+        "run_currentcore",
+        "verify_currentcore_pipeline"
+      ],
+      "added": [],
+      "removed": []
+    },
+    "scripts/reader-experience/native-smoke-tools.py": {
+      "changed": [
+        "result"
+      ],
+      "added": [
+        "verify_full_application_signing"
+      ],
+      "removed": []
+    }
+  },
+  "preservedBehavior": [
+    "Core production functions change only the new475/478 numeric contract; all other existing function ASTs are exact. The13 other EXPECTED_CASES groups, prior471 currentcore identities and3 Bool parameter matrices remain exact.",
+    "Existing Native functions are byte/AST-equivalent except result, which gains one mandatory full-package verifier call and one evidence field. Removing precisely that call/field restores the original result AST; no prior native verification is bypassed.",
+    "All original32 methods/order and29+3 partition, separate MainJS1 host and cold producer/consumer pair are unchanged. The still-unactivated resource-sniffer candidate is excluded.",
+    "Core retains one3600-second invocation, one xcresult, original phase budgets/order/first-failure/result gates and the mandatory same-job synthetic SDK-produced signer method. It does not execute the resource-dependent S3 method.",
+    "S3 Native workflow is exactly the already-reviewed canonical source: fresh same-job full-device prepare precedes Simulator overlay, independent S3 run precedes retained native hosts, always-artifact includes bounded S3 JSON/logs. No no-op workflow edit was manufactured.",
+    "Seven reviewed control rows comprise6 changed files plus1 byte-identical Native workflow. Package remains24 selected and23 source facts; its changed SDK workflow fact requires a fresh independent Package result."
+  ],
+  "fullApplicationRequiredGateReview": [
+    "Native.result always invokes verify_full_application_signing after its original required groups; absence/failure/stale S3 evidence prevents an overall passed result.",
+    "Gate requires exact current source/job IDs in prepared/result, exact requiredCase, complete-build and controlled producer facts, producer manifest hash and cleanup, present unchanged full IPA/metadata resources, all current signing-owner inputs and the owned device-overlay restoration receipt.",
+    "Six phase receipts require integer exit0, timedOut=false, exact budgets300/1800/360/1860/60/60 and actual output size/hash. Independent test argv must contain only the qualified S3 method, timeout1800 and exact resultBundlePath; both xcresult exports require exact kind/path argv.",
+    "The raw summary is rechecked with expected1 definition/1 execution, no failures/skips/expectedFailures, and one device; the raw case tree must contain precisely the S3 case Passed once. Result summary/cases must equal those newly parsed exports.",
+    "New portable guard is explicitly protocol-only, uses non-IPA synthetic bytes and checks13 negative vectors: source, job, failed result, timeout, exit, altered output, selector, execution-count grain, skip, duplicate, resources, owners and restoration. It cannot be reported as App/IPA/signing execution."
+  ],
+  "existingEvidence": {
+    "parents": {
+      "firstRegistration": {
+        "path": ".build/s2-first-registration-step/final-v1.json",
+        "bytes": 14538,
+        "sha256": "b6c52da211bbab7289cab08744bee628c6be1625d873328bbe7009fa9743ab1e"
+      },
+      "fullApplication": {
+        "path": ".build/s3-full-application-signing-step/final-v2.json",
+        "bytes": 11431,
+        "sha256": "b7f18927b30064716402cfc0ff19882d5ac0e9b54c5c799de77480cce151510e"
+      },
+      "vaultAPIRepair": {
+        "path": "docs/legado-ios/core-sdk-f481-vault-value-api-repair.json",
+        "bytes": 3200,
+        "sha256": "71ca429b2bc7bf46dad0ca2dfeeaefb7d8e8e1c1325b87e04e2ad932ac9f10f2"
+      },
+      "proxyFixtureRepair": {
+        "path": "docs/legado-ios/core-native-f481e89-proxy-fixture-repair.json",
+        "bytes": 6250,
+        "sha256": "7e67c7583ac336d15995aa537514adf0af50b09848a66c281cd863e6a6c78789"
+      }
+    },
+    "portableValidation": {
+      "result": {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/affected-validation-v1.json",
+        "bytes": 2586,
+        "sha256": "9261365e28d13600925564cffb7914e6688efd5c8c4f39a7832f8eb70b768fe0"
+      },
+      "actualExecutions": 5,
+      "distinctMethods": 5,
+      "passed": 5,
+      "failed": 0,
+      "logs": [
+        {
+          "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/affected-core-v1.log",
+          "bytes": 544,
+          "sha256": "9d96e86c73b5684483487a15f2375ec27696273727d4c94c276a5b53be0397c4"
+        },
+        {
+          "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/affected-native-v1.log",
+          "bytes": 671,
+          "sha256": "7b4f45bddb23989683f1cf78d68a71b57458551a5635cf90f3de978f9ccf928c"
+        }
+      ],
+      "actualS3ProducerGuardsReused": 4,
+      "sourceAuthoredOnly": true
+    },
+    "evidenceReferences": [
+      {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/draft-v1.json",
+        "bytes": 11152,
+        "sha256": "9e9ec5c2b84a802a01f05286b26da3f44f65b8a3012c0984c5ad0b165e2d906a"
+      },
+      {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/affected-validation-v1.json",
+        "bytes": 2586,
+        "sha256": "9261365e28d13600925564cffb7914e6688efd5c8c4f39a7832f8eb70b768fe0"
+      },
+      {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/affected-core-v1.log",
+        "bytes": 544,
+        "sha256": "9d96e86c73b5684483487a15f2375ec27696273727d4c94c276a5b53be0397c4"
+      },
+      {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/affected-native-v1.log",
+        "bytes": 671,
+        "sha256": "7b4f45bddb23989683f1cf78d68a71b57458551a5635cf90f3de978f9ccf928c"
+      },
+      {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/preparation-history-v1.json",
+        "bytes": 430,
+        "sha256": "f683647a3f7362099d77de8e6c7d12b13a48ece7810a2111a33ded7c4882491f"
+      },
+      {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/package-source-inputs-v1.json",
+        "bytes": 7352,
+        "sha256": "8cb0dc06127a3bb6a63415ee279ec4926cf587f154b975c063e27dc3e41aa07f"
+      },
+      {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/prepare.py",
+        "bytes": 11771,
+        "sha256": "ec5bf1bb7aedc10c4898ff4b6cbfae2e596351a4f77b933e1a25e8e1a9758ef8"
+      },
+      {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/run-affected.py",
+        "bytes": 1818,
+        "sha256": "cd81f4942c9ba986e5123d54c1b76038950d86ec5cc616392b87342e6120f90f"
+      },
+      {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/freeze.py",
+        "bytes": 8979,
+        "sha256": "2bce94b2310250ca6e51bb196db1517774fe6f0b98232f240430f888d63e17e5"
+      },
+      {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/native-full-gate.py.txt",
+        "bytes": 4776,
+        "sha256": "e237aaf0d0bc62ae8ef1c245f283e788e8b2bd38949a9d07383845fca8d31b1e"
+      },
+      {
+        "path": ".build/consolidated-sdk-first-registration-full-application-checkpoint/native-full-gate-test.py.txt",
+        "bytes": 7224,
+        "sha256": "cb77d0708183bb4ac2ee8e4f32df0666bc5152363833bc568481b05a0e48c711"
+      }
+    ],
+    "observedPortableDistinctMethods": 5,
+    "observedPortableMethodExecutions": 5,
+    "observedPasses": 5,
+    "observedFailures": 0,
+    "preTestDraftCorrections": [
+      "Removed literal patch-plus in Native with-context test before first execution",
+      "Explicitly updated three joined Execute471/with474 labels to475/478 before first execution",
+      "Normalized draft/roster text to UTF8 LF"
+    ],
+    "preTestActualExecutions": 0,
+    "alreadyReviewedS3ProducerGuardExecutionsReusedNotRerun": 4
+  },
+  "reviewExecution": {
+    "sourceReadHashASTAndArgvConstructionOnly": true,
+    "testReruns": 0,
+    "compilers": 0,
+    "SwiftParser": 0,
+    "SwiftSDK": 0,
+    "JVM": 0,
+    "cloudQueries": 0,
+    "GitOrCanonicalWrites": 0
+  },
+  "closedFindings": [
+    {
+      "severity": "P2",
+      "finding": "Final-v1 productionSourceBindings bound overlapping native-smoke-tools.py to the old canonical source despite correct new control and union-roster bytes.",
+      "resolution": "Final-v2 replaces only that owner row with exact frozen73454-byte/a606f649 candidate and adds explicit supersedes history; all7 controls,427 inputs and5 actual guard executions remain unchanged."
+    }
+  ],
+  "proofLimits": [
+    "5 portable guards use synthetic protocol/source fixtures, not Apple/Simulator/JVM/IPA functional execution. No old suite, S3 four guards, package tests or Java tests rerun.",
+    "S3 full device build/signing acceptance remains unexecuted until the future actual job. Real layout, trust, platform, entitlement and budget failures remain failures, not minimal fallback.",
+    "First-registration paired target observation does not prove same physical running App device or automatic installation authority.",
+    "The f481 SDK App0 compiler failure and Native378/1failed/Native0 remain historical terminal failures; new source is not a retroactive pass.",
+    "This approval concerns the frozen controls and evidence admission. Real full iPhoneOS/JVM input preparation, independent S3 production signing, App475/478 and original32/MainJS/cold executions remain pending future actual checkpoint.",
+    "Native S3 success, if later observed, would establish controlled complete-package signing only; it cannot establish Apple account authority, physical same-device/noVPN installation, data preservation or unattended renewal."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}
