@@ -567,6 +567,33 @@ SOURCE_INPUTS += tuple(path for path in NATIVE_S5_RETIREMENT_COMPILE_INPUTS if p
 assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 263
 
 
+# Bounded owners directly invoked by the existing JNI-to-CoreText product test.
+# Reference-only ReaderView/EPUB renderer and unrelated tests are excluded.
+NATIVE_ORIGINAL_CORETEXT_PRODUCT_INPUTS = (
+    'Modules/Services/Online/BookContentProvider.swift',
+    'Modules/Services/Online/BookContentProviderAdapters.swift',
+    'Modules/Services/Online/OnlineChapterContentService.swift',
+    'Modules/Services/LibraryStore/UniversalBookResourceAdapter.swift',
+    'Modules/Core/ReaderCore/CoreText/OnlineProviderAttributedStringBuilder.swift',
+    'Modules/Core/ReaderCore/CoreText/CoreTextScrollEngine.swift',
+    'Modules/Core/ReaderCore/CoreText/CoreTextChunk.swift',
+    'Modules/Core/ReaderCore/CoreText/ReaderScrollItem.swift',
+    'Modules/Features/Reader/CoreTextChunkCell.swift',
+    'Modules/Core/ReaderCore/CoreText/NodeAttributedStringRenderer.swift',
+    'Modules/Core/ReaderCore/CoreText/HTMLAttributedStringBuilder.swift',
+    'Modules/Core/ReaderCore/ReaderHTMLUtilities.swift',
+    'Modules/Core/ReaderCore/CoreText/CoreTextChunkSlicer.swift',
+    'Modules/Core/ReaderCore/CoreText/HTMLStyledASTRenderableNodeConverter.swift',
+    'Modules/Core/ReaderCore/CoreText/ChapterDocument.swift',
+    'Modules/Core/ReaderCore/CoreText/AttributedStringBuilding.swift',
+    'Modules/Core/ReaderCore/CoreText/HTMLBuilderPipelines.swift',
+    'Modules/Core/ReaderCore/CoreText/CoreTextHorizontal/CoreTextHorizontalLineDrawer.swift',
+    'Modules/Core/ReaderCore/CoreText/CoreTextPaginator.swift',
+)
+SOURCE_INPUTS += NATIVE_ORIGINAL_CORETEXT_PRODUCT_INPUTS
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 282
+
+
 def source_inputs():
     records = []
     for relative in SOURCE_INPUTS:

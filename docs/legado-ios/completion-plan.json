@@ -169,7 +169,7 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Collect each exact new terminal once. Require actual SDK479/482 and FULL Native S3/MainJS1/Original32/cold2 results; preserve all previous failures and do not replace full validation with focused cold.",
+      "nextPlannedCheckpoint": "Both fb6 jobs remain source-bound and unchanged. Reviewed disabled-worker production fix and existing Native CoreText reader test/source binding are integrated as one queued batch. Collect current actual terminals, then select necessary successor scopes from evidence. Preserve479/482, Native32=29product+3platform, MainJS1, cold2 and full S3one. Do not trigger another build while either exact current job remains live.",
       "alreadyRunningTasks": "Initial admission: exact fb6aa7a SDK39553639652/job119068228859 and FULL Native39553639579/job119068228619 are live. SDK job was in_progress and Native job queued in the captured API observations; run-collection snapshots were both queued. This is not a passing result. All d820/older handles are closed; no focused-cold extra.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "7ef3c7ec1b0d37ce2b395bb897f6806f5acbafa8",
@@ -544,7 +544,7 @@
         "sourceRepairRecord": "docs/legado-ios/core-native-d8200d3-build-budget-repair.json",
         "sourceRepairStatus": "integrated-actual-Apple-execution-pending"
       },
-      "queuedSourceCheckpoint": "docs/legado-ios/core-sdk-d820-actual-repairs.json",
+      "queuedSourceCheckpoint": "docs/legado-ios/core-original-native-coretext-product-step.json",
       "onlyLiveNativeHandles": [
         {
           "runID": 39553639579,
@@ -641,6 +641,31 @@
         "sourceCommit": "fb6aa7a14680135f5e7271f10b61ad9561801c19",
         "requestRecord": "docs/legado-ios/core-sdk-fb6aa7a-request.json",
         "actualNewRuntimeTestsAccepted": 0
+      },
+      "queuedDisabledWorkerLifecycleRepair": {
+        "record": "docs/legado-ios/core-renewal-disabled-worker-lifecycle-repair.json",
+        "status": "source-integrated-actual-SDK-pending",
+        "productionChanges": 1,
+        "newTestDefinitions": 0,
+        "actualNewTests": 0,
+        "newTagsOrRuns": 0,
+        "currentLiveSourceDoesNotContainRepair": true
+      },
+      "queuedOriginalNativeCoreTextRendering": {
+        "record": "docs/legado-ios/core-original-native-coretext-product-step.json",
+        "status": "source-integrated-actual-full-Native-pending",
+        "changedExistingTestSources": 1,
+        "changedExistingControls": 2,
+        "newTestDefinitions": 0,
+        "sourceCounts": {
+          "core": 418,
+          "native": 282,
+          "union": 440,
+          "package": 23
+        },
+        "actualPortableGuardPassed": 1,
+        "actualNewSwiftOrNativeTests": 0,
+        "newTagsOrRuns": 0
       }
     },
     "nextReadyBatch": [
@@ -1306,9 +1331,13 @@
             {
               "record": "docs/legado-ios/core-sdk-d820-actual-repairs.json",
               "scope": "Reviewed actual SDK failure and orphan repair batch; actual SDK/full Native validation pending."
+            },
+            {
+              "record": "docs/legado-ios/core-original-native-coretext-product-step.json",
+              "scope": "Existing real JNI consumer now authors product CoreText body glyph/anchor/position/raster assertions, with invoked production source binding; no execution acceptance yet."
             }
           ],
-          "nextActionZh": "已修preUpdate换章节URL时带入旧变量；既有Native用例扩展真实旧章读取→换URL→新章及重开，待集中SDK/JNI。90%兼容率仍未测，长尾暂缓。",
+          "nextActionZh": "既有原JNI离线消费用例已接真实CoreText产品排版/离屏画笔断言及源码绑定；与worker生命周期修正一并排队，当前fb6任务不含后续修改，待现任务终态后集中必要验证。",
           "temporaryTargetFromUser": {
             "percent": 90,
             "measuredPercent": null,
@@ -1458,12 +1487,16 @@
             {
               "record": "docs/legado-ios/core-sdk-d820-actual-repairs.json",
               "scope": "Reviewed actual SDK failure and orphan repair batch; actual SDK/full Native validation pending."
+            },
+            {
+              "record": "docs/legado-ios/core-original-native-coretext-product-step.json",
+              "scope": "Existing real JNI consumer now authors product CoreText body glyph/anchor/position/raster assertions, with invoked production source binding; no execution acceptance yet."
             }
           ],
           "implementedSubtasksZh": [
             "用户确认阅读正常。已修复分页成功后历史未清、不同阅读器共享nil书籍计数及共享任务按等待者重复计数的问题；5项新回归仅定义，25项相关方法待下一批统一SDK验证。目录超时与后台401ms响应迟延的原因仍未确定。"
           ],
-          "nextActionZh": "已修preUpdate换章节URL时带入旧变量；既有Native用例扩展真实旧章读取→换URL→新章及重开，待集中SDK/JNI。90%兼容率仍未测，长尾暂缓。",
+          "nextActionZh": "既有原JNI离线消费用例已接真实CoreText产品排版/离屏画笔断言及源码绑定；与worker生命周期修正一并排队，当前fb6任务不含后续修改，待现任务终态后集中必要验证。",
           "temporaryTargetFromUser": {
             "percent": 90,
             "measuredPercent": null,
@@ -2061,9 +2094,13 @@
             {
               "record": "docs/legado-ios/core-sdk-d820-actual-repairs.json",
               "scope": "Reviewed actual SDK failure and orphan repair batch; actual SDK/full Native validation pending."
+            },
+            {
+              "record": "docs/legado-ios/core-renewal-disabled-worker-lifecycle-repair.json",
+              "scope": "Restore shared worker admission/cancellation while preserving disabled bootstrap errors; source-only, existing lifecycle assertions unchanged."
             }
           ],
-          "nextActionZh": "提交后安全终结与下一轮准入已接线；与候选有效期、章节URL变量修复合为同源码集中SDK/模拟器/JNI/完整包重签验证，实际结果仍待执行。",
+          "nextActionZh": "禁用自动续签时保留bootstrap错误并维持原共用worker生命周期的修正已合入；当前fb6任务不含此后续修改，须待其终态后集中执行必要回归。",
           "lastClosedSDKRequest": "docs/legado-ios/core-sdk-7ef3c7e-request.json",
           "lastSDKTerminalRecord": "docs/legado-ios/core-sdk-7ef3c7e-terminal-result.json",
           "pendingSDKRequest": "docs/legado-ios/core-sdk-fb6aa7a-request.json"
@@ -3405,6 +3442,46 @@
         "sourceCommit": "fb6aa7a14680135f5e7271f10b61ad9561801c19",
         "requestRecord": "docs/legado-ios/core-sdk-fb6aa7a-request.json",
         "actualNewRuntimeTestsAccepted": 0
+      },
+      "queuedDisabledWorkerLifecycleRepair": {
+        "record": "docs/legado-ios/core-renewal-disabled-worker-lifecycle-repair.json",
+        "status": "source-integrated-actual-SDK-pending",
+        "productionChanges": 1,
+        "newTestDefinitions": 0,
+        "actualNewTests": 0,
+        "newTagsOrRuns": 0,
+        "currentLiveSourceDoesNotContainRepair": true
+      },
+      "deferredFullSourceCompatibilityBoundaries": [
+        {
+          "area": "App binary cache persistence",
+          "status": "unimplemented-explicitly-unsupported-deferred-long-tail",
+          "source": "Modules/Services/Online/LegadoPersistentStateHost.swift:603",
+          "scope": "Nonempty binary companion is rejected by the App host; ordinary JVM FileRulePersistenceAdapter success does not supply App support. Whole C2/full compatibility remain unaccepted;90% unmeasured."
+        }
+      ],
+      "coreTextNativeReaderCoverageGap": {
+        "status": "test-source-and-bound-inputs-integrated-actual-execution-pending",
+        "requirement": "C4 same actual JNI/public-reader chapter must reach the actual CoreText product layout/draw pipeline.",
+        "currentBoundary": "Current Native tests validate payload/cache-only XHTML; independent CoreText fixture tests do not join that content into rendering.",
+        "plannedChange": "Extend an existing Native public-consumer method; no new method/host/route or UI source.",
+        "record": "docs/legado-ios/core-original-native-coretext-product-step.json"
+      },
+      "queuedOriginalNativeCoreTextRendering": {
+        "record": "docs/legado-ios/core-original-native-coretext-product-step.json",
+        "status": "source-integrated-actual-full-Native-pending",
+        "changedExistingTestSources": 1,
+        "changedExistingControls": 2,
+        "newTestDefinitions": 0,
+        "sourceCounts": {
+          "core": 418,
+          "native": 282,
+          "union": 440,
+          "package": 23
+        },
+        "actualPortableGuardPassed": 1,
+        "actualNewSwiftOrNativeTests": 0,
+        "newTagsOrRuns": 0
       }
     }
   },
@@ -7813,7 +7890,9 @@
     "docs/legado-ios/core-original-cold-persistence-step.json",
     "docs/legado-ios/core-sdk-d8200d3-terminal-result.json",
     "docs/legado-ios/core-sdk-d820-actual-repairs.json",
-    "docs/legado-ios/core-sdk-fb6aa7a-request.json"
+    "docs/legado-ios/core-sdk-fb6aa7a-request.json",
+    "docs/legado-ios/core-renewal-disabled-worker-lifecycle-repair.json",
+    "docs/legado-ios/core-original-native-coretext-product-step.json"
   ],
   "userScopeAdjustments": [
     {

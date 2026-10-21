@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T06:27:28.587809+00:00",
+  "status": "production-source-integrated-actual-SDK-pending",
+  "baselineSubmittedSource": "fb6aa7a14680135f5e7271f10b61ad9561801c19",
+  "changedSource": {
+    "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+    "bytes": 37261,
+    "sha256": "9f419bd3cc42dcc669b71b7cf4e4e9f8a7a9f48f710d9dc74add95c5e42f843e"
+  },
+  "productionChanges": 1,
+  "testChanges": 0,
+  "newTestDefinitions": 0,
+  "finding": {
+    "cause": "New disabled early return bypasses the existing common worker, so latest activation observes zero workers and the background lifecycle case waits for a gate which cannot arrive.",
+    "existingAffectedCases": [
+      "SelfRenewalAppOwnerTests/latestActivationWaitsForBootstrapAndRunsOnce",
+      "SelfRenewalAppOwnerTests/backgroundGrantUsesSameWorkerAndSurvivesSceneCleanup"
+    ],
+    "unchangedErrorCases": "SelfRenewalForegroundMaterialRevalidationTests retains exact error assertions; disabled successful observation must preserve the bootstrap problem.",
+    "correction": "Keep the existing worker/session/local checks/operation ownership and only avoid clearing problem for an explicitly disabled published observation.",
+    "runtimeStatus": "Source-identified deterministic control-flow conflict; no actual post-fix Swift execution or new observed test result."
+  },
+  "sourceRosterDelta": {
+    "path": "docs/legado-ios/evidence/disabled-worker-lifecycle-repair/source-roster-one-path-delta.json",
+    "bytes": 1154,
+    "sha256": "c2c7e254f5e80d11a6d4733ebaf834a1ae09fd24b7c4c97586c24afb421c2165"
+  },
+  "evidence": [
+    {
+      "path": "docs/legado-ios/evidence/disabled-worker-lifecycle-repair/source-candidate.json",
+      "bytes": 3717,
+      "sha256": "49d1afd3f24778be4c16ede57387544305c2b08a8a99eaaea71b19cc7cca8fb8",
+      "original": {
+        "path": ".build/disabled-worker-lifecycle-repair/final-v1.json",
+        "bytes": 3717,
+        "sha256": "49d1afd3f24778be4c16ede57387544305c2b08a8a99eaaea71b19cc7cca8fb8"
+      },
+      "normalization": "UTF-8 LF and trailing horizontal whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/disabled-worker-lifecycle-repair/independent-review.json",
+      "bytes": 4226,
+      "sha256": "7e9bd8abb9e7d989b50320173aeb3325ad957579f6d84fb2f1a0001a0e1e5b28",
+      "original": {
+        "path": ".build/disabled-worker-lifecycle-independent-review/review-v1.json",
+        "bytes": 4226,
+        "sha256": "7e9bd8abb9e7d989b50320173aeb3325ad957579f6d84fb2f1a0001a0e1e5b28"
+      },
+      "normalization": "UTF-8 LF and trailing horizontal whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/disabled-worker-lifecycle-repair/source-checks.json",
+      "bytes": 445,
+      "sha256": "5fa5929afa6f676b342cbbcacb8909f7390c9ce1b7ca0c40c722162102c234ca",
+      "original": {
+        "path": ".build/disabled-worker-lifecycle-repair/source-checks-v1.json",
+        "bytes": 445,
+        "sha256": "5fa5929afa6f676b342cbbcacb8909f7390c9ce1b7ca0c40c722162102c234ca"
+      },
+      "normalization": "UTF-8 LF and trailing horizontal whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/disabled-worker-lifecycle-repair/app-owner.diff",
+      "bytes": 933,
+      "sha256": "b43b5080f1eeb68d6e956711e900a2b3875f9db035ccc46692e4cea4a72ce528",
+      "original": {
+        "path": ".build/disabled-worker-lifecycle-repair/app-owner.diff",
+        "bytes": 933,
+        "sha256": "b43b5080f1eeb68d6e956711e900a2b3875f9db035ccc46692e4cea4a72ce528"
+      },
+      "normalization": "UTF-8 LF and trailing horizontal whitespace only"
+    }
+  ],
+  "sourceCounts": {
+    "core": 418,
+    "native": 263,
+    "union": 427,
+    "package": 23
+  },
+  "all427CurrentInputsVerified": true,
+  "Package23InputsUnchanged": true,
+  "actualValidation": {
+    "SwiftCompilation": 0,
+    "SDKTests": 0,
+    "portableTests": 0,
+    "cloudQueries": 0
+  },
+  "priorNarrowReviewCorrection": {
+    "path": ".build/sdk-d8200d3-root-failure-independent-review/review-v2.json",
+    "sha256": "1ae31075e623eee9ad9a6618951994a697775e1fafdec15ff204bcdcd16b325f",
+    "scope": "Withdraw only no-blocker statement for disabled-early-return cross-sibling impact. Other9-source binding/review conclusions stand."
+  },
+  "existingLivePairUnchanged": {
+    "SDKRun": 39553639652,
+    "NativeRun": 39553639579,
+    "sourceCommit": "fb6aa7a14680135f5e7271f10b61ad9561801c19"
+  },
+  "newCloudTagsOrRuns": 0,
+  "nextBatch": "Complete the existing Native CoreText reader end-to-end assertion candidate, then classify both current fb6 terminals before selecting only necessary successor verification.",
+  "limits": [
+    "No current live run can validate these later bytes.",
+    "The original d820 failures and fb6 source finding are not relabeled as passed.",
+    "No fixture weakening, opt-in bypass, new signing or installation authority is introduced."
+  ],
+  "temporaryBookSourceTargetPercent": 90,
+  "measuredCompatibilityPercent": null,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

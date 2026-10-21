@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T06:18:29.585209+00:00",
+  "status": "frozen-one-source-candidate-independent-review-and-SDK-pending",
+  "baselineSubmittedSource": "fb6aa7a14680135f5e7271f10b61ad9561801c19",
+  "sourceRoot": ".build/disabled-worker-lifecycle-repair/snapshot-v1/work",
+  "files": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "baseline": {
+        "path": ".build/disabled-worker-lifecycle-repair/baseline/Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+        "bytes": 37272,
+        "sha256": "6735e9120448bad941b7860e16e80816cc349b55dfa0f97e411a0ccc114bd532"
+      },
+      "candidate": {
+        "path": ".build/disabled-worker-lifecycle-repair/snapshot-v1/work/Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+        "bytes": 37261,
+        "sha256": "9f419bd3cc42dcc669b71b7cf4e4e9f8a7a9f48f710d9dc74add95c5e42f843e"
+      },
+      "diff": {
+        "path": ".build/disabled-worker-lifecycle-repair/app-owner.diff",
+        "bytes": 933,
+        "sha256": "b43b5080f1eeb68d6e956711e900a2b3875f9db035ccc46692e4cea4a72ce528"
+      }
+    }
+  ],
+  "sourceChecks": {
+    "path": ".build/disabled-worker-lifecycle-repair/source-checks-v1.json",
+    "bytes": 445,
+    "sha256": "5fa5929afa6f676b342cbbcacb8909f7390c9ce1b7ca0c40c722162102c234ca"
+  },
+  "readOnlyDependencies": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 123848,
+      "sha256": "bcee884738fccd7f6a758a277bba63f8a28a267b3dfdfc1196ceadf9383d5391"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift",
+      "bytes": 25227,
+      "sha256": "d2a91e556ab73090077176c1a5cf169d808e52e521ed1186fef143a6f41bbd8f"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalForegroundMaterialRevalidationTests.swift",
+      "bytes": 26354,
+      "sha256": "ee35a635a6622167832921b18f7a70f680458916a0ab9f87cf6f326f431ac4cf"
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "bytes": 213238,
+      "sha256": "f45db39d62417ad2e2ce4f27d44537ec2ba2e37d36a1ab6919ed63d290dc02e2"
+    }
+  ],
+  "actualSourceFinding": {
+    "cause": "New disabled early return bypasses the existing common worker, so latest activation observes zero workers and the background lifecycle case waits for a gate which cannot arrive.",
+    "existingAffectedCases": [
+      "SelfRenewalAppOwnerTests/latestActivationWaitsForBootstrapAndRunsOnce",
+      "SelfRenewalAppOwnerTests/backgroundGrantUsesSameWorkerAndSurvivesSceneCleanup"
+    ],
+    "unchangedErrorCases": "SelfRenewalForegroundMaterialRevalidationTests retains exact error assertions; disabled successful observation must preserve the bootstrap problem.",
+    "correction": "Keep the existing worker/session/local checks/operation ownership and only avoid clearing problem for an explicitly disabled published observation.",
+    "runtimeStatus": "Source-identified deterministic control-flow conflict; no actual post-fix Swift execution or new observed test result."
+  },
+  "productionChanges": 1,
+  "testChanges": 0,
+  "newTestDefinitions": 0,
+  "newHostsOrSelectors": 0,
+  "actualValidation": {
+    "SwiftCompilation": 0,
+    "SDKTests": 0,
+    "portableTests": 0,
+    "cloudQueries": 0
+  },
+  "existingLivePairNotChanged": {
+    "SDKRun": 39553639652,
+    "NativeRun": 39553639579,
+    "sourceCommit": "fb6aa7a14680135f5e7271f10b61ad9561801c19"
+  },
+  "limits": [
+    "No current live run can validate these later bytes.",
+    "The original d820 failures and fb6 source finding are not relabeled as passed.",
+    "No fixture weakening, opt-in bypass, new signing or installation authority is introduced."
+  ]
+}

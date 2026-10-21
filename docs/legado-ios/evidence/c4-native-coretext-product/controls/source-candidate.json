@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 1,
+  "status": "control-only-candidate-awaiting-independent-review",
+  "baselineCommit": "df1bbbcae265f6163ef5683a130223495227864a",
+  "sourceRoot": ".build/c4-original-native-coretext-controls-step/snapshot-v1/work",
+  "files": [
+    {
+      "path": "scripts/reader-experience/native-smoke-tools.py",
+      "baseline": {
+        "path": ".build/c4-original-native-coretext-controls-step/rawbaseline/scripts/reader-experience/native-smoke-tools.py",
+        "bytes": 83544,
+        "sha256": "b33c11517667fbbd41b64a95eda41afd39e5f576b4bb853919dc8e449e814cee"
+      },
+      "candidate": {
+        "path": ".build/c4-original-native-coretext-controls-step/snapshot-v1/work/scripts/reader-experience/native-smoke-tools.py",
+        "bytes": 85166,
+        "sha256": "b82d419f9e86f8b156fcb92c4797434734b3a686e0ef15c4530d238c20e85bad"
+      },
+      "diff": {
+        "path": ".build/c4-original-native-coretext-controls-step/diffs/scripts/reader-experience/native-smoke-tools.py.diff",
+        "bytes": 1919,
+        "sha256": "9216eb973732d20710cd793cd08696cfefc7de001eb3f5e01462da6e81f45725"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "baseline": {
+        "path": ".build/c4-original-native-coretext-controls-step/rawbaseline/scripts/reader-experience/test-native-smoke-tools.py",
+        "bytes": 44808,
+        "sha256": "0957733b85bcc2c9e6c0f7fba91de5342fd2e4835b8dc72e8b5e1a57ef80445d"
+      },
+      "candidate": {
+        "path": ".build/c4-original-native-coretext-controls-step/snapshot-v1/work/scripts/reader-experience/test-native-smoke-tools.py",
+        "bytes": 44808,
+        "sha256": "1ce2313479aecd02f607ef3325fa3ac3607cddcd7e0e41760ff2f1cb1e17238d"
+      },
+      "diff": {
+        "path": ".build/c4-original-native-coretext-controls-step/diffs/scripts/reader-experience/test-native-smoke-tools.py.diff",
+        "bytes": 797,
+        "sha256": "1669cd1847f49f11e6a2c40d83c63c86fdfa1853cee7a236d44f47ab48187cc0"
+      }
+    }
+  ],
+  "sourceChecks": {
+    "path": ".build/c4-original-native-coretext-controls-step/source-checks-v1.json",
+    "bytes": 912,
+    "sha256": "a70516f9ceffb49e5cd8d6887c8d005a40e25098685ced92fb815cb4c6173008"
+  },
+  "sourceComposition": {
+    "disabledWorkerCanonicalParentRoster": {
+      "path": ".build/disabled-worker-lifecycle-integration/source-rosters-final.json",
+      "bytes": 227236,
+      "sha256": "7acc98b19c14214d18399748374c7f1114893e0afbb7ed220756cbc3253a3396"
+    },
+    "c4TestOnlyCandidate": {
+      "path": ".build/c4-original-native-coretext-step/final-v1.json",
+      "bytes": 10017,
+      "sha256": "b5658ccf883a0c3e7ee5945af715b3261e0e91cc7087c2706025f9da287253e4"
+    },
+    "c4TestIndependentReview": {
+      "path": ".build/c4-original-native-coretext-independent-review/review-v1.json",
+      "bytes": 12906,
+      "sha256": "d38cc5034ec41f9b5bdb13ebf2707dddede15107622b4b822df00da01d38da49"
+    }
+  },
+  "sourceRosters": {
+    "path": ".build/c4-original-native-coretext-controls-step/source-rosters-proposed-v1.json",
+    "bytes": 233508,
+    "sha256": "b2ddec843ba7f78799beb714e6da1e4cb37c3dac12cb202087d92ef686ff2f18"
+  },
+  "sourceRosterDelta": {
+    "path": ".build/c4-original-native-coretext-controls-step/source-roster-delta-v1.json",
+    "bytes": 8870,
+    "sha256": "6c59f593b4bb7b7bbe2e3515c454b5c64d56cea4f8ebcd7c94cb5f1b708ce794"
+  },
+  "readOnlyDependencies": [
+    {
+      "path": "Modules/Services/Online/BookContentProvider.swift",
+      "bytes": 2241,
+      "sha256": "70d4e7ceb61313c9d8844b36bb4d4a6bda93a7f306f4fb81766b2913c0dddf8e",
+      "reason": "Actual ChapterContentPayload and BookContentProvider contract",
+      "alreadyCoreBound": false
+    },
+    {
+      "path": "Modules/Services/Online/BookContentProviderAdapters.swift",
+      "bytes": 6066,
+      "sha256": "1d3e2d9e258d1cde0e618db4d9d8fd1f0ebaa37c4b2e0d3272a482c28e75914c",
+      "reason": "Actual makeOnlineReaderBundle and cache-only OnlineBookContentProvider",
+      "alreadyCoreBound": false
+    },
+    {
+      "path": "Modules/Services/Online/OnlineChapterContentService.swift",
+      "bytes": 5979,
+      "sha256": "26ec82a3d08cb32b015913f010877cc4374a1fb43db728502616b02b24031c16",
+      "reason": "Actual persisted JNI chapter payload and normalized HTML",
+      "alreadyCoreBound": true
+    },
+    {
+      "path": "Modules/Services/LibraryStore/UniversalBookResourceAdapter.swift",
+      "bytes": 11820,
+      "sha256": "7acd3ed709c129ce70e4f74b17aba485b49f40ef0cc99084ba06849d7e6a7d35",
+      "reason": "Same product content-provider resource adapter",
+      "alreadyCoreBound": false
+    },
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/OnlineProviderAttributedStringBuilder.swift",
+      "bytes": 43314,
+      "sha256": "443d20d4af7c776d99c1efc838cc0e646e9ae71c20ff3339010cb76342d43406",
+      "reason": "Actual HTML-body builder",
+      "alreadyCoreBound": true
+    },
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/CoreTextScrollEngine.swift",
+      "bytes": 54110,
+      "sha256": "4d21d6e7fbbc829db489561baef0fca7ad6a82706924ff56d12ae7747a4877ee",
+      "reason": "Awaited production engine document/slice/install",
+      "alreadyCoreBound": false
+    },
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/CoreTextChunk.swift",
+      "bytes": 22599,
+      "sha256": "d992dbda07f6a0459bd60fb3fa680483fc6793e0fcc3cffa75961134aed6be7d",
+      "reason": "Actual CTFrame materialization and retained attributed content",
+      "alreadyCoreBound": false
+    },
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/ReaderScrollItem.swift",
+      "bytes": 17583,
+      "sha256": "40976d260e62d57a280b0064a871350294993bbbfee88e992dd58adf7fbf70ba",
+      "reason": "Actual engine item and legacyChunk access",
+      "alreadyCoreBound": false
+    },
+    {
+      "path": "Modules/Features/Reader/CoreTextChunkCell.swift",
+      "bytes": 30387,
+      "sha256": "bc92cd4bca0c1b1e18b023d5383ac9f17ba184d0edd769db3dd134665e2f661f",
+      "reason": "Actual CoreTextChunkDrawView and shared product painter",
+      "alreadyCoreBound": false
+    },
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/NodeAttributedStringRenderer.swift",
+      "bytes": 157448,
+      "sha256": "9896a10b6ecc161ca147800a6ac8401f82eaae0367c2a384d008f36a499a966f",
+      "reason": "Actual HTML AST-to-attributed text and anchor attributes",
+      "alreadyCoreBound": false
+    },
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/HTMLAttributedStringBuilder.swift",
+      "bytes": 121685,
+      "sha256": "c7b8d60731bd19a38c6a5ef5e3fc62eac3c02d168b1de80a667a51ad8ce0dd97",
+      "reason": "Actual styled AST and anchor extraction",
+      "alreadyCoreBound": false
+    },
+    {
+      "path": "Modules/Core/ReaderCore/ReaderHTMLUtilities.swift",
+      "bytes": 110999,
+      "sha256": "54dc0bc5816b937ff9f82717cdc6559d5d8ad626b7b1a5adf7492748ac975236",
+      "reason": "Actual normalized reader-content HTML and content utilities",
+      "alreadyCoreBound": true
+    },
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/CoreTextChunkSlicer.swift",
+      "bytes": 41686,
+      "sha256": "53fe22f9923d0ec789d1253d51f44197ce134ea1564fa03dce4b264968f5c6c2",
+      "reason": "Engine directly awaits actual chunk slicing",
+      "alreadyCoreBound": false
+    },
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/HTMLStyledASTRenderableNodeConverter.swift",
+      "bytes": 27313,
+      "sha256": "e307af886874c88b62989ce93b84b30ead63afc30a03af4b116eb6d5f63e3152",
+      "reason": "HTML builder directly converts parsed AST nodes",
+      "alreadyCoreBound": true
+    },
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/ChapterDocument.swift",
+      "bytes": 7278,
+      "sha256": "795f448ab056f7469568c8b9d4712a2f4d1f5b30bcb985ebf48f93801662d8d6",
+      "reason": "Engine directly awaits its existing document owner",
+      "alreadyCoreBound": false
+    },
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/AttributedStringBuilding.swift",
+      "bytes": 5739,
+      "sha256": "1c75423ce0107e42d848131d5cede0ed25f20ecd8f235a05e33dd9237d03a436",
+      "reason": "Actual builder/result/revision contract",
+      "alreadyCoreBound": true
+    },
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/HTMLBuilderPipelines.swift",
+      "bytes": 10767,
+      "sha256": "ce37a9cf20b5da74f79d1f71998042313fa96f0a6c04c444a5db9a1a24b4811a",
+      "reason": "HTML builder directly invokes DOM parse and style AST owners",
+      "alreadyCoreBound": false
+    },
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/CoreTextHorizontal/CoreTextHorizontalLineDrawer.swift",
+      "bytes": 29356,
+      "sha256": "33ece6ec87c9fc4d1b1fcfbd2ca3817793ff3548261bca0d3e15da6d3bf45b39",
+      "reason": "Product chunk painter directly draws actual horizontal lines",
+      "alreadyCoreBound": false
+    },
+    {
+      "path": "Modules/Core/ReaderCore/CoreText/CoreTextPaginator.swift",
+      "bytes": 171929,
+      "sha256": "a376012df9658a5ca2d0cd23ba0ab53e439f213197458dd4314a10e5812a136b",
+      "reason": "Actual engine recoloring and chunk CTFrame recipe",
+      "alreadyCoreBound": true
+    }
+  ],
+  "counts": {
+    "core": 418,
+    "native": 282,
+    "union": 440,
+    "PackageInputs": 23,
+    "PackageDefinitions": 24,
+    "currentcoreDefinitions": 479,
+    "currentcoreLeaves": 482,
+    "BoolPairs": 3,
+    "originalMethods": 32,
+    "originalProduct": 29,
+    "platformCharacterization": 3,
+    "MainJS": 1,
+    "coldIndependent": 2,
+    "S3Definitions": 1,
+    "S3Leaves": 1
+  },
+  "actualPortableGuards": [
+    {
+      "method": "NativeSmokeProvenanceTests.test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging",
+      "record": {
+        "path": ".build/c4-original-native-coretext-controls-step/affected-guard-v1.json",
+        "bytes": 1051,
+        "sha256": "fc0217019dd92cf59d372c2835fdf43053edaf0d9aa6e0b5b4801e9b7a5ecb99"
+      },
+      "log": {
+        "path": ".build/c4-original-native-coretext-controls-step/affected-guard-v1.log",
+        "bytes": 308,
+        "sha256": "6d01f37f5bec18ab3a8d85816da2173c9e423efef0fdad0796fbac5bc55d69e8"
+      },
+      "exitCode": 0,
+      "actualExecutions": 1
+    }
+  ],
+  "validationDependencies": {
+    "path": ".build/c4-original-native-coretext-controls-step/validation-dependencies-v1.json",
+    "bytes": 3180,
+    "sha256": "6f343857c6da6e256255745dab143790ad4fb0ab6a32204a7df5c04cab144f97"
+  },
+  "preTestPreparationHistory": {
+    "path": ".build/c4-original-native-coretext-controls-step/preparation-history-v1.json",
+    "bytes": 376,
+    "sha256": "10dc8dd998f0c915c3eb4adab02da86a07cf5f5c280b9a66f154c6556be0184c"
+  },
+  "invariants": [
+    "All existing production tool function ASTs, source-input order and native group selectors are unchanged.",
+    "Only SOURCE_INPUTS gains nineteen directly invoked production owners; the existing real source/workflow guard changes one stale count from263 to282.",
+    "SDK479/482/3Bool, Original32/3platform, MainJS1, cold2, S3one and all existing full/cold budgets and result gates remain unchanged.",
+    "The proposal composes the immutable C4 Reader candidate and two controls over Root disabled-worker parent; this does not change canonical sources or the live fb6 pair."
+  ],
+  "limits": [
+    "Bounded invoked-owner inventory, not an exhaustive recursive CSS/font/attachment dependency audit.",
+    "The one portable guard is a workflow/source-provenance check; it is not Swift compilation, JNI, CoreText, signing, physical installation or a cloud result.",
+    "The pre-test preparation import failed before any test method, was corrected with the exact existing verify-runtime.py dependency, and did not change candidate control bytes.",
+    "No full portable replay, Swift parser, SDK or cloud query was performed."
+  ],
+  "fourCompletionFlags": {
+    "allNonDeviceWorkComplete": false,
+    "automaticSelfRenewalImplemented": false,
+    "fullLegadoCompatibilityEstablished": false,
+    "legalRedistributionClearanceEstablished": false
+  }
+}

@@ -219,11 +219,10 @@ final class SelfRenewalAppOwner {
         if case .foreground(let generation) = trigger {
             guard acceptsForeground(generation) else { return false }
         }
-        // Bootstrap already published the disabled observation. An inactive
-        // feature must not erase a real foreground material/storage failure.
-        if automaticRenewal?.isEnabled == false { return true }
         isWorking = true
-        problem = nil
+        // Preserve bootstrap failures while the shared worker observes disabled.
+        // Session still owns local checks, cancellation and the disabled result.
+        if automaticRenewal?.isEnabled != false { problem = nil }
         let id = UUID(), session = self.session, handoff = self.handoff
         #if DEBUG
         let observation = automaticWorkerObservation

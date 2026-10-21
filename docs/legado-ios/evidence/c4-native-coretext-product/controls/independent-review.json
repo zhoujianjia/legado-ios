@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "status": "control-source-review-approved",
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "parent": {
+    "path": ".build/c4-original-native-coretext-controls-step/final-v1.json",
+    "bytes": 12016,
+    "sha256": "5dc28bd909d422a4d5bb00cc883e528f9ca00404548910e5dff1511180834e13"
+  },
+  "sourceRoot": ".build/c4-original-native-coretext-controls-step/snapshot-v1/work",
+  "sourceFiles": [
+    {
+      "path": "scripts/reader-experience/native-smoke-tools.py",
+      "baseline": {
+        "path": ".build/c4-original-native-coretext-controls-step/rawbaseline/scripts/reader-experience/native-smoke-tools.py",
+        "bytes": 83544,
+        "sha256": "b33c11517667fbbd41b64a95eda41afd39e5f576b4bb853919dc8e449e814cee"
+      },
+      "candidate": {
+        "path": ".build/c4-original-native-coretext-controls-step/snapshot-v1/work/scripts/reader-experience/native-smoke-tools.py",
+        "bytes": 85166,
+        "sha256": "b82d419f9e86f8b156fcb92c4797434734b3a686e0ef15c4530d238c20e85bad"
+      },
+      "diff": {
+        "path": ".build/c4-original-native-coretext-controls-step/diffs/scripts/reader-experience/native-smoke-tools.py.diff",
+        "bytes": 1919,
+        "sha256": "9216eb973732d20710cd793cd08696cfefc7de001eb3f5e01462da6e81f45725"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "baseline": {
+        "path": ".build/c4-original-native-coretext-controls-step/rawbaseline/scripts/reader-experience/test-native-smoke-tools.py",
+        "bytes": 44808,
+        "sha256": "0957733b85bcc2c9e6c0f7fba91de5342fd2e4835b8dc72e8b5e1a57ef80445d"
+      },
+      "candidate": {
+        "path": ".build/c4-original-native-coretext-controls-step/snapshot-v1/work/scripts/reader-experience/test-native-smoke-tools.py",
+        "bytes": 44808,
+        "sha256": "1ce2313479aecd02f607ef3325fa3ac3607cddcd7e0e41760ff2f1cb1e17238d"
+      },
+      "diff": {
+        "path": ".build/c4-original-native-coretext-controls-step/diffs/scripts/reader-experience/test-native-smoke-tools.py.diff",
+        "bytes": 797,
+        "sha256": "1669cd1847f49f11e6a2c40d83c63c86fdfa1853cee7a236d44f47ab48187cc0"
+      }
+    }
+  ],
+  "reviewedComposition": {
+    "disabledWorkerCanonicalParentRoster": {
+      "path": ".build/disabled-worker-lifecycle-integration/source-rosters-final.json",
+      "bytes": 227236,
+      "sha256": "7acc98b19c14214d18399748374c7f1114893e0afbb7ed220756cbc3253a3396"
+    },
+    "c4TestOnlyCandidate": {
+      "path": ".build/c4-original-native-coretext-step/final-v1.json",
+      "bytes": 10017,
+      "sha256": "b5658ccf883a0c3e7ee5945af715b3261e0e91cc7087c2706025f9da287253e4"
+    },
+    "c4TestIndependentReview": {
+      "path": ".build/c4-original-native-coretext-independent-review/review-v1.json",
+      "bytes": 12906,
+      "sha256": "d38cc5034ec41f9b5bdb13ebf2707dddede15107622b4b822df00da01d38da49"
+    }
+  },
+  "sourceRosters": {
+    "path": ".build/c4-original-native-coretext-controls-step/source-rosters-proposed-v1.json",
+    "bytes": 233508,
+    "sha256": "b2ddec843ba7f78799beb714e6da1e4cb37c3dac12cb202087d92ef686ff2f18"
+  },
+  "counts": {
+    "core": 418,
+    "native": 282,
+    "union": 440,
+    "PackageInputs": 23,
+    "PackageDefinitions": 24,
+    "currentcoreDefinitions": 479,
+    "currentcoreLeaves": 482,
+    "BoolPairs": 3,
+    "originalMethods": 32,
+    "originalProduct": 29,
+    "platformCharacterization": 3,
+    "MainJS": 1,
+    "coldIndependent": 2,
+    "S3Definitions": 1,
+    "S3Leaves": 1
+  },
+  "conclusions": [
+    "The native tool differs only by a literal 19-path inventory tuple, append and strict 282 unique-count assertion. Removing that block restores the complete old file, so all functions, selectors, method order, result gates, full/cold admissions, mandatory S3 evidence and all command budgets are byte preserved.",
+    "The test tool differs only by the existing workflow/source guard expected inventory count263→282. No method definition, synthetic exception, skip or weakened result condition is added.",
+    "The bound roster preserves every disabled-worker parent row except the three approved overlays: C4 Reader and these two controls. Core paths remain418, Native263 old-prefix+19=282, with6 core overlaps and13 new union paths giving440. Package23 is byte identical.",
+    "The 19 appended paths match the actually invoked product cache/provider/HTML AST/document/CoreText slicing/painter route. Reference-only ReaderView, EPUBPageRenderer and unrelated test sources are excluded. This is a bounded invoked-owner inventory, not an exhaustive renderer transitive-closure assertion.",
+    "The recorded single existing portable method passed once against the frozen controls and copied exact dependencies. The initial missing verify-runtime.py import occurred before any method; it is not a failed or repeated test execution."
+  ],
+  "evidence": [
+    {
+      "path": ".build/c4-original-native-coretext-controls-step/affected-guard-v1.json",
+      "bytes": 1051,
+      "sha256": "fc0217019dd92cf59d372c2835fdf43053edaf0d9aa6e0b5b4801e9b7a5ecb99"
+    },
+    {
+      "path": ".build/c4-original-native-coretext-controls-step/affected-guard-v1.log",
+      "bytes": 308,
+      "sha256": "6d01f37f5bec18ab3a8d85816da2173c9e423efef0fdad0796fbac5bc55d69e8"
+    },
+    {
+      "path": ".build/c4-original-native-coretext-controls-step/preparation-history-v1.json",
+      "bytes": 376,
+      "sha256": "10dc8dd998f0c915c3eb4adab02da86a07cf5f5c280b9a66f154c6556be0184c"
+    },
+    {
+      "path": ".build/c4-original-native-coretext-controls-step/validation-dependencies-v1.json",
+      "bytes": 3180,
+      "sha256": "6f343857c6da6e256255745dab143790ad4fb0ab6a32204a7df5c04cab144f97"
+    }
+  ],
+  "actualReview": {
+    "readOnlyComparisons": 3512,
+    "testsRepeated": 0,
+    "SwiftParser": 0,
+    "SwiftCompilation": 0,
+    "SDKOrNativeExecution": 0,
+    "cloudQueries": 0,
+    "canonicalMutations": 0
+  },
+  "limits": [
+    "This closes source-inventory provenance for the reviewed C4 invocation slice; it does not execute glyph/raster assertions or prove ReaderView/physical-device presentation.",
+    "The live fb6 run remains its original source263/union427 scope. The proposed282/440 source inventory cannot upgrade its result.",
+    "App479/482,32 original methods (29 product+3 platform), separate MainJS1/cold2/S3 one and Package24 keep their prior acceptance boundaries. No live job is counted as passed.",
+    "The unrelated disabled-worker production correction is inherited from Root reviewed parent, not re-reviewed or changed here."
+  ]
+}

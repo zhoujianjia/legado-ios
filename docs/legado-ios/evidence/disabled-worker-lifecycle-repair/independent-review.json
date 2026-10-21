@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "status": "source-approved; actual Swift/SDK pending",
+  "final": {
+    "path": ".build/disabled-worker-lifecycle-repair/final-v1.json",
+    "bytes": 3717,
+    "sha256": "49d1afd3f24778be4c16ede57387544305c2b08a8a99eaaea71b19cc7cca8fb8"
+  },
+  "approved": true,
+  "failedChecks": 0,
+  "remainingConfirmedSourceBlockers": [],
+  "unresolvedFindings": [],
+  "sourceCommit": "fb6aa7a14680135f5e7271f10b61ad9561801c19",
+  "sourceBinding": {
+    "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+    "baseline": {
+      "path": ".build/disabled-worker-lifecycle-repair/baseline/Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "bytes": 37272,
+      "sha256": "6735e9120448bad941b7860e16e80816cc349b55dfa0f97e411a0ccc114bd532"
+    },
+    "candidate": {
+      "path": ".build/disabled-worker-lifecycle-repair/snapshot-v1/work/Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "bytes": 37261,
+      "sha256": "9f419bd3cc42dcc669b71b7cf4e4e9f8a7a9f48f710d9dc74add95c5e42f843e"
+    },
+    "diff": {
+      "path": ".build/disabled-worker-lifecycle-repair/app-owner.diff",
+      "bytes": 933,
+      "sha256": "b43b5080f1eeb68d6e956711e900a2b3875f9db035ccc46692e4cea4a72ce528"
+    }
+  },
+  "dependencies": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 123848,
+      "sha256": "bcee884738fccd7f6a758a277bba63f8a28a267b3dfdfc1196ceadf9383d5391"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAppOwnerTests.swift",
+      "bytes": 25227,
+      "sha256": "d2a91e556ab73090077176c1a5cf169d808e52e521ed1186fef143a6f41bbd8f"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalForegroundMaterialRevalidationTests.swift",
+      "bytes": 26354,
+      "sha256": "ee35a635a6622167832921b18f7a70f680458916a0ab9f87cf6f326f431ac4cf"
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "bytes": 213238,
+      "sha256": "f45db39d62417ad2e2ce4f27d44537ec2ba2e37d36a1ab6919ed63d290dc02e2"
+    }
+  ],
+  "findingsClosed": [
+    {
+      "id": "F1",
+      "sites": [
+        "AppOwner.swift:224",
+        "SelfRenewalAppOwnerTests.swift:283",
+        "SelfRenewalAppOwnerTests.swift:298"
+      ],
+      "cause": "Unconfigured fixture bootstrap publishes disabled, and old early-return skips the actual shared worker DEBUG entry signal. Activation expects1 but gets0; background awaits an unresumed gate.",
+      "closure": "Exact successor removes early return and conditionally clears only problem. Whole candidate is reconstructed byte-exact from those2hunks; no other changes."
+    }
+  ],
+  "independentAssessment": [
+    "Worker entry, busy/epoch guards, cancellation forwarding, actual-result drain, DEBUG observer and task identity remain unchanged. Observer denotes shared-worker admission, not enabled signing/network work.",
+    "Session.automaticRenewalObservation521-522 supplies disabled default; runAutomaticRenewal543-548 checks cancellation and local owner then returns disabled before signing/network work.",
+    "Disabled success retains bootstrap problem because finishAutomaticOperation252-263 only changes it on failure; actual failed local check retains normal classification. Enabled/nil observations still clear problem as before.",
+    "All existing tests/selectors and exact strict foreground storage/material assertions are unchanged. No fixture weakening, opt-in bypass or new authority."
+  ],
+  "priorReviewCorrection": {
+    "path": ".build/sdk-d8200d3-root-failure-independent-review/review-v2.json",
+    "sha256": "1ae31075e623eee9ad9a6618951994a697775e1fafdec15ff204bcdcd16b325f",
+    "scope": "Withdraw only no-blocker statement for disabled-early-return cross-sibling impact. Other9-source binding/review conclusions stand."
+  },
+  "limits": [
+    "Source-only closure; live fb6aa7a still contains the original conflict and cannot validate later bytes.",
+    "No observed post-fix SDK/lifecycle pass or OS scheduling/Apple/installation/unattended proof."
+  ],
+  "actualReviewerExecution": {
+    "Swift": 0,
+    "tests": 0,
+    "parser": 0,
+    "cloudQueries": 0
+  },
+  "canonicalChanged": false,
+  "GitMutated": false,
+  "cloudTriggered": false
+}

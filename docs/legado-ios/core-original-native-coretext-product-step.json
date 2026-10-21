@@ -1,0 +1,218 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T06:36:17.847383+00:00",
+  "status": "test-and-source-binding-integrated-actual-full-Native-pending",
+  "baselineSubmittedSource": "fb6aa7a14680135f5e7271f10b61ad9561801c19",
+  "changedTestSources": 1,
+  "changedExistingControlSources": 2,
+  "productionRendererChanges": 0,
+  "newTestDefinitions": 0,
+  "newSelectorsOrHosts": 0,
+  "modifiedExistingMethod": "LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+  "gap": {
+    "mainJS": "LegadoNativeMainJSReaderTests explicitly records readerUIRendered=false and checks only cache-only XHTML.",
+    "original": "Submitted public-consumer method fetches and reopens real JNI ChapterPackages but does not create a layout engine or paint view.",
+    "selectedCoreText": "Existing selected CoreText cases use independent authored text/MutableOnlineLikeBuilder; they do not take this same JNI/public-reader chapter through the product renderer."
+  },
+  "productPath": [
+    "Existing public original search/detail/TOC/ChapterFetchManager through real JNI and cache persistence",
+    "Existing offline BookStore reopen after TCP peer stop",
+    "BookContentProviderFactory.makeOnlineReaderBundle -> OnlineBookContentProvider -> OnlineChapterContentService(.cacheOnly)",
+    "OnlineProviderAttributedStringBuilder + UniversalBookResourceAdapter -> existing async HTML AST/NodeAttributedStringRenderer",
+    "CoreTextScrollEngine.start -> existing CoreTextChunkSlicer -> materialized CTFrame",
+    "Actual first&page body UTF16 span -> covered glyph runs, reader-content anchor, stable reading position",
+    "CoreTextChunkDrawView.draw -> compare only the actual body-line pixel crop against the same white raster"
+  ],
+  "sourceCounts": {
+    "core": 418,
+    "native": 282,
+    "union": 440,
+    "package": 23
+  },
+  "all440CurrentInputsVerified": true,
+  "sourceRosterDelta": {
+    "path": "docs/legado-ios/evidence/c4-native-coretext-product/source-roster-invoked-renderer-delta.json",
+    "bytes": 8494,
+    "sha256": "ebaa287aeb35b425e8aac87e3ccfd8eff3b608ed4421e74cb1841c2d10019e81"
+  },
+  "evidence": [
+    {
+      "path": "docs/legado-ios/evidence/c4-native-coretext-product/reader/source-candidate.json",
+      "bytes": 10017,
+      "sha256": "b5658ccf883a0c3e7ee5945af715b3261e0e91cc7087c2706025f9da287253e4",
+      "original": {
+        "path": ".build/c4-original-native-coretext-step/final-v1.json",
+        "bytes": 10017,
+        "sha256": "b5658ccf883a0c3e7ee5945af715b3261e0e91cc7087c2706025f9da287253e4"
+      },
+      "normalization": "UTF-8 LF and trailing horizontal whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/c4-native-coretext-product/reader/independent-review.json",
+      "bytes": 12906,
+      "sha256": "d38cc5034ec41f9b5bdb13ebf2707dddede15107622b4b822df00da01d38da49",
+      "original": {
+        "path": ".build/c4-original-native-coretext-independent-review/review-v1.json",
+        "bytes": 12906,
+        "sha256": "d38cc5034ec41f9b5bdb13ebf2707dddede15107622b4b822df00da01d38da49"
+      },
+      "normalization": "UTF-8 LF and trailing horizontal whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/c4-native-coretext-product/reader/source-checks.json",
+      "bytes": 2038,
+      "sha256": "9c927d41ce882abce94a0e560c158cc4b42a855dcddb35797491444e2a7569d1",
+      "original": {
+        "path": ".build/c4-original-native-coretext-step/source-checks-v1.json",
+        "bytes": 2038,
+        "sha256": "9c927d41ce882abce94a0e560c158cc4b42a855dcddb35797491444e2a7569d1"
+      },
+      "normalization": "UTF-8 LF and trailing horizontal whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/c4-native-coretext-product/reader/diffs/Tests/iOS/LegadoNativeOriginalReaderTests.swift.diff",
+      "bytes": 8693,
+      "sha256": "edc0fbedbcd017535ad1ea55d36f64a981f5fdeb98026a43dc422103b7917797",
+      "original": {
+        "path": ".build/c4-original-native-coretext-step/diffs/Tests/iOS/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 8695,
+        "sha256": "2fab5b96524037b6e8eef8558e874ff22192108e01b009830cfba3a14a3184f7"
+      },
+      "normalization": "UTF-8 LF and trailing horizontal whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/c4-native-coretext-product/controls/source-candidate.json",
+      "bytes": 12016,
+      "sha256": "5dc28bd909d422a4d5bb00cc883e528f9ca00404548910e5dff1511180834e13",
+      "original": {
+        "path": ".build/c4-original-native-coretext-controls-step/final-v1.json",
+        "bytes": 12016,
+        "sha256": "5dc28bd909d422a4d5bb00cc883e528f9ca00404548910e5dff1511180834e13"
+      },
+      "normalization": "UTF-8 LF and trailing horizontal whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/c4-native-coretext-product/controls/independent-review.json",
+      "bytes": 6620,
+      "sha256": "d105b298d04391960c09c56f0ec0508c764ce9a02787ac8bd6ee2c78b18805ed",
+      "original": {
+        "path": ".build/c4-original-native-coretext-controls-independent-review/review-v1.json",
+        "bytes": 6620,
+        "sha256": "d105b298d04391960c09c56f0ec0508c764ce9a02787ac8bd6ee2c78b18805ed"
+      },
+      "normalization": "UTF-8 LF and trailing horizontal whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/c4-native-coretext-product/controls/source-checks.json",
+      "bytes": 912,
+      "sha256": "a70516f9ceffb49e5cd8d6887c8d005a40e25098685ced92fb815cb4c6173008",
+      "original": {
+        "path": ".build/c4-original-native-coretext-controls-step/source-checks-v1.json",
+        "bytes": 912,
+        "sha256": "a70516f9ceffb49e5cd8d6887c8d005a40e25098685ced92fb815cb4c6173008"
+      },
+      "normalization": "UTF-8 LF and trailing horizontal whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/c4-native-coretext-product/controls/diffs/scripts/reader-experience/native-smoke-tools.py.diff",
+      "bytes": 1917,
+      "sha256": "052eb64838ef97aec3d9bb8a86a302fc74333539a70878feac61e8ca39a191da",
+      "original": {
+        "path": ".build/c4-original-native-coretext-controls-step/diffs/scripts/reader-experience/native-smoke-tools.py.diff",
+        "bytes": 1919,
+        "sha256": "9216eb973732d20710cd793cd08696cfefc7de001eb3f5e01462da6e81f45725"
+      },
+      "normalization": "UTF-8 LF and trailing horizontal whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/c4-native-coretext-product/controls/diffs/scripts/reader-experience/test-native-smoke-tools.py.diff",
+      "bytes": 797,
+      "sha256": "1669cd1847f49f11e6a2c40d83c63c86fdfa1853cee7a236d44f47ab48187cc0",
+      "original": {
+        "path": ".build/c4-original-native-coretext-controls-step/diffs/scripts/reader-experience/test-native-smoke-tools.py.diff",
+        "bytes": 797,
+        "sha256": "1669cd1847f49f11e6a2c40d83c63c86fdfa1853cee7a236d44f47ab48187cc0"
+      },
+      "normalization": "UTF-8 LF and trailing horizontal whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/c4-native-coretext-product/controls/portable-guard.json",
+      "bytes": 1051,
+      "sha256": "fc0217019dd92cf59d372c2835fdf43053edaf0d9aa6e0b5b4801e9b7a5ecb99",
+      "original": {
+        "path": ".build/c4-original-native-coretext-controls-step/affected-guard-v1.json",
+        "bytes": 1051,
+        "sha256": "fc0217019dd92cf59d372c2835fdf43053edaf0d9aa6e0b5b4801e9b7a5ecb99"
+      },
+      "normalization": "UTF-8 LF and trailing horizontal whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/c4-native-coretext-product/controls/portable-guard.log.txt",
+      "bytes": 302,
+      "sha256": "cca09ad890c8af68a317d7c2bcfae47d79d5c51cc104bf2372bba310f24fc158",
+      "original": {
+        "path": ".build/c4-original-native-coretext-controls-step/affected-guard-v1.log",
+        "bytes": 308,
+        "sha256": "6d01f37f5bec18ab3a8d85816da2173c9e423efef0fdad0796fbac5bc55d69e8"
+      },
+      "normalization": "UTF-8 LF and trailing horizontal whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/c4-native-coretext-product/controls/validation-dependencies.json",
+      "bytes": 3180,
+      "sha256": "6f343857c6da6e256255745dab143790ad4fb0ab6a32204a7df5c04cab144f97",
+      "original": {
+        "path": ".build/c4-original-native-coretext-controls-step/validation-dependencies-v1.json",
+        "bytes": 3180,
+        "sha256": "6f343857c6da6e256255745dab143790ad4fb0ab6a32204a7df5c04cab144f97"
+      },
+      "normalization": "UTF-8 LF and trailing horizontal whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/c4-native-coretext-product/controls/preparation-history.json",
+      "bytes": 376,
+      "sha256": "10dc8dd998f0c915c3eb4adab02da86a07cf5f5c280b9a66f154c6556be0184c",
+      "original": {
+        "path": ".build/c4-original-native-coretext-controls-step/preparation-history-v1.json",
+        "bytes": 376,
+        "sha256": "10dc8dd998f0c915c3eb4adab02da86a07cf5f5c280b9a66f154c6556be0184c"
+      },
+      "normalization": "UTF-8 LF and trailing horizontal whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/c4-native-coretext-product/controls/reviewed-source-roster-proposal.json",
+      "bytes": 8870,
+      "sha256": "6c59f593b4bb7b7bbe2e3515c454b5c64d56cea4f8ebcd7c94cb5f1b708ce794",
+      "original": {
+        "path": ".build/c4-original-native-coretext-controls-step/source-roster-delta-v1.json",
+        "bytes": 8870,
+        "sha256": "6c59f593b4bb7b7bbe2e3515c454b5c64d56cea4f8ebcd7c94cb5f1b708ce794"
+      },
+      "normalization": "UTF-8 LF and trailing horizontal whitespace only"
+    }
+  ],
+  "actualValidation": {
+    "portableExistingGuardMethods": 1,
+    "portablePassed": 1,
+    "SwiftCompilation": 0,
+    "SDKOrNativeExecutions": 0
+  },
+  "liveFb6PairDoesNotContainThisTestExtension": true,
+  "newTagsOrRuns": 0,
+  "completionLimits": [
+    "All Swift/SDK/Native/CoreText/glyph/raster assertions are authored, not executed locally.",
+    "This is offscreen product CoreText rendering; it does not claim ReaderView presentation or physical-device rendering.",
+    "No live fb6 source, tag, run, plan, canonical path or old frozen candidate was modified.",
+    "Read-only dependency binding is an inspected slice, not a claim that every renderer transitive file is explicitly listed in current Native sourceInputs. alreadyBoundNative exposes the actual inventory boundary.",
+    "Bounded invoked-owner inventory, not an exhaustive recursive CSS/font/attachment dependency audit.",
+    "The one portable guard is a workflow/source-provenance check; it is not Swift compilation, JNI, CoreText, signing, physical installation or a cloud result.",
+    "The pre-test preparation import failed before any test method, was corrected with the exact existing verify-runtime.py dependency, and did not change candidate control bytes.",
+    "No full portable replay, Swift parser, SDK or cloud query was performed."
+  ],
+  "temporaryBookSourceTargetPercent": 90,
+  "measuredCompatibilityPercent": null,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

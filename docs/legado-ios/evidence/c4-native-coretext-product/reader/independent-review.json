@@ -1,0 +1,298 @@
+{
+  "schemaVersion": 1,
+  "status": "source-review-approved-awaiting-actual-SDK",
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "parent": {
+    "path": ".build/c4-original-native-coretext-step/final-v1.json",
+    "bytes": 10017,
+    "sha256": "b5658ccf883a0c3e7ee5945af715b3261e0e91cc7087c2706025f9da287253e4"
+  },
+  "sourceRoot": ".build/c4-original-native-coretext-step/snapshot-v1/work",
+  "source": {
+    "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+    "baseline": {
+      "path": ".build/c4-original-native-coretext-step/rawbaseline/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "bytes": 167259,
+      "sha256": "454213ef79e53260ccca857d3c9ef608fae978e5f9fb7251e011384683f2dbc0"
+    },
+    "candidate": {
+      "path": ".build/c4-original-native-coretext-step/snapshot-v1/work/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "bytes": 174559,
+      "sha256": "bf9d49552847d332d72be47a577cbf6261bfbb7cfe6cf58c1bae9ad47020fdd5"
+    },
+    "diff": {
+      "path": ".build/c4-original-native-coretext-step/diffs/Tests/iOS/LegadoNativeOriginalReaderTests.swift.diff",
+      "bytes": 8695,
+      "sha256": "2fab5b96524037b6e8eef8558e874ff22192108e01b009830cfba3a14a3184f7"
+    }
+  },
+  "reviewedMethod": "LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+  "findings": [],
+  "review": [
+    "The call is after both real original/JNI ChapterPackages have been cached, metadata reopened, and the TCP peer stopped. The product OnlineBookContentProvider delegates only to OnlineChapterContentService(.cacheOnly); both payload texts and source hrefs are checked against the same real chapters.",
+    "The actual product HTML AST/Node builder and UniversalBookResourceAdapter feed the real CoreTextScrollEngine. Awaited start loads both chapters, awaits each document task and detached slice, then synchronously warms the chunks. The helper does not invoke unstructured ahead/behind/viewport warming.",
+    "The test requires a legacy CoreText chunk and nonnil CTFrame, full UTF16 coverage of the JNI first&page body span by CTRuns and nonzero glyphs. The reader-content anchor attribute, chapter offset/reading-position roundtrip and both laid-out chapter texts are required.",
+    "The real CoreTextChunkDrawView paints once into a UIKit renderer; a crop restricted to the actual body-line range must differ from the identically sized white crop. This excludes a title-only or placeholder-only success. It is offscreen product painting, not a ReaderView presentation assertion.",
+    "The private helper is MainActor, matching product engine/UI/CTFrame ownership. The provider uses the existing nonisolated async cache path. Work is bounded to the two tiny fixture chapters, with the original 180-second method budget and cleanup retained.",
+    "Whole-file reverse composition proves every old method/helper, request assertion, owned cache cleanup, original cold receipts, 17 method identities and all other code are unchanged. No new selector, host, route, VM, Store, or production source is introduced."
+  ],
+  "sourceBindingBoundary": {
+    "inspectedParentDependencies": [
+      {
+        "path": "Modules/Services/Online/BookContentProvider.swift",
+        "bytes": 2241,
+        "sha256": "70d4e7ceb61313c9d8844b36bb4d4a6bda93a7f306f4fb81766b2913c0dddf8e"
+      },
+      {
+        "path": "Modules/Services/Online/BookContentProviderAdapters.swift",
+        "bytes": 6066,
+        "sha256": "1d3e2d9e258d1cde0e618db4d9d8fd1f0ebaa37c4b2e0d3272a482c28e75914c"
+      },
+      {
+        "path": "Modules/Services/Online/OnlineChapterContentService.swift",
+        "bytes": 5979,
+        "sha256": "26ec82a3d08cb32b015913f010877cc4374a1fb43db728502616b02b24031c16"
+      },
+      {
+        "path": "Modules/Services/LibraryStore/UniversalBookResourceAdapter.swift",
+        "bytes": 11820,
+        "sha256": "7acd3ed709c129ce70e4f74b17aba485b49f40ef0cc99084ba06849d7e6a7d35"
+      },
+      {
+        "path": "Modules/Core/ReaderCore/CoreText/OnlineProviderAttributedStringBuilder.swift",
+        "bytes": 43314,
+        "sha256": "443d20d4af7c776d99c1efc838cc0e646e9ae71c20ff3339010cb76342d43406"
+      },
+      {
+        "path": "Modules/Core/ReaderCore/CoreText/CoreTextScrollEngine.swift",
+        "bytes": 54110,
+        "sha256": "4d21d6e7fbbc829db489561baef0fca7ad6a82706924ff56d12ae7747a4877ee"
+      },
+      {
+        "path": "Modules/Core/ReaderCore/CoreText/CoreTextChunk.swift",
+        "bytes": 22599,
+        "sha256": "d992dbda07f6a0459bd60fb3fa680483fc6793e0fcc3cffa75961134aed6be7d"
+      },
+      {
+        "path": "Modules/Core/ReaderCore/CoreText/ReaderScrollItem.swift",
+        "bytes": 17583,
+        "sha256": "40976d260e62d57a280b0064a871350294993bbbfee88e992dd58adf7fbf70ba"
+      },
+      {
+        "path": "Modules/Features/Reader/CoreTextChunkCell.swift",
+        "bytes": 30387,
+        "sha256": "bc92cd4bca0c1b1e18b023d5383ac9f17ba184d0edd769db3dd134665e2f661f"
+      },
+      {
+        "path": "Modules/Core/ReaderCore/CoreText/NodeAttributedStringRenderer.swift",
+        "bytes": 157448,
+        "sha256": "9896a10b6ecc161ca147800a6ac8401f82eaae0367c2a384d008f36a499a966f"
+      },
+      {
+        "path": "Modules/Core/ReaderCore/CoreText/HTMLAttributedStringBuilder.swift",
+        "bytes": 121685,
+        "sha256": "c7b8d60731bd19a38c6a5ef5e3fc62eac3c02d168b1de80a667a51ad8ce0dd97"
+      },
+      {
+        "path": "Modules/Core/ReaderCore/ReaderHTMLUtilities.swift",
+        "bytes": 110999,
+        "sha256": "54dc0bc5816b937ff9f82717cdc6559d5d8ad626b7b1a5adf7492748ac975236"
+      },
+      {
+        "path": "Modules/Services/LibraryStore/Models.swift",
+        "bytes": 48636,
+        "sha256": "c7510d05971af6cd61f7cdd74a55763943f94358c5fac3ae0b995477cbd23574"
+      },
+      {
+        "path": "Modules/Features/Reader/ReaderView+PageBuilding.swift",
+        "bytes": 26303,
+        "sha256": "c51b1f14177389ca02397f332172909f88411a642191a6eb1af332a8a55b223f"
+      },
+      {
+        "path": "Modules/Core/ReaderCore/EPUBPageRenderer.swift",
+        "bytes": 40375,
+        "sha256": "aeb14c52071227e38a0387e1efbc65855f461fe08fc9b1fb5a978cb62fe84723"
+      },
+      {
+        "path": "Tests/iOS/LegadoNativeMainJSReaderTests.swift",
+        "bytes": 33102,
+        "sha256": "fb90306876590a3fdb5ff8027e6afada74051082c984789a87206c3c516b3c39"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/CoreTextScrollOnlineCacheTests.swift",
+        "bytes": 14357,
+        "sha256": "5a3f451176b20a742a72fecd215c7af8b56f2bb477b6b8fde073b39c3c4dcd11"
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/CoreTextPagedScrollAppearanceTests.swift",
+        "bytes": 10198,
+        "sha256": "dde57f1ea567e9d48fcbee7a931e2fd652c088c063601cc0026957ed1db23a86"
+      }
+    ],
+    "additionalInspectedProductOwner": {
+      "path": "Modules/Core/ReaderCore/CoreText/ChapterDocument.swift",
+      "bytes": 7278,
+      "sha256": "795f448ab056f7469568c8b9d4712a2f4d1f5b30bcb985ebf48f93801662d8d6"
+    },
+    "currentSubmittedNativeSourceInputs": 263,
+    "currentSubmittedUnion": 427,
+    "historicalRosterIsNotACompleteNewRenderClosure": true,
+    "rootReportedSeparateInventoryCandidate": "Root is separately preparing the 19 actually invoked unbound production inputs (core418/native282/union440); that candidate is not approved by this Reader-only review."
+  },
+  "actualValidation": {
+    "kind": "bounded read-only source/API and byte-composition inspection",
+    "reportScriptHistory": "Initial report script stopped on unmatched parenthesis before executing checks; corrected script only performs read-only source comparisons. No test or Swift parser was invoked.",
+    "checks": [
+      {
+        "check": "exact supplied parent bytes and SHA",
+        "passed": true
+      },
+      {
+        "check": "baseline bytes and SHA",
+        "passed": true
+      },
+      {
+        "check": "candidate bytes and SHA",
+        "passed": true
+      },
+      {
+        "check": "diff bytes and SHA",
+        "passed": true
+      },
+      {
+        "check": "current canonical Reader equals submitted baseline",
+        "passed": true
+      },
+      {
+        "check": "baseline equals exact submitted fb6 Git Reader",
+        "passed": true
+      },
+      {
+        "check": "single exact insertion: import CoreText",
+        "passed": true
+      },
+      {
+        "check": "single exact insertion: import UIKit",
+        "passed": true
+      },
+      {
+        "check": "single exact insertion: try await self.assertOriginalJNIChaptersRenderThroughCoreText(book: restored, store: restarted,",
+        "passed": true
+      },
+      {
+        "check": "removing only two imports, call and helper restores whole baseline byte for byte",
+        "passed": true
+      },
+      {
+        "check": "all 17 existing XCTest identities retain order; no new definition",
+        "passed": true
+      },
+      {
+        "check": "frozen diff matches independently regenerated diff except trailing line endings",
+        "passed": true
+      },
+      {
+        "check": "helper is MainActor async throws",
+        "passed": true
+      },
+      {
+        "check": "helper does not add network/store/runtime owner or timing wait",
+        "passed": true
+      },
+      {
+        "check": "public consumer retains exact execution allowance and peer stop before helper",
+        "passed": true
+      },
+      {
+        "check": "read-only dependency exact: Modules/Services/Online/BookContentProvider.swift",
+        "passed": true
+      },
+      {
+        "check": "read-only dependency exact: Modules/Services/Online/BookContentProviderAdapters.swift",
+        "passed": true
+      },
+      {
+        "check": "read-only dependency exact: Modules/Services/Online/OnlineChapterContentService.swift",
+        "passed": true
+      },
+      {
+        "check": "read-only dependency exact: Modules/Services/LibraryStore/UniversalBookResourceAdapter.swift",
+        "passed": true
+      },
+      {
+        "check": "read-only dependency exact: Modules/Core/ReaderCore/CoreText/OnlineProviderAttributedStringBuilder.swift",
+        "passed": true
+      },
+      {
+        "check": "read-only dependency exact: Modules/Core/ReaderCore/CoreText/CoreTextScrollEngine.swift",
+        "passed": true
+      },
+      {
+        "check": "read-only dependency exact: Modules/Core/ReaderCore/CoreText/CoreTextChunk.swift",
+        "passed": true
+      },
+      {
+        "check": "read-only dependency exact: Modules/Core/ReaderCore/CoreText/ReaderScrollItem.swift",
+        "passed": true
+      },
+      {
+        "check": "read-only dependency exact: Modules/Features/Reader/CoreTextChunkCell.swift",
+        "passed": true
+      },
+      {
+        "check": "read-only dependency exact: Modules/Core/ReaderCore/CoreText/NodeAttributedStringRenderer.swift",
+        "passed": true
+      },
+      {
+        "check": "read-only dependency exact: Modules/Core/ReaderCore/CoreText/HTMLAttributedStringBuilder.swift",
+        "passed": true
+      },
+      {
+        "check": "read-only dependency exact: Modules/Core/ReaderCore/ReaderHTMLUtilities.swift",
+        "passed": true
+      },
+      {
+        "check": "read-only dependency exact: Modules/Services/LibraryStore/Models.swift",
+        "passed": true
+      },
+      {
+        "check": "read-only dependency exact: Modules/Features/Reader/ReaderView+PageBuilding.swift",
+        "passed": true
+      },
+      {
+        "check": "read-only dependency exact: Modules/Core/ReaderCore/EPUBPageRenderer.swift",
+        "passed": true
+      },
+      {
+        "check": "read-only dependency exact: Tests/iOS/LegadoNativeMainJSReaderTests.swift",
+        "passed": true
+      },
+      {
+        "check": "read-only dependency exact: Tests/iOS/yuedu appTests/CoreTextScrollOnlineCacheTests.swift",
+        "passed": true
+      },
+      {
+        "check": "read-only dependency exact: Tests/iOS/yuedu appTests/CoreTextPagedScrollAppearanceTests.swift",
+        "passed": true
+      },
+      {
+        "check": "inspected ChapterDocument owner equals submitted source",
+        "passed": true
+      }
+    ],
+    "swiftCompilation": 0,
+    "swiftParser": 0,
+    "tests": 0,
+    "CoreTextOrRasterExecution": 0,
+    "cloudQueries": 0,
+    "canonicalMutations": 0
+  },
+  "limits": [
+    "Swift access/actor/API plausibility is reviewed against local product declarations; Windows supplies no Swift typecheck or runtime evidence.",
+    "All newly authored glyph, anchor and raster assertions still require an actual Simulator Native execution from the combined source and final bound inventory.",
+    "No in-progress fb6 SDK/Native job is counted as a pass; the frozen fb6 run remains its historical Native263/union427 source scope.",
+    "This scoped review does not approve the unrelated AppOwner worker correction or any proposed control delta."
+  ]
+}

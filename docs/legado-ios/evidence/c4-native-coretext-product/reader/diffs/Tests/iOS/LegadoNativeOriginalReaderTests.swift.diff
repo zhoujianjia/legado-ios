@@ -1,0 +1,141 @@
+--- a/Tests/iOS/LegadoNativeOriginalReaderTests.swift
++++ b/Tests/iOS/LegadoNativeOriginalReaderTests.swift
+@@ -1,4 +1,5 @@
+ import CoreFoundation
++import CoreText
+ import CryptoKit
+ import Darwin
+ import Foundation
+@@ -6,6 +7,7 @@
+ @preconcurrency import Network
+ import WebKit
+ import XCTest
++import UIKit
+ @testable import yuedu_app
+
+ /// The existing native-reader target must link the real ordinary JAR and Zero VM.
+@@ -968,6 +970,8 @@
+                 let savedSecond = try await offline.fetchChapter(book: restored, chapterIndex: 1,
+                     priority: .immediate, store: restarted)
+                 XCTAssertEqual(savedFirst.content, first.content); XCTAssertEqual(savedSecond.content, second.content)
++                try await self.assertOriginalJNIChaptersRenderThroughCoreText(book: restored, store: restarted,
++                    expectedContents: [first.content, second.content])
+                 XCTAssertEqual(fixture.peer.snapshot.requests.count, afterRefreshRequests.count)
+                 let finishedGrant = await manager.originalRuntimeGeneration(bookID: owned.book.id, chapter: owned.chapters[0])
+                 XCTAssertNil(finishedGrant)
+@@ -1732,6 +1736,115 @@
+         if let problem { throw problem }
+     }
+
++    /// Offscreen product rendering of the same JNI chapters, after the actual peer is closed.
++    /// No replacement provider, text fixture, renderer, HTTP route or persistent owner is installed.
++    @MainActor
++    private func assertOriginalJNIChaptersRenderThroughCoreText(book: ReadingBook, store: BookStore,
++        expectedContents: [String]) async throws {
++        let bundle = try XCTUnwrap(BookContentProviderFactory.makeOnlineReaderBundle(book: book, store: store))
++        XCTAssertEqual(bundle.provider.totalChapters, expectedContents.count)
++        for index in expectedContents.indices {
++            // The production service's nonisolated async cache/HTML path retains its own executor.
++            let payload = try await bundle.provider.contentForChapter(index: index)
++            XCTAssertEqual(payload.plainText, expectedContents[index])
++            XCTAssertEqual(payload.sourceHref, book.onlineChapters?[index].sanitizedContentURL)
++            guard case .html(let html) = payload.body else {
++                XCTFail("The actual reader must provide its normalized JNI chapter HTML")
++                return
++            }
++            XCTAssertTrue(html.contains("id=\"reader-content\""))
++        }
++        let size = CGSize(width: 320, height: 480)
++        let settings = ReaderRenderSettings(theme: "native-original", textColor: .black,
++            backgroundColor: .white, fontSize: 18, lineHeightMultiple: 1.4, lineSpacing: 2,
++            paragraphSpacing: 8, letterSpacing: 0, marginH: 0, marginV: 0,
++            footerHeight: 0, contentInsets: .zero, writingMode: .horizontal)
++        let resources = UniversalBookResourceAdapter(contentProvider: bundle.provider,
++            chapterSourceHrefs: bundle.chapterSourceHrefs, customScheme: "reader-online")
++        let builder = OnlineProviderAttributedStringBuilder(provider: bundle.provider, renderSize: size,
++            resourceProvider: resources, chapterSourceHrefs: bundle.chapterSourceHrefs)
++        let engine = CoreTextScrollEngine(builder: builder, renderSettings: settings)
++        // start awaits the existing async HTML/AST build and real CoreText chunk slicing,
++        // including both cached chapters. There is no polling, sleep or readiness shortcut.
++        await engine.start(initialChapter: 0, contentWidth: size.width)
++        XCTAssertTrue(engine.isReady)
++        let text = try XCTUnwrap(engine.chapterText(forSpine: 0))
++        XCTAssertTrue(text.contains("first&page")); XCTAssertTrue(text.contains("last page"))
++        let secondText = try XCTUnwrap(engine.chapterText(forSpine: 1))
++        XCTAssertTrue(secondText.contains("second chapter"))
++        XCTAssertEqual(engine.characterCount(forChapter: 0), text.utf16.count)
++
++        // The span is body text from the JNI response, not the independently styled title.
++        let bodyRange = try XCTUnwrap(text.range(of: "first&page"))
++        let bodySpan = NSRange(bodyRange, in: text)
++        let row = try XCTUnwrap(engine.chunkIndex(forChapter: 0, charOffset: bodySpan.location))
++        let chunk = try XCTUnwrap(engine.chunks.indices.contains(row) ? engine.chunks[row].legacyChunk : nil)
++        let position = engine.readingPosition(chapter: 0, displayOffset: bodySpan.location)
++        XCTAssertEqual(position, CoreTextReadingPosition(spineIndex: 0, charOffset: bodySpan.location))
++        XCTAssertEqual(engine.displayOffset(for: position), bodySpan.location)
++        let anchor = try XCTUnwrap(engine.anchorOffsets(forChapter: 0)?["reader-content"])
++        guard (0..<text.utf16.count).contains(anchor) else {
++            XCTFail("The actual HTML anchor must stay inside its laid-out chapter")
++            return
++        }
++        XCTAssertNotNil(engine.chunkIndex(forChapter: 0, charOffset: anchor))
++        XCTAssertEqual(chunk.attributedString.attribute(HTMLAttributedStringBuilder.anchorIDAttribute,
++            at: anchor, effectiveRange: nil) as? String, "reader-content")
++        chunk.materializeFrameIfNeeded()
++        let frame = try XCTUnwrap(chunk.frame)
++        let lines = CTFrameGetLines(frame) as! [CTLine]
++        let lineIndex = try XCTUnwrap(lines.firstIndex { line in
++            let range = CTLineGetStringRange(line)
++            return range.location <= bodySpan.location && range.location + range.length >= NSMaxRange(bodySpan)
++        })
++        let line = lines[lineIndex]
++        var coveredBody = IndexSet()
++        var bodyGlyphs = 0
++        for run in CTLineGetGlyphRuns(line) as! [CTRun] {
++            let range = CTRunGetStringRange(run)
++            let intersection = NSIntersectionRange(NSRange(location: range.location, length: range.length), bodySpan)
++            if intersection.length == 0 { continue }
++            coveredBody.insert(integersIn: intersection.location..<NSMaxRange(intersection))
++            let count = CTRunGetGlyphCount(run)
++            if count == 0 { continue }
++            var glyphs = [CGGlyph](repeating: 0, count: count)
++            CTRunGetGlyphs(run, CFRange(location: 0, length: count), &glyphs)
++            bodyGlyphs += glyphs.filter { $0 != 0 }.count
++        }
++        XCTAssertEqual(coveredBody.count, bodySpan.length)
++        XCTAssertGreaterThan(bodyGlyphs, 0)
++        var origins = [CGPoint](repeating: .zero, count: lines.count)
++        CTFrameGetLineOrigins(frame, CFRange(location: 0, length: lines.count), &origins)
++        var ascent: CGFloat = 0, descent: CGFloat = 0
++        _ = CTLineGetTypographicBounds(line, &ascent, &descent, nil)
++        let x0 = CTLineGetOffsetForStringIndex(line, bodySpan.location, nil)
++        let x1 = CTLineGetOffsetForStringIndex(line, NSMaxRange(bodySpan), nil)
++        let bounds = CGRect(x: 0, y: 0, width: chunk.width, height: chunk.height)
++        let bodyRect = CGRect(x: origins[lineIndex].x + min(x0, x1),
++            y: chunk.height - origins[lineIndex].y - ascent, width: abs(x1 - x0),
++            height: ascent + descent).insetBy(dx: -1, dy: -1).integral.intersection(bounds)
++        XCTAssertGreaterThan(bodyRect.width, 0); XCTAssertGreaterThan(bodyRect.height, 0)
++        let view = CoreTextChunkDrawView(frame: bounds)
++        view.chunk = chunk
++        let format = UIGraphicsImageRendererFormat()
++        format.scale = 1; format.opaque = true
++        let raster = UIGraphicsImageRenderer(size: bounds.size, format: format)
++        let blank = raster.image { context in
++            UIColor.white.setFill(); context.fill(bounds)
++        }
++        let painted = raster.image { context in
++            UIColor.white.setFill(); context.fill(bounds)
++            view.draw(bounds)
++        }
++        XCTAssertEqual(view.drawCount, 1)
++        let paintedBody = try XCTUnwrap(painted.cgImage?.cropping(to: bodyRect))
++        let blankBody = try XCTUnwrap(blank.cgImage?.cropping(to: bodyRect))
++        let paintedPixels = try XCTUnwrap(UIImage(cgImage: paintedBody).pngData())
++        let blankPixels = try XCTUnwrap(UIImage(cgImage: blankBody).pngData())
++        XCTAssertNotEqual(paintedPixels, blankPixels,
++            "The actual product draw view must paint the JNI body span, not merely its title")
++    }
++
+     private func publicMetadataFileFacts(_ fixture: Fixture, bookID: UUID) async throws -> [String] {
+         try await Task.detached {
+             let paths = [fixture.metadata.deletingPathExtension().appendingPathExtension("reading.json"),
