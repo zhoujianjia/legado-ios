@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
+  "sourceTag": "reader-renewal-630c1b3",
+  "runID": 39564545834,
+  "jobID": 119103568353,
+  "status": "completed",
+  "conclusion": "failure",
+  "queryAgain": false,
+  "actualApp": {
+    "selectedDefinitions": 479,
+    "selectedArgumentLeaves": 482,
+    "selectedBoolPairs": 3,
+    "actualStartedDefinitions": 0,
+    "actualStartedLeaves": 0,
+    "actualPassed": 0,
+    "actualFailedTests": 0,
+    "actualSkipped": 0,
+    "summaryResult": "unknown",
+    "summaryTotalTestCount": 0,
+    "treeTestNodes": 0,
+    "compileBlocked": true,
+    "uniqueCompilerErrors": 1,
+    "cleanSuiteAcceptance": false,
+    "unexecutedTestsAreNotFailuresOrPassingEvidence": true
+  },
+  "firstFailure": {
+    "phase": "native",
+    "pipelineExitCode": 1,
+    "commandExitCode": 1,
+    "actualXcodeExitCode": 65,
+    "timedOut": false,
+    "phaseBudgetSeconds": 3720,
+    "elapsedSeconds": 1639.640208,
+    "cause": "LegadoNativeOriginalReaderTests.swift:1761:66 missing import of defining module YueduCoreText"
+  },
+  "extraction": {
+    "summaryBytes": 429,
+    "testsBytes": 367,
+    "summaryCommandExitCode": 0,
+    "testsCommandExitCode": 0,
+    "validZeroTestJSON": true,
+    "parameterExports": [
+      {
+        "error": "Actual parameter method is missing or duplicated"
+      }
+    ],
+    "casesGatePassed": false,
+    "afterTestsState": "blocked",
+    "resultProduced": false
+  },
+  "actualPackage": {
+    "methods": 24,
+    "passed": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "XMLVerboseResultSelectedIdentitiesExact": true,
+    "packageInputs": 23,
+    "AppOrJNIProof": false
+  },
+  "minimalProducer": {
+    "commands": 48,
+    "publicOutputs": 43,
+    "MachOs": 4,
+    "allCommandExitZeroNonTimeout": true,
+    "allPublicOutputBytesHashesVerified": true,
+    "ownedKeychainDeleted": true,
+    "originalSearchListRestoredOwnedAbsent": true,
+    "AppSignerExecutedByProducer": false
+  },
+  "requiredPortableMethodsPassed": 200,
+  "sourceInputs": {
+    "historicalCore": 418,
+    "all418GitBytesMatched": true,
+    "Package23Subset": true,
+    "producer7Subset": true,
+    "uniqueRepositoryInputs": 418,
+    "all11PhaseStatesSameSource": true,
+    "notAllXcodeTransitiveDependencies": true
+  },
+  "resultProduced": false,
+  "evidence": "docs/legado-ios/evidence/sdk-630c1b3-terminal/factual-review-v1.json",
+  "actualFailures": "docs/legado-ios/evidence/sdk-630c1b3-terminal/actual-compiler-errors.json",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "temporaryCompatibilityTargetPercent": 90,
+  "measuredCompatibilityPercent": null,
+  "otherSeventeenItemsRemainDeferred": true,
+  "limits": [
+    "Build failed before any App test executed; zero failedTests does not establish App acceptance.",
+    "479/482 and three Bool pairs were selected, not executed. Parameter export failure is downstream of the compilation block.",
+    "Package24, minimal producer48/43/4 and portable200 remain separate scopes, not App signer/JNI/real installation/Apple/unattended proof.",
+    "Historical418 is an evidence inventory, not all Xcode transitive dependencies; current440 was not substituted.",
+    "Separate Native run39564545728 remains independently owned/live as of this task; no status inference or mutation.",
+    "No reviewer test/compiler/parser/cloud query/download; later import repair is not an actual successful rerun."
+  ]
+}
