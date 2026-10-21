@@ -1,0 +1,9 @@
+{
+  "scope": "Post-compile ownership classifier failed before any Jar assembly/tests; production compile already exit0 and was not rerun.",
+  "actualFailure": "AssertionError: ('io/yuedu/legado/ProductionHttpTransport$special$$inlined$-addNetworkInterceptor$1.class', 'OkHttpClient.kt')",
+  "origin": "Captured actual stderr from first assemble.py tool invocation.",
+  "cause": "Known Kotlin OkHttp inline network-interceptor lambda has SourceFile OkHttpClient.kt; owning outer ProductionHttpTransport remains exact.",
+  "correction": "Allow that exact inline SourceFile only after the existing compiled outer-root ownership check.",
+  "productionChanges": 0,
+  "testsExecuted": 0
+}

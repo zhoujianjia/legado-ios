@@ -307,7 +307,9 @@ class OriginalAnalyzeRuleTest {
             assertThrows(UnsupportedRuleCapability::class.java) { rule.connect("https://one.invalid") }
             assertThrows(UnsupportedRuleCapability::class.java) { rule.webView(null, null, null) }
             source.jsLib = "https://one.invalid/lib.js"
-            assertThrows(UnsupportedRuleCapability::class.java) { rule.evalJS("1") }
+            // Locked SharedJsScope treats a non-map URL as inline JavaScript,
+            // not a network shorthand. It must fail in the original parser.
+            assertThrows(com.script.ScriptException::class.java) { rule.evalJS("1") }
             source.jsLib = null
             val job = Job(); job.cancel()
             rule.setCoroutineContext(job)

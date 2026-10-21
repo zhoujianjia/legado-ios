@@ -74,6 +74,7 @@ class AnalyzeUrl(
     private var retry = 0
     private var followRedirects: Boolean? = null
     private var dnsIp: String? = null
+    private var proxy: String? = null
     private var bodyJs: String? = null
     private var useWebView = false
     private var webJs: String? = null
@@ -88,9 +89,8 @@ class AnalyzeUrl(
         })?.let { defaults ->
             headerMap.putAll(defaults)
             if (defaults.containsKey("proxy")) {
-                val proxy = defaults["proxy"]
+                proxy = defaults["proxy"]
                 headerMap.remove("proxy")
-                if (!proxy.isNullOrBlank()) unsupportedRule("source proxy configuration")
             }
         }
         ruleUrl = mUrl
@@ -195,6 +195,7 @@ class AnalyzeUrl(
             readTimeout?.let { addProperty("readTimeoutMs", it) }
             followRedirects?.let { addProperty("followRedirects", it) }
             dnsIp?.let { addProperty("dnsIp", it) }
+            proxy?.let { addProperty("proxy", it) }
             addProperty("retry", retry)
         }
     }

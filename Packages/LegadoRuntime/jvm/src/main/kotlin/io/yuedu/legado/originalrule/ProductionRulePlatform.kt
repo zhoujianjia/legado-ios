@@ -228,6 +228,35 @@ internal class ProductionRulePlatform(
         }
     }
 
+    override fun downloadJsLibrary(url: String, context: CoroutineContext?): String? {
+        ensureOwnerOpen(); context?.ensureActive(); task.ensureActiveForRuntime()
+        val caller = context?.get(Job)
+        val cancellation = caller?.takeUnless { it === task.job }?.invokeOnCompletion(
+            onCancelling = true, invokeImmediately = true,
+        ) { cause -> if (cause != null) task.job.cancel(CancellationException("Original jsLib caller cancelled").apply { initCause(cause) }) }
+        try {
+            // Locked SharedJsScope231-254 uses plain okHttpClient: default UA
+            // and common HTTP headers only. No source header/login/CookieJar,
+            // URL script expansion, rate limiter, or ajax error-text recovery.
+            val headers = userAgent?.let { mapOf("User-Agent" to it) }.orEmpty()
+            val request = io.yuedu.legado.LegadoHttpRequestPreprocessor.prepare(url, "GET", headers, null, null,
+                materializeBridgeHeaders = false).apply {
+                addProperty("originalAnalyzeUrl", true)
+                addProperty("enabledCookieJar", false)
+            }
+            context?.ensureActive(); task.ensureActiveForRuntime()
+            task.recordHostEffect("sourceJsLibMaySend")
+            val response = http.execute(request, recoverIoFailure = false)
+            task.recordHostEffect("sourceJsLibResponseReceived")
+            ensureOwnerOpen(); context?.ensureActive(); task.ensureActiveForRuntime()
+            return response.body()
+        } catch (error: Exception) {
+            ensureOwnerOpen(); context?.ensureActive(); task.ensureActiveForRuntime()
+            rethrowRuleControlFailure(error)
+            throw error
+        } finally { cancellation?.dispose() }
+    }
+
     override fun exploreOwnerScope(source: BaseSource): String {
         ensureOwnerOpen(); task.ensureActiveForRuntime()
         check(source.getRuleEnvironment() === environment()) { "Source belongs to another environment" }

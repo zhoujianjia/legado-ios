@@ -42,6 +42,9 @@ open class RulePlatform {
         unsupportedRule("original WebBook execution owner")
     open fun executeUrl(analyzed: AnalyzeUrl): StrResponse = unsupportedRule("original AnalyzeUrl execution")
     open fun executeUrl(analyzed: AnalyzeUrl, js: String?, sourceRegex: String?, useWebView: Boolean): StrResponse = executeUrl(analyzed)
+    /** SharedJsScope's plain GET, not AnalyzeUrl/source headers or CookieJar. */
+    open fun downloadJsLibrary(url: String, context: CoroutineContext?): String? =
+        unsupportedRule("remote/map jsLib HTTP download")
     open fun exploreOwnerScope(source: BaseSource): String = unsupportedRule("original explore owner scope")
     /** Existing task deadline; no fresh rate-wait budget or scheduling owner. */
     open fun originalRateDelayBudgetMillis(source: BaseSource): Long =

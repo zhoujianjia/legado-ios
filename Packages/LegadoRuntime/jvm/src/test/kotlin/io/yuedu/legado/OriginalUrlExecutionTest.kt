@@ -138,7 +138,12 @@ class OriginalUrlExecutionTest {
                         }
                     }
                     AnalyzeRule(source = RuleSource(environment, peer.origin, "Owned", header = "{\"proxy\":\"http://owned.invalid\"}")).use { rule ->
-                        assertThrows(UnsupportedRuleCapability::class.java) { rule.connect("@js:'${peer.origin}'") }
+                        // Parsing proxy configuration now occurs during HTTP
+                        // execution. Locked connect240-252 retains that error
+                        // as StrResponse(url,stackTrace), raw200, without I/O.
+                        val response = rule.connect("@js:'${peer.origin}'")
+                        assertEquals(200, response.code())
+                        assertTrue(response.body(), response.body().contains("java.lang.IllegalArgumentException: Proxy must include a supported scheme, host, and port"))
                     }
                     val mainJs = SourceJavaHost(owned.task) { _, _, _ -> fail("Must not dispatch"); JsonObject() }
                     assertThrows(RuntimeFailure::class.java) { mainJs.connect("@js:'${peer.origin}'") }

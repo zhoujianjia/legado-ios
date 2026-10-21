@@ -60,6 +60,9 @@ class RuleCache internal constructor(private val ensureOpen: () -> Unit, private
     // CacheManager stores text in Room and binary values in ACache under independent keys.
     private val textBacking = ConcurrentHashMap<String, Entry>()
     private val binaryBacking = ConcurrentHashMap<String, Entry>()
+    // Original shareJs/ACache is a distinct category in this same cache owner.
+    // Public cache.put/get keys cannot address it, including guessed prefixes.
+    private val libraryBacking = ConcurrentHashMap<String, Entry>()
     // CacheManager:17–20 uses a 50 MiB access-order cache, cost 40 + 2 * text.length.
     private val memory get() = memoryState.values
     private var memoryBytes: Long
@@ -132,6 +135,21 @@ class RuleCache internal constructor(private val ensureOpen: () -> Unit, private
         }
         textBacking.remove(key); binaryBacking.remove(key); deleteMemory(key)
     }
+    @JvmSynthetic internal fun libraryText(urlMD5: String): String? {
+        ensureOpen()
+        return backingEntry("jslib", libraryBacking, urlMD5)?.value as? String
+    }
+    @JvmSynthetic internal fun storeLibraryText(urlMD5: String, value: String) {
+        ensureOpen()
+        persist("jslib", urlMD5, value.toByteArray(Charsets.UTF_8), 0L)
+        libraryBacking[urlMD5] = Entry(value, 0L)
+    }
+    @JvmSynthetic internal fun removeLibraryText(urlMD5: String) {
+        ensureOpen()
+        persistence?.let { it.put(it.key("jslib-text", urlMD5), null) }
+        libraryBacking.remove(urlMD5)
+    }
+    private fun cacheArea(kind: String): String = if (kind == "jslib") "jslib-text" else "cache-$kind"
     private data class StoredEntry(val deadline: Long, val data: String)
     internal fun textChange(key: String, value: String?): Map<String, ByteArray?> {
         val store = persistence ?: error("No persistent cache adapter")
@@ -144,11 +162,11 @@ class RuleCache internal constructor(private val ensureOpen: () -> Unit, private
         else { textBacking[key] = Entry(value, 0); remember(key, value, false) }
     }
     private fun persist(kind: String, key: String, value: ByteArray, deadline: Long) {
-        persistence?.let { it.put(it.key("cache-$kind", key), GSON.toJson(StoredEntry(deadline, java.util.Base64.getEncoder().encodeToString(value))).toByteArray(Charsets.UTF_8)) }
+        persistence?.let { it.put(it.key(cacheArea(kind), key), GSON.toJson(StoredEntry(deadline, java.util.Base64.getEncoder().encodeToString(value))).toByteArray(Charsets.UTF_8)) }
     }
     private fun backingEntry(kind: String, backing: Map<String, Entry>, key: String): Entry? {
         val store = persistence ?: return liveEntry(backing, key)
-        val bytes = store.read(store.key("cache-$kind", key)) ?: return null
+        val bytes = store.read(store.key(cacheArea(kind), key)) ?: return null
         val stored = decodePersistent("cache entry") {
             val json = com.google.gson.JsonParser.parseString(bytes.toString(Charsets.UTF_8)).asJsonObject
             require(json.keySet() == setOf("deadline", "data") && json["data"].isJsonPrimitive && json["data"].asJsonPrimitive.isString)
@@ -156,11 +174,11 @@ class RuleCache internal constructor(private val ensureOpen: () -> Unit, private
         }
         if (stored.deadline != 0L && stored.deadline <= clock()) return null
         val value = decodePersistent("cache payload") { java.util.Base64.getDecoder().decode(stored.data) }
-        return Entry(if (kind == "text") value.toString(Charsets.UTF_8) else value, stored.deadline)
+        return Entry(if (kind != "binary") value.toString(Charsets.UTF_8) else value, stored.deadline)
     }
     private fun liveEntry(backing: Map<String, Entry>, key: String): Entry? = backing[key]?.takeIf { it.deadline == 0L || it.deadline > clock() }
     private fun cost(value: Any): Long = 40L + 2L * value.toString().length
-    internal fun clear(clearMemory: Boolean = true) { textBacking.clear(); binaryBacking.clear(); if (clearMemory) memoryState.clear() }
+    internal fun clear(clearMemory: Boolean = true) { textBacking.clear(); binaryBacking.clear(); libraryBacking.clear(); if (clearMemory) memoryState.clear() }
 }
 
 class RuleEnvironment(
@@ -175,7 +193,7 @@ class RuleEnvironment(
     private val ownsCacheMemory = cacheMemory == null
     val cache = RuleCache(::ensureOpen, clock, persistence, cacheMemory ?: RuleCacheMemory())
     val cookie: RuleCookieHost get() { ensureOpen(); return platform.cookie }
-    internal val scopes = RuleScopes(::ensureOpen)
+    internal val scopes = RuleScopes(::ensureOpen, cache, platform)
     fun ensureOpen() { check(!closed.get()) { "Original-rule environment is closed" } }
     override fun close() {
         if (closed.compareAndSet(false, true)) { scopes.close(); cache.clear(ownsCacheMemory); state.clear(); webBook.clear() }

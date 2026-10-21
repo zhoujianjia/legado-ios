@@ -1,0 +1,145 @@
+{
+  "status": "independent-source-pre-review-only-mutable-parent-not-runtime-acceptance",
+  "parent": {
+    "path": ".build\\original-source-proxy-step\\candidate-v1.json",
+    "bytes": 8030,
+    "sha256": "acebd9b2d88f4bc672b0d558c33fc365d7b94067a6d5d001f6221c923b5451a6"
+  },
+  "approvedForJointValidation": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "sourceFiles": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/HttpProxyConfig.kt",
+      "bytes": 6063,
+      "sha256": "f700a5123db23428985f07d770c759eaa53574eecbe3f206965ebfe691e81353"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/OriginalProxyClient.kt",
+      "bytes": 1875,
+      "sha256": "4c41502eb034a8c2df5ba0d7bc35e07ebf1e912a9459c1be9df281601429378e"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/Socks5Proxy.kt",
+      "bytes": 9566,
+      "sha256": "2cc8108df0517ef142c2695b5f16f8f9594eec3dfed176f45bcb4ad6bde4af9f"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "bytes": 22447,
+      "sha256": "ae39ec572ae5fb7617672d02c7f003180b5535203ffd14ca1e03065450e6e15e"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/ProductionHttpTransport.kt",
+      "bytes": 13089,
+      "sha256": "aae8b3a6ede0853a8bb03d433b0ccdf06b71ac5135e0eb026f6d437cdc500a4b"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/SourceHosts.kt",
+      "bytes": 25082,
+      "sha256": "5694d85dd2e8132878bd4ad3414a4293591f8f1131e8527baff77204741bb501"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/legado/app/help/http/ProxyConfigTest.kt",
+      "bytes": 5085,
+      "sha256": "f2724558862369e926b665f08d2bf34ab4af457c22a75870a17ed6d7a51d6ec7"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/legado/app/help/http/Socks5ProtocolTest.kt",
+      "bytes": 2784,
+      "sha256": "e4c6d39b1618e4c1c0939c4849e1d4725762706464c1f5b585604cb83f08da6a"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalProxyExecutionTest.kt",
+      "bytes": 11800,
+      "sha256": "d95ee5fd8c84dd28228397f957bbf3ef6a6ba5d03af7ed8089f450b55f347aab"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalUrlExecutionTest.kt",
+      "bytes": 20732,
+      "sha256": "d9fb1dbba1fc185d29e84e94c946ee50a84160c3a463bef5a24b0b3bb4fed3c9"
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/runtime-http/manifest.json",
+      "bytes": 10744,
+      "sha256": "39850d5e7a306295489ccfaeaa16d51e5be870210694f3530eaf015c7881a937"
+    }
+  ],
+  "lockedUnchangedMembers": [
+    {
+      "archiveMember": "legado-master/app/src/main/java/io/legado/app/help/http/HttpProxyConfig.kt",
+      "bytes": 6063,
+      "sha256": "f700a5123db23428985f07d770c759eaa53574eecbe3f206965ebfe691e81353",
+      "candidateExact": true
+    },
+    {
+      "archiveMember": "legado-master/app/src/main/java/io/legado/app/help/http/Socks5Proxy.kt",
+      "bytes": 9566,
+      "sha256": "2cc8108df0517ef142c2695b5f16f8f9594eec3dfed176f45bcb4ad6bde4af9f",
+      "candidateExact": true
+    },
+    {
+      "archiveMember": "legado-master/app/src/test/java/io/legado/app/help/http/ProxyConfigTest.kt",
+      "bytes": 5085,
+      "sha256": "f2724558862369e926b665f08d2bf34ab4af457c22a75870a17ed6d7a51d6ec7",
+      "candidateExact": true
+    },
+    {
+      "archiveMember": "legado-master/app/src/test/java/io/legado/app/help/http/Socks5ProtocolTest.kt",
+      "bytes": 2784,
+      "sha256": "e4c6d39b1618e4c1c0939c4849e1d4725762706464c1f5b585604cb83f08da6a",
+      "candidateExact": true
+    }
+  ],
+  "checks": [
+    {
+      "name": "All11 candidate facts match current observed work bytes",
+      "passed": true
+    },
+    {
+      "name": "2 parser/socket sources and2 upstream test sources are exact locked ZIP members",
+      "passed": true
+    }
+  ],
+  "reviewedBoundaries": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/OriginalProxyClient.kt",
+      "lines": "13-36",
+      "finding": "No confirmed P1/P2: copies locked getProxyClient scheme/socket/authenticator choices onto the existing session client; newBuilder shares dispatcher/pool; no global proxy selector/Authenticator or separate network owner. Original global proxy cache is intentionally not created."
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "lines": "87-99,195-199",
+      "finding": "No confirmed P1/P2: lowercase proxy is removed only from source/explicit defaults before analyzeJs/URL options. A later URL-option proxy header remains an authored HTTP header, as in locked AnalyzeUrl139-146/274-275; it does not replace the transport proxy."
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/SourceHosts.kt",
+      "lines": "76-102",
+      "finding": "Finite production gateway preserves the same default extraction order. Dynamic URL/header and unsupported method gates remain unchanged."
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/ProductionHttpTransport.kt",
+      "lines": "110-117,122-164,169-175",
+      "finding": "dnsIp/proxy conflict rejected before configure/newCall; derived request calls still enter the original task cancel handler and active-call set, session close cancels calls/dispatcher and evicts the same pool."
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/OriginalProxyClient.kt",
+      "lines": "24-46",
+      "finding": "407 retry requires first challenge and absence of prior Proxy-Authorization; credentials are scoped to the derived HTTP proxy authenticator. Later direct request rebuilds from the unchanged base, not from an authenticated derivative."
+    }
+  ],
+  "plannedActualPublicMethods": [
+    "OriginalProxyExecutionTest.sourceAndExplicitProxyDefaultsUseExistingHttpAndCookieOwner",
+    "OriginalProxyExecutionTest.httpProxyChallengesAreBoundedAndDoNotAuthorizeLaterDirectRequest",
+    "OriginalProxyExecutionTest.authenticatedSocksUsesOriginalDomainProtocolAndOwnedCancellation",
+    "OriginalProxyExecutionTest.proxyDnsIpConflictIsRejectedBeforeAnyPeerRequest"
+  ],
+  "testDesignReview": "Source/API and script read only: HTTP absolute proxy URI, no proxy header forwarding, shared Cookie owner, one407 retry and subsequent direct isolation, SOCKS UTF8 credentials/domain target8123 network bytes31,-69, held-handshake cancellation with socket EOF, and pre-network dnsIp rejection all have real loopback assertions. No confirmed fixture/script blocker found.",
+  "nonBlockingCoverageNote": "The four methods do not currently contain a combined source-proxy plus URL-option proxy-header ordering vector; source ordering is clear from code/locked primary, but should not be claimed as an actual runtime-proven branch before joint validation.",
+  "proofLimits": [
+    "No compiler/tests/HTTP/network/cloud/parser execution by this review. Candidate itself reports0 compiler/JVM/SDK/Native.",
+    "Candidate is mutable and not a final approval; any changed source must be rebound to final hashes after joint K2/runtime validation.",
+    "No HTTPS CONNECT, unauthenticated SOCKS4 wire-version, Apple device or full compatibility acceptance is inferred.",
+    "Locked archive identity was inherited from prior pin; this review independently compared selected member bytes, not rehashed the entire ZIP."
+  ]
+}

@@ -146,6 +146,36 @@ struct LegadoPersistentStateHostTests {
             cacheB.put("same", "only-b")
             #expect(cacheA.get("same") == "only-a")
             #expect(cacheB.get("same") == "only-b")
+            // Original SharedJsScope's ACache category shares this exact App
+            // cache owner, but ordinary script keys cannot read/overwrite it.
+            let urlMD5 = "a0b1c2d3e4f506172839405162738495"
+            cacheA.put(urlMD5, "ordinary-md5")
+            cacheA.put("shareJs/" + urlMD5, "ordinary-prefix")
+            let libraryKey = try Self.key(f.a, urlMD5, area: "jslib-text")
+            let initialLibrary = try await Self.read(host, owner: a, keys: [libraryKey])
+            #expect(initialLibrary.values.isEmpty)
+            let savedLibrary = try await Self.commit(host, owner: a, revision: initialLibrary.revision,
+                changes: [libraryKey: Self.value("var sharedLibrary = 1;")])
+            #expect(savedLibrary)
+            let reopenedLibrary = try LegadoCacheBridge.runtimeSnapshot(sourceId: f.a, key: urlMD5, namespace: .sharedJsLibrary)
+            let storedLibraryBytes = try #require(reopenedLibrary.values["value"])
+            let storedLibrary = try JSONDecoder().decode(LegadoRuntimeCacheEntry.self, from: storedLibraryBytes)
+            let storedLibraryText = try storedLibrary.text()
+            #expect(storedLibraryText == "var sharedLibrary = 1;")
+            #expect(cacheA.get(urlMD5) == "ordinary-md5")
+            #expect(cacheA.get("shareJs/" + urlMD5) == "ordinary-prefix")
+            let otherLibrary = try await Self.read(host, owner: b, keys: [Self.key(f.b, urlMD5, area: "jslib-text")])
+            #expect(otherLibrary.values.isEmpty)
+            try await Self.error("INVALID_STATE_REQUEST") {
+                _ = try await Self.read(host, owner: a, keys: [Self.key(f.a, "sourceVariable_" + f.a, area: "jslib-text")])
+            }
+            let deleteLibrary = try await Self.read(host, owner: a, keys: [libraryKey])
+            let removedLibrary = try await Self.commit(host, owner: a, revision: deleteLibrary.revision, changes: [libraryKey: nil])
+            #expect(removedLibrary)
+            let afterLibraryDelete = try await Self.read(host, owner: a, keys: [libraryKey])
+            #expect(afterLibraryDelete.values.isEmpty)
+            #expect(cacheA.get(urlMD5) == "ordinary-md5")
+            #expect(cacheA.get("shareJs/" + urlMD5) == "ordinary-prefix")
             try await Self.error("UNSUPPORTED_CAPABILITY") {
                 _ = try await Self.read(host, owner: a, keys: [kb])
             }

@@ -14,7 +14,7 @@ struct LegadoOwnedStateSnapshot: Sendable, Equatable {
 
 enum LegadoOwnedStateDomain: Sendable, Equatable {
     case sourceVariable, sourceValues, loginHeader
-    case cacheText(String)
+    case cacheText(String), sharedJsLibrary(String)
 }
 
 struct LegadoRuntimeCacheEntry: Codable, Sendable, Equatable {
@@ -86,6 +86,8 @@ struct AppLegadoOwnedStateBacking: @unchecked Sendable, LegadoOwnedStateBacking 
         case .sourceValues: return sources.runtimeValuesSnapshot(for: sourceURL, keys: fields)
         case .loginHeader: return login.runtimeHeaderSnapshot(sourceUrl: sourceURL)
         case .cacheText(let key): return try LegadoCacheBridge.runtimeSnapshot(sourceId: sourceURL, key: key)
+        case .sharedJsLibrary(let key):
+            return try LegadoCacheBridge.runtimeSnapshot(sourceId: sourceURL, key: key, namespace: .sharedJsLibrary)
         }
     }
 
@@ -101,6 +103,9 @@ struct AppLegadoOwnedStateBacking: @unchecked Sendable, LegadoOwnedStateBacking 
         case .cacheText(let key):
             return try LegadoCacheBridge.compareRuntimeEntry(sourceId: sourceURL, key: key,
                 expected: expected, value: changes["value"] ?? nil)
+        case .sharedJsLibrary(let key):
+            return try LegadoCacheBridge.compareRuntimeEntry(sourceId: sourceURL, key: key,
+                expected: expected, value: changes["value"] ?? nil, namespace: .sharedJsLibrary)
         }
     }
 }
@@ -1960,14 +1965,19 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
         var result: [Key] = []
         for wire in values {
             guard let parts = decodedParts[wire], parts.count == 3,
-                  parts[0] == binding.sourceURL, ["cache-text", "cache-binary"].contains(parts[1]) else {
+                  parts[0] == binding.sourceURL, ["cache-text", "cache-binary", "jslib-text"].contains(parts[1]) else {
                 throw failure("UNSUPPORTED_CAPABILITY", "State key has no connected App source owner")
             }
             let source = binding.sourceURL
             let raw = parts[2]
             let domain: LegadoOwnedStateDomain
             let field: String
-            if raw == "sourceVariable_" + source { domain = .sourceVariable; field = "value" }
+            if parts[1] == "jslib-text" {
+                guard raw.utf8.count == 32, raw.utf8.allSatisfy({ (48...57).contains($0) || (97...102).contains($0) }) else {
+                    throw failure("INVALID_STATE_REQUEST", "Shared jsLib requires an exact lowercase URL MD5")
+                }
+                domain = .sharedJsLibrary(raw); field = "value"
+            } else if raw == "sourceVariable_" + source { domain = .sourceVariable; field = "value" }
             else if raw == "loginHeader_" + source { domain = .loginHeader; field = "value" }
             else if raw.hasPrefix("v_" + source + "_") {
                 domain = .sourceValues
@@ -1990,6 +2000,7 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
 
     private func wireValue(_ data: Data, domain: LegadoOwnedStateDomain) throws -> Data {
         if case .cacheText = domain { return data }
+        if case .sharedJsLibrary = domain { return data }
         guard let value = String(data: data, encoding: .utf8) else { throw failure("STATE_IO", "App source state is not UTF-8") }
         return try LegadoRuntimeCacheEntry(text: value).encoded()
     }
@@ -1998,6 +2009,10 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
         let entry = try JSONDecoder().decode(LegadoRuntimeCacheEntry.self, from: data)
         let text = try entry.text()
         if case .cacheText = domain { return try entry.encoded() }
+        if case .sharedJsLibrary = domain {
+            guard entry.deadline == 0 else { throw failure("UNSUPPORTED_CAPABILITY", "Shared jsLib has no caller-selected TTL") }
+            return try entry.encoded()
+        }
         guard entry.deadline == 0 else { throw failure("UNSUPPORTED_CAPABILITY", "TTL on App source variables or login headers is not connected") }
         if case .loginHeader = domain {
             let object: [String: Any]?

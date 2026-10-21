@@ -14,6 +14,12 @@ import JavaScriptCore
     func deleteMemory(_ key: String)
 }
 
+/// Internal categories share this exact cache owner, lock, suite and revision.
+/// Ordinary JS keys never select a category or collide with the shareJs records.
+enum LegadoRuntimeCacheNamespace: Sendable {
+    case userText, sharedJsLibrary
+}
+
 // MARK: - Bridge Implementation
 
 @objc class LegadoCacheBridge: NSObject, LegadoCacheBridgeExport {
@@ -90,23 +96,24 @@ import JavaScriptCore
         memoryOnlyKeys.remove(key)
     }
 
-    static func runtimeSnapshot(sourceId: String, key: String) throws -> LegadoOwnedStateSnapshot {
+    static func runtimeSnapshot(sourceId: String, key: String,
+                                namespace: LegadoRuntimeCacheNamespace = .userText) throws -> LegadoOwnedStateSnapshot {
         dispatchPrecondition(condition: .notOnQueue(.main))
         let store = UserDefaults(suiteName: "com.yuedu.cache.\(sourceId)") ?? .standard
         storageLock.lock()
         defer { storageLock.unlock() }
-        let value = try entry(store: store, storageKey: "cache_\(sourceId)_\(key)")
+        let value = try entry(store: store, storageKey: runtimeStorageKey(sourceId: sourceId, key: key, namespace: namespace))
         return .init(revision: revisions[sourceId] ?? 0,
             values: try value.map { ["value": try $0.encoded()] } ?? [:])
     }
 
     static func compareRuntimeEntry(sourceId: String, key: String, expected: LegadoOwnedStateSnapshot,
-                                   value: Data?) throws -> Bool {
+                                   value: Data?, namespace: LegadoRuntimeCacheNamespace = .userText) throws -> Bool {
         dispatchPrecondition(condition: .notOnQueue(.main))
         let store = UserDefaults(suiteName: "com.yuedu.cache.\(sourceId)") ?? .standard
         storageLock.lock()
         defer { storageLock.unlock() }
-        let storageKey = "cache_\(sourceId)_\(key)"
+        let storageKey = runtimeStorageKey(sourceId: sourceId, key: key, namespace: namespace)
         let current = try entry(store: store, storageKey: storageKey)
         let bytes = try current.map { try $0.encoded() }
         guard (revisions[sourceId] ?? 0) == expected.revision, bytes == expected.values["value"] else { return false }
@@ -121,6 +128,14 @@ import JavaScriptCore
         } else { store.removeObject(forKey: storageKey) }
         revisions[sourceId, default: 0] &+= 1
         return true
+    }
+
+    private static func runtimeStorageKey(sourceId: String, key: String,
+                                          namespace: LegadoRuntimeCacheNamespace) -> String {
+        switch namespace {
+        case .userText: return "cache_\(sourceId)_\(key)"
+        case .sharedJsLibrary: return "shareJs_\(sourceId)_\(key)"
+        }
     }
 
     private static func entry(store: UserDefaults, storageKey: String) throws -> LegadoRuntimeCacheEntry? {

@@ -1,0 +1,490 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "parent": {
+    "path": ".build/original-proxy-remote-union-step/final-v1.json",
+    "bytes": 30895,
+    "sha256": "3147d15ae0094fbcee2218656d2584f29fb18cb04f1e2d6b52f73d883941b4ac"
+  },
+  "scope": "Independent source, ABI, ordinary-JAR, XML identity and retained-success review of the frozen proxy/remote-jslib joint candidate. No candidate writes, compilation, test executions or cloud queries.",
+  "reusedIndependentReviews": [
+    {
+      "path": ".build/original-source-proxy-independent-pre-review/pre-review-v1.json",
+      "bytes": 7681,
+      "sha256": "236016e39d3b25deb67b867d5f14ff51d6557668a7592ba1183ea3bb9b399943"
+    },
+    {
+      "path": ".build/native-result-and-remote-jslib-independent-review/review-v1.json",
+      "bytes": 6663,
+      "sha256": "fbed7ae60b6a68d3c9f8216bc299f6602765e3575795e259333e4a41bfbb651d"
+    }
+  ],
+  "independentBinaryAndEvidenceChecks": {
+    "path": ".build/original-proxy-remote-union-independent-review/checked-facts.json",
+    "bytes": 550,
+    "sha256": "7f1ea487e656ec46fb72bca064cced3ba0a0c2d7093b44ffde7af65b5f541f6f"
+  },
+  "independentChecker": {
+    "path": ".build/original-proxy-remote-union-independent-review/check-facts.py",
+    "bytes": 6941,
+    "sha256": "33b5b41d0995ec109d8e49b37171e6b7b0ad5443f2b0cd6a5ad1793b588f569b"
+  },
+  "sourceBindings": [
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoCacheBridge.swift",
+      "baseline": {
+        "path": ".build/original-proxy-remote-union-step/rawbaseline/Modules/Core/RuleEngine/ModernParser/JS/LegadoCacheBridge.swift",
+        "bytes": 5730,
+        "sha256": "148daeed3604ead5d4aa8714bf3120c22bba8df10dbbe428521aba8b82d06844"
+      },
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Modules/Core/RuleEngine/ModernParser/JS/LegadoCacheBridge.swift",
+        "bytes": 6533,
+        "sha256": "b4a8a7e9c484c57b80da9b6f936931c531d4399f97f78377931fb80a62556c62"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Modules/Core/RuleEngine/ModernParser/JS/LegadoCacheBridge.swift.diff",
+        "bytes": 3069,
+        "sha256": "9c3511703fd5c8fb1c1ab7ab83f2ec378e98b272082307bed49afb2dcc91ce8a"
+      }
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "baseline": {
+        "path": ".build/original-proxy-remote-union-step/rawbaseline/Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 124075,
+        "sha256": "aafca9778f700d0da39722492ecc08614fe20ab798583e2b1074f9074d5a27fe"
+      },
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 125149,
+        "sha256": "bece5d572c7bc9778300828baf240e96af9abad8d6890d444ae7694fab43a1a0"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Modules/Services/Online/LegadoPersistentStateHost.swift.diff",
+        "bytes": 3877,
+        "sha256": "fee7a6c0e5d43f72fe9dece228e7263f76b482b9ac28e92fa85243d56888b596"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+      "baseline": {
+        "path": ".build/original-proxy-remote-union-step/rawbaseline/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+        "bytes": 18583,
+        "sha256": "7c8378dc5c04073d84f2c0ce33aab7df9cb8b288a07fb12a6f30a041a1e69564"
+      },
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+        "bytes": 18621,
+        "sha256": "91e2c265328bf5af45c55fee8ebc45d542a427a98d6384d40379660f8bc8a5a7"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt.diff",
+        "bytes": 630,
+        "sha256": "7b41f9d7dc1159ddc899a7dade2f94dadf1bbe64031dddd1eb437179249cb0ed"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/HttpProxyConfig.kt",
+      "baseline": null,
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/HttpProxyConfig.kt",
+        "bytes": 6063,
+        "sha256": "f700a5123db23428985f07d770c759eaa53574eecbe3f206965ebfe691e81353"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/HttpProxyConfig.kt.diff",
+        "bytes": 6446,
+        "sha256": "9afa1d6c5ce74bf308c4d8d13e11b6ab277b31580fa40fa97b506cab7e8d3b05"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/OriginalProxyClient.kt",
+      "baseline": null,
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/OriginalProxyClient.kt",
+        "bytes": 1875,
+        "sha256": "4c41502eb034a8c2df5ba0d7bc35e07ebf1e912a9459c1be9df281601429378e"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/OriginalProxyClient.kt.diff",
+        "bytes": 2131,
+        "sha256": "ec2394c4c7a887ee490d5c0343601baa599b60f007e61ef0f32a38f2d3350b15"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/Socks5Proxy.kt",
+      "baseline": null,
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/Socks5Proxy.kt",
+        "bytes": 9566,
+        "sha256": "2cc8108df0517ef142c2695b5f16f8f9594eec3dfed176f45bcb4ad6bde4af9f"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/Socks5Proxy.kt.diff",
+        "bytes": 10049,
+        "sha256": "df21a73fec1d255aca188e7f3ccc23683a614c975a929fd1976e5b8ab0b5b276"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "baseline": {
+        "path": ".build/original-proxy-remote-union-step/rawbaseline/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+        "bytes": 22451,
+        "sha256": "f8bda0fa1d7240220b4bc6499cfc393e8eb0378c6a67cd78e6c7b9ce0b8bf84b"
+      },
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+        "bytes": 22447,
+        "sha256": "ae39ec572ae5fb7617672d02c7f003180b5535203ffd14ca1e03065450e6e15e"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt.diff",
+        "bytes": 1216,
+        "sha256": "11badbc4432542a12fba133d05487d27cef04d58b481ffb1a2906059093ac34a"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/ProductionHttpTransport.kt",
+      "baseline": {
+        "path": ".build/original-proxy-remote-union-step/rawbaseline/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/ProductionHttpTransport.kt",
+        "bytes": 12709,
+        "sha256": "e3e522966ff6654dd3c875e187241d3b1aba08b5d0216fc842f938b16ca8378d"
+      },
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/ProductionHttpTransport.kt",
+        "bytes": 13089,
+        "sha256": "aae8b3a6ede0853a8bb03d433b0ccdf06b71ac5135e0eb026f6d437cdc500a4b"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/ProductionHttpTransport.kt.diff",
+        "bytes": 2511,
+        "sha256": "7f4d9198e953de1ba87970083b664cea75da125e7669316e0120a4fb5229e912"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/SourceHosts.kt",
+      "baseline": {
+        "path": ".build/original-proxy-remote-union-step/rawbaseline/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/SourceHosts.kt",
+        "bytes": 24935,
+        "sha256": "eb8e71f5034e0c95492067f8a701fdc33a18e00dfa0df04c46c63a2f16a2f8cc"
+      },
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/SourceHosts.kt",
+        "bytes": 25082,
+        "sha256": "5694d85dd2e8132878bd4ad3414a4293591f8f1131e8527baff77204741bb501"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/SourceHosts.kt.diff",
+        "bytes": 1711,
+        "sha256": "58889008eba41f3a013e4029b29fdeefcc44aae31fd85093f4b9a31ba6b1caae"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "baseline": {
+        "path": ".build/original-proxy-remote-union-step/rawbaseline/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+        "bytes": 42284,
+        "sha256": "4dcde69dcff04b5181ae369dddcb9d5f114f2ee2aae0ee62eb8ab23d30c39278"
+      },
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+        "bytes": 44039,
+        "sha256": "888561d4f1af21158b4f210f5e66a79ac1d6e66247d3521940fb051da807de74"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt.diff",
+        "bytes": 2247,
+        "sha256": "d4dad9f4fb42ea1841ecef4e9de1d86cc78b30d37bebb12e4d126fe5053c894c"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "baseline": {
+        "path": ".build/original-proxy-remote-union-step/rawbaseline/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+        "bytes": 12661,
+        "sha256": "84d01619895487d2e0f0ff1c62b0bfd04d9e8113c5a517ea6c320cf569766451"
+      },
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+        "bytes": 12884,
+        "sha256": "85614a09d3e8293b21eb36f0400836c016e516886c8dc9c3aee0c2746db831e0"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt.diff",
+        "bytes": 1008,
+        "sha256": "1388892bc68dadee0e33f5c1bbc79d9fc75351cdbf2793bd950f08af7b2970bc"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt",
+      "baseline": {
+        "path": ".build/original-proxy-remote-union-step/rawbaseline/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt",
+        "bytes": 10658,
+        "sha256": "4797805205b64dd4eae16a70c48e83bbb7de8ef8a31d0c31fbcc3a45452b2d83"
+      },
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt",
+        "bytes": 12746,
+        "sha256": "c1a642d59c191acd889bb5a83687908ccedafb81b7e9daa2942049c9816948aa"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt.diff",
+        "bytes": 5403,
+        "sha256": "b920928ef4c4a3604dc20a4569d68ba67643d8738119f19398ab94fc0b66bebd"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt",
+      "baseline": {
+        "path": ".build/original-proxy-remote-union-step/rawbaseline/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt",
+        "bytes": 11831,
+        "sha256": "0b81b8c91c8a0e32fce6f5837cc16ce097e4dd67f049e4dc6d706014b6a59914"
+      },
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt",
+        "bytes": 12819,
+        "sha256": "da5a148b14b7ed4e986b655696d664bc0b485e927773a1a8b6c2955078f8ac0a"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt.diff",
+        "bytes": 4719,
+        "sha256": "ae848f7ec347c6a4ae87f154bb324fab1fe8937ac0192406d41b4500454cf6ae"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/legado/app/help/http/ProxyConfigTest.kt",
+      "baseline": null,
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/test/kotlin/io/legado/app/help/http/ProxyConfigTest.kt",
+        "bytes": 5085,
+        "sha256": "f2724558862369e926b665f08d2bf34ab4af457c22a75870a17ed6d7a51d6ec7"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Packages/LegadoRuntime/jvm/src/test/kotlin/io/legado/app/help/http/ProxyConfigTest.kt.diff",
+        "bytes": 5419,
+        "sha256": "0a1f5bf213151029f13a26bcca9830bd1c6e03e17f6e99018ad759d3c3f1e525"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/legado/app/help/http/Socks5ProtocolTest.kt",
+      "baseline": null,
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/test/kotlin/io/legado/app/help/http/Socks5ProtocolTest.kt",
+        "bytes": 2784,
+        "sha256": "e4c6d39b1618e4c1c0939c4849e1d4725762706464c1f5b585604cb83f08da6a"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Packages/LegadoRuntime/jvm/src/test/kotlin/io/legado/app/help/http/Socks5ProtocolTest.kt.diff",
+        "bytes": 3082,
+        "sha256": "64c76bf65ef82645d41122482f13d041097af0f26b1124213ebe7557ffe922c9"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalAnalyzeRuleTest.kt",
+      "baseline": {
+        "path": ".build/original-proxy-remote-union-step/rawbaseline/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalAnalyzeRuleTest.kt",
+        "bytes": 18803,
+        "sha256": "96fc3d1ea45759026a5a2fbaa5701b623161d149c85b601e87ceafb4c72627f3"
+      },
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalAnalyzeRuleTest.kt",
+        "bytes": 18960,
+        "sha256": "43a2c2385669966b67110c30cb5073d1a306103c13fe28e56610649a9707d82e"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalAnalyzeRuleTest.kt.diff",
+        "bytes": 916,
+        "sha256": "ed937eccd1d3360d17d9460c1ba3d2488f46315e47a0966450d3f233a93cb2e3"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalProxyExecutionTest.kt",
+      "baseline": null,
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalProxyExecutionTest.kt",
+        "bytes": 13387,
+        "sha256": "dc9e601cdb3f59e78b9e42582d14d51e26e3f32db2aa2bb3f50f67c605878411"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalProxyExecutionTest.kt.diff",
+        "bytes": 13834,
+        "sha256": "80031819ededaf22c337e62b998265dc37926bc51ab74b4099b89973c17ebd3d"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRemoteJsLibTest.kt",
+      "baseline": null,
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRemoteJsLibTest.kt",
+        "bytes": 16260,
+        "sha256": "ccb80bf80d53403e4aeba60a3d72f0c5bc87f4674f537d36945a5fdd42017943"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRemoteJsLibTest.kt.diff",
+        "bytes": 16717,
+        "sha256": "850798b3ee457416476c47ccfe3de729334ccfb1e2e671e4e3d021befeee54e5"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalUrlExecutionTest.kt",
+      "baseline": {
+        "path": ".build/original-proxy-remote-union-step/rawbaseline/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalUrlExecutionTest.kt",
+        "bytes": 20733,
+        "sha256": "8a5aae3e1eb03f01bc042aa6934bdb0286106c5eb478364fa02fb102e7d11554"
+      },
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalUrlExecutionTest.kt",
+        "bytes": 21159,
+        "sha256": "894529caf149925377ec73fe8035f272fcd355940cb0f2087b24a76e93c5aa5f"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalUrlExecutionTest.kt.diff",
+        "bytes": 1320,
+        "sha256": "7c2ae430bd682b7f7f782dc6b114d39e3e11b2b0d13091abd5c98ff2b83d9d81"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "baseline": {
+        "path": ".build/original-proxy-remote-union-step/rawbaseline/Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "bytes": 136836,
+        "sha256": "2641d7f27c81e63d8ee4511ee54686f01a65f3525b6b2f93bd5fbecb95eef0d7"
+      },
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+        "bytes": 138539,
+        "sha256": "4790529c0d799a64f5c23fcaf40e34730e059f9d27e1dd18b97013c000455712"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Packages/LegadoRuntime/vendor/original-rule/manifest.json.diff",
+        "bytes": 4438,
+        "sha256": "68d24324bb977ccce99b7132f4e894bb638f56f233978230f1678443b4899bbd"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/runtime-http/manifest.json",
+      "baseline": {
+        "path": ".build/original-proxy-remote-union-step/rawbaseline/Packages/LegadoRuntime/vendor/runtime-http/manifest.json",
+        "bytes": 9483,
+        "sha256": "714e2ce4308736b479a28958b474409456d1c8cbb47e8488e4ea02941454c87b"
+      },
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Packages/LegadoRuntime/vendor/runtime-http/manifest.json",
+        "bytes": 10744,
+        "sha256": "39850d5e7a306295489ccfaeaa16d51e5be870210694f3530eaf015c7881a937"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Packages/LegadoRuntime/vendor/runtime-http/manifest.json.diff",
+        "bytes": 2726,
+        "sha256": "755a27a749946f5349f89c2d894c9818381acbf54f4b15d293c295ca3c454e26"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift",
+      "baseline": {
+        "path": ".build/original-proxy-remote-union-step/rawbaseline/Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift",
+        "bytes": 35157,
+        "sha256": "9f0a716cdee9f0210cca9b82d97a58de7be03cec511b0f90dad9a1a7bfcc4ca8"
+      },
+      "candidate": {
+        "path": ".build/original-proxy-remote-union-step/snapshot-v1/work/Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift",
+        "bytes": 37401,
+        "sha256": "b143ddfa06d8855d45346e01ad25bb0dcf605510065eb9d3eac286503b4dccd3"
+      },
+      "diff": {
+        "path": ".build/original-proxy-remote-union-step/diffs-v1/Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift.diff",
+        "bytes": 2725,
+        "sha256": "8b6ca43d677c5f355c9d673e5265ac45d9c27fa028d05aa1e0d8612cf1fd2001"
+      }
+    }
+  ],
+  "sourceFindings": [
+    "All 22 frozen candidate/baseline/diff facts match. The three Swift owner sources are byte-exact to the already reviewed remote parent; its source-scoped jslib-text MD5 namespace does not alias ordinary cache keys or broaden book/cross-source authority.",
+    "Union RuleScopes retains the old one-argument Function0 constructor and remove(String) JVM entry point while optional existing cache/platform dependencies enable remote libraries. No new persistence/network owner is created. Old retained public non-synthetic method descriptors resolve.",
+    "Source/default proxy selection and removal precede URL-option header merge. The new actual combined vector passes through both AnalyzeRule and SourceJavaHost, uses the selected proxy, and sends the URL-option proxy field as a literal HTTP header rather than changing proxy selection.",
+    "Derived OkHttp clients retain the existing transport dispatcher/pool/cancellation ownership. SOCKS/HTTP proxy credentials remain request-scoped; the bounded 407 retry, DNS conflict rejection and direct source-header/Cookie isolation are preserved."
+  ],
+  "productionEvidence": {
+    "sourceInputFiles": 132,
+    "mainInputs": 129,
+    "portedSourceRowsVerified": 60,
+    "sharedMainCompileRoots": 11,
+    "mainCompileExecutions": 1,
+    "productionChangesAfterMainCompile": 0,
+    "freshClassFiles": 85,
+    "parentRetainedClassFiles": 336,
+    "finalClassFiles": 421,
+    "retainedReferencesIntoRecompiledOwnersInspected": 479,
+    "jar": {
+      "path": ".build/original-proxy-remote-union-step/ordinary-jar/legado-runtime-proxy-remote.jar",
+      "bytes": 10944634,
+      "sha256": "ef05d83752a897c043351a416e3c4885e01745306cbc3bd4615dd410c7b2bc48"
+    },
+    "binding": {
+      "path": ".build/original-proxy-remote-union-step/ordinary-jar/production-binding.json",
+      "bytes": 173666,
+      "sha256": "f1cf20b0977e3d84c7ccaeb0ba9463664f8d0bf42752cd46e5e5ad6c0bfd0b0b"
+    },
+    "abi": {
+      "path": ".build/original-proxy-remote-union-step/ordinary-jar/abi-closure.json",
+      "bytes": 130600,
+      "sha256": "435a5d4e2d8f9d398d72ddfb68329033d3d0fdd3b08a10be4a65077c10ca58a0"
+    },
+    "details": "ZIP CRC, every fresh compiler class, every retained class/resource and module metadata were read independently. The final artifact has no project test classes. This is an exact bounded K2 overlay on the recorded ordinary parent JAR, not fresh Gradle or an independently rebuilt macOS/iOS binary."
+  },
+  "actualTestEvidence": {
+    "firstXML": {
+      "path": ".build/original-proxy-remote-union-step/test-execution-v2/actual-tests.xml",
+      "bytes": 9904,
+      "sha256": "9e29e6de7a1f671813d23514b66f190601192fe127c2b0de83c601de0835ac8e"
+    },
+    "successorXML": {
+      "path": ".build/original-proxy-remote-union-step/test-execution-v3/actual-tests.xml",
+      "bytes": 882,
+      "sha256": "46b4612f52201e2f9a5099b7ad1d4cafed43eb93ce424832e5898ba63f8d45f6"
+    },
+    "firstExecutions": 23,
+    "firstPassed": 18,
+    "firstFailed": 5,
+    "successorExecutions": 5,
+    "successorPassed": 5,
+    "totalExecutions": 28,
+    "distinctMethodsWithSuccessEvidence": 23,
+    "errors": 0,
+    "skipped": 0,
+    "executionBoundary": "The successor XML contains exactly the five initially failed method identities. There was no fresh all-23 green run. Both executions place their test classes before the same final ordinary production JAR, without a production classes directory in the runtime classpath.",
+    "fixtureCorrections": [
+      "Remote ordered parsing now supplies non-null parser content before exercising the original shared JavaScript scope.",
+      "The two public remote-runtime fixtures now provide the supported declarative ruleContent prerequisite when creating their session.",
+      "The proxy/DNS conflict fixture checks the direct AnalyzeUrl typed rejection before peer traffic and separately preserves the original connect wrapper response contract.",
+      "The original URL-option invalid-proxy fixture now checks the original connect error-text StrResponse contract rather than expecting an exception to escape that catch. Constructor/type/unknown-option and genuine before-HTTP refusals remain."
+    ],
+    "primaryErrorContract": "Pinned original JsExtensions connect constructs AnalyzeUrl before its execution catch, then converts execution failures to StrResponse(url, stackTrace). That original StrResponse constructor synthesizes a 200 response; it is not getErrResponse(500). Assertions now distinguish these actual entry points.",
+    "unchangedSuccessReuse": "The 18 earlier passes retain the same production JAR. All reused pure proxy/SOCKS files and OriginalAnalyzeRule test helpers are exact. Proxy fixes touch only the failed DNS method/imports; its three earlier passed methods and peer/session helpers are exact. Remote fixes touch the failed ordered method and Owner.action, while the reused cancellation method calls Owner.direct with unchanged constructors, HTTP/Host/cache helpers and direct evaluation path. This supports transitive reuse without claiming those 18 ran again."
+  },
+  "preservedHistory": [
+    "Initial test compilation lacked the unchanged ArchiveUrlExpansionReference helper and stopped before any tests; the exact helper was supplied.",
+    "Initial JAR source classification rejected an inline-generated OkHttpClient sourceFile; its actual compiled owner relationship was checked and assembly corrected without recompiling production.",
+    "The first actual 23 executions and all five fixture failures remain in the original XML/log/source snapshots.",
+    "This independent checker initially over-classified the retained upstream production NodeTest class by a filename suffix. Its classifier was corrected to project test namespaces; no candidate or test execution was changed."
+  ],
+  "proofLimits": [
+    "No review-time compilation, tests, native parser, SDK, JNI, WebKit or cloud operations were performed.",
+    "The recorded 23 distinct JVM successes do not establish complete Legado compatibility, real Apple account authorization, automatic self-renewal or device installation.",
+    "Swift syntax/source ownership review is not Swift type checking. The joint evidence contains no additional ordinary outside-Java consumer execution and cannot be promoted to iOS platform execution.",
+    "Root owns canonical integration and the next coherent SDK/Native checkpoint. This review does not change any frozen parent."
+  ],
+  "reviewExecutions": {
+    "compilation": 0,
+    "tests": 0,
+    "parser": 0,
+    "cloudQueries": 0
+  },
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

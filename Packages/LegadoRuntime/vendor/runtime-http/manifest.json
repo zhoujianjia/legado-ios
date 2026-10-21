@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "scope": "Production JVM HTTP; immutable original archive charset detector sources with one Android boundary adaptation. OkHttp/Okio artifact notices and bytes remain recorded separately in ../probe/manifest.json; their notices are packaged in ordinary runtime JARs too.",
+  "scope": "Production JVM HTTP; immutable original archive charset detector sources with one Android boundary adaptation. OkHttp/Okio artifact notices and bytes remain recorded separately in ../probe/manifest.json; their notices are packaged in ordinary runtime JARs too. Retains original proxy configuration and SOCKS5 socket/protocol sources; proxy clients derive from the existing session client and share its shutdown/cancellation owners.",
   "originalArchiveSHA256": "724dedcac2427cd1f02ca00af1eab7156146e6d9d3141ca4c92042d04ed7bcdd",
   "encodingSources": [
     {
@@ -186,5 +186,23 @@
   ],
   "currentResolvedGraph": "resolved-dependencies.json",
   "currentResolvedGraphSHA256": "fff63c52ace194d5ee6f38c1f26fef1fee23a94968f57b7ceada5abd601777af",
-  "currentSharedScalarDependencies": "../scalar-rules/manifest.json records commons-text 1.13.1 and the shared commons-lang3 upgrade to 3.17.0. Original HTTP/encoding artifact/source bytes are unchanged."
+  "currentSharedScalarDependencies": "../scalar-rules/manifest.json records commons-text 1.13.1 and the shared commons-lang3 upgrade to 3.17.0. Original HTTP/encoding artifact/source bytes are unchanged.",
+  "proxySources": [
+    {
+      "archivePath": "legado-master/app/src/main/java/io/legado/app/help/http/HttpProxyConfig.kt",
+      "originalSHA256": "f700a5123db23428985f07d770c759eaa53574eecbe3f206965ebfe691e81353",
+      "bytes": 6063,
+      "portedPath": "jvm/src/main/kotlin/io/legado/app/help/http/HttpProxyConfig.kt",
+      "portedSHA256": "f700a5123db23428985f07d770c759eaa53574eecbe3f206965ebfe691e81353",
+      "changes": "Unmodified locked original proxy parsing/protocol/socket bytes; used only by the existing task-owned HTTP transport."
+    },
+    {
+      "archivePath": "legado-master/app/src/main/java/io/legado/app/help/http/Socks5Proxy.kt",
+      "originalSHA256": "2cc8108df0517ef142c2695b5f16f8f9594eec3dfed176f45bcb4ad6bde4af9f",
+      "bytes": 9566,
+      "portedPath": "jvm/src/main/kotlin/io/legado/app/help/http/Socks5Proxy.kt",
+      "portedSHA256": "2cc8108df0517ef142c2695b5f16f8f9594eec3dfed176f45bcb4ad6bde4af9f",
+      "changes": "Unmodified locked original proxy parsing/protocol/socket bytes; used only by the existing task-owned HTTP transport."
+    }
+  ]
 }

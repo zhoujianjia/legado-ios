@@ -4,6 +4,8 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import io.legado.app.model.analyzeRule.buildRequestClient
 import io.legado.app.model.analyzeRule.parseDnsIpAddresses
+import io.legado.app.model.analyzeRule.validateDnsIpProxyCompatibility
+import io.legado.app.help.http.configureOriginalProxyClient
 import io.yuedu.legado.originalrule.OriginalCookieText
 import kotlinx.coroutines.InternalCoroutinesApi
 import okhttp3.Call
@@ -40,8 +42,8 @@ internal class ProductionHttpTransport(private val session: RuntimeSession) : Cl
     private val stopped = AtomicBoolean(false)
     private val active = ConcurrentHashMap.newKeySet<Call>()
     private val client = OkHttpClient.Builder()
-        // Proxy rules are explicitly rejected by SourceJavaHost in this slice.
-        // Do not enter unvalidated native system-proxy discovery on iOS.
+        // Direct remains explicit unless this request supplies an authored proxy.
+        // Do not enter native system-proxy discovery on iOS.
         .proxy(Proxy.NO_PROXY)
         .connectTimeout(15, TimeUnit.SECONDS).writeTimeout(15, TimeUnit.SECONDS)
         .readTimeout(60, TimeUnit.SECONDS).callTimeout(60, TimeUnit.SECONDS)
@@ -105,9 +107,12 @@ internal class ProductionHttpTransport(private val session: RuntimeSession) : Cl
                 headers["Cookie"], originalRule,
                 input["enabledCookieJar"]?.asBoolean)).build()
         val follow = input["followRedirects"]?.asBoolean ?: true
-        val configured = if (originalRule) buildRequestClient(client, input["readTimeoutMs"]?.asLong,
+        val proxy = input["proxy"]?.takeUnless { it.isJsonNull }?.asString
+        validateDnsIpProxyCompatibility(proxy, input["dnsIp"]?.takeUnless { it.isJsonNull }?.asString)
+        val proxyClient = configureOriginalProxyClient(client, proxy)
+        val configured = if (originalRule) buildRequestClient(proxyClient, input["readTimeoutMs"]?.asLong,
             input["timeoutMs"]?.asLong, input["followRedirects"]?.asBoolean, requestUrl.host,
-            input["dnsIp"]?.asString?.let(::parseDnsIpAddresses)) else client.newBuilder().followRedirects(follow).followSslRedirects(follow).apply {
+            input["dnsIp"]?.asString?.let(::parseDnsIpAddresses)) else proxyClient.newBuilder().followRedirects(follow).followSslRedirects(follow).apply {
             input["readTimeoutMs"]?.asLong?.let { readTimeout(it, TimeUnit.MILLISECONDS) }
         }.build()
         var retries = input["retry"]?.asInt ?: 0

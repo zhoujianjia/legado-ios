@@ -1,0 +1,112 @@
+{
+  "firstActual": {
+    "path": ".build/original-proxy-remote-union-step/test-execution-v2/actual-tests.xml",
+    "bytes": 9904,
+    "sha256": "9e29e6de7a1f671813d23514b66f190601192fe127c2b0de83c601de0835ac8e"
+  },
+  "rerunActual": {
+    "path": ".build/original-proxy-remote-union-step/test-execution-v3/actual-tests.xml",
+    "bytes": 882,
+    "sha256": "46b4612f52201e2f9a5099b7ad1d4cafed43eb93ce424832e5898ba63f8d45f6"
+  },
+  "reusedSuccessfulMethods": [
+    "io.legado.app.help.http.ProxyConfigTest/acceptsPortBounds",
+    "io.legado.app.help.http.ProxyConfigTest/parsesIpv6HostsWithAndWithoutBrackets",
+    "io.legado.app.help.http.ProxyConfigTest/parsesStandardHttpAuthenticationAndPercentEncoding",
+    "io.legado.app.help.http.ProxyConfigTest/parsesSupportedProxyProtocols",
+    "io.legado.app.help.http.ProxyConfigTest/preservesInternalAndInternationalizedHostNames",
+    "io.legado.app.help.http.ProxyConfigTest/preservesLegacyHttpAuthenticationFormat",
+    "io.legado.app.help.http.ProxyConfigTest/proxyAuthenticationRetriesOnlyFirstChallenge",
+    "io.legado.app.help.http.ProxyConfigTest/rejectsInvalidProxyConfigurationsWithoutEchoingCredentials",
+    "io.legado.app.help.http.ProxyConfigTest/supportsSocks5AuthenticationAndRejectsSocks4Authentication",
+    "io.legado.app.help.http.Socks5ProtocolTest/preservesTargetHostnameForProxyDns",
+    "io.legado.app.help.http.Socks5ProtocolTest/rejectsFailedAuthenticationWithoutExposingCredentials",
+    "io.legado.app.help.http.Socks5ProtocolTest/writesAuthenticatedDomainTunnelHandshake",
+    "io.legado.app.help.http.Socks5ProtocolTest/writesLiteralTargetAddresses",
+    "io.yuedu.legado.OriginalAnalyzeRuleTest/platformCapabilitiesAreRejectedAndCancelledJobsRemainCancelled",
+    "io.yuedu.legado.OriginalProxyExecutionTest/authenticatedSocksUsesOriginalDomainProtocolAndOwnedCancellation",
+    "io.yuedu.legado.OriginalProxyExecutionTest/httpProxyChallengesAreBoundedAndDoNotAuthorizeLaterDirectRequest",
+    "io.yuedu.legado.OriginalProxyExecutionTest/sourceAndExplicitProxyDefaultsUseExistingHttpAndCookieOwner",
+    "io.yuedu.legado.OriginalRemoteJsLibTest/cancelledLibraryDownloadUsesTheExistingCallAndCannotPublishLateCacheOrScope"
+  ],
+  "onlyRerunFailedMethods": [
+    "io.yuedu.legado.OriginalProxyExecutionTest/proxyDnsIpConflictIsRejectedBeforeAnyPeerRequest",
+    "io.yuedu.legado.OriginalRemoteJsLibTest/orderedMapUsesOneScopeAcrossPublicSourceRuleAndUrlWithoutSourceHeadersOrCookies",
+    "io.yuedu.legado.OriginalRemoteJsLibTest/publicRuntimeReopensTheSameCategoryAndRefreshDeletesLibrariesWithoutOrdinaryCacheAliasing",
+    "io.yuedu.legado.OriginalRemoteJsLibTest/syntaxAndOwnerFailuresRetainAcceptedCacheAndPartialRefreshOrderWithoutPublishingFailedScope",
+    "io.yuedu.legado.OriginalUrlExecutionTest/unsupportedOptionsHeadersAndUnmigratedMainJsStayTypedBeforeHttp"
+  ],
+  "checks": [
+    {
+      "segment": "reused remote cancellation method",
+      "source": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRemoteJsLibTest.kt",
+      "UTF8Bytes": 1792,
+      "sha256": "5d584c67803582dea9a6e644802bc73b1a74cd8520f4a680e94942abfbd2274f",
+      "sameAsFirst23": true
+    },
+    {
+      "segment": "Owner constructor, real Host callback, direct() and library()",
+      "source": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRemoteJsLibTest.kt",
+      "UTF8Bytes": 2122,
+      "sha256": "c7cb2bcfbd04a2b0b6872066d8b4fd3f1dd4c10f2175eba1a2996a3625670d08",
+      "sameAsFirst23": true
+    },
+    {
+      "segment": "Owner.close",
+      "source": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRemoteJsLibTest.kt",
+      "UTF8Bytes": 115,
+      "sha256": "e8c158349dc67ffafb3144fb19356def661dd499e70ac4cfe492f6066667a1fd",
+      "sameAsFirst23": true
+    },
+    {
+      "segment": "Direct constructor/eval/close",
+      "source": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRemoteJsLibTest.kt",
+      "UTF8Bytes": 824,
+      "sha256": "b7654687005b3ac2709e282cee8f9f663fbd78fa3ab2096ca17b6557fffb4679",
+      "sameAsFirst23": true
+    },
+    {
+      "segment": "Real Peer/Capture and library map/md5/respond helpers",
+      "source": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRemoteJsLibTest.kt",
+      "UTF8Bytes": 2150,
+      "sha256": "fd6e34a10584739e5c50b64559b1ddaa41444bd4be729738c9933b7969d52a3a",
+      "sameAsFirst23": true
+    },
+    {
+      "segment": "all3 reused proxy methods, including union routing-order vector",
+      "source": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalProxyExecutionTest.kt",
+      "UTF8Bytes": 7449,
+      "sha256": "d9e25404d1c487e868be9c67bb67f9d45b8039ee114ac92ac452527f9f691e14",
+      "sameAsFirst23": true
+    },
+    {
+      "segment": "Proxy Session/HTTP peer/raw SOCKS peer/read/respond helpers",
+      "source": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalProxyExecutionTest.kt",
+      "UTF8Bytes": 3557,
+      "sha256": "20c33bfdb39ed3bd1341d229e525ed078a04c612555dba7bb3202c8eeae6c15b",
+      "sameAsFirst23": true
+    },
+    {
+      "segment": "all9 new original pure proxy-config methods",
+      "source": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/legado/app/help/http/ProxyConfigTest.kt",
+      "sameAsFirst23": true,
+      "bytes": 5085,
+      "sha256": "f2724558862369e926b665f08d2bf34ab4af457c22a75870a17ed6d7a51d6ec7"
+    },
+    {
+      "segment": "all4 new original SOCKS methods",
+      "source": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/legado/app/help/http/Socks5ProtocolTest.kt",
+      "sameAsFirst23": true,
+      "bytes": 2784,
+      "sha256": "e4c6d39b1618e4c1c0939c4849e1d4725762706464c1f5b585604cb83f08da6a"
+    },
+    {
+      "segment": "reused original capability/cancellation method and every file helper",
+      "source": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalAnalyzeRuleTest.kt",
+      "sameAsFirst23": true,
+      "bytes": 18960,
+      "sha256": "43a2c2385669966b67110c30cb5073d1a306103c13fe28e56610649a9707d82e"
+    }
+  ],
+  "changedFactoryReachability": "ruleContent is added only in Owner.action(), invoked by the two originally failed public-runtime methods. The reused cancellation method calls Owner.direct(), which constructs an unchanged Direct RuntimeSession directly. setContent is local to the originally failed ordered parser method. Proxy error-boundary edits are local to the two originally failed methods; imports do not alter existing helpers."
+}

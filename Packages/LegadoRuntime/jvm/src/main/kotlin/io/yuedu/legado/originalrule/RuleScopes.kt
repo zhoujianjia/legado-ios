@@ -20,8 +20,12 @@ import java.security.SecureRandom
 import java.util.UUID
 import kotlin.coroutines.CoroutineContext
 
-/** SharedJsScope's inline-library/CryptoJS subset, explicitly bounded by RuleEnvironment. */
-internal class RuleScopes(private val ensureOpen: () -> Unit) : AutoCloseable {
+/** Same original library/CryptoJS scopes, bounded by the existing environment. */
+internal class RuleScopes(private val ensureOpen: () -> Unit, private val cache: RuleCache?,
+                          private val platform: RulePlatform?) : AutoCloseable {
+    // Retain the existing standalone scope ABI without creating another cache,
+    // transport or owner. Remote libraries require an explicitly supplied pair.
+    constructor(ensureOpen: () -> Unit) : this(ensureOpen, null, null)
     private class CryptoKey(val owner: Any, val thread: Thread) {
         override fun hashCode() = 31 * System.identityHashCode(owner) + System.identityHashCode(thread)
         override fun equals(other: Any?) = other is CryptoKey && owner === other.owner && thread === other.thread
@@ -57,25 +61,52 @@ internal class RuleScopes(private val ensureOpen: () -> Unit) : AutoCloseable {
         ensureOpen()
         context?.ensureActive()
         if (jsLib.isNullOrBlank()) return null
-        // SharedJsScope classifies a map only after parsing succeeds; a valid JS block remains inline.
-        val text = jsLib.trim()
-        val isMap = text.startsWith("{") && text.endsWith("}") &&
-            GSON.fromJsonObject<Map<String, String>>(text).isSuccess
-        // Original JSON-map jsLib performs remote downloads; that capability is not silently skipped.
-        if (text.startsWith("http://", true) || text.startsWith("https://", true) || isMap)
-            unsupportedRule("remote/map jsLib loading")
         val key = md5(jsLib)
         synchronized(this) { ensureOpen(); libraryScopes[key]?.get() }?.let { return it }
         return withCreationLock(libraryCreationLocks, key, context) {
             synchronized(this) { ensureOpen(); libraryScopes[key]?.get() }
                 ?: createCryptoScope(context).also { scope ->
-                    RhinoScriptEngine.eval(jsLib, scope, context)
+                    evaluateLibrary(jsLib, scope, context)
                     scope.globalThis.preventExtensions()
                     synchronized(this) {
                         ensureOpen()
                         libraryScopes[key] = WeakReference(scope)
                     }
                 }
+        }
+    }
+
+    private fun libraryMap(jsLib: String): Map<String, String?>? =
+        if (jsLib.isJsonObject()) GSON.fromJsonObject<Map<String, String?>>(jsLib).getOrNull() else null
+
+    private fun libraryURL(value: String?): String? = value?.takeIf {
+        it.startsWith("http://", true) || it.startsWith("https://", true)
+    }
+
+    private fun evaluateLibrary(jsLib: String, scope: ScriptBindings, context: CoroutineContext?) {
+        val libraries = libraryMap(jsLib)
+        if (libraries == null) {
+            // A bare URL is not an upstream shorthand; non-map JS stays inline.
+            RhinoScriptEngine.eval(jsLib, scope, context)
+            return
+        }
+        libraries.values.forEach { value ->
+            val url = libraryURL(value) ?: return@forEach
+            ensureOpen(); context?.ensureActive()
+            val key = md5(url)
+            val owner = cache ?: unsupportedRule("remote/map jsLib needs its existing cache owner")
+            val loader = platform ?: unsupportedRule("remote/map jsLib needs its existing HTTP platform")
+            val script = owner.libraryText(key) ?: run {
+                val downloaded = loader.downloadJsLibrary(url, context)
+                    ?: throw io.legado.app.exception.NoStackTraceException("下载jsLib-${url}失败")
+                ensureOpen(); context?.ensureActive()
+                // Locked original writes downloaded text before evaluating it.
+                // A later syntax error must not roll back this accepted cache.
+                owner.storeLibraryText(key, downloaded)
+                downloaded
+            }
+            ensureOpen(); context?.ensureActive()
+            RhinoScriptEngine.eval(script, scope, context)
         }
     }
 
@@ -181,12 +212,21 @@ internal class RuleScopes(private val ensureOpen: () -> Unit) : AutoCloseable {
         }
     }
 
-    fun remove(jsLib: String?) {
+    @JvmOverloads fun remove(jsLib: String?, context: CoroutineContext? = null) {
         ensureOpen()
         if (jsLib.isNullOrBlank()) return
         val key = md5(jsLib)
         val prefix = "$key:"
-        withCreationLock(libraryCreationLocks, key) {
+        withCreationLock(libraryCreationLocks, key, context) {
+            // Original remove deletes each URL first, then drops scope/global.
+            // Failure leaves the old scope and any already completed deletions.
+            libraryMap(jsLib)?.values?.forEach { value ->
+                libraryURL(value)?.let { url ->
+                    ensureOpen(); context?.ensureActive()
+                    val owner = cache ?: unsupportedRule("remote/map jsLib needs its existing cache owner")
+                    owner.removeLibraryText(md5(url))
+                }
+            }
             synchronized(this) {
                 ensureOpen()
                 libraryScopes.remove(key)

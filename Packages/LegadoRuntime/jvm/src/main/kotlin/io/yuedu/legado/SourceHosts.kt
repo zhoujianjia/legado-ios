@@ -82,9 +82,11 @@ class SourceJavaHost internal constructor(
             if (!production || ProductionHttpTransport.sameLoginSite(base, resolved))
                 getSource().getLoginHeader()?.let { mergeHeaders(JsonParser.parseString(it)) }
         }
+        // The locked AnalyzeUrl removes only the lowercase proxy from source/
+        // explicit defaults, before URL-option headers are applied.
+        val proxy = if (production) headers.remove("proxy") else null
         mergeHeaders(options["headers"])
         if (!production && !headersJson.isNullOrBlank()) mergeHeaders(JsonParser.parseString(headersJson))
-        if (production && headers.keys.any { it.equals("proxy", true) }) unsupported("Source proxy configuration is not migrated")
         if (production && headers.keys.none { it.equals("User-Agent", true) })
             task.session.options.userAgent?.let { headers["User-Agent"] = it }
         val cookie = task.session.cookies.persistent(task.persistence) { task.session.cookies.getCookie(resolved) }
@@ -97,6 +99,7 @@ class SourceJavaHost internal constructor(
             options["charset"]?.asString, materializeBridgeHeaders = !production).apply {
                 addProperty("timeoutMs", timeoutMs ?: if (production) 60_000L else 30_000L)
                 if (production) {
+                    proxy?.let { addProperty("proxy", it) }
                     options["timeout"]?.asLong?.let { require(it >= 0); addProperty("readTimeoutMs", it) }
                     options["retry"]?.asInt?.let { require(it >= 0); addProperty("retry", it) }
                     options["followRedirects"]?.let {

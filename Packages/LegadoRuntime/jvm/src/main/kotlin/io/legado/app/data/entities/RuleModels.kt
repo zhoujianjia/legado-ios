@@ -332,7 +332,7 @@ class BookSource(
             loginInfo?.toMutableMap() ?: mutableMapOf()
         }
     }
-    fun refreshJSLib() { environment.scopes.remove(jsLib) }
+    fun refreshJSLib() { environment.scopes.remove(jsLib, rhinoContextOrNull?.coroutineContext) }
     override fun ajax(url: Any): String? = connect(url.toString()).body()
     fun evalJS(js: String, bindingsConfig: ScriptBindings.() -> Unit = {}): Any? {
         environment.ensureOpen()
