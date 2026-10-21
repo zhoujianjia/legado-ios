@@ -1,0 +1,191 @@
+{
+  "status": "Test-only characterization prepared; no Apple execution and no production compatibility approval.",
+  "pinnedWebKitCommit": "0cdff65f65d6846840d6ac43fb3a035bd4bcb957",
+  "primaryBindings": [
+    {
+      "file": {
+        "path": ".build/original-general-webjs-ordered-result-step/primary/Apple-atDocumentStart.md",
+        "bytes": 991,
+        "sha256": "5d20096716a7f07ea6a6f8e3f5c386db35fcc521746b3dbaeaf161ad4bd1cf7d"
+      },
+      "url": "https://developer.apple.com/documentation/webkit/wkuserscriptinjectiontime/atdocumentstart.md",
+      "lines": [
+        30,
+        34
+      ],
+      "finding": "Public Apple contract places user-script injection after document-element creation and before other content; no runtime observation is claimed."
+    },
+    {
+      "file": {
+        "path": ".build/original-general-webjs-ordered-result-step/primary/Source/WebKit/UIProcess/API/Cocoa/WKUserScript.h",
+        "bytes": 3989,
+        "sha256": "899d2be6db6f469cf0d75e001c225c84826698b0bf9bb6d1688210b1c5e67881"
+      },
+      "url": "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebKit/UIProcess/API/Cocoa/WKUserScript.h",
+      "lines": [
+        56,
+        72
+      ],
+      "finding": "Public content-world initializer permits explicit page world; legacy initializer documents page-world equivalence."
+    },
+    {
+      "file": {
+        "path": ".build/original-general-webjs-ordered-result-step/primary/Source/WebKit/UIProcess/API/Cocoa/WKWebView.mm",
+        "bytes": 281890,
+        "sha256": "93a6939f86e269497d4f3f6664715d8d5173dbdaac06e1d516bc9effcd6f22f3"
+      },
+      "url": "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebKit/UIProcess/API/Cocoa/WKWebView.mm",
+      "lines": [
+        1299,
+        1314
+      ],
+      "finding": "Public evaluateJavaScript selects native run-as-Program in page world; callAsyncJavaScript chooses the distinct async-function path."
+    },
+    {
+      "file": {
+        "path": ".build/original-general-webjs-ordered-result-step/primary/Source/WebCore/bindings/js/ScriptController.cpp",
+        "bytes": 43033,
+        "sha256": "a9f27dd54768711b5a1cccb0f1be32807ad55c9c590bea84db887161fedfbb83"
+      },
+      "url": "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebCore/bindings/js/ScriptController.cpp",
+      "lines": [
+        665,
+        695
+      ],
+      "finding": "Native script execution checks its execution boundary then evaluates Program source directly, without invoking the page eval function."
+    },
+    {
+      "file": {
+        "path": ".build/original-general-webjs-ordered-result-step/primary/Source/WebCore/bindings/js/ScriptController.cpp",
+        "bytes": 43033,
+        "sha256": "a9f27dd54768711b5a1cccb0f1be32807ad55c9c590bea84db887161fedfbb83"
+      },
+      "url": "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebCore/bindings/js/ScriptController.cpp",
+      "lines": [
+        482,
+        488
+      ],
+      "finding": "Eval permission is mutable state on the same window global object."
+    },
+    {
+      "file": {
+        "path": ".build/original-general-webjs-ordered-result-step/primary/Source/WebCore/page/csp/ContentSecurityPolicy.cpp",
+        "bytes": 70968,
+        "sha256": "736cfb8ad798161f0d4258e77499be9b0aa432e90152ecd178119a5b8239a304"
+      },
+      "url": "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebCore/page/csp/ContentSecurityPolicy.cpp",
+      "lines": [
+        325,
+        342
+      ],
+      "finding": "Installed CSP can disable eval after policy processing; a previously captured function is not an exemption."
+    },
+    {
+      "file": {
+        "path": ".build/original-general-webjs-ordered-result-step/primary/Source/JavaScriptCore/runtime/JSGlobalObjectFunctions.cpp",
+        "bytes": 44393,
+        "sha256": "bc79f3a6075f4f0e464bf31e024d85f65095919984c8b3d0b218228b91afb2f5"
+      },
+      "url": "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/JavaScriptCore/runtime/JSGlobalObjectFunctions.cpp",
+      "lines": [
+        456,
+        529
+      ],
+      "finding": "Indirect/captured eval checks Trusted Types and current evalEnabled before executing an indirect eval in global scope. Capturing eval also does not make its declaration scope equal to a Program."
+    },
+    {
+      "file": {
+        "path": ".build/original-general-webjs-ordered-result-step/primary/Source/WebKit/WebProcess/WebPage/WebPage.cpp",
+        "bytes": 448990,
+        "sha256": "d6908ffb93aa5d4a460c611b06cdfe8bf48192b54ba07d7d5201fcbb492726fe"
+      },
+      "url": "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebKit/WebProcess/WebPage/WebPage.cpp",
+      "lines": [
+        5234,
+        5318
+      ],
+      "finding": "Native result is extracted from the same page-world execution; the public API does not expose an opaque reusable JavaScript value handle."
+    },
+    {
+      "file": {
+        "path": ".build/original-general-webjs-ordered-result-step/primary/Source/WebKit/Shared/JavaScriptEvaluationResult.cpp",
+        "bytes": 23044,
+        "sha256": "2a3fdde167071fe938fce26022b8ed9c7812bf70a6e02e3ee714d7c719c317fa"
+      },
+      "url": "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebKit/Shared/JavaScriptEvaluationResult.cpp",
+      "lines": [
+        270,
+        302
+      ],
+      "finding": "Object properties are projected into an extracted dictionary container. The test makes no assertion that Foundation dictionary iteration preserves original JavaScript order."
+    },
+    {
+      "file": {
+        "path": ".build/original-general-webjs-ordered-result-step/primary/Source/WebKit/Shared/JavaScriptEvaluationResult.cpp",
+        "bytes": 23044,
+        "sha256": "2a3fdde167071fe938fce26022b8ed9c7812bf70a6e02e3ee714d7c719c317fa"
+      },
+      "url": "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebKit/Shared/JavaScriptEvaluationResult.cpp",
+      "lines": [
+        210,
+        237
+      ],
+      "finding": "Native API dictionaries and arrays are reconstructed containers. The proposed path obtains a JSON string before this projection."
+    }
+  ],
+  "inferenceNotAppleExecution": {
+    "candidateRoute": "Capture original JSON.stringify in a randomized global lexical const at document start. For a known single expression, native Program evaluates capturedEncoder((expression)) once and returns the JSON string before object-to-Foundation projection.",
+    "noEvalForCandidate": true,
+    "samePageRealm": true,
+    "conservativeFutureAdmission": "A future production integration would need exact original parser recognition of a single ExpressionStatement; arbitrary multi-statement completion is outside this prototype and cannot be silently wrapped or re-evaluated.",
+    "captureEvalRoute": "Retained only as an explicit counterexample: the restrictive CSP page is expected to reject captured eval, and permissive eval declarations have different lifetimes from native Program declarations."
+  },
+  "testDesign": {
+    "method": "testNativeOriginalOrderedWebJSCharacterizesCSPAndOriginalJSONInSamePageWorld",
+    "singleWKWebViewInstances": 1,
+    "ownedDocuments": 2,
+    "documentModes": [
+      "nonce script with unsafe-eval",
+      "same nonce script without unsafe-eval"
+    ],
+    "network": "Only loadHTMLString with owned inline markup and CSP default-src none. No URLRequest, source HTTP owner, real credentials, or private account data.",
+    "pagesOverride": [
+      "window.eval returns page-eval",
+      "window.JSON.stringify returns page-json"
+    ],
+    "singleExpressionVectors": [
+      "ordinary insertion order",
+      "arrays containing objects",
+      "nested object and array",
+      "integer-index property ordering",
+      "distinct composed/decomposed Unicode keys checked by UTF8 bytes",
+      "same-page var/lexical/strict-global reads",
+      "one increment and one result evaluation",
+      "undefined/NaN/infinity native JSON treatment"
+    ],
+    "nativeProjection": "Checks only values of one native dictionary; deliberately does not assert dictionary enumeration order or manufacture a loss observation.",
+    "completionOwnership": "Each evaluation awaits its real callback. Close seals new evaluations, stops loading, drains outstanding actual evaluation callbacks, removes this probe delegate/scripts. No timer-based settle, polling, global hook, or fake ACK.",
+    "limits": [
+      "Finite owned scripts only; no assertion of forced termination of an infinite page script.",
+      "An initial navigation timeout fails the test; cleanup stopLoading does not claim WebContent-process termination.",
+      "This is a standalone public-WK characterization inside the existing Native XCTest source, not product-service/JVM/owner validation."
+    ]
+  },
+  "actualExecution": {
+    "SwiftCompiler": 0,
+    "SDK": 0,
+    "WK": 0,
+    "JVM": 0,
+    "Java": 0,
+    "Node": 0,
+    "productionChanges": 0
+  },
+  "proofLimits": [
+    "Pinned open-source WebKit is source evidence, not proof of the implementation shipped in any particular iOS SDK/device.",
+    "All behavioral assertions are pending. A failing characterization must be retained and diagnosed rather than relabeled as support.",
+    "The current production ordered-object branch remains typed unsupported. This candidate never changes it.",
+    "The expression route is not claimed equivalent for arbitrary scripts, global declaration semantics, eval/with/dynamic parsing, exceptions, proxies/getters/toJSON, hostile intrinsic mutation, or all current source bridge combinations.",
+    "No Node vm code-generation flag or synthetic evaluator is used as WebKit CSP evidence.",
+    "Current five control files, App463/466, Package selection and cloud execution are untouched."
+  ]
+}

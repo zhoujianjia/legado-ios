@@ -1,0 +1,10 @@
+{
+  "scope": "Independent optional reviewer tool failure, not Swift compilation or candidate test execution.",
+  "attempts": [
+    {"command": "python verify-v1.py (initial parser version)", "exitCode": 1, "outputBytes": 0},
+    {"command": "python -u verify-v1.py (initial parser version), redirected output", "exitCode": 1, "outputFile": ".build/original-general-webjs-ordered-result-independent-review/verifier-attempt1.log", "outputBytes": 0},
+    {"command": "python -u -X faulthandler with reviewer-module line trace", "exitCode": 1, "observed": "Windows fatal exception: access violation; Python 3.12 native AST traversal, verify-v1.py visit recursion at original line 85. Importing parser alone completed successfully. The precise native binding root cause is not diagnosed."}
+  ],
+  "resolution": "No target test or compiler was run. Removed native parser dependency from independent verifier; use exact whole-file composition plus direct SHA256 matching of every recorded old function in both raw sources. Author frozen grammar evidence stays separately identified as author evidence.",
+  "candidateSourceMutations": false
+}

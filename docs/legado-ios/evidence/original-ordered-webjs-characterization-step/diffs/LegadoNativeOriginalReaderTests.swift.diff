@@ -1,0 +1,233 @@
+--- a/Tests/iOS/LegadoNativeOriginalReaderTests.swift
++++ b/Tests/iOS/LegadoNativeOriginalReaderTests.swift
+@@ -2,6 +2,7 @@
+ import Foundation
+ import LegadoRuntime
+ @preconcurrency import Network
++import WebKit
+ import XCTest
+ @testable import yuedu_app
+
+@@ -9,6 +10,70 @@
+ /// All service/executor/Host/client/cache implementations below are production defaults.
+ /// The loopback peer supplies bytes only; it is never a runtime transport substitute.
+ final class LegadoNativeOriginalReaderTests: XCTestCase {
++    /// Test-only WK characterization. This does not grant support to the product
++    /// object-result path, and deliberately never calls the JVM/source service.
++    func testNativeOriginalOrderedWebJSCharacterizesCSPAndOriginalJSONInSamePageWorld() async throws {
++        executionTimeAllowance = 90
++        let probe = await MainActor.run { OriginalOrderedWebJSCharacterization() }
++        do {
++            // Reuse one actual WKWebView; a new document resets its JavaScript
++            // globals. The two pages differ only in CSP unsafe-eval permission.
++            for allowsEval in [true, false] {
++                let loaded = expectation(description: "Owned ordered-result CSP document loaded")
++                try await probe.load(allowsEval: allowsEval, finished: loaded)
++                await fulfillment(of: [loaded], timeout: 10)
++                try await probe.requireLoaded()
++
++                let overrides = try await probe.string("[window.eval('ignored'),JSON.stringify({b:2,a:1})].join('|')")
++                XCTAssertEqual(overrides, "page-eval|page-json")
++                let captured = try await probe.captureStatus()
++                XCTAssertEqual(captured, "function|function|false|false")
++
++                // This is native Program evaluation, not page eval. Preserve a
++                // real global var and a global lexical binding across calls.
++                let nativeObject = try await probe.dictionary("var orderedNativeVar=40; let orderedNativeLexical=2; ({b:2,a:1})")
++                XCTAssertEqual(nativeObject, ["b": 2, "a": 1])
++                let strictNative = try await probe.string("'use strict'; var orderedNativeStrict=9; 'strict-native-ready'")
++                XCTAssertEqual(strictNative, "strict-native-ready")
++
++                let vectors: [(expression: String, expectedJSON: String)] = [
++                    ("({b:2,a:1})", #"{"b":2,"a":1}"#),
++                    ("[{b:2,a:1},{d:4,c:3}]", #"[{"b":2,"a":1},{"d":4,"c":3}]"#),
++                    ("({z:{b:2,a:1},a:[3,2,1]})", #"{"z":{"b":2,"a":1},"a":[3,2,1]}"#),
++                    ("(()=>{const o={};o.z=1;o['10']=10;o['2']=2;o.a=3;return o;})()", #"{"2":2,"10":10,"z":1,"a":3}"#),
++                    (#"({'\u00e9':1,'e\u0301':2})"#, "{\"\u{00e9}\":1,\"e\u{0301}\":2}"),
++                    ("({b:orderedNativeVar,a:orderedNativeLexical,s:orderedNativeStrict})", #"{"b":40,"a":2,"s":9}"#),
++                    ("(window.orderedEffects=(window.orderedEffects||0)+1,({b:2,a:1}))", #"{"b":2,"a":1}"#),
++                    ("({b:undefined,a:[undefined,NaN,Infinity]})", #"{"a":[null,null,null]}"#)
++                ]
++                for vector in vectors {
++                    let actual = try await probe.encodeExpression(vector.expression)
++                    // String equality canonically equates Unicode sequences;
++                    // compare the actual JSON bytes, including distinct keys.
++                    XCTAssertEqual(Data(actual.utf8), Data(vector.expectedJSON.utf8))
++                }
++                let effectCount = try await probe.encodeExpression("window.orderedEffects")
++                XCTAssertEqual(effectCount, "1")
++
++                // Capturing eval before the CSP meta element is not a CSP
++                // bypass. This contrast must be established by actual WebKit.
++                let indirect = try await probe.capturedEval("var orderedEvalVar=7; let orderedEvalLexical=8; ({b:orderedEvalVar,a:orderedEvalLexical})")
++                let expected = allowsEval ? #"{"ok":true,"value":{"b":7,"a":8}}"# : #"{"ok":false,"name":"EvalError"}"#
++                XCTAssertEqual(Data(indirect.utf8), Data(expected.utf8))
++                let scope = try await probe.encodeExpression("[typeof orderedEvalVar,typeof orderedEvalLexical]")
++                XCTAssertEqual(scope, allowsEval ? #"["number","undefined"]"# : #"["undefined","undefined"]"#)
++                let indirectStrict = try await probe.capturedEval("'use strict'; var orderedEvalStrict=9; ({b:2,a:1})")
++                XCTAssertEqual(indirectStrict, allowsEval ? #"{"ok":true,"value":{"b":2,"a":1}}"# : #"{"ok":false,"name":"EvalError"}"#)
++                let strictScope = try await probe.encodeExpression("typeof orderedEvalStrict")
++                XCTAssertEqual(strictScope, #""undefined""#)
++            }
++            await probe.close()
++        } catch {
++            await probe.close()
++            throw error
++        }
++    }
++
+     func testNativeOriginalGeneralWebJSUsesPreviewBatchAndBookCallbackOwners() async throws {
+         executionTimeAllowance = 240
+         try await withFixture { fixture in
+@@ -1416,3 +1481,151 @@
+         String(decoding: try JSONSerialization.data(withJSONObject: value, options: [.sortedKeys]), as: UTF8.self)
+     }
+ }
++
++/// One test-owned WK instance and its actual navigation/evaluation callbacks.
++/// No JSContext, source bridge, process transport, Cookie owner, or HTTP fixture.
++@MainActor
++private final class OriginalOrderedWebJSCharacterization: NSObject, WKNavigationDelegate {
++    private let view: WKWebView
++    private let jsonName: String
++    private let evalName: String
++    private var navigation: WKNavigation?
++    private var navigationFinished: XCTestExpectation?
++    private var navigationTerminal = false
++    private var navigationFailure: Error?
++    private var evaluationsInFlight = 0
++    private var drain: CheckedContinuation<Void, Never>?
++    private var closed = false
++
++    override init() {
++        let suffix = UUID().uuidString.replacingOccurrences(of: "-", with: "")
++        let capturedJSONName = "__yuedu_ordered_json_" + suffix
++        let capturedEvalName = "__yuedu_ordered_eval_" + suffix
++        jsonName = capturedJSONName
++        evalName = capturedEvalName
++        let configuration = WKWebViewConfiguration()
++        configuration.websiteDataStore = .nonPersistent()
++        configuration.userContentController.addUserScript(WKUserScript(
++            source: "const \(capturedJSONName)=JSON.stringify; const \(capturedEvalName)=eval;",
++            injectionTime: .atDocumentStart, forMainFrameOnly: true, in: .page))
++        view = WKWebView(frame: .zero, configuration: configuration)
++        super.init()
++        view.navigationDelegate = self
++    }
++
++    func load(allowsEval: Bool, finished: XCTestExpectation) throws {
++        guard !closed, evaluationsInFlight == 0, navigation == nil || navigationTerminal else {
++            throw NativeOriginalReaderError.failed("Characterization load lifetime mismatch")
++        }
++        navigationTerminal = false
++        navigationFailure = nil
++        navigationFinished = finished
++        let permission = allowsEval ? " 'unsafe-eval'" : ""
++        let html = """
++        <!doctype html><html><head>
++        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-owned'\(permission)">
++        <script nonce="owned">
++        window.eval=function(){return 'page-eval';};
++        window.JSON={stringify:function(){return 'page-json';}};
++        </script></head><body>Owned ordered-result characterization</body></html>
++        """
++        navigation = view.loadHTMLString(html, baseURL: URL(string: "https://ordered-result.invalid/"))
++        guard navigation != nil else {
++            navigationFinished = nil
++            throw NativeOriginalReaderError.failed("Characterization navigation not started")
++        }
++    }
++
++    func requireLoaded() throws {
++        guard !closed, navigationTerminal else {
++            throw NativeOriginalReaderError.failed("Characterization navigation did not finish")
++        }
++        if let navigationFailure { throw navigationFailure }
++    }
++
++    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
++        completeNavigation(navigation, error: nil)
++    }
++
++    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
++        completeNavigation(navigation, error: error)
++    }
++
++    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
++        completeNavigation(navigation, error: error)
++    }
++
++    private func completeNavigation(_ completed: WKNavigation?, error: Error?) {
++        guard !closed, completed === navigation, !navigationTerminal else { return }
++        navigationTerminal = true
++        navigationFailure = error
++        let expectation = navigationFinished
++        navigationFinished = nil
++        expectation?.fulfill()
++    }
++
++    func captureStatus() async throws -> String {
++        try await string("[typeof \(jsonName),typeof \(evalName),Object.prototype.hasOwnProperty.call(window,'\(jsonName)'),Object.prototype.hasOwnProperty.call(window,'\(evalName)')].join('|')")
++    }
++
++    func encodeExpression(_ expression: String) async throws -> String {
++        // This prototype intentionally accepts test-owned single expressions.
++        // It is not a parser or a production fallback for arbitrary scripts.
++        try await string("\(jsonName)((\(expression)))")
++    }
++
++    func capturedEval(_ code: String) async throws -> String {
++        // Only fixed tiny synthetic scripts enter this literal encoder.
++        let encoded = try JSONSerialization.data(withJSONObject: code, options: [.fragmentsAllowed])
++        let literal = String(decoding: encoded, as: UTF8.self)
++        return try await string("\(jsonName)((()=>{try{return {ok:true,value:\(evalName)(\(literal))};}catch(e){return {ok:false,name:e.name};}})())")
++    }
++
++    func string(_ script: String) async throws -> String {
++        try requireLoaded()
++        evaluationsInFlight += 1
++        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<String, Error>) in
++            view.evaluateJavaScript(script) { [self] value, error in
++                finishEvaluation()
++                if let error { continuation.resume(throwing: error) }
++                else if let result = value as? String { continuation.resume(returning: result) }
++                else { continuation.resume(throwing: NativeOriginalReaderError.failed("Characterization expected native string result")) }
++            }
++        }
++    }
++
++    func dictionary(_ script: String) async throws -> [String: Int] {
++        try requireLoaded()
++        evaluationsInFlight += 1
++        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[String: Int], Error>) in
++            view.evaluateJavaScript(script) { [self] value, error in
++                finishEvaluation()
++                if let error { continuation.resume(throwing: error) }
++                else if let result = value as? [String: NSNumber] {
++                    continuation.resume(returning: result.mapValues(\.intValue))
++                } else { continuation.resume(throwing: NativeOriginalReaderError.failed("Characterization expected native object result")) }
++            }
++        }
++    }
++
++    private func finishEvaluation() {
++        evaluationsInFlight -= 1
++        if evaluationsInFlight == 0 {
++            let completion = drain
++            drain = nil
++            completion?.resume()
++        }
++    }
++
++    func close() async {
++        closed = true
++        view.stopLoading()
++        if evaluationsInFlight != 0 {
++            await withCheckedContinuation { continuation in drain = continuation }
++        }
++        view.navigationDelegate = nil
++        view.configuration.userContentController.removeAllUserScripts()
++        navigationFinished = nil
++        navigation = nil
++    }
++}

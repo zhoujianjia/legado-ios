@@ -1,0 +1,9 @@
+{
+  "kind": "Manifest preparation failure before final freeze, not compiler/runtime execution",
+  "attempt": 1,
+  "cause": "importlib.metadata was queried before the existing vendored Swift parser tool directory was inserted into sys.path. Grammar had already really parsed both inputs successfully using that directory.",
+  "correction": "Use the same existing .tools/swift-syntax-python path for distribution metadata lookup; verify pre-existing partial snapshot bytes instead of recopying changed sources.",
+  "actualSDK": 0,
+  "actualWK": 0,
+  "sourceChanged": false
+}

@@ -1,0 +1,209 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T00:24:35.571464+00:00",
+  "status": "reviewed-test-only-ordered-WebJS-characterization-integrated-behavior-unexecuted",
+  "sourceFiles": [
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "baseline": {
+        "bytes": 97973,
+        "sha256": "5173e331662f9dd4aa59ce3d70ca42efbed85fdfbb7f4f26925f49bfadbeb797"
+      },
+      "candidate": {
+        "bytes": 109133,
+        "sha256": "97a04aaf65d117e5f677f87b53cc2d3b15dcc7985a0f66ed4a8570a275f15810"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/diffs/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 12198,
+        "sha256": "da6a7559655257bfbdf9dcdf3c7a8c09374f93ddd7133ef636a59ff2a80acebf"
+      }
+    }
+  ],
+  "changes": {
+    "production": 0,
+    "existingNativeTestFiles": 1,
+    "newNativeDefinitions": 1,
+    "oldClassNativeDefinitionsRetainedByteExact": 14,
+    "newAppTestDefinitions": 0,
+    "PackageSources": 0,
+    "controls": 0
+  },
+  "actual": {
+    "treeSitterGrammarInputs": 2,
+    "syntaxErrors": 0,
+    "SwiftCompiler": 0,
+    "SDK": 0,
+    "WK": 0,
+    "Node": 0,
+    "JVM": 0,
+    "Java": 0
+  },
+  "independentReviewChecks": 282,
+  "independentParserFailureRetained": true,
+  "independentGrammarPassed": false,
+  "method": "LegadoNativeOriginalReaderTests/testNativeOriginalOrderedWebJSCharacterizesCSPAndOriginalJSONInSamePageWorld",
+  "scope": "One test-owned WK instance and two CSP documents characterize native Program globals, captured eval scope/CSP rejection and single-expression original JSON encoding. No production rule or Host changes.",
+  "preservedEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/original-ordered-webjs-characterization-step/preparation.json",
+      "bytes": 4727,
+      "sha256": "97cbf80b3502e7d0b12b869c6b6b3dfa28723646e52ebdfb2c6fda0aa6885a72",
+      "original": {
+        "path": ".build/original-general-webjs-ordered-result-step/final-v1.json",
+        "bytes": 4727,
+        "sha256": "97cbf80b3502e7d0b12b869c6b6b3dfa28723646e52ebdfb2c6fda0aa6885a72"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-ordered-webjs-characterization-step/independent-review.json",
+      "bytes": 8726,
+      "sha256": "431b732ff8c10e0ce0911e983cf24698739dc17ae2110d709b44ce2313585b7a",
+      "original": {
+        "path": ".build/original-general-webjs-ordered-result-independent-review/review-v1.json",
+        "bytes": 8726,
+        "sha256": "431b732ff8c10e0ce0911e983cf24698739dc17ae2110d709b44ce2313585b7a"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-ordered-webjs-characterization-step/scripts/integrate-reviewed-ordered-webjs-characterization.py",
+      "bytes": 5366,
+      "sha256": "ec8fbdec2e4d6e7277db284b8e6b2d372a489848e462f7e5fdab77852d1cfab1",
+      "original": {
+        "path": ".build/integrate-reviewed-ordered-webjs-characterization.py",
+        "bytes": 5366,
+        "sha256": "ec8fbdec2e4d6e7277db284b8e6b2d372a489848e462f7e5fdab77852d1cfab1"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-ordered-webjs-characterization-step/review/verification-v1.json",
+      "bytes": 76726,
+      "sha256": "d97afde05c47fda839ac16035a414ba016f2c16b5f276c53ca684d7862900176",
+      "original": {
+        "path": ".build/original-general-webjs-ordered-result-independent-review/verification-v1.json",
+        "bytes": 76726,
+        "sha256": "d97afde05c47fda839ac16035a414ba016f2c16b5f276c53ca684d7862900176"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-ordered-webjs-characterization-step/review/verify-v1.py",
+      "bytes": 16000,
+      "sha256": "d0a4918a4fb27986b3c0efed6f82ed5a859208b7c37710bdef7e5353af5a2609",
+      "original": {
+        "path": ".build/original-general-webjs-ordered-result-independent-review/verify-v1.py",
+        "bytes": 16000,
+        "sha256": "d0a4918a4fb27986b3c0efed6f82ed5a859208b7c37710bdef7e5353af5a2609"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-ordered-webjs-characterization-step/review/native-parser-history-v1.json",
+      "bytes": 1135,
+      "sha256": "34c3423e71728ea5bafb40fe7db7c3244f0153c287e840d47f675a6db27fbb1d",
+      "original": {
+        "path": ".build/original-general-webjs-ordered-result-independent-review/native-parser-history-v1.json",
+        "bytes": 1135,
+        "sha256": "34c3423e71728ea5bafb40fe7db7c3244f0153c287e840d47f675a6db27fbb1d"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-ordered-webjs-characterization-step/author/contract-v1.json",
+      "bytes": 10096,
+      "sha256": "f93ea0d5eb3f6827485e173f74f9a41fe3c93e84b5db1fae998d0bd9333891b5",
+      "original": {
+        "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/contract-v1.json",
+        "bytes": 10096,
+        "sha256": "f93ea0d5eb3f6827485e173f74f9a41fe3c93e84b5db1fae998d0bd9333891b5"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-ordered-webjs-characterization-step/author/freeze-history-v1.json",
+      "bytes": 573,
+      "sha256": "95e11842af320a7187abe930231d53c3bf05e8659945e7d142533551cb3c3c6c",
+      "original": {
+        "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/freeze-history-v1.json",
+        "bytes": 573,
+        "sha256": "95e11842af320a7187abe930231d53c3bf05e8659945e7d142533551cb3c3c6c"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-ordered-webjs-characterization-step/author/inputs-v1.json",
+      "bytes": 8971,
+      "sha256": "b4b73e49e721e9776cf05fe5875044287e4a42654c2079155a217f07d52a76e7",
+      "original": {
+        "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/inputs-v1.json",
+        "bytes": 8971,
+        "sha256": "b4b73e49e721e9776cf05fe5875044287e4a42654c2079155a217f07d52a76e7"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-ordered-webjs-characterization-step/author/preparation-history-v1.json",
+      "bytes": 506,
+      "sha256": "eacc8db40772a16c06e2409f3fb1736d4a50382b084b2f3009a527b2c25ceeda",
+      "original": {
+        "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/preparation-history-v1.json",
+        "bytes": 506,
+        "sha256": "eacc8db40772a16c06e2409f3fb1736d4a50382b084b2f3009a527b2c25ceeda"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-ordered-webjs-characterization-step/author/primary-binding-v2.json",
+      "bytes": 3933,
+      "sha256": "a2870f9088728b6bf13fae24cfbbb5a0581a584407a9e18a71da386914f5264f",
+      "original": {
+        "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/primary-binding-v2.json",
+        "bytes": 3933,
+        "sha256": "a2870f9088728b6bf13fae24cfbbb5a0581a584407a9e18a71da386914f5264f"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-ordered-webjs-characterization-step/author/syntax-and-identity-v1.json",
+      "bytes": 11186,
+      "sha256": "a52fb81f73c05263f573ea8a376b61b11a30db059812e4fe5ff8bdf0490c18f7",
+      "original": {
+        "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/syntax-and-identity-v1.json",
+        "bytes": 11186,
+        "sha256": "a52fb81f73c05263f573ea8a376b61b11a30db059812e4fe5ff8bdf0490c18f7"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-ordered-webjs-characterization-step/diffs/LegadoNativeOriginalReaderTests.swift.diff",
+      "bytes": 12197,
+      "sha256": "821248bbf44a73d4503ca53ad2e7aca56e1272dae9cf9b8c6894bef20656d5c7",
+      "original": {
+        "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/diffs/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 12198,
+        "sha256": "da6a7559655257bfbdf9dcdf3c7a8c09374f93ddd7133ef636a59ff2a80acebf"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; original facts retained"
+    }
+  ],
+  "selectedByCurrentCloud": false,
+  "runningSourceCommit": "88c61ee4b80889a617d344fda668d077f73fa95b",
+  "futureExplicitSDKSelectionRequired": true,
+  "productionOrderedObjectsSupported": false,
+  "proofLimits": [
+    "Approval covers the frozen test source, input identity and reviewable assertion design. None of the behavioral assertions or Swift APIs have been validated by an Apple compiler or WK runtime here.",
+    "The pinned open-source WebKit commit is explanatory source evidence, not the implementation identity of a future SDK/device.",
+    "This owned single-expression prototype does not support arbitrary scripts or establish product general WebJS compatibility. The production ordered-object result branch remains typed unsupported.",
+    "No equivalence is claimed for arbitrary completion records, eval/with/dynamic parsing, exceptions, proxies/getters/toJSON, hostile intrinsic mutation or source bridge combinations.",
+    "Finite inline scripts only. Navigation timeout is a failure; stopLoading is not a WebContent process termination guarantee. Infinite scripts or forced-cancel interruption remain outside these assertions.",
+    "Standalone public WK characterization does not prove the existing product-service/JVM/Cookie/HTTP owner paths. Current App463/466, Package selections, controls and SDK execution are unchanged."
+  ],
+  "newCloudTags": 0,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

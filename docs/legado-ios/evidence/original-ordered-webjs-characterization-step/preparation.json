@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-21T00:17:16.229043+00:00",
+  "author": "/root/original_source_login_info",
+  "status": "Frozen test-only Native characterization candidate, pending independent source review and future real SDK/WK execution.",
+  "sourceRoot": ".build/original-general-webjs-ordered-result-step/snapshot-v1/work",
+  "baselineRoot": ".build/original-general-webjs-ordered-result-step/snapshot-v1/rawbaseline",
+  "files": [
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "baseline": {
+        "bytes": 97973,
+        "sha256": "5173e331662f9dd4aa59ce3d70ca42efbed85fdfbb7f4f26925f49bfadbeb797"
+      },
+      "candidate": {
+        "bytes": 109133,
+        "sha256": "97a04aaf65d117e5f677f87b53cc2d3b15dcc7985a0f66ed4a8570a275f15810"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/diffs/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 12198,
+        "sha256": "da6a7559655257bfbdf9dcdf3c7a8c09374f93ddd7133ef636a59ff2a80acebf"
+      }
+    }
+  ],
+  "changes": {
+    "production": 0,
+    "existingNativeTestFiles": 1,
+    "newNativeDefinitions": 1,
+    "oldClassNativeDefinitionsRetainedByteExact": 14,
+    "newAppTestDefinitions": 0,
+    "PackageSources": 0,
+    "controls": 0
+  },
+  "evidence": [
+    {
+      "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/contract-v1.json",
+      "bytes": 10096,
+      "sha256": "f93ea0d5eb3f6827485e173f74f9a41fe3c93e84b5db1fae998d0bd9333891b5"
+    },
+    {
+      "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/freeze-history-v1.json",
+      "bytes": 573,
+      "sha256": "95e11842af320a7187abe930231d53c3bf05e8659945e7d142533551cb3c3c6c"
+    },
+    {
+      "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/inputs-v1.json",
+      "bytes": 8971,
+      "sha256": "b4b73e49e721e9776cf05fe5875044287e4a42654c2079155a217f07d52a76e7"
+    },
+    {
+      "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/preparation-history-v1.json",
+      "bytes": 506,
+      "sha256": "eacc8db40772a16c06e2409f3fb1736d4a50382b084b2f3009a527b2c25ceeda"
+    },
+    {
+      "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/primary-binding-v2.json",
+      "bytes": 3933,
+      "sha256": "a2870f9088728b6bf13fae24cfbbb5a0581a584407a9e18a71da386914f5264f"
+    },
+    {
+      "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/syntax-and-identity-v1.json",
+      "bytes": 11186,
+      "sha256": "a52fb81f73c05263f573ea8a376b61b11a30db059812e4fe5ff8bdf0490c18f7"
+    }
+  ],
+  "contract": {
+    "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/contract-v1.json",
+    "bytes": 10096,
+    "sha256": "f93ea0d5eb3f6827485e173f74f9a41fe3c93e84b5db1fae998d0bd9333891b5"
+  },
+  "inputs": {
+    "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/inputs-v1.json",
+    "bytes": 8971,
+    "sha256": "b4b73e49e721e9776cf05fe5875044287e4a42654c2079155a217f07d52a76e7"
+  },
+  "primaryBinding": {
+    "path": ".build/original-general-webjs-ordered-result-step/primary-binding-v2.json",
+    "bytes": 3933,
+    "sha256": "a2870f9088728b6bf13fae24cfbbb5a0581a584407a9e18a71da386914f5264f"
+  },
+  "actual": {
+    "treeSitterGrammarInputs": 2,
+    "syntaxErrors": 0,
+    "SwiftCompiler": 0,
+    "SDK": 0,
+    "WK": 0,
+    "Node": 0,
+    "JVM": 0,
+    "Java": 0
+  },
+  "requiredNext": "Independent source-only review, then explicitly selected future SDK characterization. Do not promote source inference or this test-only prototype to product ordered-object compatibility.",
+  "proofLimits": [
+    "Pinned open-source WebKit is source evidence, not proof of the implementation shipped in any particular iOS SDK/device.",
+    "All behavioral assertions are pending. A failing characterization must be retained and diagnosed rather than relabeled as support.",
+    "The current production ordered-object branch remains typed unsupported. This candidate never changes it.",
+    "The expression route is not claimed equivalent for arbitrary scripts, global declaration semantics, eval/with/dynamic parsing, exceptions, proxies/getters/toJSON, hostile intrinsic mutation, or all current source bridge combinations.",
+    "No Node vm code-generation flag or synthetic evaluator is used as WebKit CSP evidence.",
+    "Current five control files, App463/466, Package selection and cloud execution are untouched."
+  ],
+  "mutations": {
+    "canonical": false,
+    "Git": false,
+    "cloud": false,
+    "tags": false,
+    "currentControls": false,
+    "production": false
+  }
+}

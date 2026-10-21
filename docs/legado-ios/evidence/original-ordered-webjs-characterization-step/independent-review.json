@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-21T00:22:16.185358+00:00",
+  "reviewer": "/root/login_info_v2_review",
+  "status": "Approved as a test-only source characterization candidate; actual Apple compilation and WK assertions remain unexecuted.",
+  "final": {
+    "path": ".build/original-general-webjs-ordered-result-step/final-v1.json",
+    "bytes": 4727,
+    "sha256": "97cbf80b3502e7d0b12b869c6b6b3dfa28723646e52ebdfb2c6fda0aa6885a72"
+  },
+  "verification": {
+    "path": ".build/original-general-webjs-ordered-result-independent-review/verification-v1.json",
+    "bytes": 76726,
+    "sha256": "d97afde05c47fda839ac16035a414ba016f2c16b5f276c53ca684d7862900176"
+  },
+  "verifier": {
+    "path": ".build/original-general-webjs-ordered-result-independent-review/verify-v1.py",
+    "bytes": 16000,
+    "sha256": "d0a4918a4fb27986b3c0efed6f82ed5a859208b7c37710bdef7e5353af5a2609"
+  },
+  "independentToolHistory": {
+    "path": ".build/original-general-webjs-ordered-result-independent-review/native-parser-history-v1.json",
+    "bytes": 1135,
+    "sha256": "34c3423e71728ea5bafb40fe7db7c3244f0153c287e840d47f675a6db27fbb1d"
+  },
+  "authorEvidence": [
+    {
+      "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/contract-v1.json",
+      "bytes": 10096,
+      "sha256": "f93ea0d5eb3f6827485e173f74f9a41fe3c93e84b5db1fae998d0bd9333891b5"
+    },
+    {
+      "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/freeze-history-v1.json",
+      "bytes": 573,
+      "sha256": "95e11842af320a7187abe930231d53c3bf05e8659945e7d142533551cb3c3c6c"
+    },
+    {
+      "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/inputs-v1.json",
+      "bytes": 8971,
+      "sha256": "b4b73e49e721e9776cf05fe5875044287e4a42654c2079155a217f07d52a76e7"
+    },
+    {
+      "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/preparation-history-v1.json",
+      "bytes": 506,
+      "sha256": "eacc8db40772a16c06e2409f3fb1736d4a50382b084b2f3009a527b2c25ceeda"
+    },
+    {
+      "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/primary-binding-v2.json",
+      "bytes": 3933,
+      "sha256": "a2870f9088728b6bf13fae24cfbbb5a0581a584407a9e18a71da386914f5264f"
+    },
+    {
+      "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/evidence/syntax-and-identity-v1.json",
+      "bytes": 11186,
+      "sha256": "a52fb81f73c05263f573ea8a376b61b11a30db059812e4fe5ff8bdf0490c18f7"
+    }
+  ],
+  "checkedSourceRoot": ".build/original-general-webjs-ordered-result-step/snapshot-v1/work",
+  "files": [
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "baseline": {
+        "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/rawbaseline/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+        "bytes": 97973,
+        "sha256": "5173e331662f9dd4aa59ce3d70ca42efbed85fdfbb7f4f26925f49bfadbeb797"
+      },
+      "candidate": {
+        "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/work/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+        "bytes": 109133,
+        "sha256": "97a04aaf65d117e5f677f87b53cc2d3b15dcc7985a0f66ed4a8570a275f15810"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-ordered-result-step/snapshot-v1/diffs/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 12198,
+        "sha256": "da6a7559655257bfbdf9dcdf3c7a8c09374f93ddd7133ef636a59ff2a80acebf"
+      }
+    }
+  ],
+  "totalChecks": 282,
+  "failedChecks": 0,
+  "failedCheckDetails": [],
+  "remainingConfirmedFindings": [],
+  "sourceFindings": [
+    {
+      "result": "No confirmed P1/P2 in this bounded source candidate.",
+      "evidence": "One test-only source. Exact composition is import WebKit plus one method plus one private MainActor helper; all 14 old tests and all old function bytes preserved."
+    },
+    {
+      "result": "No new production execution path or engine.",
+      "evidence": "One test-owned nonpersistent WKWebView, two owned documents, native public callbacks. No production service/HTTP/JVM/owner changes and no current selector/control changes."
+    },
+    {
+      "result": "Ordered-expression assertions use page JSON encoding before Foundation object projection.",
+      "evidence": "Captured original JSON.stringify in randomized page lexical const; evaluateJavaScript executes the known expression once. Exact UTF8 output checks insertion order, integer keys, nested arrays/objects, Unicode-distinct keys, undefined/nonfinite JSON behavior and one side effect. Native dictionary check deliberately only compares values."
+    },
+    {
+      "result": "Captured eval is a counterexample, not a compatibility fallback.",
+      "evidence": "Two CSP modes assert actual native Program versus captured indirect eval behavior and global var/lexical/strict declaration differences. Pinned WebKit source supports the design inference but cannot establish the behavior of a shipped Apple SDK."
+    },
+    {
+      "result": "Callback lifecycle is finite and owned.",
+      "evidence": "Actual identity-matched navigation terminals, one checked continuation per evaluation, close seals further evaluations and drains actual evaluation callbacks; success and throwing paths close. No settle sleeps or fake UIKit ACK."
+    }
+  ],
+  "primaryEvidence": [
+    {
+      "path": "Source/JavaScriptCore/runtime/JSGlobalObjectFunctions.cpp",
+      "lines": [
+        483,
+        498
+      ],
+      "fact": "Indirect eval checks the current evalEnabled state and throws EvalError; an earlier captured reference does not bypass this check."
+    },
+    {
+      "path": "Source/WebCore/bindings/js/ScriptController.cpp",
+      "lines": [
+        665,
+        695
+      ],
+      "fact": "Native Program source is evaluated directly in the specified world, independently of the page window.eval property."
+    },
+    {
+      "path": "Source/WebCore/page/csp/ContentSecurityPolicy.cpp",
+      "lines": [
+        325,
+        342
+      ],
+      "fact": "Policy processing disables eval on the current script context."
+    },
+    {
+      "path": "Source/WebKit/UIProcess/API/Cocoa/WKWebView.mm",
+      "lines": [
+        1299,
+        1314
+      ],
+      "fact": "Public evaluateJavaScript chooses native Program in page world; callAsyncJavaScript is a distinct function path."
+    }
+  ],
+  "reviewedPrimaryFileCount": 10,
+  "actual": {
+    "authorTreeSitterGrammarInputs": 2,
+    "authorSyntaxErrors": 0,
+    "independentCompletedGrammarInputs": 0,
+    "independentNativeParserTraversalFailed": true,
+    "SwiftCompiler": 0,
+    "SDK": 0,
+    "WK": 0,
+    "Node": 0,
+    "JVM": 0,
+    "Java": 0
+  },
+  "counts": {
+    "oldNativeReaderMethods": 14,
+    "newNativeReaderMethods": 15,
+    "newTestDefinitions": 1,
+    "oldRawFunctionsMatched": 47,
+    "productionChanges": 0,
+    "currentControlsChanged": 0
+  },
+  "retainedHistory": "Both author preparation failures and two upstream 404 lookups are retained and distinguished from test/runtime failures. Independent optional native tree-sitter traversal exited 1 (three attempts, last faulthandler observed access violation); this tool failure was replaced by exact byte composition and direct raw-function SHA matching, not called a candidate compiler/test failure or a completed independent grammar pass. No successful suite was rerun.",
+  "limits": [
+    "Approval covers the frozen test source, input identity and reviewable assertion design. None of the behavioral assertions or Swift APIs have been validated by an Apple compiler or WK runtime here.",
+    "The pinned open-source WebKit commit is explanatory source evidence, not the implementation identity of a future SDK/device.",
+    "This owned single-expression prototype does not support arbitrary scripts or establish product general WebJS compatibility. The production ordered-object result branch remains typed unsupported.",
+    "No equivalence is claimed for arbitrary completion records, eval/with/dynamic parsing, exceptions, proxies/getters/toJSON, hostile intrinsic mutation or source bridge combinations.",
+    "Finite inline scripts only. Navigation timeout is a failure; stopLoading is not a WebContent process termination guarantee. Infinite scripts or forced-cancel interruption remain outside these assertions.",
+    "Standalone public WK characterization does not prove the existing product-service/JVM/Cookie/HTTP owner paths. Current App463/466, Package selections, controls and SDK execution are unchanged."
+  ],
+  "mutations": {
+    "ownIgnoredReviewOnly": true,
+    "peerSources": false,
+    "canonical": false,
+    "Git": false,
+    "cloud": false,
+    "tags": false
+  }
+}

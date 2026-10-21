@@ -1,0 +1,9 @@
+{
+  "kind": "Preparation assertion failure, not a Swift/compiler/runtime test",
+  "attempt": 1,
+  "assertion": "all(new[k] == oldMethods[k])",
+  "cause": "Flat function-name index also collected new helper load, so the one existing load and new helper load formed a two-element list. Existing function bytes were unchanged.",
+  "correction": "Compare the existing ordered overload prefix byte-for-byte; independently check the only new XCTest method and full grammar.",
+  "actualSDK": 0,
+  "actualWK": 0
+}
