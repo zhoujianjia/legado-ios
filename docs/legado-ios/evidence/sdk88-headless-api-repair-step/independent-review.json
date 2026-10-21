@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-21T00:49:08.070668+00:00",
+  "final": true,
+  "approved": true,
+  "failedChecks": [],
+  "findings": [],
+  "status": "Independent minimal source repair review passed. Apple SDK recompile remains pending; old SDK88 stays compiler failure with0 App cases.",
+  "parent": {
+    "path": ".build/sdk-88c61ee-headless-api-repair-step/final-v1.json",
+    "bytes": 5559,
+    "sha256": "0c73aae03a8c4bd5a253f61df4557eedb9d5c31bba61ee282c3a8a566b0785b6"
+  },
+  "source": {
+    "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+    "baseline": {
+      "path": ".build/sdk-88c61ee-headless-api-repair-step/snapshot-v1/rawbaseline/Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+      "bytes": 39823,
+      "sha256": "3547326bc935cdbb84c61fe3d3f63dbcc71ea44666022c2e546211d7fe452469"
+    },
+    "candidate": {
+      "path": ".build/sdk-88c61ee-headless-api-repair-step/snapshot-v1/work/Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+      "bytes": 39821,
+      "sha256": "31a8ef0639246a6cf60e1a9bf5db59472c21da3bb4864a93fcbeeded33c8ec22"
+    },
+    "diff": {
+      "path": ".build/sdk-88c61ee-headless-api-repair-step/snapshot-v1/diffs/LegadoHeadlessWebView.swift.diff",
+      "bytes": 1332,
+      "sha256": "6178b9a2732341d1fce0e66605760ea07ae122a13086af9609318f62b7a2ccbb"
+    }
+  },
+  "confirmedChanges": [
+    {
+      "line": 365,
+      "change": "WKError.Code.javaScriptExceptionOccurred is the published enum case, available before the project iOS17 floor. Only that exception still becomes the existing raw-null retry; all other WK errors retain the original throw branch."
+    },
+    {
+      "line": 376,
+      "change": "The completion-handler overload is callAsyncJavaScript(_:arguments:in:in:completionHandler:). Two in labels select frame and content world. The single Result callback, switch/error behavior and defaultClient isolated world remain exact."
+    }
+  ],
+  "preservedBoundary": {
+    "wholeFileExactlyTwoTokenReplacements": true,
+    "onlyEvaluateOriginalChanged": true,
+    "allOtherSourceBytesExact": true,
+    "noOwnerOrAuthorizationChanges": true,
+    "generationCancellationDrainDeadlineBytesExact": true,
+    "noCallbackArityChange": true,
+    "noNewTestsOrFallback": true
+  },
+  "primaryBindings": [
+    {
+      "path": ".build/sdk-88c61ee-headless-api-repair-step/snapshot-v1/primary/WKError.h",
+      "bytes": 4495,
+      "sha256": "8fdca41dcb7339c33b0006ccd3056617130e766e696c7a55c582a20feb1b4639"
+    },
+    {
+      "path": ".build/sdk-88c61ee-headless-api-repair-step/snapshot-v1/primary/Apple-javaScriptExceptionOccurred.md",
+      "bytes": 911,
+      "sha256": "31524441cdcb8182d5643a8078d017d3182fdcd3ae4a530edbdd84859122e973"
+    },
+    {
+      "path": ".build/sdk-88c61ee-headless-api-repair-step/snapshot-v1/primary/Apple-callAsyncJavaScript.md",
+      "bytes": 4943,
+      "sha256": "4ebe40a0a62127e63479a9869d2016d0d4379624a64091d55448692b082bfe6c"
+    }
+  ],
+  "additionalBindings": [
+    {
+      "path": ".build/original-general-webjs-resource-api-characterization-step/primary/root-WKWebView.h",
+      "bytes": 46423,
+      "sha256": "aba0f8cf41d7f82388d068d123ef7309591013ef29c94229a60e0ce61e30d710",
+      "lines": [
+        339,
+        373
+      ],
+      "scope": "Public Objective-C refined signature; exact Swift completion overload is confirmed by the Apple Swift declaration, not guessed from importer labels."
+    },
+    {
+      "path": ".build/sdk-88c61ee-headless-api-repair-step/snapshot-v1/evidence/source-verification-v1.json",
+      "bytes": 1023,
+      "sha256": "f9ceb21df91a1d5d25fb7951b817180f061fa24f7b203ba9d6a09b6411573121"
+    }
+  ],
+  "actualFailureBinding": {
+    "facts": {
+      "path": ".build/sdk-88c61ee-terminal/factual-review-v1.json",
+      "bytes": 10549,
+      "sha256": "09caed66d1f659473ee1bd18094df722e6e24c97b0d7a39a96e1047b975bbefd"
+    },
+    "diagnostics": {
+      "path": ".build/sdk-88c61ee-terminal/factual-v1/compiler-errors.json",
+      "bytes": 1696,
+      "sha256": "9fe08cc1c34e8c1d565567cd3da2d067ec512feb0d8e450c686c1768b653df44"
+    },
+    "rawLog": {
+      "path": ".build/sdk-88c61ee-terminal/SDK/extracted/reader-renewal-probe/currentcore-tests.log",
+      "bytes": 7055644,
+      "sha256": "edd0d1a5f47c1a4229c8aa6dc9ae8f677a26b8e2c186a84dfa580d926a4daef2"
+    },
+    "uniqueCompilerErrors": 2,
+    "repeatedDiagnostics": 50,
+    "repetitionsPerUniqueError": 25,
+    "AppCasesExecuted": 0,
+    "repairDoesNotUpgradeOldRun": true
+  },
+  "limits": [
+    "This review does not execute a Swift compiler or prove an Apple SDK build. The author grammar2/0 is syntax-only and was not rerun.",
+    "No test/parser/cloud/Git operations were performed. No callback scheduling, WebKit runtime behavior or full source compatibility acceptance is inferred.",
+    "Package24 and producer facts belong to their independent old-run scope; they do not validate this changed App source."
+  ],
+  "operations": {
+    "tests": 0,
+    "SwiftParser": 0,
+    "SwiftCompiler": 0,
+    "SDK": 0,
+    "WK": 0,
+    "JVM": 0,
+    "Git": 0,
+    "cloud": 0,
+    "canonicalWrites": 0,
+    "peerWrites": 0
+  }
+}

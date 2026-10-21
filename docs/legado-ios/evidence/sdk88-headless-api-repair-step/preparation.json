@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-21T00:47:38.858780+00:00",
+  "status": "Frozen minimal source-only SDK API-shape repair; not yet accepted by an Apple compiler.",
+  "sourceRoot": ".build/sdk-88c61ee-headless-api-repair-step/snapshot-v1/work",
+  "baselineRoot": ".build/sdk-88c61ee-headless-api-repair-step/snapshot-v1/rawbaseline",
+  "files": [
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+      "baseline": {
+        "bytes": 39823,
+        "sha256": "3547326bc935cdbb84c61fe3d3f63dbcc71ea44666022c2e546211d7fe452469"
+      },
+      "candidate": {
+        "bytes": 39821,
+        "sha256": "31a8ef0639246a6cf60e1a9bf5db59472c21da3bb4864a93fcbeeded33c8ec22"
+      },
+      "diff": {
+        "path": ".build/sdk-88c61ee-headless-api-repair-step/snapshot-v1/diffs/LegadoHeadlessWebView.swift.diff",
+        "bytes": 1332,
+        "sha256": "6178b9a2732341d1fce0e66605760ea07ae122a13086af9609318f62b7a2ccbb"
+      }
+    }
+  ],
+  "actualFailure": {
+    "facts": {
+      "path": ".build/sdk-88c61ee-terminal/factual-review-v1.json",
+      "bytes": 10549,
+      "sha256": "09caed66d1f659473ee1bd18094df722e6e24c97b0d7a39a96e1047b975bbefd"
+    },
+    "diagnostics": {
+      "path": ".build/sdk-88c61ee-terminal/factual-v1/compiler-errors.json",
+      "bytes": 1696,
+      "sha256": "9fe08cc1c34e8c1d565567cd3da2d067ec512feb0d8e450c686c1768b653df44"
+    },
+    "actualUniqueErrors": 2,
+    "repeatedDiagnostics": 50,
+    "AppCases": 0,
+    "PackageCasesPassed": 24
+  },
+  "changes": [
+    {
+      "old": "WKError.Code.javaScriptException",
+      "new": "WKError.Code.javaScriptExceptionOccurred",
+      "scope": "Use public enum member for the exact original JS-exception-to-raw-null retry classification; other WK errors still throw."
+    },
+    {
+      "old": "callAsyncJavaScript(... in: nil, contentWorld: .defaultClient) { result in }",
+      "new": "callAsyncJavaScript(... in: nil, in: .defaultClient) { result in }",
+      "scope": "Select exact public completion-handler overload. Keep one Result parameter and all success/error branches unchanged."
+    }
+  ],
+  "primary": [
+    {
+      "path": ".build/sdk-88c61ee-headless-api-repair-step/snapshot-v1/primary/WKError.h",
+      "bytes": 4495,
+      "sha256": "8fdca41dcb7339c33b0006ccd3056617130e766e696c7a55c582a20feb1b4639",
+      "url": "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebKit/UIProcess/API/Cocoa/WKError.h"
+    },
+    {
+      "path": ".build/sdk-88c61ee-headless-api-repair-step/snapshot-v1/primary/Apple-javaScriptExceptionOccurred.md",
+      "bytes": 911,
+      "sha256": "31524441cdcb8182d5643a8078d017d3182fdcd3ae4a530edbdd84859122e973",
+      "url": "https://developer.apple.com/documentation/webkit/wkerror/code/javascriptexceptionoccurred.md"
+    },
+    {
+      "path": ".build/sdk-88c61ee-headless-api-repair-step/snapshot-v1/primary/Apple-callAsyncJavaScript.md",
+      "bytes": 4943,
+      "sha256": "4ebe40a0a62127e63479a9869d2016d0d4379624a64091d55448692b082bfe6c",
+      "url": "https://developer.apple.com/documentation/webkit/wkwebview/callasyncjavascript(_:arguments:in:in:completionhandler:).md"
+    }
+  ],
+  "reusedHeader": {
+    "path": ".build/original-general-webjs-resource-api-characterization-step/primary/root-WKWebView.h",
+    "bytes": 46423,
+    "sha256": "aba0f8cf41d7f82388d068d123ef7309591013ef29c94229a60e0ce61e30d710",
+    "lines": [
+      339,
+      373
+    ],
+    "scope": "Public Objective-C refined signature; exact Swift completion overload is confirmed by the Apple Swift declaration, not guessed from importer labels."
+  },
+  "sourceVerification": {
+    "path": ".build/sdk-88c61ee-headless-api-repair-step/snapshot-v1/evidence/source-verification-v1.json",
+    "bytes": 1023,
+    "sha256": "f9ceb21df91a1d5d25fb7951b817180f061fa24f7b203ba9d6a09b6411573121"
+  },
+  "invariants": {
+    "wholeFileOnlyTwoTokenReplacements": true,
+    "onlyEvaluateOriginalChanged": true,
+    "allOtherFunctionBytesExact": true,
+    "oneNativeProgramEvaluationAndOneEncoderCallUnchanged": true,
+    "ResultSingleArgumentSwitchUnchanged": true,
+    "generationCancelDrainAndDeadlineBytesExact": true,
+    "contentWorldDefaultClientUnchanged": true,
+    "noNewVMEngineStoreOrFallback": true,
+    "noNewTestDefinitions": true
+  },
+  "actual": {
+    "SwiftTreeSitterInputs": 2,
+    "syntaxErrors": 0,
+    "SwiftCompiler": 0,
+    "SDK": 0,
+    "WK": 0,
+    "Node": 0,
+    "JVM": 0,
+    "Java": 0,
+    "testsRerun": 0
+  },
+  "proofLimits": [
+    "A real Apple SDK recompile remains required; tree-sitter cannot prove overload/type checking.",
+    "Historical SDK88 remains a compiler failure with0 App cases; source repair is separate and does not upgrade it.",
+    "This repairs two API spelling/label mismatches only; ordered object/resource/general source compatibility remains incomplete."
+  ],
+  "lookupHistory": [
+    {
+      "url": "https://developer.apple.com/documentation/webkit/wkerror/code/javascriptExceptionOccurred",
+      "webToolResult": "Not accessible; no status code proof",
+      "resolution": "Canonical lowercase official markdown and pinned WKError.h both fetched HTTP200."
+    }
+  ],
+  "completionFlags": {
+    "allNonDeviceWorkComplete": false,
+    "automaticSelfRenewalImplemented": false,
+    "fullLegadoCompatibilityEstablished": false,
+    "legalRedistributionClearanceEstablished": false
+  },
+  "mutations": {
+    "canonical": false,
+    "Git": false,
+    "cloud": false,
+    "tags": false,
+    "oldPassingSuiteRepeated": false
+  }
+}

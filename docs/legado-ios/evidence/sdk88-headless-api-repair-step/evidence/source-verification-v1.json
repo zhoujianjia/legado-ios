@@ -1,0 +1,29 @@
+{
+  "scope": "Actual compiler failures inform a source-only public Swift API repair; grammar is not typecheck/SDK acceptance.",
+  "baselineExactArtifact": {
+    "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+    "sha256": "3547326bc935cdbb84c61fe3d3f63dbcc71ea44666022c2e546211d7fe452469",
+    "bytes": 39823
+  },
+  "changes": [
+    {
+      "old": "wk.code == .javaScriptException {",
+      "new": "wk.code == .javaScriptExceptionOccurred {"
+    },
+    {
+      "old": "arguments: [\"value\": value ?? NSNull()], in: nil, contentWorld: .defaultClient) { result in",
+      "new": "arguments: [\"value\": value ?? NSNull()], in: nil, in: .defaultClient) { result in"
+    }
+  ],
+  "syntaxInputs": 2,
+  "syntaxErrors": 0,
+  "onlyChangedFunction": [
+    "evaluateOriginal"
+  ],
+  "allOtherFunctionBytesExact": true,
+  "wholeFileEqualsOnlyTwoTokenReplacements": true,
+  "evaluationAndCallbackCountsUnchanged": true,
+  "actualSDKRepairExecution": 0,
+  "actualSwiftCompiler": 0,
+  "oldJVMRerun": 0
+}

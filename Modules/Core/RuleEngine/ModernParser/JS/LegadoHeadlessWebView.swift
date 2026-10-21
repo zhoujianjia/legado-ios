@@ -362,7 +362,7 @@ final class LegadoHeadlessWebView: NSObject, WKNavigationDelegate, WKScriptMessa
             // Page CSP/eval/JSON overrides do not select our evaluator.
             view.evaluateJavaScript(script) { value, error in
                 if let error {
-                    if let wk = error as? WKError, wk.code == .javaScriptException {
+                    if let wk = error as? WKError, wk.code == .javaScriptExceptionOccurred {
                         continuation.resume(returning: nil) // Android's raw null retry.
                     } else { continuation.resume(throwing: error) }
                 } else { continuation.resume(returning: value) }
@@ -373,7 +373,7 @@ final class LegadoHeadlessWebView: NSObject, WKNavigationDelegate, WKScriptMessa
             // Native fixed code in an isolated world preserves WebKit's own
             // number/null/array JSON encoding, independent of page overrides.
             view.callAsyncJavaScript("return JSON.stringify(value);",
-                arguments: ["value": value ?? NSNull()], in: nil, contentWorld: .defaultClient) { result in
+                arguments: ["value": value ?? NSNull()], in: nil, in: .defaultClient) { result in
                 switch result {
                 case .success(let raw):
                     guard let raw = raw as? String else {
