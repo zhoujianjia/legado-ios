@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "parent": {
+    "path": ".build/f233826-terminal-archive-candidate/final-v1.json",
+    "bytes": 32877,
+    "sha256": "66861c4665a2e579c10b60feb43ce01c308c98cb89983457bfb1e4780bb4a7aa"
+  },
+  "candidateFiles": 136,
+  "candidateBytes": 1341631,
+  "rawIndependentReview": {
+    "path": ".build/f233826-terminal-archive-independent-review/review-v1.json",
+    "bytes": 422305,
+    "sha256": "7c5a36ee1079dec4a99db983fac6b34746c4063fac5223ab088a6e85dd2193a6"
+  },
+  "independentHistoricalBindings": {
+    "path": ".build/f233826-terminal-archive-independent-review/source-bindings.json",
+    "bytes": 95378,
+    "sha256": "e9e0a3af3d06b861feebc3a49e1708f7cb15385f126cd20893ad554b824cd1ea"
+  },
+  "ZIPs": [
+    {
+      "path": ".build/sdk-f233826-terminal/evidence.zip",
+      "bytes": 1360343,
+      "sha256": "9fc4e0b6e36ff7e702080a498e4d1617c4cea28601aa434f2605c60319c1014c",
+      "members": 122,
+      "CRCValid": true
+    },
+    {
+      "path": ".build/package-f233826-terminal/artifact.zip",
+      "bytes": 30408,
+      "sha256": "92b28e8e700d93d2b81c9edd3071689f32f909937e50f8c28396db9f568773d4",
+      "members": 10,
+      "CRCValid": true
+    },
+    {
+      "path": ".build/native-f233826-terminal/artifact.zip",
+      "bytes": 423153,
+      "sha256": "cec9fb08bfafdd2e5a0758c17a9a082670e26a6bf976b0f9f82c70a8dc34e702",
+      "members": 75,
+      "CRCValid": true
+    }
+  ],
+  "scopes": {
+    "core": 349,
+    "Package": 23,
+    "producer": 7,
+    "native": 161,
+    "phaseLedgers": 11,
+    "beforeAfterSnapshots": 22
+  },
+  "actual": {
+    "JVM": {
+      "XML": 53,
+      "distinctMethods": 353,
+      "passed": 353,
+      "failed": 0,
+      "skipped": 0
+    },
+    "Package": {
+      "distinctMethods": 24,
+      "passed": 24
+    },
+    "NativeFilteredPackage": {
+      "passed": 17,
+      "aggregation": "separate run/selection; not added to Package24"
+    },
+    "AppMethods": 0,
+    "NativeMethods": 0,
+    "compilerUniqueErrors": 2,
+    "producerCommands": 48,
+    "producerPublicOutputs": 43,
+    "producerMachOs": 4
+  },
+  "decisions": [
+    "All 136 declared candidate file hashes and exact file inventory match. Every destination is safe, non-ignored docs/legado-ios text; UTF-8/LF/zero-NUL and JSON/XML parsing pass.",
+    "All copied ZIP/local evidence is reconstructed using only the declared horizontal-whitespace/LF/EOF normalization. Original hashes remain separately recorded. Generated summaries were independently checked against raw XML, command/phase ledgers, logs and historical Git source blobs.",
+    "All three original ZIPs have the expected exact bytes/SHA, valid CRC and safe member paths. The native ZIP SHA also matches the original terminal artifact metadata. No download or cloud query was repeated.",
+    "Core349/Package23/producer7 and Native161 declared historical source scopes are exact to f233 Git blobs. All 11 SDK phases contain the same before/after source observation, totaling22 snapshots. These are evidence scopes, not exhaustive transitive build whitelists.",
+    "The SDK raw full compiler log and Native raw full build log contain the same two unique test-compiler errors: missing isLongClick and optional contentBatch string. App463/466 and Native30=28 product+2 platform, MainJS1 and cold2 are selections only; actual execution is0.",
+    "The 53 raw JVM XML suites contain353 distinct passing cases with0 failures/errors/skips. Package24 XML names exactly match the selected, raw-result, passed and verbose-passed names. Native saved-diagnostics Package17 is a distinct run/selection and is not summed into Package24 or App/Native acceptance.",
+    "Producer48 commands/public43 outputs/4 synthetic SDK Mach-Os and owned Keychain cleanup match raw facts. The required App signer was selected but never executed; producer success does not repair the compiler-blocked App result.",
+    "Source-only repair0bee509 does not change the historical terminal failures. Both records remain terminal, queryAgain=false, and all four completion/renewal/full-compatibility/legal flags false.",
+    "Text and structured command scans found no PEM private key, signed download URL query, GitHub credential or long encoded binary payload. Password-bearing command arguments are redacted; security -p policy values are not mistaken for passwords. The large raw logs, ZIPs, public encoded IPA, raw JAR/App and private fixture data are not copied."
+  ],
+  "preservedReviewerHistory": [
+    "The first independent checker read coldProcessIndependentMethods as a list, but this frozen schema correctly stores the numeric count 2; that checker TypeError was corrected without changing any candidate. The rerun only rereads evidence; no test ran.",
+    "Before rerunning, password-argument scan correctly distinguished security find-identity/verify-cert -p policy names from password-bearing tool arguments. No candidate credential was present."
+  ],
+  "limits": [
+    "Two compiler errors block App and all selected Native/platform/cold execution. No per-method functional outcome is inferred.",
+    "The later 0bee509 repair is source-only and does not change f233 terminal failure.",
+    "Historical declared input rosters are not exhaustive transitive dependency whitelists.",
+    "Ordinary JVM, macOS Package and producer outcomes do not establish Apple signing authority, same-device installation, unattended renewal or real WK platform evidence.",
+    "Review read only local ZIP/text/Git blobs. No tests, compiler, parser, download or cloud query ran."
+  ],
+  "operations": {
+    "tests": 0,
+    "compilation": 0,
+    "parser": 0,
+    "downloads": 0,
+    "cloudQueries": 0,
+    "GitWrites": 0,
+    "historicalGitReadOnlyBatches": 2,
+    "canonicalWrites": 0
+  },
+  "additionalChecks": [
+    "Native ZIP matches archived artifact metadata",
+    "all four claim flags false in each record",
+    "additional password flag scan found no -k/--password/-passphrase argv"
+  ],
+  "canonicalIntegration": "Approved for Root to archive the exact136 text paths and close both f233 handles. No candidate/source/control/plan/Git/cloud mutation was performed by this review."
+}

@@ -1,0 +1,184 @@
+{
+  "sourceCommit": "f23382618c747c97c23a1c345664cffd589a5359",
+  "coreInputs": 349,
+  "sourceInputsSHA256": "04e104ef160a6185393e94a3f9359e3a23745b0af761ed1eb096b71a965eb1ca",
+  "phaseLedgers": 11,
+  "beforeAfterSourceSnapshots": 22,
+  "allExact": true,
+  "phases": [
+    {
+      "phase": "producer",
+      "state": "succeeded",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 600,
+      "blockedBy": [],
+      "original": {
+        "path": "reader-renewal-probe/currentcore-phase-producer.json",
+        "bytes": 3151,
+        "sha256": "d6328a43581f1fd03b7bdc754d3c2d670dceddb244067c5f67b4c5d9d70d528c",
+        "CRC32": "fd5b5a09"
+      },
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "stage",
+      "state": "succeeded",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 90,
+      "blockedBy": [],
+      "original": {
+        "path": "reader-renewal-probe/currentcore-phase-stage.json",
+        "bytes": 3322,
+        "sha256": "5a49707c67649a97d78e79eb6a25282a673256c1d20cf365caaea8543a996ff1",
+        "CRC32": "67dcb2c7"
+      },
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "before-build",
+      "state": "succeeded",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 90,
+      "blockedBy": [],
+      "original": {
+        "path": "reader-renewal-probe/currentcore-phase-before-build.json",
+        "bytes": 3197,
+        "sha256": "e6faa65da851ed091ac8d1dd729b5b4a5a322ca6ae3aa0ec3d64c919059e1f82",
+        "CRC32": "85d34ae6"
+      },
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "boot",
+      "state": "succeeded",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 180,
+      "blockedBy": [],
+      "original": {
+        "path": "reader-renewal-probe/currentcore-phase-boot.json",
+        "bytes": 2737,
+        "sha256": "68e45b1bc521f863b7b72faff5c2b0f93db3654314e7f76bb6754759f946a871",
+        "CRC32": "655bb0f3"
+      },
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "native",
+      "state": "failed",
+      "exitCode": 1,
+      "timedOut": false,
+      "timeoutSeconds": 3720,
+      "blockedBy": [],
+      "original": {
+        "path": "reader-renewal-probe/currentcore-phase-native.json",
+        "bytes": 115798,
+        "sha256": "b89cc429d19b6d16b0361257bbd8930dcda8c04f23c7000d7ccce83e302b974b",
+        "CRC32": "b9b08336"
+      },
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "export",
+      "state": "failed",
+      "exitCode": 1,
+      "timedOut": false,
+      "timeoutSeconds": 330,
+      "blockedBy": [],
+      "original": {
+        "path": "reader-renewal-probe/currentcore-phase-export.json",
+        "bytes": 3238,
+        "sha256": "075dece3e65402878cbf8c6f84846ae5b35b89a4378b098c7a105adeb3443f61",
+        "CRC32": "4186a1f3"
+      },
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "cases",
+      "state": "failed",
+      "exitCode": 1,
+      "timedOut": false,
+      "timeoutSeconds": 90,
+      "blockedBy": [],
+      "original": {
+        "path": "reader-renewal-probe/currentcore-phase-cases.json",
+        "bytes": 3449,
+        "sha256": "02d5e6b40012ddb908f342e822653c56c17046c76b9be631cd7db08bb0dadd62",
+        "CRC32": "e80505e0"
+      },
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "test-settings",
+      "state": "succeeded",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 120,
+      "blockedBy": [],
+      "original": {
+        "path": "reader-renewal-probe/currentcore-phase-test-settings.json",
+        "bytes": 4492,
+        "sha256": "a8e90892b92d3ecfe3d436985e573a42861e2a2c31f143ed105dcb9af7215b9c",
+        "CRC32": "c5501315"
+      },
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "after-tests",
+      "state": "blocked",
+      "exitCode": null,
+      "timedOut": null,
+      "timeoutSeconds": 120,
+      "blockedBy": [
+        "native",
+        "export",
+        "cases"
+      ],
+      "original": {
+        "path": "reader-renewal-probe/currentcore-phase-after-tests.json",
+        "bytes": 2508,
+        "sha256": "98bdf250ed813e82127940b42b8c3d3f591f0bf031036f6e42012cfc8b45a380",
+        "CRC32": "c86d5dc5"
+      },
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "build-settings",
+      "state": "succeeded",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 120,
+      "blockedBy": [],
+      "original": {
+        "path": "reader-renewal-probe/currentcore-phase-build-settings.json",
+        "bytes": 4448,
+        "sha256": "b5b724bf4f7349477ea5b375b98481139c198d14d85a56029a3757e05f62ce96",
+        "CRC32": "1c715915"
+      },
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "result",
+      "state": "blocked",
+      "exitCode": null,
+      "timedOut": null,
+      "timeoutSeconds": 180,
+      "blockedBy": [
+        "native",
+        "export",
+        "cases",
+        "after-tests"
+      ],
+      "original": {
+        "path": "reader-renewal-probe/currentcore-phase-result.json",
+        "bytes": 2475,
+        "sha256": "c448314332fea65e080fa62f6ff31508d6bf9ca144db84f595463e63572a02bc",
+        "CRC32": "14185e15"
+      },
+      "sourceBeforeAfterExact": true
+    }
+  ]
+}

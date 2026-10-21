@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.yuedu.legado.TlsCapabilityProbeTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-21T01:02:33.695Z" hostname="sjc22-bm208-84a8d532-606c-44db-b966-87b859fbdcc2-C2C1676411B8.local" time="0.19">
+  <properties/>
+  <testcase name="realLoopbackTlsValidatesBothProtocolsTrustAndHostAndStopsWorkers" classname="io.yuedu.legado.TlsCapabilityProbeTest" time="0.19"/>
+  <testcase name="cancelledTaskCannotStartTLSWork" classname="io.yuedu.legado.TlsCapabilityProbeTest" time="0.0"/>
+  <testcase name="expiredDeadlineCannotStartTLSWork" classname="io.yuedu.legado.TlsCapabilityProbeTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[LEGADO_TLS_STAGE run.begin
+LEGADO_TLS_STAGE fixtures.verified
+LEGADO_TLS_STAGE server_context.ready
+LEGADO_TLS_STAGE trusted-tls12.begin
+LEGADO_TLS_STAGE trusted-tls12.server_handshake.begin
+LEGADO_TLS_STAGE trusted-tls12.client_handshake.begin
+LEGADO_TLS_STAGE trusted-tls12.server_handshake.returned
+LEGADO_TLS_STAGE trusted-tls12.client_handshake.returned
+LEGADO_TLS_STAGE trusted-tls12.classified.ACCEPTED
+LEGADO_TLS_STAGE trusted-tls13.begin
+LEGADO_TLS_STAGE trusted-tls13.server_handshake.begin
+LEGADO_TLS_STAGE trusted-tls13.client_handshake.begin
+LEGADO_TLS_STAGE trusted-tls13.client_handshake.returned
+LEGADO_TLS_STAGE trusted-tls13.server_handshake.returned
+LEGADO_TLS_STAGE trusted-tls13.classified.ACCEPTED
+LEGADO_TLS_STAGE untrusted-ca.begin
+LEGADO_TLS_STAGE untrusted-ca.server_handshake.begin
+LEGADO_TLS_STAGE untrusted-ca.client_handshake.begin
+LEGADO_TLS_STAGE untrusted-ca.classified.CERTIFICATE_CHAIN_REJECTED
+LEGADO_TLS_STAGE wrong-host.begin
+LEGADO_TLS_STAGE wrong-host.server_handshake.begin
+LEGADO_TLS_STAGE wrong-host.client_handshake.begin
+LEGADO_TLS_STAGE wrong-host.classified.HOSTNAME_REJECTED
+LEGADO_TLS_STAGE cleanup.complete
+LEGADO_TLS_STAGE run.begin
+]]></system-err>
+</testsuite>

@@ -169,8 +169,8 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Finish both f233826 terminal archives and compose reviewed production changes plus exact compiler repairs into one source-bound SDK/Native pair. No per-change tags or IPA tag.",
-      "alreadyRunningTasks": "No live SDK/Native tasks. Both f233826 runs completed failure at the same two test compiler calls; exact source repairs committed at0bee509. Terminal archives are being prepared; do not query these terminal jobs again.",
+      "nextPlannedCheckpoint": "Compose the reviewed proxy/remote-jslib wiring, S2 certificate reuse, exact test compiler repairs and remaining ready original-core changes into one source-bound SDK/Native pair. No per-change tags or IPA tag.",
+      "alreadyRunningTasks": "No live SDK/Native tasks. Both f233826 terminal failures are fully archived and must not be queried again.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
         "sourceTag": "reader-renewal-8d934dd",
@@ -292,18 +292,36 @@
         "producerPublicOutputs": 43,
         "producerMachOs": 4
       },
-      "terminalArchivesPending": [
-        {
+      "terminalArchivesPending": [],
+      "latestClosedCorePair": {
+        "sourceCommit": "f23382618c747c97c23a1c345664cffd589a5359",
+        "recordedUTC": "2026-10-21T02:07:54.377363+00:00",
+        "SDK": {
           "runID": 39524696933,
           "jobID": 118976499912,
-          "queryAgain": false
+          "status": "completed",
+          "conclusion": "failure",
+          "queryAgain": false,
+          "record": "docs/legado-ios/core-sdk-f233826-terminal-result.json",
+          "AppDefinitionsExecuted": 0,
+          "AppLeavesExecuted": 0,
+          "PackageMethodsPassed": 24
         },
-        {
+        "Native": {
           "runID": 39524697051,
           "jobID": 118976500962,
-          "queryAgain": false
-        }
-      ]
+          "status": "completed",
+          "conclusion": "failure",
+          "queryAgain": false,
+          "record": "docs/legado-ios/core-native-f233826-terminal-result.json",
+          "JVMMethodsPassed": 353,
+          "NativeMethodsExecuted": 0,
+          "diagnosticPackageMethodsPassed": 17
+        },
+        "uniqueTestCompilerErrorsInEach": 2,
+        "sourceRepairRecord": "docs/legado-ios/core-native-f233826-test-compiler-repair.json",
+        "independentArchiveReview": "docs/legado-ios/evidence/f233826-terminal-independent-review/independent-review.json"
+      }
     },
     "nextReadyBatch": [
       "automatic-renewal-feasibility",
@@ -489,6 +507,10 @@
             {
               "record": "docs/legado-ios/core-original-proxy-remote-jslib-step.json",
               "scope": "Actual production proxy/remote-map-jslib wiring and coherent JVM 11-root compilation; 23 distinct methods have passing evidence over first23 plus failed-only5. App/JNI validation still pending."
+            },
+            {
+              "record": "docs/legado-ios/core-native-f233826-terminal-result.json",
+              "scope": "Actual f233826 ordinary JVM353 passed; Native/App execution0 due two test compiler errors. Original30 selection is28 product plus2 platform cases, not executed acceptance."
             }
           ],
           "nextActionZh": "代理和map远程jsLib已合入并有联合JVM证据；继续完整preUpdateJs刷新与书籍身份回写、原WebJS对象返回的Android值转换合同。资源嗅探公共WK平台尚未实际执行，保持未启用；完整书源兼容仍未完成。"
@@ -613,6 +635,10 @@
             {
               "record": "docs/legado-ios/core-original-proxy-remote-jslib-step.json",
               "scope": "Actual production proxy/remote-map-jslib wiring and coherent JVM 11-root compilation; 23 distinct methods have passing evidence over first23 plus failed-only5. App/JNI validation still pending."
+            },
+            {
+              "record": "docs/legado-ios/core-native-f233826-terminal-result.json",
+              "scope": "Actual f233826 ordinary JVM353 passed; Native/App execution0 due two test compiler errors. Original30 selection is28 product plus2 platform cases, not executed acceptance."
             }
           ],
           "implementedSubtasksZh": [
@@ -695,6 +721,10 @@
             {
               "record": "docs/legado-ios/core-sdk-native-api-characterization-checkpoint.json",
               "scope": "Both88 failures archived; two SDK API tokens and five JVM expectations repaired. Exact349/161/365 controls retain28 product cases plus2 explicit WK platform characterizations. Actual new SDK/JNI/WK and cold hosts pending."
+            },
+            {
+              "record": "docs/legado-ios/core-native-f233826-terminal-result.json",
+              "scope": "Actual f233826 ordinary JVM353 passed; Native/App execution0 due two test compiler errors. Original30 selection is28 product plus2 platform cases, not executed acceptance."
             }
           ],
           "nextActionZh": "已修复88轮的两处SDK API编译错误及5项JVM旧预期；下一份统一源码为core349、Native161、去重365。只启动同一源码的一组SDK/Native，App463定义466叶、Native28产品加2平台验证、MainJS1及两个独立冷宿主；实际结果仍待取得，平台验证不等于生产书源兼容完成。",
@@ -780,6 +810,14 @@
             {
               "record": "docs/legado-ios/core-original-proxy-remote-jslib-step.json",
               "scope": "Actual production proxy/remote-map-jslib wiring and coherent JVM 11-root compilation; 23 distinct methods have passing evidence over first23 plus failed-only5. App/JNI validation still pending."
+            },
+            {
+              "record": "docs/legado-ios/core-sdk-f233826-terminal-result.json",
+              "scope": "Actual f233826 terminal compiler block: App0; independent Package24 passed. Owned producer success does not execute the App signer. Exact two-call repairs await later coherent SDK validation."
+            },
+            {
+              "record": "docs/legado-ios/core-native-f233826-terminal-result.json",
+              "scope": "Actual f233826 ordinary JVM353 passed; Native/App execution0 due two test compiler errors. Original30 selection is28 product plus2 platform cases, not executed acceptance."
             }
           ],
           "nextActionZh": "已修复88轮的两处SDK API编译错误及5项JVM旧预期；下一份统一源码为core349、Native161、去重365。只启动同一源码的一组SDK/Native，App463定义466叶、Native28产品加2平台验证、MainJS1及两个独立冷宿主；实际结果仍待取得，平台验证不等于生产书源兼容完成。"
@@ -852,6 +890,14 @@
             {
               "record": "docs/legado-ios/core-original-proxy-remote-jslib-step.json",
               "scope": "Actual production proxy/remote-map-jslib wiring and coherent JVM 11-root compilation; 23 distinct methods have passing evidence over first23 plus failed-only5. App/JNI validation still pending."
+            },
+            {
+              "record": "docs/legado-ios/core-sdk-f233826-terminal-result.json",
+              "scope": "Actual f233826 terminal compiler block: App0; independent Package24 passed. Owned producer success does not execute the App signer. Exact two-call repairs await later coherent SDK validation."
+            },
+            {
+              "record": "docs/legado-ios/core-native-f233826-terminal-result.json",
+              "scope": "Actual f233826 ordinary JVM353 passed; Native/App execution0 due two test compiler errors. Original30 selection is28 product plus2 platform cases, not executed acceptance."
             }
           ],
           "implementedSubtasksZh": [
@@ -898,7 +944,11 @@
             "docs/legado-ios/core-renewal-signed-resource-step.json",
             "docs/legado-ios/core-renewal-bound-material-step.json",
             "docs/legado-ios/core-renewal-controlled-ipa-step.json",
-            "docs/legado-ios/core-owned-sdk-producer-check-step.json"
+            "docs/legado-ios/core-owned-sdk-producer-check-step.json",
+            {
+              "record": "docs/legado-ios/core-sdk-f233826-terminal-result.json",
+              "scope": "Actual f233826 terminal compiler block: App0; independent Package24 passed. Owned producer success does not execute the App signer. Exact two-call repairs await later coherent SDK validation."
+            }
           ],
           "nextActionZh": "88轮SDK因两处生产API编译错误执行App0项；对应修复已合入，当前统一源码重新验证真实Bundle/IPA及材料读取。独立Package24通过不代表App验收；真实Apple材料与设备授权仍未验证。",
           "pendingSDKRequest": "docs/legado-ios/core-sdk-f233826-request.json"
@@ -954,6 +1004,10 @@
             {
               "record": "docs/legado-ios/core-renewal-certificate-reuse-step.json",
               "scope": "Same-key certificate reuse through the real account/Keychain/Vault owners; current certificate trust, exact remote leaf and per-component profile expiry advance enforced. New four regressions await SDK."
+            },
+            {
+              "record": "docs/legado-ios/core-sdk-f233826-terminal-result.json",
+              "scope": "Actual f233826 terminal compiler block: App0; independent Package24 passed. Owned producer success does not execute the App signer. Exact two-call repairs await later coherent SDK validation."
             }
           ],
           "implementedSubtasksZh": [
@@ -1003,6 +1057,10 @@
             {
               "record": "docs/legado-ios/core-sdk-fc3-runtime-repairs-step.json",
               "scope": "Actual fc3 runtime failures now have reviewed minimal code/fixture repairs; actual unified Swift/Security/TLS execution remains pending."
+            },
+            {
+              "record": "docs/legado-ios/core-sdk-f233826-terminal-result.json",
+              "scope": "Actual f233826 terminal compiler block: App0; independent Package24 passed. Owned producer success does not execute the App signer. Exact two-call repairs await later coherent SDK validation."
             }
           ],
           "implementedSubtasksZh": [
@@ -1061,6 +1119,10 @@
             {
               "record": "docs/legado-ios/core-sdk-fc3-runtime-repairs-step.json",
               "scope": "Actual fc3 runtime failures now have reviewed minimal code/fixture repairs; actual unified Swift/Security/TLS execution remains pending."
+            },
+            {
+              "record": "docs/legado-ios/core-sdk-f233826-terminal-result.json",
+              "scope": "Actual f233826 terminal compiler block: App0; independent Package24 passed. Owned producer success does not execute the App signer. Exact two-call repairs await later coherent SDK validation."
             }
           ],
           "implementedSubtasksZh": [
@@ -1109,6 +1171,10 @@
             {
               "record": "docs/legado-ios/core-sdk-fc3-runtime-repairs-step.json",
               "scope": "Actual fc3 runtime failures now have reviewed minimal code/fixture repairs; actual unified Swift/Security/TLS execution remains pending."
+            },
+            {
+              "record": "docs/legado-ios/core-sdk-f233826-terminal-result.json",
+              "scope": "Actual f233826 terminal compiler block: App0; independent Package24 passed. Owned producer success does not execute the App signer. Exact two-call repairs await later coherent SDK validation."
             }
           ],
           "implementedSubtasksZh": [
@@ -1165,6 +1231,10 @@
             {
               "record": "docs/legado-ios/core-sdk-fc3b01c-terminal-result.json",
               "scope": "Real SDK runtime failures and timeout are now known. Repair typed TLS/signing/fixture prerequisites and rerun a coherent selected suite; no automatic renewal acceptance."
+            },
+            {
+              "record": "docs/legado-ios/core-sdk-f233826-terminal-result.json",
+              "scope": "Actual f233826 terminal compiler block: App0; independent Package24 passed. Owned producer success does not execute the App signer. Exact two-call repairs await later coherent SDK validation."
             }
           ],
           "nextActionZh": "前台及系统允许的后台触发已有生产接线和持久节流，当前统一SDK复验触发与事务衔接；设备调度、到期恢复及长期无人值守仍未验证。",
@@ -6463,6 +6533,8 @@
     "docs/legado-ios/core-original-proxy-remote-jslib-step.json",
     "docs/legado-ios/self-renewal-feasibility-reassessment-20261021.json",
     "docs/legado-ios/core-native-f233826-test-compiler-repair.json",
-    "docs/legado-ios/core-renewal-certificate-reuse-step.json"
+    "docs/legado-ios/core-renewal-certificate-reuse-step.json",
+    "docs/legado-ios/core-sdk-f233826-terminal-result.json",
+    "docs/legado-ios/core-native-f233826-terminal-result.json"
   ]
 }
