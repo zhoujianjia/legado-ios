@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "status": "source-supported-oracle-repair-awaiting-independent-review-and-actual-SDK",
+  "actualFailedSource": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+  "runID": 39578204127,
+  "jobID": 119148925693,
+  "changedSources": [
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+      "before": {
+        "bytes": 22976,
+        "sha256": "87f8fa275bbc042d182b17f7aa8bf8e866c4653b9c2fbf9d6971106088d9b187"
+      },
+      "after": {
+        "bytes": 23332,
+        "sha256": "4f0148487ae02d5376077aeddb521e4dc2d4f898c07ae3c3b754838991f00aab"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift",
+      "before": {
+        "bytes": 32311,
+        "sha256": "9266f92e9e678a2dd3bf636b6a323bad82d82fbcc10612ce2eb0ebda813bff59"
+      },
+      "after": {
+        "bytes": 32981,
+        "sha256": "5a9621f70e59efb4b4b1db001777ecc8609e14d49108327dcfd8dbf10a220a13"
+      }
+    }
+  ],
+  "actualIssues": [
+    {
+      "line": 51583,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:324:13: Expectation failed: (error as? Transport.Failure → nil) == .cancelled"
+    },
+    {
+      "line": 151180,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalUserDataHandoffTests.swift:115:17: Expectation failed: (target.isDirectory → false) == true"
+    },
+    {
+      "line": 151181,
+      "text": "✘ Test «unknown» recorded an issue at SelfRenewalUserDataHandoffTests.swift:115:17: Expectation failed: (target.isDirectory → false) == true"
+    }
+  ],
+  "sourceFindings": [
+    "PlistChannel.receive calls SelfRenewalDERPropertyList.decodeXMLPropertyList, which checks Task cancellation at entry and during conversion; CancellationError and Transport.Failure.cancelled are both existing cancellation results. The failing raw assertion only reveals nil Transport cast, not the exact dynamic error type.",
+    "The raw handoff operation was rejected at BookSourcePersistenceFailure.writeFailed(.replace) with zero Upgrade assertions unfailed, but subsequent URL resourceValues reported isDirectory false. Cached URL type is a source-supported explanation, not a freshly measured path result. The repaired method directly checks actual path attributes plus unchanged nonempty sentinel and exact directory membership.",
+    "Unexpected lookup errors now throw through the detached fixture to the originating test. Directory and sentinel mismatches use throwing requirements; neither orphan issue is omitted from original result acceptance."
+  ],
+  "unchangedProductionPaths": [
+    "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+    "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedDeviceStream.swift",
+    "Modules/Services/SelfRenewal/SelfRenewalDERPropertyList.swift",
+    "Modules/Core/BookSource/BookSourceStore.swift"
+  ],
+  "newTestDefinitions": 0,
+  "newHostsOrSelectors": 0,
+  "actualNewSwiftCompilationOrTests": 0,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "referenceForURLCacheSemantics": "https://developer.apple.com/documentation/foundation/url/resourcevalues(forkeys:)"
+}

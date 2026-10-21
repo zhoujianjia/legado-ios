@@ -81,6 +81,9 @@ struct SelfRenewalUserDataHandoffTests {
             let sourceURL = fixture.directory.appendingPathComponent("app/book_sources.json")
             try FileManager.default.removeItem(at: sourceURL)
             try FileManager.default.createDirectory(at: sourceURL, withIntermediateDirectories: false)
+            let sentinel = Data("owned source destination must survive".utf8)
+            let sentinelURL = sourceURL.appendingPathComponent("sentinel")
+            try sentinel.write(to: sentinelURL)
             let journal = try await Journal.open(at: fixture.directory.appendingPathComponent("SelfRenewalTransactions"))
             do {
                 let coordinator = Coordinator(journal: journal, vault: fixture.vault,
@@ -111,8 +114,13 @@ struct SelfRenewalUserDataHandoffTests {
                     #expect(peer.observed.snapshot.uploaded == raw)
                     #expect(peer.observed.snapshot.upgradeRequests == 0)
                 }
-                let target = try sourceURL.resourceValues(forKeys: [.isDirectoryKey])
-                #expect(target.isDirectory == true)
+                // This URL named a regular file before the fixture replaced
+                // it. Inspect the actual path, rather than cached URL resource
+                // values, and require its owned directory contents to survive.
+                let target = try FileManager.default.attributesOfItem(atPath: sourceURL.path)
+                try #require((target[.type] as? FileAttributeType) == .typeDirectory)
+                try #require(try Data(contentsOf: sentinelURL) == sentinel)
+                try #require(try FileManager.default.contentsOfDirectory(atPath: sourceURL.path) == ["sentinel"])
                 try await coordinator.close()
             } catch {
                 do { try await journal.close() } catch { Issue.record(error) }

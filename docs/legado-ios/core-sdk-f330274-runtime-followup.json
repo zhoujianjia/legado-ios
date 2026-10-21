@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "status": "reviewed-source-integrated-actual-SDK-and-full-Native-pending",
+  "actualFailedSource": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+  "actualFailedSDKRun": 39578204127,
+  "actualFailedSDKTerminalRecord": "docs/legado-ios/core-sdk-f330274-terminal-result.json",
+  "changedSources": [
+    {
+      "path": "Modules/Services/Network/CookieStore+WebKit.swift",
+      "bytes": 14370,
+      "sha256": "6c2870c1808c335741f31c5a7be58f6e0b8afa936b3e5db07c1e1413ccf563dc"
+    },
+    {
+      "path": "Modules/Services/Network/WebViewFetcher.swift",
+      "bytes": 38594,
+      "sha256": "2173c7b7150b6f33c46a95cc172a644c5aa27a8b20cc4a3e558c37faee79dc48"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "bytes": 129471,
+      "sha256": "a7351a931474e378cae73af33d1c056c3eb664b072f18f0c773749c8cc765e0e"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+      "bytes": 40870,
+      "sha256": "66bc61ba5f9d6ab2817402542d26e6de8b124d92f65e925466109d4d9a8e54b2"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+      "bytes": 23332,
+      "sha256": "4f0148487ae02d5376077aeddb521e4dc2d4f898c07ae3c3b754838991f00aab"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift",
+      "bytes": 32981,
+      "sha256": "5a9621f70e59efb4b4b1db001777ecc8609e14d49108327dcfd8dbf10a220a13"
+    }
+  ],
+  "sourceCounts": {
+    "core": 418,
+    "native": 282,
+    "union": 440,
+    "package": 23
+  },
+  "all440CurrentInputsVerified": true,
+  "Package23InputsUnchanged": true,
+  "newTestDefinitions": 0,
+  "newHostsOrSelectors": 0,
+  "changes": [
+    "The real pooled WebView response observes the same WK Cookie store through its existing persistence owner, with custom cancellation at atomic commit; the navigation wait owns and cancels the asynchronous read and once-only response decision. No native setCookie ACK or shared-store/pool ownership changed.",
+    "The existing stale-response regression requires actual final=durable, path, HttpOnly and session facts before cancelling its old lease; both late-success/failure vectors and original budgets remain.",
+    "Lookup cancellation accepts only existing Swift decoder CancellationError or socket Transport.Failure.cancelled; all other errors propagate through the detached fixture.",
+    "Failed source replacement must preserve an actual directory, nonempty sentinel bytes and exact directory membership while retaining the existing zero-Upgrade/pending-ownership assertions."
+  ],
+  "unresolved": [
+    "The Cookie expiry mismatch is not fixed. Eight exact native attribute comparisons remain; bounded exact original millisecond and Date bit-pattern diagnostics now distinguish the failing input and representation delta. No date tolerance or lifetime rebasing was introduced.",
+    "The old orphan assertion did not reveal its exact dynamic cancellation error class, and stale URL-cache causality was not measured. The repaired checks remain pending actual Apple execution.",
+    "The independently live full Native run still validates immutable f330274, not these six changed source files."
+  ],
+  "sourceRosterDelta": {
+    "path": "docs/legado-ios/evidence/sdk-f330274-runtime-followup/source-roster-delta.json",
+    "bytes": 3853,
+    "sha256": "29c96103db687f2394d521ae5e10eb7637a2cc58d10fa26d84fd9e63e191f997"
+  },
+  "evidence": [
+    {
+      "path": "docs/legado-ios/evidence/sdk-f330274-runtime-followup/renewal-oracle-proposal.json",
+      "bytes": 3353,
+      "sha256": "022a23e339497761e8ea793f901ed6a7ac3a31b249d3d02d499fe32c9d25f0e9"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-f330274-runtime-followup/renewal-oracles/independent-review.json",
+      "bytes": 4258,
+      "sha256": "d4e9528c9befebd278cdab8a6283ee68fa2a40c844f4b0ba2f2beca95585287e"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-f330274-runtime-followup/cookie-source-candidate.json",
+      "bytes": 7655,
+      "sha256": "e95ef28e68f8985dc38e2d0890e0f1d55061fb67f5075e8f1d670fddc83e8a3e"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-f330274-runtime-followup/cookie/independent-review.json",
+      "bytes": 5783,
+      "sha256": "4231d5e4c09dcdd0fc50b2eb5545f193eb4715ab92c8c1dab4171efa4c6d9372"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-f330274-runtime-followup/cookie-actual-failure.json",
+      "bytes": 3712,
+      "sha256": "5366505ed48b8fa913a7dd525a641ef67d85c4b83995f9ce8f7d822db3d7bd5f"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-f330274-runtime-followup/webkit-source-contract.json",
+      "bytes": 1995,
+      "sha256": "d24bec69c7de28a7e47e745b6b7ec497e1dc18ab578e6ff1a033bbbcd44b6432"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-f330274-runtime-followup/reviewed-source-diffs.json",
+      "bytes": 16124,
+      "sha256": "8cca5a63eed7951b1261c25bf4523e8b21ff4ddaabf8ffbee2cfa2c60a8ef55b"
+    }
+  ],
+  "actualNewValidation": {
+    "SwiftCompilationOrParser": 0,
+    "newSwiftTests": 0,
+    "newCloudRuns": 0
+  },
+  "temporaryCompatibilityTargetPercent": 90,
+  "measuredCompatibilityPercent": null,
+  "otherSeventeenItemsRemainDeferred": true,
+  "limits": [
+    "No real Apple authorization, physical-device route/installation, renewed installed profile, cold installation data retention or unattended renewal acceptance."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

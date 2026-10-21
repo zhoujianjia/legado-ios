@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "status": "independent-source-review-passed-awaiting-actual-SDK",
+  "frozenAtUTC": "2026-10-21T10:35:34.107247+00:00",
+  "proposal": {
+    "path": ".build/sdk-f330274-renewal-oracle-repair/root-proposal.json",
+    "bytes": 3353,
+    "sha256": "022a23e339497761e8ea793f901ed6a7ac3a31b249d3d02d499fe32c9d25f0e9"
+  },
+  "actualFailedSource": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+  "changedSources": [
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+      "before": {
+        "bytes": 22976,
+        "sha256": "87f8fa275bbc042d182b17f7aa8bf8e866c4653b9c2fbf9d6971106088d9b187"
+      },
+      "after": {
+        "bytes": 23332,
+        "sha256": "4f0148487ae02d5376077aeddb521e4dc2d4f898c07ae3c3b754838991f00aab"
+      },
+      "reviewedActualDiffBytes": 1060,
+      "reviewedActualDiffSHA256": "5ab2efd795935a80f8200a5ae3cd87d0ae64a184be0f42765e7617954b546299"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift",
+      "before": {
+        "bytes": 32311,
+        "sha256": "9266f92e9e678a2dd3bf636b6a323bad82d82fbcc10612ce2eb0ebda813bff59"
+      },
+      "after": {
+        "bytes": 32981,
+        "sha256": "5a9621f70e59efb4b4b1db001777ecc8609e14d49108327dcfd8dbf10a220a13"
+      },
+      "reviewedActualDiffBytes": 1948,
+      "reviewedActualDiffSHA256": "318996fc8d8d0b2e3583a7c5203c0a519f69d53552a1c7dac4227743edb73cae"
+    }
+  ],
+  "unchangedProductionSources": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+      "bytes": 34406,
+      "sha256": "68f5c642486ba26220dae4e55463b635151a620225d430fd941289f8c81feec9"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedDeviceStream.swift",
+      "bytes": 23202,
+      "sha256": "df5f0f8d8c91a6cee54d9366d32672d6871fe8456ce877d5abb2e33f5ad034aa"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDERPropertyList.swift",
+      "bytes": 8386,
+      "sha256": "93461f503492f663854eb97569efb010fb57257f3f29ac75605ef8ea874b5666"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceStore.swift",
+      "bytes": 67541,
+      "sha256": "1aedc8892e51d4f081d82ee9c9a3978eb2efbe00a8da5445c0c895341934e0c6"
+    }
+  ],
+  "skillsRead": [
+    ".agents/skills/yuedu-swift/SKILL.md",
+    "CLAUDE.md"
+  ],
+  "findings": [],
+  "checks": {
+    "existingDecodeCancellationErrorPathConfirmed": "SelfRenewalAuthenticatedInstallationClient.PlistChannel.receive calls decodeXMLPropertyList; its entry and convert/consume check Task cancellation. Existing socket cancellation remains Transport.Failure.cancelled.",
+    "cancellationOracleAcceptsOnlyTwoExistingCancellationForms": true,
+    "unexpectedLookupErrorsThrowToOriginatingFixtureCaller": true,
+    "peerExitDrainZeroUpgradeAndNoStoppedSessionChecksRetained": true,
+    "sourceWriteFailureStillRequiresWriteFailedReplaceAndZeroUpgrade": true,
+    "uploadIntentAndRemoteOwnershipAssertionsRetained": true,
+    "fixtureDestinationNowContainsNonemptyOwnedSentinel": true,
+    "actualPathFileManagerAttributesRequireDirectory": true,
+    "sentinelBytesAndExactOneMemberDirectoryListingRequired": true,
+    "requirementsThrowInsteadOfLeavingOnlyNonthrowingOrphanIssues": true,
+    "noProductionFailureNormalizationOrTransportChange": true,
+    "newTestDefinitions": 0,
+    "newHostsOrSelectors": 0,
+    "newSwiftCompilationOrTestsExecuted": 0
+  },
+  "scopeLimits": [
+    "Original nil Transport cast does not identify the actual dynamic Error type. Accepting CancellationError is supported by source, not a fresh measured error classification.",
+    "Original URL resourceValues false does not prove cached URL metadata was its cause. The new oracle reads actual path attributes and preserves nonempty marker bytes, without claiming the causal experiment occurred.",
+    "Original run remains failed with all three unknown-context issue occurrences at two source locations. These candidate changes do not relabel it.",
+    "A complete actual Apple SDK execution is still required; the review performed no Swift compilation or tests."
+  ],
+  "canonicalProductionTestsOrGitChangedByReviewer": false,
+  "cloudQueriesDownloadsOrJobMutations": 0
+}

@@ -1579,8 +1579,8 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
             guard let native = HTTPCookie(properties: properties) else {
                 throw failure("UNSUPPORTED_CAPABILITY", "Parsed original Cookie cannot be represented by the existing native owner [construction]")
             }
-            // Only fixed field labels enter diagnostics. Never include Cookie
-            // names/values/domains/paths/header bytes or actual expiry dates.
+            // Only fixed field labels and numeric expiry proof enter diagnostics.
+            // Never include Cookie names/values/domains/paths or header bytes.
             var mismatches: [String] = []
             if !native.name.utf8.elementsEqual(name.utf8) { mismatches.append("name") }
             if !native.value.utf8.elementsEqual(value.utf8) { mismatches.append("value") }
@@ -1591,7 +1591,14 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
             if native.isSessionOnly != !persistent { mismatches.append("session") }
             if native.expiresDate != (persistent ? nativeExpiry : nil) { mismatches.append("expiry") }
             guard mismatches.isEmpty else {
-                throw failure("UNSUPPORTED_CAPABILITY", "Parsed original Cookie cannot be represented by the existing native owner [\(mismatches.joined(separator: ","))] persistent=\(persistent) seedSession=\(seed.isSessionOnly) seedExpiry=\(seed.expiresDate != nil) nativeSession=\(native.isSessionOnly) nativeExpiry=\(native.expiresDate != nil)")
+                // Exact Date equality above remains authoritative; these bits
+                // retain subsecond differences instead of rounding a diagnosis.
+                let expectedBits = String(nativeExpiry.timeIntervalSinceReferenceDate.bitPattern, radix: 16)
+                let seedBits = seed.expiresDate.map { String($0.timeIntervalSinceReferenceDate.bitPattern, radix: 16) } ?? "nil"
+                let nativeBits = native.expiresDate.map { String($0.timeIntervalSinceReferenceDate.bitPattern, radix: 16) } ?? "nil"
+                let seedMaximumAge = seed.properties?[.maximumAge] != nil
+                let seedCreated = seed.properties?[HTTPCookiePropertyKey(rawValue: "Created")] != nil
+                throw failure("UNSUPPORTED_CAPABILITY", "Parsed original Cookie cannot be represented by the existing native owner [\(mismatches.joined(separator: ","))] persistent=\(persistent) seedSession=\(seed.isSessionOnly) seedExpiry=\(seed.expiresDate != nil) nativeSession=\(native.isSessionOnly) nativeExpiry=\(native.expiresDate != nil) originalExpiresMs=\(expiresAt) expectedRefBits=\(expectedBits) seedRefBits=\(seedBits) nativeRefBits=\(nativeBits) seedMaximumAge=\(seedMaximumAge) seedCreated=\(seedCreated)")
             }
             records.append(try CookiePersistenceOwner.Record(cookie: native, provenance: .httpResponse,
                 originURL: url, hostOnly: hostOnly, originalExpiresAtMs: expiresAt,

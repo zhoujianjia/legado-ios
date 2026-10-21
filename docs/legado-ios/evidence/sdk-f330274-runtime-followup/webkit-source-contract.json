@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "implementationCommit": "0cdff65f65d6846840d6ac43fb3a035bd4bcb957",
+  "sources": [
+    {
+      "url": "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebKit/NetworkProcess/NetworkResourceLoader.cpp",
+      "bytes": 165279,
+      "sha256": "d6cd7ff34750d18c72148e0e125af622c2d5ad04bf58381452e97887073e1af4",
+      "relevantLineNumbers": [
+        1457,
+        1507,
+        2100,
+        2117
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebCore/platform/network/ResourceResponseBase.cpp",
+      "bytes": 36702,
+      "sha256": "66c6efd306f87965e37a73203dba204978a49a1d63b780eabc1990a29dddd232",
+      "relevantLineNumbers": [
+        232,
+        530,
+        534
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebKit/WebProcess/WebCoreSupport/WebLocalFrameLoaderClient.cpp",
+      "bytes": 90926,
+      "sha256": "61f02d9e1fdddb66b336814be1fabcd01ca91ac32e941cd0c25918ecbba382ec",
+      "relevantLineNumbers": [
+        1031
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebKit/UIProcess/API/Cocoa/WKNavigationResponse.mm",
+      "bytes": 3614,
+      "sha256": "9b1f38786aa44528261b11d38000d30c4f4fa7a071bac6654adda77d22daad31",
+      "relevantLineNumbers": [
+        59
+      ]
+    }
+  ],
+  "finding": "Pinned WebKit sanitizes response Cookie headers before normal navigation responses are forwarded to the WebProcess. Public navigation-response headers alone cannot prove whether the browser accepted Cookies.",
+  "limit": "Pinned upstream source corroborates the missed admission path; installed CI WebKit binaries were not inspected. Next actual regression must observe final=durable through the same native Cookie owner before the old lease is cancelled."
+}

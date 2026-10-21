@@ -1,0 +1,69 @@
+{
+  "rawLog": {
+    "path": ".build/sdk-f330274-terminal/artifact-12338237542/reader-renewal-probe/currentcore-tests.log",
+    "bytes": 20664756,
+    "sha256": "bed8dafbf470cb839c99e3c818aa2cd438e25cc39ef94bcb367bd67108e6e03a"
+  },
+  "sourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+  "excerpt": [
+    {
+      "line": 38916,
+      "text": "\u25c7 Test \"a late Cookie response success or failure cannot stop the next real pooled WebView lease\" started."
+    },
+    {
+      "line": 38917,
+      "text": "2026-10-21 10:12:57.774677+0000 YueduReader[1476:267609] [] nw_listener_socket_inbox_create_socket setsockopt SO_NECP_LISTENUUID failed [2: No such file or directory]"
+    },
+    {
+      "line": 38918,
+      "text": "2026-10-21 10:12:57.805961+0000 YueduReader[1476:266164] [parse] \u23f1 cookie-owner.stale-webview 31ms stage=old-issued"
+    },
+    {
+      "line": 38919,
+      "text": "[ERROR] \u23f1 cookie-owner.stale-webview 31ms stage=old-issued"
+    },
+    {
+      "line": 38920,
+      "text": "2026-10-21 10:12:58.674103+0000 YueduReader[1476:266916] [connection] [C9 127.0.0.1:56842 tcp, local: 127.0.0.1:56839, definite, attribution: developer, server, prohibit joining protocols] is already cancelled, ignoring cancel"
+    },
+    {
+      "line": 38921,
+      "text": "2026-10-21 10:12:58.674800+0000 YueduReader[1476:267398] [ProcessSuspension] WebContent[10808] 0x10c060150 - [sessionID=9223372036854775818] WebProcess::updateFreezerStatus: isFreezable=1, error=-1"
+    },
+    {
+      "line": 38922,
+      "text": "\u2718 Test \"a late Cookie response success or failure cannot stop the next real pooled WebView lease\" recorded an issue at LegadoCookieOwnerTests.swift:420:6: Caught error: CookieOwnerError(code: \"TEST_NAVIGATION_FINISHED\", message: \"The owned navigation finished before its Cookie response commit gate\")"
+    },
+    {
+      "line": 38923,
+      "text": "\u2718 Test \"a late Cookie response success or failure cannot stop the next real pooled WebView lease\" failed after 0.927 seconds with 1 issue."
+    },
+    {
+      "line": 38959,
+      "text": "\u25c7 Test \"response text uses last-name update across path/subdomain while rich RFC attributes and DB/session restart lifetimes stay distinct\" started."
+    },
+    {
+      "line": 38960,
+      "text": "\u2718 Test \"response text uses last-name update across path/subdomain while rich RFC attributes and DB/session restart lifetimes stay distinct\" recorded an issue at LegadoCookieTextHostTests.swift:125:6: Caught error: LegadoRuntimeError(code: \"UNSUPPORTED_CAPABILITY\", message: \"Parsed original Cookie cannot be represented by the existing native owner [expiry] persistent=true seedSession=false seedExpiry=true nativeSession=false nativeExpiry=true\", completedEffects: nil, loginUIEvents: nil, secondaryFailures: nil)"
+    },
+    {
+      "line": 38961,
+      "text": "\u2718 Test \"response text uses last-name update across path/subdomain while rich RFC attributes and DB/session restart lifetimes stay distinct\" failed after 0.051 seconds with 1 issue."
+    },
+    {
+      "line": 38962,
+      "text": "\u25c7 Test \"original DB strings keep their original expiry semantics while native RFC headers suppress known expired records\" started."
+    },
+    {
+      "line": 38963,
+      "text": "\u2714 Test \"original DB strings keep their original expiry semantics while native RFC headers suppress known expired records\" passed after 0.003 seconds."
+    }
+  ],
+  "boundaries": {
+    "WKOldNavigationCompletedNormallyBeforeGate": true,
+    "oldAllowanceHangNotReproduced": true,
+    "expiryOnlyMismatch": true,
+    "expiredCookieCompanionPassed": true,
+    "originalExpiryCauseKnown": false
+  }
+}

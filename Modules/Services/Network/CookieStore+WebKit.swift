@@ -9,7 +9,7 @@ extension CookieStore {
                        validate: @escaping @Sendable () throws -> Void = {}) async throws -> [HTTPCookie] {
         let observation = try await beginWebKitObservation()
         try Task.checkCancellation()
-        let cookies = await Self.readWebKit(store)
+        let cookies = try await Self.readWebKit(store)
         try Task.checkCancellation()
         try await ingestWebKitSnapshot(cookies, observation: observation, confirming: scope,
             requireCurrent: requireCurrent, validate: validate)
@@ -17,9 +17,9 @@ extension CookieStore {
     }
 
     @MainActor
-    private static func readWebKit(_ store: WKHTTPCookieStore) async -> [HTTPCookie] {
-        await withCheckedContinuation { continuation in
-            store.getAllCookies { continuation.resume(returning: $0) }
+    private static func readWebKit(_ store: WKHTTPCookieStore) async throws -> [HTTPCookie] {
+        try await originalWebCookieIPC { (wait: OriginalWebCookieIPCWait<[HTTPCookie]>) in
+            store.getAllCookies { wait.finish(.success($0)) }
         }
     }
 }

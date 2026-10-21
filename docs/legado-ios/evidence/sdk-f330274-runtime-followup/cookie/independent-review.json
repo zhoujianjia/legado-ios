@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "status": "independent-source-review-passed-awaiting-actual-Apple-execution",
+  "frozenAtUTC": "2026-10-21T10:39:35.975011+00:00",
+  "candidate": {
+    "path": ".build/sdk-f330274-cookie-repair-step/final-v1.json",
+    "bytes": 7655,
+    "sha256": "e95ef28e68f8985dc38e2d0890e0f1d55061fb67f5075e8f1d670fddc83e8a3e"
+  },
+  "actualFailedSource": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+  "sourceRoot": ".build/sdk-f330274-cookie-repair-step/snapshot-v1/work",
+  "skillsRead": [
+    ".agents/skills/yuedu-swift/SKILL.md",
+    "CLAUDE.md"
+  ],
+  "findings": [],
+  "reviewedFourSourceCandidates": [
+    {
+      "path": "Modules/Services/Network/WebViewFetcher.swift",
+      "candidate": {
+        "path": ".build/sdk-f330274-cookie-repair-step/snapshot-v1/work/Modules/Services/Network/WebViewFetcher.swift",
+        "bytes": 38594,
+        "sha256": "2173c7b7150b6f33c46a95cc172a644c5aa27a8b20cc4a3e558c37faee79dc48"
+      },
+      "actualBaselineGitBytesMatched": true,
+      "diffBytesSHA256Matched": true
+    },
+    {
+      "path": "Modules/Services/Network/CookieStore+WebKit.swift",
+      "candidate": {
+        "path": ".build/sdk-f330274-cookie-repair-step/snapshot-v1/work/Modules/Services/Network/CookieStore+WebKit.swift",
+        "bytes": 14370,
+        "sha256": "6c2870c1808c335741f31c5a7be58f6e0b8afa936b3e5db07c1e1413ccf563dc"
+      },
+      "actualBaselineGitBytesMatched": true,
+      "diffBytesSHA256Matched": true
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "candidate": {
+        "path": ".build/sdk-f330274-cookie-repair-step/snapshot-v1/work/Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 129471,
+        "sha256": "a7351a931474e378cae73af33d1c056c3eb664b072f18f0c773749c8cc765e0e"
+      },
+      "actualBaselineGitBytesMatched": true,
+      "diffBytesSHA256Matched": true
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+      "candidate": {
+        "path": ".build/sdk-f330274-cookie-repair-step/snapshot-v1/work/Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+        "bytes": 40870,
+        "sha256": "66bc61ba5f9d6ab2817402542d26e6de8b124d92f65e925466109d4d9a8e54b2"
+      },
+      "actualBaselineGitBytesMatched": true,
+      "diffBytesSHA256Matched": true
+    }
+  ],
+  "checks": {
+    "allManifestAndLinkedEvidenceBytesSHA256Matched": true,
+    "WKResponseReadsSameViewActualHttpCookieStore": true,
+    "parsedPublicSetCookieHeadersNoLongerSoleAdmission": true,
+    "snapshotUsesExistingCookieOwnerObservationAndPublication": true,
+    "customCancellationCapturedFromSameNavigationWait": true,
+    "customValidationReachesOwnerEntryAndBeforeAtomicReplace": true,
+    "taskCancellationAlsoCheckedAtReadAndOwnerBoundaries": true,
+    "responseWorkOwnsAndCancelsUnstructuredReadTasks": true,
+    "decisionRemovedBeforeCallingHandlerAndCompletesAtMostOnce": true,
+    "lateReadCallbackDropsResultWithExistingOnceIPCWait": true,
+    "lateSuccessFailureCannotRemoveOrStopDifferentCurrentWait": true,
+    "noResponseSetCookieReinjection": true,
+    "seedSetCookieIssuedACKOrderAndSyncSectionByteExact": true,
+    "sharedWebsiteDataStoreAndPoolSelectionUnchangedByDiff": true,
+    "noNew16384NormalReadCapturePrecheck": true,
+    "existingOwnerDocumentCountLimitNotRemoved": true,
+    "existingTestDefinitionsBeforeAfter": 13,
+    "onlyTestChangeFiveActualCookieOwnerAssertions": true,
+    "actualFinalCookieRequiredBeforeCancellingOldWait": {
+      "name": "final",
+      "value": "durable",
+      "path": "/private",
+      "HttpOnly": true,
+      "sessionOnly": true
+    },
+    "dualLateSuccessAndFailureBranchesUnchanged": true,
+    "fourBoundaryMarkersAnd60SecondMethod20SecondNavigationBudgetsUnchanged": true,
+    "expiryEightExactComparisonsByteExact": true,
+    "expiryDateEqualityAndMaxAgeRemovalNotRelaxed": true,
+    "expiryOnlyAddsBoundedInt64DoubleBitPatternsAndFixedPresenceBooleans": true,
+    "diagnosticDoesNotIncludeCookieNameValueDomainPathOrHeaderBytes": true,
+    "allFourPinnedWebKitFilesAndRelevantLinesHashChecked": true,
+    "rawWKNormalCompletionBeforeGateAndUnresolvedExpiryRetained": true
+  },
+  "primaryInterpretation": {
+    "commit": "0cdff65f65d6846840d6ac43fb3a035bd4bcb957",
+    "confirmedSourceContract": "The pinned ordinary response path sanitizes Set-Cookie/Set-Cookie2 before response delivery; WKNavigationResponse forwards the resulting NS response. It supports observing the actual WK store rather than accepting an empty parsed header set as Cookie proof.",
+    "notCurrentOSBinaryDisassembly": true,
+    "newRuntimeFinalCookieAssertionsStillRequired": true
+  },
+  "validation": {
+    "newSwiftCompiler": 0,
+    "newSwiftParser": 0,
+    "newSwiftTests": 0,
+    "newJVMTests": 0,
+    "newCloudQueriesOrDownloads": 0,
+    "canonicalProductionTestGitOrGateEditsByReviewer": 0,
+    "sourceAndExistingRawEvidenceReadOnly": true
+  },
+  "limits": [
+    "This review is not Apple compilation, WebKit IPC execution, or a passed regression.",
+    "A once-finished cancelled read discards its late value; it does not retract native Cookie writes or promise rollback of a commit already issued. Existing owner atomic replacement and its pre-write cancellation validation remain the authority.",
+    "The snapshot timing and actual final=durable/path/HttpOnly/session assertions must be checked by the next actual SDK execution; a pinned upstream implementation is not proof of this OS framework behavior.",
+    "Expiry remains unresolved. Exact millis/Date bits enable the next measurement; no lifetime cap, rebasing, rounding or parser hypothesis is accepted as a verified fix.",
+    "No automatic renewal, physical installation or full source compatibility acceptance follows."
+  ]
+}

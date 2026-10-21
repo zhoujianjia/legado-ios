@@ -11,6 +11,7 @@ import WebKit
 final class WebViewNavigationWait {
     private var continuation: CheckedContinuation<String, Error>?
     private var responseDecisions: [UUID: (WKNavigationResponsePolicy) -> Void] = [:]
+    private var responseWork: [UUID: Task<Void, Never>] = [:]
     private(set) var cookieCancellation = OriginalRuntimeCommitCancellation()
     var navigation: WKNavigation?
 
@@ -25,12 +26,21 @@ final class WebViewNavigationWait {
 
     func completeResponseDecision(_ id: UUID, policy: WKNavigationResponsePolicy) {
         guard let decision = responseDecisions.removeValue(forKey: id) else { return }
+        responseWork.removeValue(forKey: id)
         decision(policy)
+    }
+
+    func ownResponseWork(_ task: Task<Void, Never>, decision id: UUID) {
+        guard responseDecisions[id] != nil else { task.cancel(); return }
+        responseWork[id] = task
     }
 
     private func cancelResponseDecisions() {
         let decisions = Array(responseDecisions.values)
         responseDecisions.removeAll()
+        let work = Array(responseWork.values)
+        responseWork.removeAll()
+        for task in work { task.cancel() }
         for decision in decisions { decision(.cancel) }
     }
 
@@ -859,39 +869,41 @@ final class WebViewFetcher: NSObject, WKNavigationDelegate {
         decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
     ) {
         if let http = navigationResponse.response as? HTTPURLResponse,
-            let url = http.url,
-            let headerFields = http.allHeaderFields as? [String: String]
+            let url = http.url
         {
-            let cookies = HTTPCookie.cookies(withResponseHeaderFields: headerFields, for: url)
-            if !cookies.isEmpty {
-                guard let wait = loadingMap[webView], wait.isWaiting else { decisionHandler(.cancel); return }
-                guard let decision = wait.registerResponseDecision(decisionHandler) else { return }
-                let cancellation = wait.cookieCancellation
-                Task { @MainActor in
-                    do {
-                        guard self.loadingMap[webView] === wait, wait.isWaiting else { throw CancellationError() }
-                        try await self.cookieOwner.ingest(cookies, provenance: .httpResponse, originURL: url) {
-                            try cancellation.check(deadline: .distantFuture)
-                        }
-                        if let afterCommit = self.afterResponseCookieCommit { try await afterCommit() }
-                        guard self.loadingMap[webView] === wait, wait.isWaiting else {
-                            wait.completeResponseDecision(decision, policy: .cancel); return
-                        }
-                        // WebKit owns its response-cookie application. Re-enqueueing
-                        // setCookie here would let this old async task write a
-                        // cookie after the pooled view has been returned/reused.
-                        wait.completeResponseDecision(decision, policy: .allow)
-                    } catch {
-                        if self.loadingMap[webView] === wait {
-                            self.loadingMap.removeValue(forKey: webView)
-                            wait.resume(throwing: error)
-                            webView.stopLoading()
-                        }
-                        wait.completeResponseDecision(decision, policy: .cancel)
+            guard let wait = loadingMap[webView], wait.isWaiting else { decisionHandler(.cancel); return }
+            guard let decision = wait.registerResponseDecision(decisionHandler) else { return }
+            let cancellation = wait.cookieCancellation
+            let work = Task { @MainActor in
+                do {
+                    guard self.loadingMap[webView] === wait, wait.isWaiting else { throw CancellationError() }
+                    // WebKit sanitizes Set-Cookie before forwarding the response
+                    // to its navigation delegate. Observe the same view's real
+                    // Cookie store; public response headers are not Cookie proof.
+                    _ = try await self.cookieOwner.captureWebKit(
+                        webView.configuration.websiteDataStore.httpCookieStore,
+                        confirming: url, requireCurrent: false) {
+                        try cancellation.check(deadline: .distantFuture)
                     }
+                    if let afterCommit = self.afterResponseCookieCommit { try await afterCommit() }
+                    guard self.loadingMap[webView] === wait, wait.isWaiting else {
+                        wait.completeResponseDecision(decision, policy: .cancel); return
+                    }
+                    // WebKit owns its response-cookie application. Re-enqueueing
+                    // setCookie here would let this old async task write a
+                    // cookie after the pooled view has been returned/reused.
+                    wait.completeResponseDecision(decision, policy: .allow)
+                } catch {
+                    if self.loadingMap[webView] === wait {
+                        self.loadingMap.removeValue(forKey: webView)
+                        wait.resume(throwing: error)
+                        webView.stopLoading()
+                    }
+                    wait.completeResponseDecision(decision, policy: .cancel)
                 }
-                return
             }
+            wait.ownResponseWork(work, decision: decision)
+            return
         }
         decisionHandler(.allow)
     }

@@ -321,7 +321,11 @@ struct SelfRenewalAuthenticatedInstallationClientTests {
             try #require(sent == true && replyCount == 1)
             operation.cancel()
             let error = await Self.rejected { try await operation.value }
-            #expect(error as? Transport.Failure == .cancelled)
+            // Cancellation can reach the Swift plist decoder after the socket
+            // delivered its frame, or wake the actual blocked socket read.
+            // Throw any other error back through the detached fixture so the
+            // originating test cannot report Passed with an orphan issue.
+            guard error is CancellationError || error as? Transport.Failure == .cancelled else { throw error }
             // The actual socket peer has exited after cancellation. Its event
             // stream must terminate before the enclosing action returns.
             let finished = await replies.next()

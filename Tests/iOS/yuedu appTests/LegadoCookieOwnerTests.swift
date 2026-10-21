@@ -442,6 +442,11 @@ struct LegadoCookieOwnerTests {
             do {
                 try await gate.waitUntilEntered()
                 SourcePerfTrace.record("cookie-owner.stale-webview", "stage=gate-entered", since: stageStarted, thresholdMs: 0)
+                let accepted = try await f.owner.snapshot()
+                let responseCookie = try #require(accepted.cookies.first { $0.properties[HTTPCookiePropertyKey.name.rawValue] == .text("final") })
+                let nativeResponseCookie = try responseCookie.native()
+                #expect(nativeResponseCookie.value == "durable" && nativeResponseCookie.path == "/private")
+                #expect(nativeResponseCookie.isHTTPOnly && nativeResponseCookie.isSessionOnly)
                 old.cancel()
                 do { _ = try await old.value; Issue.record("The old navigation was cancelled") }
                 catch is CancellationError {}
