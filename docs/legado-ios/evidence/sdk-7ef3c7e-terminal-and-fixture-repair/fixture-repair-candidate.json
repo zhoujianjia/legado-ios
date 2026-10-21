@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "status": "frozen-test-fixture-only-candidate-awaiting-source-review-and-SDK",
+  "sourceRoot": ".build/sdk-7ef3c7e-preview-immutable-fixture-repair-step/snapshot-v1/work",
+  "files": [
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+      "baseline": {
+        "path": ".build/sdk-7ef3c7e-preview-immutable-fixture-repair-step/rawbaseline/Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+        "bytes": 59867,
+        "sha256": "e02c0cc0f7148cfc00bd40384c3025caf22a9befa4d07cdf550ac275442a2611"
+      },
+      "candidate": {
+        "path": ".build/sdk-7ef3c7e-preview-immutable-fixture-repair-step/snapshot-v1/work/Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+        "bytes": 60409,
+        "sha256": "59d8ba664218306c7fd96f8a39147c73d9f196f22afe569664fe12bcd90b99b1"
+      },
+      "diff": {
+        "path": ".build/sdk-7ef3c7e-preview-immutable-fixture-repair-step/diffs/Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift.diff",
+        "bytes": 1163,
+        "sha256": "8b9a9ddde99ea6525c14e78ba2678d135164e199aa78fb52897512a1f91ca26e"
+      }
+    }
+  ],
+  "actualFailure": {
+    "sourceCommit": "7ef3c7ec1b0d37ce2b395bb897f6806f5acbafa8",
+    "sourceTag": "reader-renewal-7ef3c7e",
+    "runID": 39537665728,
+    "jobID": 119017948485,
+    "diagnostic": "cannot assign to property: bookURL is a let constant",
+    "actualCompilerLocation": "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift:157:35",
+    "rawLogLine": 36109,
+    "rawCompilerLog": {
+      "path": ".build/sdk-7ef3c7e-terminal/artifact-12318939589/reader-renewal-probe/currentcore-tests.log",
+      "bytes": 8450522,
+      "sha256": "5ec59c80cf5aa80a09af4e2ac631027bd56c35326988259eb5f60016edf4488d"
+    },
+    "compilerDiagnosticsUnique": 1,
+    "AppExecuted": 0,
+    "nativePhaseTimedOut": false,
+    "nativeElapsedSeconds": 2348.622288,
+    "actualXcodebuildStatus": 65
+  },
+  "change": "Reconstruct the fixture returned LegadoOriginalBook with the new immutable bookUrl identity through its existing Codable representation, preserving all other metadata; retain the original tocURL and variable updates. No production model weakening.",
+  "testOwner": "private PreviewFixtureExecutor.refreshedTOC helper used by existing LegadoPreviewStateOwnerTests preUpdate tests",
+  "testDefinitions": {
+    "before": 19,
+    "after": 19,
+    "new": 0,
+    "removed": 0,
+    "testNamesAndBodiesExact": true
+  },
+  "dependencyBindings": [
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+      "bytes": 13619,
+      "sha256": "251c7fa44624f367f726ac9464d95a4cfef2c6872b373dac56a0d3da248755f9",
+      "declaration": "bookURL and origin are public let; CodingKeys.bookURL is bookUrl"
+    }
+  ],
+  "sourceChecks": {
+    "checks": {
+      "onlyOneExistingHelperStatementReplacedAndReverseRestoresExactBaseline": true,
+      "all19TestNamesOrderAndBodiesUnchanged": true,
+      "fixtureOriginalMetadataPreservedThroughExistingCodableModel": true,
+      "modelBookURLRemainsImmutableAndProductionBytesUnchanged": true,
+      "baselineTestAndModelMatchActual7efSourceInputByteFacts": true,
+      "canonicalTestBytesUnchanged": true,
+      "candidateLFNoNUL": true
+    },
+    "passed": 7,
+    "failed": 0,
+    "meaning": "Source/byte integrity only, not Swift compilation or runtime execution."
+  },
+  "actualValidation": {
+    "SwiftParser": 0,
+    "SwiftCompiler": 0,
+    "XCTest": 0,
+    "portableMethods": 0,
+    "cloudQueries": 0,
+    "cloudTriggers": 0
+  },
+  "harnessAdvice": {
+    "newPaths": [],
+    "newSelectors": [],
+    "countChanges": false,
+    "coreNativeUnionPathCountUnchanged": 427,
+    "future479Definitions482LeavesUnchanged": true,
+    "onlyRebindExistingCompileInput": "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift"
+  },
+  "proofLimits": [
+    "The original7ef App run executed zero tests; this candidate does not change that terminal result.",
+    "No local Swift compiler or parser was run. Actual next SDK compilation remains required.",
+    "No production source, control source, canonical file, Git ref or cloud task was changed."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

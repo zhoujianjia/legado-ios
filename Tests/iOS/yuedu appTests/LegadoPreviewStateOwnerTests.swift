@@ -154,7 +154,15 @@ private actor PreviewFixtureExecutor: LegadoOriginalPreviewExecuting {
             await withCheckedContinuation { gate = $0 }
             try Task.checkCancellation()
         }
-        var book = original; book.bookURL = to; book.tocURL = to + "/toc"; book.variable = try json(variables)
+        // The returned original DTO has a new immutable URL identity. Keep all
+        // other Codable metadata instead of mutating the caller's original value.
+        let originalData = try JSONEncoder().encode(original)
+        let originalObject = try JSONSerialization.jsonObject(with: originalData)
+        var movedObject = try #require(originalObject as? [String: Any])
+        movedObject["bookUrl"] = to
+        let movedData = try JSONSerialization.data(withJSONObject: movedObject)
+        var book = try JSONDecoder().decode(LegadoOriginalBook.self, from: movedData)
+        book.tocURL = to + "/toc"; book.variable = try json(variables)
         return .toc(book, [chapter])
     }
     func execute(sourceJSON: String, sourceURL: String, sourceRevision: String,

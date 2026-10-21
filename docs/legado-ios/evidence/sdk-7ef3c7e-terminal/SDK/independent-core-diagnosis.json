@@ -1,0 +1,269 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent local terminal currentcore diagnosis; not archive or repair acceptance",
+  "sourceCommit": "7ef3c7ec1b0d37ce2b395bb897f6806f5acbafa8",
+  "sourceTag": "reader-renewal-7ef3c7e",
+  "runID": 39537665728,
+  "jobID": 119017948485,
+  "terminalConclusion": "failure",
+  "queryAgain": false,
+  "pipelineFirstFailure": {
+    "phase": "native",
+    "exitCode": 1
+  },
+  "actualCompilerErrorsUnique": 1,
+  "actualCompilerDiagnostics": [
+    {
+      "line": 36109,
+      "text": "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift:157:35: error: cannot assign to property: 'bookURL' is a 'let' constant"
+    }
+  ],
+  "cause": "Test-target compilation failed: private PreviewFixtureExecutor.refreshedTOC copies an immutable LegadoOriginalBook then assigns its let bookURL. Xcode cancelled testing before execution.",
+  "actualExecution": {
+    "AppQualifiedDefinitionsExecuted": 0,
+    "AppArgumentLeavesExecuted": 0,
+    "passed": 0,
+    "failedTestCases": 0,
+    "skippedTestCases": 0,
+    "rawSummaryResult": "unknown",
+    "rawTestNodes": 0,
+    "noCaseCountAcceptance": true
+  },
+  "timeoutBoundary": {
+    "nativePhaseTimeoutSeconds": 3720,
+    "nativePhaseElapsedSeconds": 2348.622288,
+    "nativePhaseExit": 1,
+    "nativePhaseTimedOut": false,
+    "wrapperReportedBudgetTimeout": false,
+    "actualXcodebuildExit": 65,
+    "conclusion": "Compiler failure; not the cold3600-second test budget or3720-second parent timeout."
+  },
+  "selectionBoundary": {
+    "frozenRunIntendedDefinitions": 475,
+    "frozenRunIntendedLeaves": 478,
+    "actualUniqueOnlyTestingArguments": 475,
+    "actualParameterSelectors": [
+      "-only-testing:yuedu appTests/AozoraTXTTests/storedV6LocationsMigrateOnce(interrupt:)",
+      "-only-testing:yuedu appTests/CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll(nestedBackdrop:)",
+      "-only-testing:yuedu appTests/TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit(interrupt:)"
+    ],
+    "knownOldIncorrectFirstRegistrationOwner": "-only-testing:yuedu appTests/SelfRenewalAccountSessionTests/appSessionRegistersOnlyItsConfiguredPairedTargetBeforeFirstProfiles()",
+    "knownRepair": "The real AccountClient extension owner was separately corrected after7ef source. The compiler failure happened before selection could execute; do not interpret empty exports as a fresh selection failure or claim the corrected479/482 batch ran.",
+    "latestIntegratedExpectedDefinitions": 479,
+    "latestIntegratedExpectedLeaves": 482,
+    "limits": "No step label was used to infer these actual values."
+  },
+  "exportBoundary": {
+    "rawExportCommandExitCodes": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "phaseExportFailedBecause": "No actual parameter methods were produced after compile failure; extraction reports Actual parameter method is missing or duplicated.",
+    "casesError": "ValueError: Smoke test count/failure/skip gate failed: {\"totalTestCount\": 0, \"passedTests\": 0, \"failedTests\": 0, \"skippedTests\": 0}",
+    "afterTests": "blocked by native/export/cases; no after-test fixture acceptance"
+  },
+  "phases": [
+    {
+      "phase": "producer",
+      "state": "succeeded",
+      "blockedBy": [],
+      "elapsedSeconds": 30.507973,
+      "timeoutSeconds": 600,
+      "exitCode": 0,
+      "timedOut": false,
+      "oversized": false,
+      "reportedXcodebuildStatuses": null,
+      "wrapperReportedBudgetTimeout": null
+    },
+    {
+      "phase": "stage",
+      "state": "succeeded",
+      "blockedBy": [],
+      "elapsedSeconds": 8.445707,
+      "timeoutSeconds": 90,
+      "exitCode": 0,
+      "timedOut": false,
+      "oversized": false,
+      "reportedXcodebuildStatuses": null,
+      "wrapperReportedBudgetTimeout": null
+    },
+    {
+      "phase": "before-build",
+      "state": "succeeded",
+      "blockedBy": [],
+      "elapsedSeconds": 9.71826,
+      "timeoutSeconds": 90,
+      "exitCode": 0,
+      "timedOut": false,
+      "oversized": false,
+      "reportedXcodebuildStatuses": null,
+      "wrapperReportedBudgetTimeout": null
+    },
+    {
+      "phase": "boot",
+      "state": "succeeded",
+      "blockedBy": [],
+      "elapsedSeconds": 247.939325,
+      "timeoutSeconds": 180,
+      "exitCode": 0,
+      "timedOut": false,
+      "oversized": false,
+      "reportedXcodebuildStatuses": null,
+      "wrapperReportedBudgetTimeout": null
+    },
+    {
+      "phase": "native",
+      "state": "failed",
+      "blockedBy": [],
+      "elapsedSeconds": 2348.622288,
+      "timeoutSeconds": 3720,
+      "exitCode": 1,
+      "timedOut": false,
+      "oversized": false,
+      "reportedXcodebuildStatuses": [
+        {
+          "exitCode": 65,
+          "wrapperVerdictStop": false
+        }
+      ],
+      "wrapperReportedBudgetTimeout": false
+    },
+    {
+      "phase": "export",
+      "state": "failed",
+      "blockedBy": [],
+      "elapsedSeconds": 31.765979,
+      "timeoutSeconds": 330,
+      "exitCode": 1,
+      "timedOut": false,
+      "oversized": false,
+      "reportedXcodebuildStatuses": null,
+      "wrapperReportedBudgetTimeout": null
+    },
+    {
+      "phase": "cases",
+      "state": "failed",
+      "blockedBy": [],
+      "elapsedSeconds": 25.952895,
+      "timeoutSeconds": 90,
+      "exitCode": 1,
+      "timedOut": false,
+      "oversized": false,
+      "reportedXcodebuildStatuses": null,
+      "wrapperReportedBudgetTimeout": null
+    },
+    {
+      "phase": "test-settings",
+      "state": "succeeded",
+      "blockedBy": [],
+      "elapsedSeconds": 90.196287,
+      "timeoutSeconds": 120,
+      "exitCode": 0,
+      "timedOut": false,
+      "oversized": false,
+      "reportedXcodebuildStatuses": null,
+      "wrapperReportedBudgetTimeout": null
+    },
+    {
+      "phase": "after-tests",
+      "state": "blocked",
+      "blockedBy": [
+        "native",
+        "export",
+        "cases"
+      ],
+      "elapsedSeconds": 17.470484,
+      "timeoutSeconds": 120,
+      "exitCode": null,
+      "timedOut": null,
+      "oversized": null,
+      "reportedXcodebuildStatuses": null,
+      "wrapperReportedBudgetTimeout": null
+    },
+    {
+      "phase": "build-settings",
+      "state": "succeeded",
+      "blockedBy": [],
+      "elapsedSeconds": 42.891884,
+      "timeoutSeconds": 120,
+      "exitCode": 0,
+      "timedOut": false,
+      "oversized": false,
+      "reportedXcodebuildStatuses": null,
+      "wrapperReportedBudgetTimeout": null
+    }
+  ],
+  "rawEvidence": [
+    {
+      "path": ".build/sdk-7ef3c7e-terminal/artifact-12318939589/reader-renewal-probe/source-inputs.json",
+      "bytes": 127264,
+      "sha256": "df273b7f63edad4c40fdab362d397104281b962b5b67dbd66d2fb4c8a4793183"
+    },
+    {
+      "path": ".build/sdk-7ef3c7e-terminal/artifact-12318939589/reader-renewal-probe/currentcore-pipeline.json",
+      "bytes": 160712,
+      "sha256": "60c50bf9e6cedf7b97484edce17db35d5aac0dbcc02f524564e0bc5cca22adbd"
+    },
+    {
+      "path": ".build/sdk-7ef3c7e-terminal/artifact-12318939589/reader-renewal-probe/currentcore-phase-native.json",
+      "bytes": 119016,
+      "sha256": "b8d6f6b3c8a3457c2fb817e2bf54bc67fa3377562ba61c976109ef465bce049d"
+    },
+    {
+      "path": ".build/sdk-7ef3c7e-terminal/artifact-12318939589/reader-renewal-probe/currentcore-tests.log",
+      "bytes": 8450522,
+      "sha256": "5ec59c80cf5aa80a09af4e2ac631027bd56c35326988259eb5f60016edf4488d"
+    },
+    {
+      "path": ".build/sdk-7ef3c7e-terminal/artifact-12318939589/reader-renewal-probe/currentcore-native.log",
+      "bytes": 381,
+      "sha256": "6ddc3623d6589a9896216bc3f078f969610f90008d319a99c078c3fb669c2cd0"
+    },
+    {
+      "path": ".build/sdk-7ef3c7e-terminal/artifact-12318939589/reader-renewal-probe/currentcore-summary.json",
+      "bytes": 430,
+      "sha256": "c8d1ab99b0070d63fe25349abfebfef41bdc7af217fdca0aa11b3e714704b05e"
+    },
+    {
+      "path": ".build/sdk-7ef3c7e-terminal/artifact-12318939589/reader-renewal-probe/currentcore-tests.json",
+      "bytes": 367,
+      "sha256": "2429e425b42400c05e5b7a87fac4883a36512e078d921878f64e992f26075789"
+    },
+    {
+      "path": ".build/sdk-7ef3c7e-terminal/artifact-12318939589/reader-renewal-probe/currentcore-extraction.json",
+      "bytes": 2696,
+      "sha256": "7bec153b2c8270a9da5109528fa1f9b18c50f943393a0ed8b87e37085a9148cb"
+    },
+    {
+      "path": ".build/sdk-7ef3c7e-terminal/artifact-12318939589/reader-renewal-probe/currentcore-cases.log.stderr.log",
+      "bytes": 132,
+      "sha256": "477334415fa7a6a7b54117d60669bd13fc569f8871c12f91a089d5cb3a2f5aa7"
+    }
+  ],
+  "compilerExcerpt": {
+    "path": ".build/sdk-7ef3c7e-core-independent-diagnosis/actual-compiler-excerpt.txt",
+    "bytes": 614,
+    "sha256": "6253f8043fbd4d4ff310b185cbb420d09da2bdc74b6b6da14dea90096902d85a"
+  },
+  "fixCandidate": {
+    "path": ".build/sdk-7ef3c7e-preview-immutable-fixture-repair-step/final-v1.json",
+    "bytes": 4370,
+    "sha256": "18e0e9a09b83a56f91043f6dbab5c8cc39650975f9e34e36e6d8ea4e1a8078c8"
+  },
+  "otherScopes": "Producer, Package, full workflow portable results and canonical terminal archive are reviewed by the other assigned agent. This report does not turn their success into App execution.",
+  "actualReviewActions": {
+    "cloudQueries": 0,
+    "downloads": 0,
+    "testExecutions": 0,
+    "compilerExecutions": 0,
+    "parserExecutions": 0,
+    "canonicalWrites": 0,
+    "GitMutations": 0
+  },
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

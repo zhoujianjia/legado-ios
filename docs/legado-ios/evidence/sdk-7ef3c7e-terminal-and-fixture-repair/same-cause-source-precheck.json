@@ -1,0 +1,125 @@
+{
+  "schema": 1,
+  "kind": "bounded same-cause immutable DTO assignment source precheck",
+  "createdAt": "2026-10-21T04:14:29.801529+00:00",
+  "observedHEAD": "d46aaab23165aaa08af8bb6424b14d2ec4a7b791",
+  "sourceFacts": [
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+      "bytes": 59867,
+      "sha256": "e02c0cc0f7148cfc00bd40384c3025caf22a9befa4d07cdf550ac275442a2611"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoMainJSSourceServiceTests.swift",
+      "bytes": 23418,
+      "sha256": "0e18dc335c500364090c98ce183d415ba05dd28c0a0def45870cad3d30ac3933"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoOriginalExploreLifecycleTests.swift",
+      "bytes": 12955,
+      "sha256": "4a644c54f0fdfcadcc49df4d1b7f3558f2208f06343589a806d265dc736cf796"
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "bytes": 142491,
+      "sha256": "61fa7f4b1bafd9fd0fb5901dce64f8978e742f4a1735bcbb30ae46834605f08b"
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "bytes": 93635,
+      "sha256": "aa4162285fd449d0cb37cb0e3802f10b69dd53c7081d8c20306c0c0d0a63b7f8"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Tests/LegadoRuntimeTests/LegadoOriginalAPITests.swift",
+      "bytes": 30376,
+      "sha256": "bcf93c4dbaf18cc0a379e2b9b7e21da3abe67f8ecd241f760d043d6130f30dae"
+    },
+    {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+      "bytes": 13619,
+      "sha256": "251c7fa44624f367f726ac9464d95a4cfef2c6872b373dac56a0d3da248755f9"
+    },
+    {
+      "path": "Modules/Services/LibraryStore/Models.swift",
+      "bytes": 48636,
+      "sha256": "c7510d05971af6cd61f7cdd74a55763943f94358c5fac3ae0b995477cbd23574"
+    }
+  ],
+  "scope": "Same failing Preview fixture and five adjacent original DTO consumers only; actual immutable Book/Chapter identities and result fields were compared with assignment sites. Not a general repository lint.",
+  "knownCompilerBlocker": {
+    "assignment": {
+      "path": "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+      "line": 157,
+      "text": "var book = original; book.bookURL = to",
+      "receiverDeclaration": "refreshedTOC(_ original: LegadoOriginalBook, ...) at line 97"
+    },
+    "field": {
+      "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoOriginalModels.swift",
+      "line": 6,
+      "text": "public let bookURL: String"
+    },
+    "countedAsNew": false,
+    "correction": "The actual current site assigns LegadoOriginalBook.bookURL directly; this file contains no metadataIdentity member access."
+  },
+  "additionalConfirmedSameCauseBlockers": [],
+  "additionalConfirmedSameCauseBlockerCount": 0,
+  "checkedDeclarations": [
+    "LegadoOriginalBook bookURL/origin are let; tocURL/variable and other metadata fields are var.",
+    "LegadoOriginalChapter bookURL/url/index are let; title/baseURL/variable are var.",
+    "Original result books/book/chapters/chapter/content containers are let; no mutation assignment to those fields found in the scoped consumers."
+  ],
+  "excludedLegitimateAssignments": [
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+      "lines": [
+        144,
+        157,
+        167,
+        168,
+        264,
+        274,
+        286,
+        296,
+        298
+      ],
+      "reason": "DTO variable and tocURL fields are declared var; the known bookURL assignment is already isolated above."
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+      "lines": [
+        562,
+        607,
+        708
+      ],
+      "reason": "ReadingBook online bookInfoURL/tocURL/runtimeVariables/onlineChapters are mutable App record fields, not the immutable OriginalBook DTO identity."
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "line": 1228,
+      "reason": "OriginalAwaitHTTPPeer.self.url is private var at line 1193."
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoMainJSSourceServiceTests.swift",
+      "line": 310,
+      "reason": "Fake executor content is initialized within init, not reassigned after initialization."
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "lines": [
+        1330,
+        1404
+      ],
+      "reason": "ReadingBook mutable fields and mutable ruleContent configuration, not immutable Original DTO fields."
+    }
+  ],
+  "validation": {
+    "sourceReadOnly": true,
+    "newCompilerExecutions": 0,
+    "newParserExecutions": 0,
+    "newTests": 0,
+    "cloudQueries": 0,
+    "canonicalWrites": 0,
+    "gitMutations": 0
+  },
+  "limit": "Zero additional findings is confined to this exact source scope and error class; it is not an SDK compilation pass or a claim of no other compiler errors."
+}

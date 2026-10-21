@@ -1,0 +1,237 @@
+{
+  "schema": 1,
+  "status": "terminal-failure",
+  "scope": "SDK7ef3c7e source-bound terminal facts; not future candidate execution",
+  "runID": 39537665728,
+  "jobID": 119017948485,
+  "sourceCommit": "7ef3c7ec1b0d37ce2b395bb897f6806f5acbafa8",
+  "sourceTag": "reader-renewal-7ef3c7e",
+  "workflowRunURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39537665728",
+  "summary": {
+    "schema": 1,
+    "runID": 39537665728,
+    "jobID": 119017948485,
+    "sourceCommit": "7ef3c7ec1b0d37ce2b395bb897f6806f5acbafa8",
+    "terminal": {
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    "intendedAppDefinitions": 475,
+    "intendedAppArgumentLeaves": 478,
+    "actualAppDefinitions": 0,
+    "actualAppArgumentLeaves": 0,
+    "actualAppResult": "not executed; test-target compiler failure",
+    "uniqueCompilerDiagnostics": [
+      {
+        "line": 36109,
+        "text": "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift:157:35: error: cannot assign to property: 'bookURL' is a 'let' constant"
+      }
+    ],
+    "firstPipelineFailure": {
+      "phase": "native",
+      "exitCode": 1
+    },
+    "phaseFacts": [
+      {
+        "phase": "after-tests",
+        "state": "blocked",
+        "budgetSeconds": 120,
+        "exitCode": null,
+        "timedOut": null,
+        "elapsedSeconds": 17.470484
+      },
+      {
+        "phase": "before-build",
+        "state": "succeeded",
+        "budgetSeconds": 90,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedSeconds": 9.71826
+      },
+      {
+        "phase": "boot",
+        "state": "succeeded",
+        "budgetSeconds": 180,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedSeconds": 247.939325
+      },
+      {
+        "phase": "build-settings",
+        "state": "succeeded",
+        "budgetSeconds": 120,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedSeconds": 42.891884
+      },
+      {
+        "phase": "cases",
+        "state": "failed",
+        "budgetSeconds": 90,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedSeconds": 25.952895
+      },
+      {
+        "phase": "export",
+        "state": "failed",
+        "budgetSeconds": 330,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedSeconds": 31.765979
+      },
+      {
+        "phase": "native",
+        "state": "failed",
+        "budgetSeconds": 3720,
+        "exitCode": 1,
+        "timedOut": false,
+        "elapsedSeconds": 2348.622288
+      },
+      {
+        "phase": "producer",
+        "state": "succeeded",
+        "budgetSeconds": 600,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedSeconds": 30.507973
+      },
+      {
+        "phase": "result",
+        "state": "blocked",
+        "budgetSeconds": 180,
+        "exitCode": null,
+        "timedOut": null,
+        "elapsedSeconds": 17.239243
+      },
+      {
+        "phase": "stage",
+        "state": "succeeded",
+        "budgetSeconds": 90,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedSeconds": 8.445707
+      },
+      {
+        "phase": "test-settings",
+        "state": "succeeded",
+        "budgetSeconds": 120,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedSeconds": 90.196287
+      }
+    ],
+    "resultProduced": false,
+    "native": {
+      "phaseExitCode": 1,
+      "phaseTimedOut": false,
+      "elapsedSeconds": 2348.622288,
+      "xcodebuildExit": 65,
+      "wrapperBudgetTimeout": false
+    },
+    "requiredSDKSignerSelector": {
+      "identity": "-only-testing:yuedu appTests/SelfRenewalControlledPackageSignerTests/signsSDKProducedMainExtensionsAndFrameworkInSameJob()",
+      "inActualArgv": true,
+      "executed": false
+    },
+    "boolMatrices": {
+      "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit": {
+        "parameter": "interrupt",
+        "values": [
+          false,
+          true
+        ]
+      },
+      "AozoraTXTTests/storedV6LocationsMigrateOnce": {
+        "parameter": "interrupt",
+        "values": [
+          false,
+          true
+        ]
+      },
+      "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll": {
+        "parameter": "nestedBackdrop",
+        "values": [
+          false,
+          true
+        ]
+      }
+    },
+    "producer": {
+      "commands": 48,
+      "allExit0": true,
+      "publicOutputs": 43,
+      "outputsByteMatched": 43,
+      "SDKMachOs": 4,
+      "privateKeyFilesOutsideKeychain": 0,
+      "ownedKeychainDeleted": true,
+      "ownedSearchListRestored": true,
+      "fullApplicationSigningExecuted": false
+    },
+    "Package": {
+      "definitionsExecuted": 24,
+      "passed": 24,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "sourceInputs": 23,
+      "packageSourceInputs": 16,
+      "XMLAndVerboseIdentitiesMatched": true,
+      "exitCode": 0,
+      "timedOut": false
+    },
+    "historicalGitBinding": {
+      "SDK": 418,
+      "Package": 23,
+      "Producer": 7,
+      "resolvedUniqueFiles": 418,
+      "allMatched": true,
+      "producerSourcePathPrefix": "scripts/reader-experience/owned-package-fixture/"
+    },
+    "queryAgain": false,
+    "newTestsExecutedByAnalysis": 0,
+    "completionFlags": {
+      "physicalDeviceValidationPassed": false,
+      "selfRenewalVerified": false,
+      "unattendedRenewalVerified": false,
+      "fullOriginalCompatibilityVerified": false
+    },
+    "portableGuards": {
+      "firstGroup": {
+        "name": "test-smoke-tools.py",
+        "executed": 24,
+        "passed": 24
+      },
+      "nextGroup": {
+        "name": "test-renewal-probe-tools.py",
+        "executed": 76,
+        "passed": 72,
+        "failed": 4,
+        "failedMethods": [
+          "AccountCoreSelectionTests.test_account_case_inventory_matches_actual_suite_extensions_and_closure",
+          "LiveCoreSelectionTests.test_later_core_union_matches_real_suite_owners_without_widening_old_modes",
+          "MaterialPublicationAndLoginActionSelectionTests.test_combined_checkpoint_keeps_four_real_material_methods_and_exact_login_inputs",
+          "RenewalProbeEvidenceTests.test_integrated_leaf_union_matches_source_and_excludes_storage_benchmark"
+        ]
+      },
+      "laterPythonGroupsInThisStep": "not executed after failure; independent later local results are separate evidence, not cloud pass",
+      "meaning": "Earliest workflow step failure is portable selection inventory; the native phase later independently failed test-target compilation."
+    }
+  },
+  "publicEvidenceRoot": "docs/legado-ios/evidence/sdk-7ef3c7e-terminal",
+  "futureSourceBoundary": "Current S5/479-482 controls and later repairs were absent from 7ef3; all remain independently source-only until a future actual run.",
+  "proofLimits": [
+    "App tests did not execute. Package24 source-only transport/DTO tests do not execute original JVM or validate physical device.",
+    "Producer is the minimal same-job controlled four-MachO fixture, not S3 full application acceptance.",
+    "Portable guard failed earlier; native currentcore still ran and independently failed compilation. Export/cases failures are secondary empty-tree/count gates; result/after-tests remained blocked.",
+    "No Apple account/device/installation/background/noVPN or measured 90 percent source compatibility acceptance."
+  ],
+  "queryAgain": false,
+  "onlyLiveHandlesAfterThisTerminal": [],
+  "completionFlags": {
+    "physicalDeviceValidationPassed": false,
+    "selfRenewalVerified": false,
+    "unattendedRenewalVerified": false,
+    "fullOriginalCompatibilityVerified": false
+  }
+}
