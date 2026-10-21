@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "ccafd8b700691403889bc1cf205998bc74552bad",
+  "sourceTag": "legado-native-reader-test-ccafd8b",
+  "runID": 39591438686,
+  "jobID": 119193104563,
+  "status": "completed",
+  "conclusion": "failure",
+  "queryAgain": false,
+  "factualReview": {
+    "path": "docs/legado-ios/evidence/native-ccafd8b-terminal/factual-review-v1.json",
+    "bytes": 8613,
+    "sha256": "d63c0affa540d52b30708708e4e8771e4b971abc9fddbadf33c83a72b649548b"
+  },
+  "actualJVM": {
+    "xmlFiles": 58,
+    "uniqueMethods": 378,
+    "actualExecutions": 378,
+    "passed": 378,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "actualPortable": {
+    "selected": 101,
+    "passed": 100,
+    "skipped": 1,
+    "failures": 0,
+    "errors": 0
+  },
+  "actualMacPackageDiagnostics": {
+    "platform": "macOS",
+    "suite": "LegadoRuntimeTests",
+    "selected": 17,
+    "passed": 17,
+    "failures": 0,
+    "skipped": 0,
+    "actualJNIOrAppHost": 0
+  },
+  "completeDeviceBuilds": 1,
+  "fullProducer": {
+    "accepted": true,
+    "commands": 50,
+    "commandsPassed": 50,
+    "nativeComponents": 8,
+    "appBundles": 3,
+    "frameworks": 5,
+    "publicOutputFacts": 28,
+    "inputFiles": 17553,
+    "javaClassResources": 16614,
+    "archiveBytes": 287414811,
+    "archiveSHA256": "5a3aac17a8c1418698454e3423d9bc165b8313c9f6acc831a693b089e3ae889e",
+    "rawIPAInArtifact": false,
+    "preControlledSigningInputShapes": {
+      "singleArm64FAT32": 5,
+      "thin64": 3
+    },
+    "SwiftProductionPackageSignerCompleted": false,
+    "S3CaseExecuted": true
+  },
+  "independentNativeGroups": {
+    "mainjs": {
+      "executedDefinitions": 1,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    "original": {
+      "executedDefinitions": 32,
+      "passed": 24,
+      "failed": 8,
+      "skipped": 0,
+      "product": {
+        "definitions": 29,
+        "passed": 22,
+        "failed": 7
+      },
+      "platformCharacterizations": {
+        "definitions": 3,
+        "passed": 2,
+        "failed": 1
+      }
+    }
+  },
+  "coldProcess": {
+    "producerDefinitionsExecuted": 1,
+    "producerPassed": 0,
+    "producerFailed": 1,
+    "consumerDefinitionsExecuted": 0,
+    "actualIndependentHostsAccepted": 0,
+    "sourceBeforeEqualsAfter": true,
+    "containerBefore": "/Users/runner/Library/Developer/CoreSimulator/Devices/4C675116-265D-488F-BFFA-836A4545674C/data/Containers/Data/Application/E8D45CA4-3D37-4AC7-93B9-BC93F4AB31A1",
+    "containerAfter": "/Users/runner/Library/Developer/CoreSimulator/Devices/4C675116-265D-488F-BFFA-836A4545674C/data/Containers/Data/Application/7FE24656-A042-4336-B77A-6CDB30A26455",
+    "containerChanged": true,
+    "testFailure": "Cold descriptor differs from this source-stamped owned data container",
+    "sourceLocation": "LegadoNativeOriginalReaderTests.swift:765",
+    "controllerFailure": "original-cold-process-tools.py:319 Cold host changed source or its persistent container",
+    "producerCaseDurationSeconds": 0.3493800163269043,
+    "completionAccepted": false,
+    "consumerReceiptPresent": false,
+    "renewalVerified": false,
+    "rootCauseNotEstablishedByArchive": true
+  },
+  "otherSimulatorGroups": {
+    "configuration": {
+      "definitions": 9,
+      "executions": 9,
+      "passedDefinitions": 9,
+      "passedExecutions": 9,
+      "failed": 0,
+      "skipped": 0
+    },
+    "localProduct": {
+      "definitions": 50,
+      "executions": 68,
+      "passedDefinitions": 50,
+      "passedExecutions": 68,
+      "failed": 0,
+      "skipped": 0
+    },
+    "cache": {
+      "definitions": 6,
+      "executions": 8,
+      "passedDefinitions": 6,
+      "passedExecutions": 8,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "firstFailure": {
+    "phase": "full-application-test-runtime",
+    "exitCode": 1,
+    "timedOut": false,
+    "reportedXcodeStatus": 65,
+    "uniqueCompilerErrors": 0,
+    "testIssueCount": 1,
+    "sourceLocation": "SelfRenewalSignedCodeVerifier.swift:146",
+    "testDeclaration": "SelfRenewalFullApplicationSignerTests.swift:15:6",
+    "rawLogLine": 36895,
+    "message": "Caught error: sizeLimit",
+    "actualFullApplicationSignerTests": 1,
+    "passed": 0,
+    "failed": 1,
+    "caseDurationSeconds": 52.187,
+    "testRunDurationSeconds": 52.192
+  },
+  "actualFullApplicationSigner": 1,
+  "actualFullApplicationSignerPassed": 0,
+  "actualFullApplicationSignerFailed": 1,
+  "actualMainJS": 1,
+  "actualNative": 32,
+  "actualCold": 1,
+  "nativeSourceStampProduced": true,
+  "historicalNativeInputsBound": 284,
+  "deviceProjectOverlayRestored": true,
+  "ordinaryJarRawRehash": false,
+  "SDKHandleChanged": false,
+  "measuredCompatibilityPercent": null,
+  "limits": [
+    "Complete device build and controlled original Apple codesign producer succeeded. The production Swift S3 case actually ran once and failed with sizeLimit; no successful full re-sign/independent-output acceptance.",
+    "Actual pre-controlled-code-signing input shape records are available, but no input/output Mach-O, full IPA or raw JAR bytes were uploaded. Hashes are metadata facts, not independent binary rehash.",
+    "The historical ccafd target compiled and S3 ran once; later SDK Cookie or S3 limit followups are not relabeled as this source result.",
+    "Both source ccafd CI tasks are terminal according to Root; this archive closes Native only and does not re-query or rewrite the separately archived SDK.",
+    "No real Apple authorization, physical installation, same-device/noVPN route, automatic renewal or measured90percent compatibility acceptance established.",
+    "Actual MainJS1 passed; Original32 executed24pass/8fail (product22pass/7fail, platform2pass/1fail). Cold producer1 failed before a consumer host; source state stayed exact while its container changed. No failed or unexecuted scope is converted into passing evidence."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

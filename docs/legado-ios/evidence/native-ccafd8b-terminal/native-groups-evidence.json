@@ -1,0 +1,1316 @@
+{
+  "scope": "Same historical Native ccafd run; constituent raw byte facts remain in compact map. No argv/private material.",
+  "parts": {
+    "independent-native-scope-review.json": {
+      "sourceCommit": "ccafd8b700691403889bc1cf205998bc74552bad",
+      "groups": {
+        "mainjs": {
+          "executedDefinitions": 1,
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0
+        },
+        "original": {
+          "executedDefinitions": 32,
+          "passed": 24,
+          "failed": 8,
+          "skipped": 0,
+          "product": {
+            "definitions": 29,
+            "passed": 22,
+            "failed": 7
+          },
+          "platformCharacterizations": {
+            "definitions": 3,
+            "passed": 2,
+            "failed": 1
+          }
+        }
+      },
+      "coldProcess": {
+        "producerDefinitionsExecuted": 1,
+        "producerPassed": 0,
+        "producerFailed": 1,
+        "consumerDefinitionsExecuted": 0,
+        "actualIndependentHostsAccepted": 0,
+        "sourceBeforeEqualsAfter": true,
+        "containerBefore": "/Users/runner/Library/Developer/CoreSimulator/Devices/4C675116-265D-488F-BFFA-836A4545674C/data/Containers/Data/Application/E8D45CA4-3D37-4AC7-93B9-BC93F4AB31A1",
+        "containerAfter": "/Users/runner/Library/Developer/CoreSimulator/Devices/4C675116-265D-488F-BFFA-836A4545674C/data/Containers/Data/Application/7FE24656-A042-4336-B77A-6CDB30A26455",
+        "containerChanged": true,
+        "testFailure": "Cold descriptor differs from this source-stamped owned data container",
+        "sourceLocation": "LegadoNativeOriginalReaderTests.swift:765",
+        "controllerFailure": "original-cold-process-tools.py:319 Cold host changed source or its persistent container",
+        "producerCaseDurationSeconds": 0.3493800163269043,
+        "completionAccepted": false,
+        "consumerReceiptPresent": false,
+        "renewalVerified": false,
+        "rootCauseNotEstablishedByArchive": true
+      },
+      "otherSimulatorGroups": {
+        "configuration": {
+          "definitions": 9,
+          "executions": 9,
+          "passedDefinitions": 9,
+          "passedExecutions": 9,
+          "failed": 0,
+          "skipped": 0
+        },
+        "localProduct": {
+          "definitions": 50,
+          "executions": 68,
+          "passedDefinitions": 50,
+          "passedExecutions": 68,
+          "failed": 0,
+          "skipped": 0
+        },
+        "cache": {
+          "definitions": 6,
+          "executions": 8,
+          "passedDefinitions": 6,
+          "passedExecutions": 8,
+          "failed": 0,
+          "skipped": 0
+        }
+      },
+      "scope": "MainJS and Original are independent actual native hosts after S3 failure; extra local/cache/configuration groups are separate, and failed cold producer is not two-process acceptance."
+    },
+    "native-groups/summary.json": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "4C675116-265D-488F-BFFA-836A4545674C",
+            "deviceName": "iPhone 17 Pro Max",
+            "modelName": "iPhone 17 Pro Max",
+            "osBuildNumber": "23C54",
+            "osVersion": "26.2",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 1,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "Yuedu-Reader · Built with macOS 15.7.9",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1792587447.952,
+      "passedTests": 1,
+      "result": "Passed",
+      "skippedTests": 0,
+      "startTime": 1792587227.46,
+      "statistics": [],
+      "testFailures": [],
+      "title": "Test - Yuedu-Reader",
+      "topInsights": [],
+      "totalTestCount": 1
+    },
+    "native-groups/native-tests.json": {
+      "devices": [
+        {
+          "architecture": "arm64",
+          "deviceId": "4C675116-265D-488F-BFFA-836A4545674C",
+          "deviceName": "iPhone 17 Pro Max",
+          "modelName": "iPhone 17 Pro Max",
+          "osBuildNumber": "23C54",
+          "osVersion": "26.2",
+          "platform": "iOS Simulator"
+        }
+      ],
+      "testNodes": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "duration": "5s",
+                      "durationInSeconds": 5.880353927612305,
+                      "name": "testNativeMainJSProductReadingChain()",
+                      "nodeIdentifier": "LegadoNativeMainJSReaderTests/testNativeMainJSProductReadingChain()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeMainJSReaderTests/testNativeMainJSProductReadingChain",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    }
+                  ],
+                  "name": "LegadoNativeMainJSReaderTests",
+                  "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeMainJSReaderTests",
+                  "nodeType": "Test Suite",
+                  "result": "Passed"
+                }
+              ],
+              "name": "yuedu appTests",
+              "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests",
+              "nodeType": "Unit test bundle",
+              "result": "Passed"
+            }
+          ],
+          "name": "Yuedu-Reader",
+          "nodeType": "Test Plan",
+          "result": "Passed"
+        }
+      ],
+      "testPlanConfigurations": [
+        {
+          "configurationId": "1",
+          "configurationName": "Test Scheme Action"
+        }
+      ]
+    },
+    "native-groups/native-product-chain-execution-public.json": {
+      "rawExecution": {
+        "path": ".build/native-ccafd8b-terminal/artifact-12347048129/.build/native-reader-test/native-product-chain-execution.json",
+        "bytes": 124637,
+        "sha256": "fa3d8d0e2ac1f99d6dfb0d752c42dfe5af45ddd47d8651ac602a299ae4d737a1"
+      },
+      "sourceCommit": "ccafd8b700691403889bc1cf205998bc74552bad",
+      "sourceBeforeAndAfterExact": true,
+      "sourceInputsBoundToHistoricalGit": true,
+      "argvOmitted": true,
+      "commands": [
+        {
+          "exitCode": 0,
+          "timedOut": false,
+          "timeoutSeconds": 2760,
+          "elapsedSeconds": 246.620265,
+          "output": "native-product-chain-driver.log",
+          "stdout": {
+            "bytes": 246,
+            "sha256": "c9ca76954ccd49bfe89a86c339db0b9c63fdc38d45a6adcac62fde0ab98facca"
+          },
+          "stderr": "native-product-chain-driver.log.stderr.log",
+          "stderrFact": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "exitCode": 0,
+          "timedOut": false,
+          "timeoutSeconds": 60,
+          "elapsedSeconds": 0.544782,
+          "output": "summary.json",
+          "stdout": {
+            "bytes": 983,
+            "sha256": "d011ab42a3d610e2977585f74eb6a7f29256457fe58d120b5b6b25b274b87bfa"
+          },
+          "stderr": "summary.json.stderr.log",
+          "stderrFact": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "exitCode": 0,
+          "timedOut": false,
+          "timeoutSeconds": 60,
+          "elapsedSeconds": 0.061102,
+          "output": "native-tests.json",
+          "stdout": {
+            "bytes": 1723,
+            "sha256": "52ddefe5fd68a4a7d31bc0afa774a8d55a1f9ff712538079f8911975b884e000"
+          },
+          "stderr": "native-tests.json.stderr.log",
+          "stderrFact": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ],
+      "error": null,
+      "group": "mainjs",
+      "executedDefinitions": 1,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "cases": [
+        {
+          "identity": "LegadoNativeMainJSReaderTests/testNativeMainJSProductReadingChain",
+          "result": "Passed",
+          "failureMessages": []
+        }
+      ]
+    },
+    "native-groups/original-summary.json": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "4C675116-265D-488F-BFFA-836A4545674C",
+            "deviceName": "iPhone 17 Pro Max",
+            "modelName": "iPhone 17 Pro Max",
+            "osBuildNumber": "23C54",
+            "osVersion": "26.2",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 8,
+          "passedTests": 24,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "Yuedu-Reader · Built with macOS 15.7.9",
+      "expectedFailures": 0,
+      "failedTests": 8,
+      "finishTime": 1792587699.928,
+      "passedTests": 24,
+      "result": "Failed",
+      "skippedTests": 0,
+      "startTime": 1792587474.138,
+      "statistics": [],
+      "testFailures": [
+        {
+          "failureText": "failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\"",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 19,
+          "testIdentifierString": "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains",
+          "testName": "testNativeOriginalBookNotificationCancellationDrains()"
+        },
+        {
+          "failureText": "failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\"",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 20,
+          "testIdentifierString": "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+          "testName": "testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity()"
+        },
+        {
+          "failureText": "failed: caught error: \"LegadoRuntimeError(code: \"SCRIPT_ERROR\", message: \"Original form login did not complete (SCRIPT_ERROR)\", completedEffects: Optional([\"cookieText\", \"cookieTextMutationMayCommit\", \"sourceBrowserWebJsMayExecute\", \"sourceWebViewCookieCaptureCommitted\", \"sourceWebViewCookieCaptureMayCommit\", \"sourceWebViewEvaluateIssued\", \"sourceWebViewLoadIssued\", \"sourceWebViewMayStart\"]), loginUIEvents: nil, secondaryFailures: nil)\"",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 23,
+          "testIdentifierString": "LegadoNativeOriginalReaderTests/testNativeOriginalGeneralWebJSUsesPreviewBatchAndBookCallbackOwners()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalGeneralWebJSUsesPreviewBatchAndBookCallbackOwners",
+          "testName": "testNativeOriginalGeneralWebJSUsesPreviewBatchAndBookCallbackOwners()"
+        },
+        {
+          "failureText": "failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\"",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 25,
+          "testIdentifierString": "LegadoNativeOriginalReaderTests/testNativeOriginalPreUpdateRefreshKeepsPublicBookIdentityAndProgressWithNewURLContext()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalPreUpdateRefreshKeepsPublicBookIdentityAndProgressWithNewURLContext",
+          "testName": "testNativeOriginalPreUpdateRefreshKeepsPublicBookIdentityAndProgressWithNewURLContext()"
+        },
+        {
+          "failureText": "failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\"",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 26,
+          "testIdentifierString": "LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+          "testName": "testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen()"
+        },
+        {
+          "failureText": "failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\"",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 27,
+          "testIdentifierString": "LegadoNativeOriginalReaderTests/testNativeOriginalPublicReaderCancellationDrainsWithoutCache()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+          "testName": "testNativeOriginalPublicReaderCancellationDrainsWithoutCache()"
+        },
+        {
+          "failureText": "failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\"",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 30,
+          "testIdentifierString": "LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",
+          "testName": "testNativeOriginalWebBookPreviewTransferAndReopen()"
+        },
+        {
+          "failureText": "failed: caught error: \"failed(\"Owned manifest errors\")\"",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 32,
+          "testIdentifierString": "LegadoNativeWebRequestCharacterizationTests/testPublicWebRequestCharacterizesOwnedFramesResourcesAndObserverCancellation()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeWebRequestCharacterizationTests/testPublicWebRequestCharacterizesOwnedFramesResourcesAndObserverCancellation",
+          "testName": "testPublicWebRequestCharacterizesOwnedFramesResourcesAndObserverCancellation()"
+        }
+      ],
+      "title": "Test - Yuedu-Reader",
+      "topInsights": [
+        {
+          "category": "Common Failures",
+          "impact": "75% of failures",
+          "text": "6 runs of 6 tests failed with failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+        },
+        {
+          "category": "Longest Test Runs",
+          "impact": "20% of duration",
+          "text": "1 longest test run with outlier durations exceeding 10.88s (three standard deviations)"
+        }
+      ],
+      "totalTestCount": 32
+    },
+    "native-groups/original-tests.json": {
+      "devices": [
+        {
+          "architecture": "arm64",
+          "deviceId": "4C675116-265D-488F-BFFA-836A4545674C",
+          "deviceName": "iPhone 17 Pro Max",
+          "modelName": "iPhone 17 Pro Max",
+          "osBuildNumber": "23C54",
+          "osVersion": "26.2",
+          "platform": "iOS Simulator"
+        }
+      ],
+      "testNodes": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "name": "[Internal] Thread running at User-interactive quality-of-service class waiting on a thread without a QoS class specified (base priority 33). Investigate ways to avoid priority inversions",
+                          "nodeType": "Runtime Warning"
+                        }
+                      ],
+                      "duration": "15s",
+                      "durationInSeconds": 15.26246702671051,
+                      "name": "testNativeOriginalAwaitBrowserConfirmsThroughRealPageAndCancelsWithoutLateCredentialWrite()",
+                      "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalAwaitBrowserConfirmsThroughRealPageAndCancelsWithoutLateCredentialWrite()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalAwaitBrowserConfirmsThroughRealPageAndCancelsWithoutLateCredentialWrite",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "duration": "2s",
+                      "durationInSeconds": 2.2552709579467773,
+                      "name": "testNativeOriginalBrowserUsesSharedProcessAndKeepsAcceptedPageUntilActualDismissal()",
+                      "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalBrowserUsesSharedProcessAndKeepsAcceptedPageUntilActualDismissal()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalBrowserUsesSharedProcessAndKeepsAcceptedPageUntilActualDismissal",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "duration": "3s",
+                      "durationInSeconds": 3.4014910459518433,
+                      "name": "testNativeOriginalDeltaLoginUIReusesPhysicalControlsThroughProductServiceWithoutCredentialWrite()",
+                      "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalDeltaLoginUIReusesPhysicalControlsThroughProductServiceWithoutCredentialWrite()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalDeltaLoginUIReusesPhysicalControlsThroughProductServiceWithoutCredentialWrite",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "duration": "0.15s",
+                      "durationInSeconds": 0.14904797077178955,
+                      "name": "testNativeOriginalDismissPersistenceUsesCheckedOwnerWithoutExecutingLoginJS()",
+                      "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalDismissPersistenceUsesCheckedOwnerWithoutExecutingLoginJS()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalDismissPersistenceUsesCheckedOwnerWithoutExecutingLoginJS",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "duration": "1s",
+                      "durationInSeconds": 1.081068992614746,
+                      "name": "testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners()",
+                      "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "duration": "7s",
+                      "durationInSeconds": 7.527350068092346,
+                      "name": "testNativeOriginalLocalHTMLWebJSKeepsSameSessionAfterProducerAndDrainsAwaitCancellation()",
+                      "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLocalHTMLWebJSKeepsSameSessionAfterProducerAndDrainsAwaitCancellation()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalLocalHTMLWebJSKeepsSameSessionAfterProducerAndDrainsAwaitCancellation",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "duration": "6s",
+                      "durationInSeconds": 6.1129080057144165,
+                      "name": "testNativeOriginalLoginHeaderUsesExistingOwnersAndKeepsPartialCancellationFacts()",
+                      "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginHeaderUsesExistingOwnersAndKeepsPartialCancellationFacts()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginHeaderUsesExistingOwnersAndKeepsPartialCancellationFacts",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "duration": "1s",
+                      "durationInSeconds": 1.0124449729919434,
+                      "name": "testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect()",
+                      "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "duration": "4s",
+                      "durationInSeconds": 4.077093005180359,
+                      "name": "testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen()",
+                      "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "duration": "3s",
+                      "durationInSeconds": 3.0173439979553223,
+                      "name": "testNativeOriginalLoginInfoUsesExistingKeychainAndReopens()",
+                      "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoUsesExistingKeychainAndReopens()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoUsesExistingKeychainAndReopens",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "duration": "1s",
+                      "durationInSeconds": 1.4104249477386475,
+                      "name": "testNativeOriginalLoginUIEventsReachExistingFormProjectionAfterServiceGateRelease()",
+                      "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIEventsReachExistingFormProjectionAfterServiceGateRelease()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIEventsReachExistingFormProjectionAfterServiceGateRelease",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "duration": "1s",
+                      "durationInSeconds": 1.3453229665756226,
+                      "name": "testNativeOriginalLoginUIUsesProductSourceServiceAndStoredMap()",
+                      "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIUsesProductSourceServiceAndStoredMap()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIUsesProductSourceServiceAndStoredMap",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "duration": "4s",
+                      "durationInSeconds": 4.3881449699401855,
+                      "name": "testNativeOriginalLoginV2BrowserUsesProductServiceAndExistingPageOwner()",
+                      "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2BrowserUsesProductServiceAndExistingPageOwner()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2BrowserUsesProductServiceAndExistingPageOwner",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "duration": "1s",
+                      "durationInSeconds": 1.9898250102996826,
+                      "name": "testNativeOriginalLoginV2UsesProductRhinoAndCheckedLoginBeforeClose()",
+                      "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2UsesProductRhinoAndCheckedLoginBeforeClose()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2UsesProductRhinoAndCheckedLoginBeforeClose",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "duration": "3s",
+                      "durationInSeconds": 3.6174089908599854,
+                      "name": "testNativeOriginalPostBrowserDisplaysPrefetchedHtmlAndReusesSingleHttpBody()",
+                      "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalPostBrowserDisplaysPrefetchedHtmlAndReusesSingleHttpBody()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalPostBrowserDisplaysPrefetchedHtmlAndReusesSingleHttpBody",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "duration": "1s",
+                      "durationInSeconds": 1.4525120258331299,
+                      "name": "testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite()",
+                      "nodeIdentifier": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests/testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    }
+                  ],
+                  "name": "LegadoNativeOriginalLoginInfoTests",
+                  "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalLoginInfoTests",
+                  "nodeType": "Test Suite",
+                  "result": "Passed"
+                },
+                {
+                  "children": [
+                    {
+                      "duration": "0.99s",
+                      "durationInSeconds": 0.9878990650177002,
+                      "name": "testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix()",
+                      "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "duration": "0.87s",
+                      "durationInSeconds": 0.8676149845123291,
+                      "name": "testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities()",
+                      "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "children": [
+                        {
+                          "name": "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\"",
+                          "nodeType": "Failure Message"
+                        }
+                      ],
+                      "duration": "1s",
+                      "durationInSeconds": 1.6028939485549927,
+                      "name": "testNativeOriginalBookNotificationCancellationDrains()",
+                      "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains",
+                      "nodeType": "Test Case",
+                      "result": "Failed"
+                    },
+                    {
+                      "children": [
+                        {
+                          "name": "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\"",
+                          "nodeType": "Failure Message"
+                        }
+                      ],
+                      "duration": "1s",
+                      "durationInSeconds": 1.178428053855896,
+                      "name": "testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity()",
+                      "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+                      "nodeType": "Test Case",
+                      "result": "Failed"
+                    },
+                    {
+                      "duration": "0.67s",
+                      "durationInSeconds": 0.6696149110794067,
+                      "name": "testNativeOriginalCachedExplorePageOpensAndSavesOnLeave()",
+                      "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "duration": "1s",
+                      "durationInSeconds": 1.9091440439224243,
+                      "name": "testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner()",
+                      "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "children": [
+                        {
+                          "name": "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"SCRIPT_ERROR\", message: \"Original form login did not complete (SCRIPT_ERROR)\", completedEffects: Optional([\"cookieText\", \"cookieTextMutationMayCommit\", \"sourceBrowserWebJsMayExecute\", \"sourceWebViewCookieCaptureCommitted\", \"sourceWebViewCookieCaptureMayCommit\", \"sourceWebViewEvaluateIssued\", \"sourceWebViewLoadIssued\", \"sourceWebViewMayStart\"]), loginUIEvents: nil, secondaryFailures: nil)\"",
+                          "nodeType": "Failure Message"
+                        }
+                      ],
+                      "duration": "1s",
+                      "durationInSeconds": 1.1297069787979126,
+                      "name": "testNativeOriginalGeneralWebJSUsesPreviewBatchAndBookCallbackOwners()",
+                      "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalGeneralWebJSUsesPreviewBatchAndBookCallbackOwners()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalGeneralWebJSUsesPreviewBatchAndBookCallbackOwners",
+                      "nodeType": "Test Case",
+                      "result": "Failed"
+                    },
+                    {
+                      "duration": "0.47s",
+                      "durationInSeconds": 0.47184598445892334,
+                      "name": "testNativeOriginalOrderedWebJSCharacterizesCSPAndOriginalJSONInSamePageWorld()",
+                      "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalOrderedWebJSCharacterizesCSPAndOriginalJSONInSamePageWorld()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalOrderedWebJSCharacterizesCSPAndOriginalJSONInSamePageWorld",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "children": [
+                        {
+                          "name": "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\"",
+                          "nodeType": "Failure Message"
+                        }
+                      ],
+                      "duration": "1s",
+                      "durationInSeconds": 1.2243260145187378,
+                      "name": "testNativeOriginalPreUpdateRefreshKeepsPublicBookIdentityAndProgressWithNewURLContext()",
+                      "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalPreUpdateRefreshKeepsPublicBookIdentityAndProgressWithNewURLContext()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalPreUpdateRefreshKeepsPublicBookIdentityAndProgressWithNewURLContext",
+                      "nodeType": "Test Case",
+                      "result": "Failed"
+                    },
+                    {
+                      "children": [
+                        {
+                          "name": "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\"",
+                          "nodeType": "Failure Message"
+                        }
+                      ],
+                      "duration": "1s",
+                      "durationInSeconds": 1.2825369834899902,
+                      "name": "testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen()",
+                      "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+                      "nodeType": "Test Case",
+                      "result": "Failed"
+                    },
+                    {
+                      "children": [
+                        {
+                          "name": "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\"",
+                          "nodeType": "Failure Message"
+                        }
+                      ],
+                      "duration": "1s",
+                      "durationInSeconds": 1.2464219331741333,
+                      "name": "testNativeOriginalPublicReaderCancellationDrainsWithoutCache()",
+                      "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalPublicReaderCancellationDrainsWithoutCache()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+                      "nodeType": "Test Case",
+                      "result": "Failed"
+                    },
+                    {
+                      "duration": "1s",
+                      "durationInSeconds": 1.2048200368881226,
+                      "name": "testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority()",
+                      "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "duration": "1s",
+                      "durationInSeconds": 1.91451096534729,
+                      "name": "testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners()",
+                      "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    },
+                    {
+                      "children": [
+                        {
+                          "name": "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\"",
+                          "nodeType": "Failure Message"
+                        }
+                      ],
+                      "duration": "1s",
+                      "durationInSeconds": 1.2208819389343262,
+                      "name": "testNativeOriginalWebBookPreviewTransferAndReopen()",
+                      "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",
+                      "nodeType": "Test Case",
+                      "result": "Failed"
+                    },
+                    {
+                      "duration": "0.56s",
+                      "durationInSeconds": 0.5633949041366577,
+                      "name": "testNativeOriginalWebJSNativeResultBridgeCharacterizesAndroidConversionInformation()",
+                      "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalWebJSNativeResultBridgeCharacterizesAndroidConversionInformation()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalWebJSNativeResultBridgeCharacterizesAndroidConversionInformation",
+                      "nodeType": "Test Case",
+                      "result": "Passed"
+                    }
+                  ],
+                  "name": "LegadoNativeOriginalReaderTests",
+                  "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests",
+                  "nodeType": "Test Suite",
+                  "result": "Failed"
+                },
+                {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "name": "LegadoNativeWebRequestCharacterizationTests.swift:95: failed: caught error: \"failed(\"Owned manifest errors\")\"",
+                          "nodeType": "Failure Message"
+                        },
+                        {
+                          "name": "LegadoNativeWebRequestCharacterizationTests.swift:27: Failed due to unwaited expectations 'Exact extension context registered real webRequest listeners', 'Owned parent child worker image redirect and cache completed', 'Real resource native message awaiting its ACK', 'Exact background removed listeners after stop ACK', 'Actual extension HTTP redirect event', 'Actual webRequest before: parent', 'Actual webRequest before: child', 'Actual webRequest before: child-only', 'Actual webRequest before: image', 'Actual webRequest before: redirect', 'Actual webRequest before: redirect-target', 'Actual webRequest before: worker.js', 'Actual webRequest before: worker-only', 'Actual webRequest before: cache'.",
+                          "nodeType": "Failure Message"
+                        }
+                      ],
+                      "duration": "0.037s",
+                      "durationInSeconds": 0.03710496425628662,
+                      "name": "testPublicWebRequestCharacterizesOwnedFramesResourcesAndObserverCancellation()",
+                      "nodeIdentifier": "LegadoNativeWebRequestCharacterizationTests/testPublicWebRequestCharacterizesOwnedFramesResourcesAndObserverCancellation()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeWebRequestCharacterizationTests/testPublicWebRequestCharacterizesOwnedFramesResourcesAndObserverCancellation",
+                      "nodeType": "Test Case",
+                      "result": "Failed"
+                    }
+                  ],
+                  "name": "LegadoNativeWebRequestCharacterizationTests",
+                  "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeWebRequestCharacterizationTests",
+                  "nodeType": "Test Suite",
+                  "result": "Failed"
+                }
+              ],
+              "name": "yuedu appTests",
+              "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests",
+              "nodeType": "Unit test bundle",
+              "result": "Failed"
+            }
+          ],
+          "name": "Yuedu-Reader",
+          "nodeType": "Test Plan",
+          "result": "Failed"
+        }
+      ],
+      "testPlanConfigurations": [
+        {
+          "configurationId": "1",
+          "configurationName": "Test Scheme Action"
+        }
+      ]
+    },
+    "native-groups/original-product-chain-execution-public.json": {
+      "rawExecution": {
+        "path": ".build/native-ccafd8b-terminal/artifact-12347048129/.build/native-reader-test/original-product-chain-execution.json",
+        "bytes": 132914,
+        "sha256": "1d35076d6ffdb01c997b46feb0d5e2c69f91c37a5b2a7505860830d98ec9e8ff"
+      },
+      "sourceCommit": "ccafd8b700691403889bc1cf205998bc74552bad",
+      "sourceBeforeAndAfterExact": true,
+      "sourceInputsBoundToHistoricalGit": true,
+      "argvOmitted": true,
+      "commands": [
+        {
+          "exitCode": 1,
+          "timedOut": false,
+          "timeoutSeconds": 1860,
+          "elapsedSeconds": 243.979273,
+          "output": "original-product-chain-driver.log",
+          "stdout": {
+            "bytes": 4527,
+            "sha256": "14e471faae9d1735f05fe3ee027ad87235e58c27a8ea546edab54681d82ec326"
+          },
+          "stderr": "original-product-chain-driver.log.stderr.log",
+          "stderrFact": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "exitCode": 0,
+          "timedOut": false,
+          "timeoutSeconds": 60,
+          "elapsedSeconds": 0.522535,
+          "output": "original-summary.json",
+          "stdout": {
+            "bytes": 7677,
+            "sha256": "d94e4a64e2c3c813c5b0dfeee71e23bd13f4f96176ef563321119efd9b6325a2"
+          },
+          "stderr": "original-summary.json.stderr.log",
+          "stderrFact": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "exitCode": 0,
+          "timedOut": false,
+          "timeoutSeconds": 60,
+          "elapsedSeconds": 0.06393,
+          "output": "original-tests.json",
+          "stdout": {
+            "bytes": 28348,
+            "sha256": "24aa9a4f3098998e37a60e103e86d18bfab8c9feb21cf9c91e7fcf6addba65c6"
+          },
+          "stderr": "original-tests.json.stderr.log",
+          "stderrFact": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ],
+      "error": null,
+      "group": "original",
+      "executedDefinitions": 32,
+      "passed": 24,
+      "failed": 8,
+      "skipped": 0,
+      "cases": [
+        {
+          "identity": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalAwaitBrowserConfirmsThroughRealPageAndCancelsWithoutLateCredentialWrite",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalBrowserUsesSharedProcessAndKeepsAcceptedPageUntilActualDismissal",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalDeltaLoginUIReusesPhysicalControlsThroughProductServiceWithoutCredentialWrite",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalDismissPersistenceUsesCheckedOwnerWithoutExecutingLoginJS",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLocalHTMLWebJSKeepsSameSessionAfterProducerAndDrainsAwaitCancellation",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginHeaderUsesExistingOwnersAndKeepsPartialCancellationFacts",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoUsesExistingKeychainAndReopens",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIEventsReachExistingFormProjectionAfterServiceGateRelease",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIUsesProductSourceServiceAndStoredMap",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2BrowserUsesProductServiceAndExistingPageOwner",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2UsesProductRhinoAndCheckedLoginBeforeClose",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalPostBrowserDisplaysPrefetchedHtmlAndReusesSingleHttpBody",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalLoginInfoTests/testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains",
+          "result": "Failed",
+          "failureMessages": [
+            "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+          ]
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+          "result": "Failed",
+          "failureMessages": [
+            "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+          ]
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalGeneralWebJSUsesPreviewBatchAndBookCallbackOwners",
+          "result": "Failed",
+          "failureMessages": [
+            "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"SCRIPT_ERROR\", message: \"Original form login did not complete (SCRIPT_ERROR)\", completedEffects: Optional([\"cookieText\", \"cookieTextMutationMayCommit\", \"sourceBrowserWebJsMayExecute\", \"sourceWebViewCookieCaptureCommitted\", \"sourceWebViewCookieCaptureMayCommit\", \"sourceWebViewEvaluateIssued\", \"sourceWebViewLoadIssued\", \"sourceWebViewMayStart\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+          ]
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalOrderedWebJSCharacterizesCSPAndOriginalJSONInSamePageWorld",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalPreUpdateRefreshKeepsPublicBookIdentityAndProgressWithNewURLContext",
+          "result": "Failed",
+          "failureMessages": [
+            "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+          ]
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+          "result": "Failed",
+          "failureMessages": [
+            "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+          ]
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+          "result": "Failed",
+          "failureMessages": [
+            "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+          ]
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",
+          "result": "Failed",
+          "failureMessages": [
+            "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+          ]
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalWebJSNativeResultBridgeCharacterizesAndroidConversionInformation",
+          "result": "Passed",
+          "failureMessages": []
+        },
+        {
+          "identity": "LegadoNativeWebRequestCharacterizationTests/testPublicWebRequestCharacterizesOwnedFramesResourcesAndObserverCancellation",
+          "result": "Failed",
+          "failureMessages": [
+            "LegadoNativeWebRequestCharacterizationTests.swift:95: failed: caught error: \"failed(\"Owned manifest errors\")\"",
+            "LegadoNativeWebRequestCharacterizationTests.swift:27: Failed due to unwaited expectations 'Exact extension context registered real webRequest listeners', 'Owned parent child worker image redirect and cache completed', 'Real resource native message awaiting its ACK', 'Exact background removed listeners after stop ACK', 'Actual extension HTTP redirect event', 'Actual webRequest before: parent', 'Actual webRequest before: child', 'Actual webRequest before: child-only', 'Actual webRequest before: image', 'Actual webRequest before: redirect', 'Actual webRequest before: redirect-target', 'Actual webRequest before: worker.js', 'Actual webRequest before: worker-only', 'Actual webRequest before: cache'."
+          ]
+        }
+      ],
+      "product": {
+        "definitions": 29,
+        "passed": 22,
+        "failed": 7
+      },
+      "platformCharacterizations": {
+        "definitions": 3,
+        "passed": 2,
+        "failed": 1
+      }
+    },
+    "native-groups/actual-original-failures.json": {
+      "rawLog": {
+        "path": ".build/native-ccafd8b-terminal/artifact-12347048129/.build/native-reader-test/original-product-chain.log",
+        "bytes": 599384,
+        "sha256": "4ed1694821f134305bdfb847ea35bf9b053af201e07d50c09ff2f3145cab96aa"
+      },
+      "failedMethods": [
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains",
+          "result": "Failed",
+          "failureMessages": [
+            "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+          ]
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+          "result": "Failed",
+          "failureMessages": [
+            "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+          ]
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalGeneralWebJSUsesPreviewBatchAndBookCallbackOwners",
+          "result": "Failed",
+          "failureMessages": [
+            "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"SCRIPT_ERROR\", message: \"Original form login did not complete (SCRIPT_ERROR)\", completedEffects: Optional([\"cookieText\", \"cookieTextMutationMayCommit\", \"sourceBrowserWebJsMayExecute\", \"sourceWebViewCookieCaptureCommitted\", \"sourceWebViewCookieCaptureMayCommit\", \"sourceWebViewEvaluateIssued\", \"sourceWebViewLoadIssued\", \"sourceWebViewMayStart\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+          ]
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalPreUpdateRefreshKeepsPublicBookIdentityAndProgressWithNewURLContext",
+          "result": "Failed",
+          "failureMessages": [
+            "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+          ]
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+          "result": "Failed",
+          "failureMessages": [
+            "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+          ]
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+          "result": "Failed",
+          "failureMessages": [
+            "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+          ]
+        },
+        {
+          "identity": "LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",
+          "result": "Failed",
+          "failureMessages": [
+            "LegadoNativeOriginalReaderTests.swift:1700: failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+          ]
+        },
+        {
+          "identity": "LegadoNativeWebRequestCharacterizationTests/testPublicWebRequestCharacterizesOwnedFramesResourcesAndObserverCancellation",
+          "result": "Failed",
+          "failureMessages": [
+            "LegadoNativeWebRequestCharacterizationTests.swift:95: failed: caught error: \"failed(\"Owned manifest errors\")\"",
+            "LegadoNativeWebRequestCharacterizationTests.swift:27: Failed due to unwaited expectations 'Exact extension context registered real webRequest listeners', 'Owned parent child worker image redirect and cache completed', 'Real resource native message awaiting its ACK', 'Exact background removed listeners after stop ACK', 'Actual extension HTTP redirect event', 'Actual webRequest before: parent', 'Actual webRequest before: child', 'Actual webRequest before: child-only', 'Actual webRequest before: image', 'Actual webRequest before: redirect', 'Actual webRequest before: redirect-target', 'Actual webRequest before: worker.js', 'Actual webRequest before: worker-only', 'Actual webRequest before: cache'."
+          ]
+        }
+      ],
+      "primaryFailureLines": [
+        {
+          "line": 3730,
+          "text": "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/LegadoNativeOriginalReaderTests.swift:1700: error: -[yuedu_appTests.LegadoNativeOriginalReaderTests testNativeOriginalBookNotificationCancellationDrains] : failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+        },
+        {
+          "line": 3742,
+          "text": "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/LegadoNativeOriginalReaderTests.swift:1700: error: -[yuedu_appTests.LegadoNativeOriginalReaderTests testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity] : failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+        },
+        {
+          "line": 3804,
+          "text": "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/LegadoNativeOriginalReaderTests.swift:1700: error: -[yuedu_appTests.LegadoNativeOriginalReaderTests testNativeOriginalGeneralWebJSUsesPreviewBatchAndBookCallbackOwners] : failed: caught error: \"LegadoRuntimeError(code: \"SCRIPT_ERROR\", message: \"Original form login did not complete (SCRIPT_ERROR)\", completedEffects: Optional([\"cookieText\", \"cookieTextMutationMayCommit\", \"sourceBrowserWebJsMayExecute\", \"sourceWebViewCookieCaptureCommitted\", \"sourceWebViewCookieCaptureMayCommit\", \"sourceWebViewEvaluateIssued\", \"sourceWebViewLoadIssued\", \"sourceWebViewMayStart\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+        },
+        {
+          "line": 3819,
+          "text": "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/LegadoNativeOriginalReaderTests.swift:1700: error: -[yuedu_appTests.LegadoNativeOriginalReaderTests testNativeOriginalPreUpdateRefreshKeepsPublicBookIdentityAndProgressWithNewURLContext] : failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+        },
+        {
+          "line": 3833,
+          "text": "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/LegadoNativeOriginalReaderTests.swift:1700: error: -[yuedu_appTests.LegadoNativeOriginalReaderTests testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen] : failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+        },
+        {
+          "line": 3845,
+          "text": "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/LegadoNativeOriginalReaderTests.swift:1700: error: -[yuedu_appTests.LegadoNativeOriginalReaderTests testNativeOriginalPublicReaderCancellationDrainsWithoutCache] : failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+        },
+        {
+          "line": 3884,
+          "text": "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/LegadoNativeOriginalReaderTests.swift:1700: error: -[yuedu_appTests.LegadoNativeOriginalReaderTests testNativeOriginalWebBookPreviewTransferAndReopen] : failed: caught error: \"LegadoRuntimeError(code: \"CANCELLED\", message: \"Original invocation did not complete\", completedEffects: Optional([\"bookVariablesCommitted\", \"bookVariablesMayCommit\"]), loginUIEvents: nil, secondaryFailures: nil)\""
+        },
+        {
+          "line": 3908,
+          "text": "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/LegadoNativeWebRequestCharacterizationTests.swift:95: error: -[yuedu_appTests.LegadoNativeWebRequestCharacterizationTests testPublicWebRequestCharacterizesOwnedFramesResourcesAndObserverCancellation] : failed: caught error: \"failed(\"Owned manifest errors\")\""
+        }
+      ],
+      "classification": {
+        "ReaderCancelledWithBookVariableEffects": 6,
+        "ReaderGeneralWebJSScriptError": 1,
+        "WebRequestManifestCharacterization": 1
+      },
+      "rootCauseNotEstablishedByArchive": true,
+      "laterRepairsDoNotChangeThisResult": true
+    },
+    "cold-process/control.json": {
+      "schemaVersion": 1,
+      "runID": "c59afa13-6b81-401f-b48b-8802e85f4288",
+      "nonce": "d69e56ee24a14e508cf4ea9ee0e84ba90cd1fc1421704393800ffc5d1aee8177",
+      "sourceCommit": "ccafd8b700691403889bc1cf205998bc74552bad",
+      "container": "/Users/runner/Library/Developer/CoreSimulator/Devices/4C675116-265D-488F-BFFA-836A4545674C/data/Containers/Data/Application/E8D45CA4-3D37-4AC7-93B9-BC93F4AB31A1"
+    },
+    "cold-process/failure.json": {
+      "status": "failed",
+      "errorType": "ValueError"
+    },
+    "cold-process/producer-summary.json": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "4C675116-265D-488F-BFFA-836A4545674C",
+            "deviceName": "iPhone 17 Pro Max",
+            "modelName": "iPhone 17 Pro Max",
+            "osBuildNumber": "23C54",
+            "osVersion": "26.2",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 1,
+          "passedTests": 0,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "Yuedu-Reader · Built with macOS 15.7.9",
+      "expectedFailures": 0,
+      "failedTests": 1,
+      "finishTime": 1792587838.679,
+      "passedTests": 0,
+      "result": "Failed",
+      "skippedTests": 0,
+      "startTime": 1792587773.957,
+      "statistics": [],
+      "testFailures": [
+        {
+          "failureText": "failed: caught error: \"failed(\"Cold descriptor differs from this source-stamped owned data container\")\"",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 1,
+          "testIdentifierString": "LegadoNativeOriginalReaderTests/testNativeOriginalColdProducerPersistsPublicReaderBeforeProcessExit()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalColdProducerPersistsPublicReaderBeforeProcessExit",
+          "testName": "testNativeOriginalColdProducerPersistsPublicReaderBeforeProcessExit()"
+        }
+      ],
+      "title": "Test - Yuedu-Reader",
+      "topInsights": [],
+      "totalTestCount": 1
+    },
+    "cold-process/producer-tests.json": {
+      "devices": [
+        {
+          "architecture": "arm64",
+          "deviceId": "4C675116-265D-488F-BFFA-836A4545674C",
+          "deviceName": "iPhone 17 Pro Max",
+          "modelName": "iPhone 17 Pro Max",
+          "osBuildNumber": "23C54",
+          "osVersion": "26.2",
+          "platform": "iOS Simulator"
+        }
+      ],
+      "testNodes": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "name": "LegadoNativeOriginalReaderTests.swift:765: failed: caught error: \"failed(\"Cold descriptor differs from this source-stamped owned data container\")\"",
+                          "nodeType": "Failure Message"
+                        }
+                      ],
+                      "duration": "0.35s",
+                      "durationInSeconds": 0.3493800163269043,
+                      "name": "testNativeOriginalColdProducerPersistsPublicReaderBeforeProcessExit()",
+                      "nodeIdentifier": "LegadoNativeOriginalReaderTests/testNativeOriginalColdProducerPersistsPublicReaderBeforeProcessExit()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests/testNativeOriginalColdProducerPersistsPublicReaderBeforeProcessExit",
+                      "nodeType": "Test Case",
+                      "result": "Failed"
+                    }
+                  ],
+                  "name": "LegadoNativeOriginalReaderTests",
+                  "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoNativeOriginalReaderTests",
+                  "nodeType": "Test Suite",
+                  "result": "Failed"
+                }
+              ],
+              "name": "yuedu appTests",
+              "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests",
+              "nodeType": "Unit test bundle",
+              "result": "Failed"
+            }
+          ],
+          "name": "Yuedu-Reader",
+          "nodeType": "Test Plan",
+          "result": "Failed"
+        }
+      ],
+      "testPlanConfigurations": [
+        {
+          "configurationId": "1",
+          "configurationName": "Test Scheme Action"
+        }
+      ]
+    },
+    "cold-process/producer-execution-public.json": {
+      "rawExecution": {
+        "path": ".build/native-ccafd8b-terminal/artifact-12347048129/.build/native-reader-test/cold-process/producer-execution.json",
+        "bytes": 130937,
+        "sha256": "ea064559c2e7976ccbeb6af9b7cbb89306ed74eeef117e4a2bc2d1de305ac7c8"
+      },
+      "sourceCommit": "ccafd8b700691403889bc1cf205998bc74552bad",
+      "sourceBeforeAndAfterExact": true,
+      "sourceInputsBoundToHistoricalGit": true,
+      "argvOmitted": true,
+      "commands": [
+        {
+          "exitCode": 1,
+          "timedOut": false,
+          "timeoutSeconds": 960,
+          "elapsedSeconds": 103.810992,
+          "output": "producer-driver.log",
+          "stdout": {
+            "bytes": 515,
+            "sha256": "b608eb70e5b503d0a245f0a681c45156a53fc0c7fe8d8fd033cff2b2aa28a2fa"
+          },
+          "stderr": "producer-driver.log.stderr.log",
+          "stderrFact": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "exitCode": 0,
+          "timedOut": false,
+          "timeoutSeconds": 60,
+          "elapsedSeconds": 0.267435,
+          "output": "producer-summary.json",
+          "stdout": {
+            "bytes": 1606,
+            "sha256": "00ffa66fdd2a25e6324ae8058ce1f7aefb19095086337b04bdab2cac426e1a90"
+          },
+          "stderr": "producer-summary.json.stderr.log",
+          "stderrFact": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "exitCode": 0,
+          "timedOut": false,
+          "timeoutSeconds": 60,
+          "elapsedSeconds": 0.123509,
+          "output": "producer-tests.json",
+          "stdout": {
+            "bytes": 2167,
+            "sha256": "0d593bb77c66d27ab2029b335fd2af1b2c665ee0e5c930cd70c7f3541e1b6006"
+          },
+          "stderr": "producer-tests.json.stderr.log",
+          "stderrFact": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ],
+      "error": null,
+      "producerDefinitionsExecuted": 1,
+      "producerPassed": 0,
+      "producerFailed": 1,
+      "consumerDefinitionsExecuted": 0,
+      "actualIndependentHostsAccepted": 0,
+      "sourceBeforeEqualsAfter": true,
+      "containerBefore": "/Users/runner/Library/Developer/CoreSimulator/Devices/4C675116-265D-488F-BFFA-836A4545674C/data/Containers/Data/Application/E8D45CA4-3D37-4AC7-93B9-BC93F4AB31A1",
+      "containerAfter": "/Users/runner/Library/Developer/CoreSimulator/Devices/4C675116-265D-488F-BFFA-836A4545674C/data/Containers/Data/Application/7FE24656-A042-4336-B77A-6CDB30A26455",
+      "containerChanged": true,
+      "testFailure": "Cold descriptor differs from this source-stamped owned data container",
+      "sourceLocation": "LegadoNativeOriginalReaderTests.swift:765",
+      "controllerFailure": "original-cold-process-tools.py:319 Cold host changed source or its persistent container",
+      "producerCaseDurationSeconds": 0.3493800163269043,
+      "completionAccepted": false,
+      "consumerReceiptPresent": false,
+      "renewalVerified": false,
+      "rootCauseNotEstablishedByArchive": true
+    }
+  }
+}

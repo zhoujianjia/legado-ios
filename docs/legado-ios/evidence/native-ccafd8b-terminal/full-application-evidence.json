@@ -1,0 +1,1896 @@
+{
+  "scope": "Same historical Native ccafd run; constituent raw byte facts remain in compact map. No argv/private material.",
+  "parts": {
+    "actual-runtime-failure-excerpt.json": {
+      "raw": {
+        "path": ".build/native-ccafd8b-terminal/artifact-12347048129/.build/s3-full-application-signing/full-application-test-build.log",
+        "bytes": 8512240,
+        "sha256": "2b0b56ca988a5c27a3a46deec9dd34c48ddb594607407cc449e9c0952247c32e"
+      },
+      "firstFailure": {
+        "phase": "full-application-test-runtime",
+        "exitCode": 1,
+        "timedOut": false,
+        "reportedXcodeStatus": 65,
+        "uniqueCompilerErrors": 0,
+        "testIssueCount": 1,
+        "sourceLocation": "SelfRenewalSignedCodeVerifier.swift:146",
+        "testDeclaration": "SelfRenewalFullApplicationSignerTests.swift:15:6",
+        "rawLogLine": 36895,
+        "message": "Caught error: sizeLimit",
+        "actualFullApplicationSignerTests": 1,
+        "passed": 0,
+        "failed": 1,
+        "caseDurationSeconds": 52.187,
+        "testRunDurationSeconds": 52.192
+      },
+      "excerpt": [
+        {
+          "line": 36843,
+          "text": "2026-10-21 12:37:36.996036+0000 YueduReader[85748:454815] [parse] ⏱ renewal.material.owned-file 14ms bytes=1506 declaredBytes=1506 main=false"
+        },
+        {
+          "line": 36844,
+          "text": "[ERROR] ⏱ renewal.material.owned-file 14ms bytes=1506 declaredBytes=1506 main=false"
+        },
+        {
+          "line": 36845,
+          "text": "2026-10-21 12:37:37.005685+0000 YueduReader[85748:454815] [parse] ⏱ renewal.material.owned-file 1ms bytes=2288 declaredBytes=2288 main=false"
+        },
+        {
+          "line": 36848,
+          "text": "[ERROR] ⏱ renewal.material.cms 2ms bytes=1798 main=false"
+        },
+        {
+          "line": 36856,
+          "text": "[ERROR] ⏱ renewal.material.cms 3ms bytes=1798 main=false"
+        },
+        {
+          "line": 36890,
+          "text": "[ERROR] ⏱ renewal.material.macho 1766ms files=7 bytes=1383584 hashBytes=162871996 signatureBytes=18950 hashOperations=37791 main=false"
+        },
+        {
+          "line": 36892,
+          "text": "[ERROR] ⏱ renewal.ipa.unpack 52092ms bytes=287414811 expandedBytes=282724793 main=false"
+        },
+        {
+          "line": 36894,
+          "text": "[ERROR] ⏱ renewal.package.full-application-test 52103ms bytes=287414811 main=false"
+        },
+        {
+          "line": 36895,
+          "text": "✘ Test \"real main Widget Share framework JVM JAR and Java resources survive controlled re-signing and independent archive verification\" recorded an issue at SelfRenewalFullApplicationSignerTests.swift:15:6: Caught error: sizeLimit"
+        },
+        {
+          "line": 36896,
+          "text": "✘ Test \"real main Widget Share framework JVM JAR and Java resources survive controlled re-signing and independent archive verification\" failed after 52.187 seconds with 1 issue."
+        },
+        {
+          "line": 36897,
+          "text": "✘ Suite \"Complete current-source iPhoneOS JVM package through the production signing owners\" failed after 52.191 seconds with 1 issue."
+        },
+        {
+          "line": 36901,
+          "text": "✘ Test run with 1 test in 1 suite failed after 52.192 seconds with 1 issue."
+        },
+        {
+          "line": 36909,
+          "text": "** TEST FAILED **"
+        }
+      ],
+      "testStartEvents": 1,
+      "scope": "Actual full-package case failed with sizeLimit during the production verification/signing chain. No successful complete re-sign/independent-output acceptance is established."
+    },
+    "full-device-build-excerpt.json": {
+      "raw": {
+        "path": ".build/native-ccafd8b-terminal/artifact-12347048129/.build/s3-full-application-signing/full-device-build.log",
+        "bytes": 6574032,
+        "sha256": "9e7d5d5e4e621153b21bf7a7940c3603b3a196af5b170a1edd5ed949f085c3e0"
+      },
+      "declaredOutput": {
+        "path": "full-device-build.log",
+        "bytes": 6574032,
+        "sha256": "9e7d5d5e4e621153b21bf7a7940c3603b3a196af5b170a1edd5ed949f085c3e0"
+      },
+      "actualRawCountAndHashMatchDeclared": true,
+      "execution": {
+        "timeoutSeconds": 3600,
+        "timedOut": false,
+        "exitCode": 0,
+        "output": {
+          "path": "full-device-build.log",
+          "bytes": 6574032,
+          "sha256": "9e7d5d5e4e621153b21bf7a7940c3603b3a196af5b170a1edd5ed949f085c3e0"
+        },
+        "argvOmittedFromPublicArchive": true
+      },
+      "compilerErrorDiagnosticCount": 0,
+      "successMarkerLines": [
+        17555
+      ],
+      "excerpt": [
+        {
+          "line": 17555,
+          "text": "** BUILD SUCCEEDED **"
+        }
+      ],
+      "scope": "Actual complete device App build; not production Swift package re-sign execution."
+    },
+    "full-device-input-shapes.json": {
+      "rawProducerLog": {
+        "path": ".build/native-ccafd8b-terminal/artifact-12347048129/.build/s3-full-application-signing/full-owned-producer.log",
+        "bytes": 11962,
+        "sha256": "3b239f61569c5241a11ebb54c40b8b054804de65cffe25e5ba522e2f1a5e1dd3"
+      },
+      "observations": [
+        {
+          "rawLine": 12,
+          "observation": {
+            "architectures": 1,
+            "container": "fat32-single-arm64",
+            "cpuSubtype": 0,
+            "cpuType": 16777228,
+            "fileBytes": 33128,
+            "fileType": 6,
+            "path": "Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal",
+            "sliceBytes": 16744,
+            "sliceOffset": 16384
+          }
+        },
+        {
+          "rawLine": 13,
+          "observation": {
+            "architectures": 1,
+            "container": "fat32-single-arm64",
+            "cpuSubtype": 0,
+            "cpuType": 16777228,
+            "fileBytes": 33128,
+            "fileType": 6,
+            "path": "Frameworks/absl.framework/absl",
+            "sliceBytes": 16744,
+            "sliceOffset": 16384
+          }
+        },
+        {
+          "rawLine": 14,
+          "observation": {
+            "architectures": 1,
+            "container": "fat32-single-arm64",
+            "cpuSubtype": 0,
+            "cpuType": 16777228,
+            "fileBytes": 33128,
+            "fileType": 6,
+            "path": "Frameworks/grpc.framework/grpc",
+            "sliceBytes": 16744,
+            "sliceOffset": 16384
+          }
+        },
+        {
+          "rawLine": 15,
+          "observation": {
+            "architectures": 1,
+            "container": "fat32-single-arm64",
+            "cpuSubtype": 0,
+            "cpuType": 16777228,
+            "fileBytes": 33128,
+            "fileType": 6,
+            "path": "Frameworks/grpcpp.framework/grpcpp",
+            "sliceBytes": 16744,
+            "sliceOffset": 16384
+          }
+        },
+        {
+          "rawLine": 16,
+          "observation": {
+            "architectures": 1,
+            "container": "fat32-single-arm64",
+            "cpuSubtype": 0,
+            "cpuType": 16777228,
+            "fileBytes": 33128,
+            "fileType": 6,
+            "path": "Frameworks/openssl_grpc.framework/openssl_grpc",
+            "sliceBytes": 16744,
+            "sliceOffset": 16384
+          }
+        },
+        {
+          "rawLine": 17,
+          "observation": {
+            "architectures": 1,
+            "container": "thin64",
+            "cpuSubtype": 0,
+            "cpuType": 16777228,
+            "fileBytes": 154044272,
+            "fileType": 2,
+            "path": "YueduReader",
+            "sliceBytes": 154044272,
+            "sliceOffset": 0
+          }
+        },
+        {
+          "rawLine": 18,
+          "observation": {
+            "architectures": 1,
+            "container": "thin64",
+            "cpuSubtype": 0,
+            "cpuType": 16777228,
+            "fileBytes": 109152,
+            "fileType": 2,
+            "path": "PlugIns/yuedu_app_ShareExtension.appex/yuedu_app_ShareExtension",
+            "sliceBytes": 109152,
+            "sliceOffset": 0
+          }
+        },
+        {
+          "rawLine": 19,
+          "observation": {
+            "architectures": 1,
+            "container": "thin64",
+            "cpuSubtype": 0,
+            "cpuType": 16777228,
+            "fileBytes": 376184,
+            "fileType": 2,
+            "path": "PlugIns/yuedu_app_Widget.appex/yuedu_app_Widget",
+            "sliceBytes": 376184,
+            "sliceOffset": 0
+          }
+        }
+      ],
+      "scope": "Direct existing producer parser observations on actual current-source device App input before controlled Apple codesign. No raw headers uploaded; manifest eight output hashes describe later controlled-signed bytes, not these headers."
+    },
+    "full-application-summary.json": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "4C675116-265D-488F-BFFA-836A4545674C",
+            "deviceName": "iPhone 17 Pro Max",
+            "modelName": "iPhone 17 Pro Max",
+            "osBuildNumber": "23C54",
+            "osVersion": "26.2",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 1,
+          "passedTests": 0,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "Yuedu-Reader · Built with macOS 15.7.9",
+      "expectedFailures": 0,
+      "failedTests": 1,
+      "finishTime": 1792586283.823,
+      "passedTests": 0,
+      "result": "Failed",
+      "skippedTests": 0,
+      "startTime": 1792584469.923,
+      "statistics": [],
+      "testFailures": [
+        {
+          "failureText": "Caught error: .sizeLimit",
+          "targetName": "yuedu appTests",
+          "testIdentifier": 1,
+          "testIdentifierString": "SelfRenewalFullApplicationSignerTests/signsFullCurrentIPhoneOSJVMApplicationThroughSameProductionOwners()",
+          "testIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalFullApplicationSignerTests/signsFullCurrentIPhoneOSJVMApplicationThroughSameProductionOwners()",
+          "testName": "real main Widget Share framework JVM JAR and Java resources survive controlled re-signing and independent archive verification"
+        }
+      ],
+      "title": "Test - Yuedu-Reader",
+      "topInsights": [],
+      "totalTestCount": 1
+    },
+    "full-application-tests.json": {
+      "devices": [
+        {
+          "architecture": "arm64",
+          "deviceId": "4C675116-265D-488F-BFFA-836A4545674C",
+          "deviceName": "iPhone 17 Pro Max",
+          "modelName": "iPhone 17 Pro Max",
+          "osBuildNumber": "23C54",
+          "osVersion": "26.2",
+          "platform": "iOS Simulator"
+        }
+      ],
+      "testNodes": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "name": "SelfRenewalSignedCodeVerifier.swift:146: Caught error: .sizeLimit",
+                          "nodeType": "Failure Message"
+                        }
+                      ],
+                      "duration": "52s",
+                      "durationInSeconds": 52,
+                      "name": "real main Widget Share framework JVM JAR and Java resources survive controlled re-signing and independent archive verification",
+                      "nodeIdentifier": "SelfRenewalFullApplicationSignerTests/signsFullCurrentIPhoneOSJVMApplicationThroughSameProductionOwners()",
+                      "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalFullApplicationSignerTests/signsFullCurrentIPhoneOSJVMApplicationThroughSameProductionOwners()",
+                      "nodeType": "Test Case",
+                      "result": "Failed"
+                    }
+                  ],
+                  "name": "Complete current-source iPhoneOS JVM package through the production signing owners",
+                  "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalFullApplicationSignerTests",
+                  "nodeType": "Test Suite",
+                  "result": "Failed"
+                }
+              ],
+              "name": "yuedu appTests",
+              "nodeIdentifierURL": "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests",
+              "nodeType": "Unit test bundle",
+              "result": "Failed"
+            }
+          ],
+          "name": "Yuedu-Reader",
+          "nodeType": "Test Plan",
+          "result": "Failed"
+        }
+      ],
+      "testPlanConfigurations": [
+        {
+          "configurationId": "1",
+          "configurationName": "Test Scheme Action"
+        }
+      ]
+    },
+    "full-sdk-owned-package-public.json": {
+      "schema": 1,
+      "kind": "full-current-source-iphoneos-jvm-application",
+      "sourceCommit": "ccafd8b700691403889bc1cf205998bc74552bad",
+      "archiveFile": "full-sdk-owned-package.ipa",
+      "archiveBytes": 287414811,
+      "archiveSHA256": "5a3aac17a8c1418698454e3423d9bc165b8313c9f6acc831a693b089e3ae889e",
+      "verificationEpochSeconds": 1792584159,
+      "ordinaryJar": {
+        "path": "LegadoRuntime/legado-runtime.jar",
+        "bytes": 10960540,
+        "sha256": "b48cd0bcc1e06036ab7cafcaff305a9fbd5a31fcd76faaead4e9800cf1ae0f46"
+      },
+      "realJavaClassResourceCount": 16614,
+      "componentPaths": [
+        ".",
+        "Frameworks/FirebaseFirestoreInternal.framework",
+        "Frameworks/absl.framework",
+        "Frameworks/grpc.framework",
+        "Frameworks/grpcpp.framework",
+        "Frameworks/openssl_grpc.framework",
+        "PlugIns/yuedu_app_ShareExtension.appex",
+        "PlugIns/yuedu_app_Widget.appex"
+      ],
+      "bundlePaths": [
+        ".",
+        "PlugIns/yuedu_app_ShareExtension.appex",
+        "PlugIns/yuedu_app_Widget.appex"
+      ],
+      "originalBuildManifest": {
+        "bytes": 9666,
+        "sha256": "343d7d93532cb3504da02a5337bd90993dbce39ab31eae051788d634d48dd2d1"
+      },
+      "sameJobNativeReuse": {
+        "bytes": 5107,
+        "sha256": "431260485948969892e838c29e4d1bdfdf0a476c62580ffb7396600d4f5268dc"
+      },
+      "allUnrelatedDeviceBuildFilesPreserved": true,
+      "privateMaterialArtifacts": 0,
+      "realAppleAccountUsed": false,
+      "controlledOriginalSigningOnly": true,
+      "realDeviceExecution": false,
+      "controlledPublicCertificateAnchorOmitted": true
+    },
+    "full-sdk-produced-fixture-public-manifest.json": {
+      "schema": 1,
+      "sourceInputs": [
+        {
+          "path": "generate-sdk-owned-package.py",
+          "bytes": 73458,
+          "sha256": "d8144d8bd05fb3b1043f4a3b7212243ebe3849f231cd0494f51501d2b923b249"
+        },
+        {
+          "path": "ImportOwnedIdentity.swift",
+          "bytes": 30240,
+          "sha256": "b271f8761b92b2cc74b16ea5c8cb0a4b74084385749bbb2e15be3dc78719e849"
+        },
+        {
+          "path": "OwnedIdentitySearch.h",
+          "bytes": 3976,
+          "sha256": "038ca6bbef96cd2b1511967dce4daa8c55ba6403a758272132d809be55cab7a8"
+        },
+        {
+          "path": "OwnedIdentitySearch.c",
+          "bytes": 37981,
+          "sha256": "d7451a4ecdae1a7a10b960046a588dfafd398369517e1dea74183b9791e9ac20"
+        },
+        {
+          "path": "main.c",
+          "bytes": 180,
+          "sha256": "0f1f097060993b3b25b4da50f31a4ef5a1d8077084d64ca561dbfc3a743a86f7"
+        },
+        {
+          "path": "extension.c",
+          "bytes": 186,
+          "sha256": "79636265b4cdbf74aff701991aa425a6454fe6cd9049a9652c094b767eba7609"
+        },
+        {
+          "path": "framework.c",
+          "bytes": 156,
+          "sha256": "4d6d77e995c1740eeb510f39830683aa31e050e0ebd97881f3e68643970b79ef"
+        },
+        {
+          "path": "full-application-package.py",
+          "bytes": 17140,
+          "sha256": "05e91f796cf199932447714e2754768117b151b118b4aad27f41aca761ff3ae8"
+        }
+      ],
+      "actualSDKProducedMachOs": [
+        {
+          "role": "Frameworks/FirebaseFirestoreInternal.framework",
+          "bundleIdentifier": "org.cocoapods.FirebaseFirestoreInternal",
+          "platform": "iPhoneOS",
+          "bytes": 51360,
+          "sha256": "6efec35452c3cbac384422962af45bca5b2235c6971911efe860ad9e4b101087",
+          "originalAppleCodesignDeepVerificationPassed": true
+        },
+        {
+          "role": "Frameworks/absl.framework",
+          "bundleIdentifier": "org.cocoapods.absl",
+          "platform": "iPhoneOS",
+          "bytes": 51328,
+          "sha256": "7cd2ab48215f99c5d68cca642a708630769b3bc99ef33439f6385b15fd554384",
+          "originalAppleCodesignDeepVerificationPassed": true
+        },
+        {
+          "role": "Frameworks/grpc.framework",
+          "bundleIdentifier": "org.cocoapods.grpc",
+          "platform": "iPhoneOS",
+          "bytes": 51328,
+          "sha256": "3d15c0924c6308e1e675e1a8fb8d2103e5a806fd29c69c02201f95e536eae92b",
+          "originalAppleCodesignDeepVerificationPassed": true
+        },
+        {
+          "role": "Frameworks/grpcpp.framework",
+          "bundleIdentifier": "org.cocoapods.grpcpp",
+          "platform": "iPhoneOS",
+          "bytes": 51328,
+          "sha256": "29df1a504e0ad08f82f68c78f7e5589cbc401d071d9798706d5f3d500469ec03",
+          "originalAppleCodesignDeepVerificationPassed": true
+        },
+        {
+          "role": "Frameworks/openssl_grpc.framework",
+          "bundleIdentifier": "org.cocoapods.openssl-grpc",
+          "platform": "iPhoneOS",
+          "bytes": 51344,
+          "sha256": "c686f4eec271687d13e5361728f134fe7e74af55a14f1ad4d55aadc735555daf",
+          "originalAppleCodesignDeepVerificationPassed": true
+        },
+        {
+          "role": ".",
+          "bundleIdentifier": "local.zhoujianjia.legado-reader",
+          "platform": "iPhoneOS",
+          "bytes": 155267648,
+          "sha256": "79ea4afc3677d658e003bd018d9db67ec58d45a46b1f5e4e6a18a54f1985ecb0",
+          "originalAppleCodesignDeepVerificationPassed": true
+        },
+        {
+          "role": "PlugIns/yuedu_app_ShareExtension.appex",
+          "bundleIdentifier": "local.zhoujianjia.legado-reader.shareextension",
+          "platform": "iPhoneOS",
+          "bytes": 129488,
+          "sha256": "f310b8f0eb108e120e1c47bdbee2886746c6f1b3c9008dd589fcfcaf588f6ac2",
+          "originalAppleCodesignDeepVerificationPassed": true
+        },
+        {
+          "role": "PlugIns/yuedu_app_Widget.appex",
+          "bundleIdentifier": "local.zhoujianjia.legado-reader.widget",
+          "platform": "iPhoneOS",
+          "bytes": 398560,
+          "sha256": "4092c1adf54c3f5c7d26df12cb37ece1912d58c58c50ca211ccd3be2d8d3ac6c",
+          "originalAppleCodesignDeepVerificationPassed": true
+        }
+      ],
+      "generatedAt": "2026-10-21T12:02:39+00:00",
+      "archiveSHA256": "5a3aac17a8c1418698454e3423d9bc165b8313c9f6acc831a693b089e3ae889e",
+      "archiveBytes": 287414811,
+      "privateKeyFilesOutsideKeychain": 0,
+      "temporaryOwnedKeychainDeleted": true,
+      "temporaryUserSearchListRegistered": true,
+      "temporaryUserSearchListRestoredAndOwnedAbsent": true,
+      "userAdminSystemTrustChanged": false,
+      "privateMaterialArtifacts": 0,
+      "realAppleAccountUsed": false,
+      "SwiftPackageCoordinatorExecuted": false,
+      "producerToolBudgetSeconds": 300,
+      "ownedToolBudgetsSeconds": {
+        "openssl": 30,
+        "xcodebuild": 20,
+        "xcrun": 120,
+        "security": 15,
+        "codesign": 45,
+        "import-owned-identity": 20
+      },
+      "cleanupToolBudgetSeconds": 10,
+      "fullApplicationInputFiles": 17553,
+      "fullApplicationInputTreeSHA256": "f3fd42b700f39f9cabd6a586d545d4ea4e78bb3695598a7af375ff427b5af3fd",
+      "publicOutputs": [
+        {
+          "path": "0.device-platform.log",
+          "bytes": 316,
+          "sha256": "81b2e1b659e50d9eb0143106960c8dd1db51b2ed0dc8a3420643a17619593146"
+        },
+        {
+          "path": "1.device-platform.log",
+          "bytes": 274,
+          "sha256": "95fbc48c5344f60d36330e82a5c5b79d1e66114809476113ff3de797a828a135"
+        },
+        {
+          "path": "2.device-platform.log",
+          "bytes": 274,
+          "sha256": "bf928b1b6dbe57ebb393072c7fc6c26d4be8e8dca729c9e168fdb7c5c35a68d1"
+        },
+        {
+          "path": "3.device-platform.log",
+          "bytes": 278,
+          "sha256": "4755d23ac0343ff7db86c5ca14fee6a98a3d7172b398f3679f65d28dbefcb2bc"
+        },
+        {
+          "path": "4.device-platform.log",
+          "bytes": 290,
+          "sha256": "9c82bad38613ebee25d076a6dd674dbb81827ddcf56450167ca4c2912f79de44"
+        },
+        {
+          "path": "5.device-platform.log",
+          "bytes": 255,
+          "sha256": "64c99e1d97867ed93becc81cf2c9344093a379a63417163ef2892278886efc70"
+        },
+        {
+          "path": "6.device-platform.log",
+          "bytes": 307,
+          "sha256": "e2eb577883607f9ab852a96c8fad48368532ac23627c5267b055e2d2a735fb87"
+        },
+        {
+          "path": "7.device-platform.log",
+          "bytes": 291,
+          "sha256": "9272017866c2a0aa3f0238647dadc0bed504722697cf3bbb31d989439347dc08"
+        },
+        {
+          "path": "clang-version.log",
+          "bytes": 205,
+          "sha256": "ad80af3802c0b5ab5826459477dc844b14ca968734496feb4477b51423d556fc"
+        },
+        {
+          "path": "full-original-codesign-verification.log",
+          "bytes": 253,
+          "sha256": "7ced6e222514150560117b056da04b2bc337ab9f708a7cf359dd10e4d7229af6"
+        },
+        {
+          "path": "full-sdk-owned-package.ipa",
+          "bytes": 287414811,
+          "sha256": "5a3aac17a8c1418698454e3423d9bc165b8313c9f6acc831a693b089e3ae889e"
+        },
+        {
+          "path": "full-sdk-owned-package.json",
+          "bytes": 2638,
+          "sha256": "d3d36dea78a257ee2926453218157a7d434cc643e29c77e2861fa4c5f4bafef2"
+        },
+        {
+          "path": "import-tool-compile.log",
+          "bytes": 37378,
+          "sha256": "d2e3624f37b8c8a1c01cf383da38e7f4975661ab2a6d998d1c840720183576bf"
+        },
+        {
+          "path": "leaf.cert.der",
+          "bytes": 883,
+          "sha256": "48951477df5426a95ea03619dd531b3449fe7d44886b0363f7201aa02363bfd0"
+        },
+        {
+          "path": "leaf.cert.pem",
+          "bytes": 1253,
+          "sha256": "8e0c92311276d609b88b5bfa7a6c373004def17de509c11b62f98a6bbc93bd90"
+        },
+        {
+          "path": "local.zhoujianjia.legado-reader.codesign.log",
+          "bytes": 178,
+          "sha256": "a0765e6442bb3295c91b88ca6bd23cde2d6ff2c13f79ed9806a0908af899dd01"
+        },
+        {
+          "path": "local.zhoujianjia.legado-reader.shareextension.codesign.log",
+          "bytes": 228,
+          "sha256": "6fb64b999184d70c25f12274237d5ee96c2c1bacdc9db12bcb8a219b9041dcbf"
+        },
+        {
+          "path": "local.zhoujianjia.legado-reader.widget.codesign.log",
+          "bytes": 212,
+          "sha256": "5e3a3c2d630525aa695ef0ab16acde14f3d1a976f0ee89616e49580c46cc1b68"
+        },
+        {
+          "path": "openssl-version.log",
+          "bytes": 63,
+          "sha256": "3a5f6bea0ec8eaab2f5b7d17b2613ff078121589bc7f2aac6453066d76019700"
+        },
+        {
+          "path": "org.cocoapods.FirebaseFirestoreInternal.codesign.log",
+          "bytes": 411,
+          "sha256": "c1bc8916761c317911f9e35ad5015cac726ad17f86aa69cd79cfa0c779ec4889"
+        },
+        {
+          "path": "org.cocoapods.absl.codesign.log",
+          "bytes": 348,
+          "sha256": "832e20077711e4a576a2ee43525336fa796fd2101300011df65a331d46b50d70"
+        },
+        {
+          "path": "org.cocoapods.grpc.codesign.log",
+          "bytes": 348,
+          "sha256": "4edad86fe30e0dffea067dd28319ef048c627d1ec2be8d245ab7eeff447d0a88"
+        },
+        {
+          "path": "org.cocoapods.grpcpp.codesign.log",
+          "bytes": 354,
+          "sha256": "3212a1cb10d093ee832391c1d62c2d758f496aa859ecba72afbf37f31f61aa25"
+        },
+        {
+          "path": "org.cocoapods.openssl-grpc.codesign.log",
+          "bytes": 372,
+          "sha256": "711b01ea794c5585a19d3dc0841ae57140af9debcd2a20f1256272558851b793"
+        },
+        {
+          "path": "owned-certificate-chain.log",
+          "bytes": 103,
+          "sha256": "54310a8051b6373af88a99d4ab3cbad076e6bfa3bd97601645cccd5851f0bced"
+        },
+        {
+          "path": "root.cert.der",
+          "bytes": 883,
+          "sha256": "48951477df5426a95ea03619dd531b3449fe7d44886b0363f7201aa02363bfd0"
+        },
+        {
+          "path": "root.cert.pem",
+          "bytes": 1253,
+          "sha256": "8e0c92311276d609b88b5bfa7a6c373004def17de509c11b62f98a6bbc93bd90"
+        },
+        {
+          "path": "xcode-version.log",
+          "bytes": 31,
+          "sha256": "9fec9509a0037736274232072cadc58613fa6ddcafd55fa0915151df641590d3"
+        }
+      ],
+      "fullApplication": {
+        "schema": 1,
+        "kind": "full-current-source-iphoneos-jvm-application",
+        "sourceCommit": "ccafd8b700691403889bc1cf205998bc74552bad",
+        "archiveFile": "full-sdk-owned-package.ipa",
+        "archiveBytes": 287414811,
+        "archiveSHA256": "5a3aac17a8c1418698454e3423d9bc165b8313c9f6acc831a693b089e3ae889e",
+        "verificationEpochSeconds": 1792584159,
+        "ordinaryJar": {
+          "path": "LegadoRuntime/legado-runtime.jar",
+          "bytes": 10960540,
+          "sha256": "b48cd0bcc1e06036ab7cafcaff305a9fbd5a31fcd76faaead4e9800cf1ae0f46"
+        },
+        "realJavaClassResourceCount": 16614,
+        "componentPaths": [
+          ".",
+          "Frameworks/FirebaseFirestoreInternal.framework",
+          "Frameworks/absl.framework",
+          "Frameworks/grpc.framework",
+          "Frameworks/grpcpp.framework",
+          "Frameworks/openssl_grpc.framework",
+          "PlugIns/yuedu_app_ShareExtension.appex",
+          "PlugIns/yuedu_app_Widget.appex"
+        ],
+        "bundlePaths": [
+          ".",
+          "PlugIns/yuedu_app_ShareExtension.appex",
+          "PlugIns/yuedu_app_Widget.appex"
+        ],
+        "originalBuildManifest": {
+          "bytes": 9666,
+          "sha256": "343d7d93532cb3504da02a5337bd90993dbce39ab31eae051788d634d48dd2d1"
+        },
+        "sameJobNativeReuse": {
+          "bytes": 5107,
+          "sha256": "431260485948969892e838c29e4d1bdfdf0a476c62580ffb7396600d4f5268dc"
+        },
+        "allUnrelatedDeviceBuildFilesPreserved": true,
+        "privateMaterialArtifacts": 0,
+        "realAppleAccountUsed": false,
+        "controlledOriginalSigningOnly": true,
+        "realDeviceExecution": false,
+        "controlledPublicCertificateAnchorOmitted": true
+      },
+      "commands": [
+        {
+          "index": 0,
+          "tool": "git",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 30,
+          "timedOut": false,
+          "elapsedSeconds": 0.00666229199987356,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 1,
+          "tool": "openssl",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 30,
+          "timedOut": false,
+          "elapsedSeconds": 0.006238666999706766,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 2,
+          "tool": "xcodebuild",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 20,
+          "timedOut": false,
+          "elapsedSeconds": 0.36125124999989566,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 3,
+          "tool": "xcrun",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 120,
+          "timedOut": false,
+          "elapsedSeconds": 0.98791191600003,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 4,
+          "tool": "xcrun",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 120,
+          "timedOut": false,
+          "elapsedSeconds": 0.6203164169996853,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 5,
+          "tool": "openssl",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 30,
+          "timedOut": false,
+          "elapsedSeconds": 0.05723445900002844,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 6,
+          "tool": "openssl",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 30,
+          "timedOut": false,
+          "elapsedSeconds": 0.010560541999893758,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 7,
+          "tool": "openssl",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 30,
+          "timedOut": false,
+          "elapsedSeconds": 0.01570387500032666,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 8,
+          "tool": "openssl",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 30,
+          "timedOut": false,
+          "elapsedSeconds": 0.012461249999887514,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 9,
+          "tool": "openssl",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 30,
+          "timedOut": false,
+          "elapsedSeconds": 0.007678625000153261,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 10,
+          "tool": "openssl",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 30,
+          "timedOut": false,
+          "elapsedSeconds": 0.00889604199983296,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 11,
+          "tool": "xcrun",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 120,
+          "timedOut": false,
+          "elapsedSeconds": 1.6969626669997524,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 12,
+          "tool": "xcrun",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 120,
+          "timedOut": false,
+          "elapsedSeconds": 5.021259832999931,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 13,
+          "tool": "import-owned-identity",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 20,
+          "timedOut": false,
+          "elapsedSeconds": 0.1433919999999489,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 14,
+          "tool": "import-owned-identity",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 20,
+          "timedOut": false,
+          "elapsedSeconds": 0.041511999999784166,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 15,
+          "tool": "import-owned-identity",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 20,
+          "timedOut": false,
+          "elapsedSeconds": 0.02687583299984908,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 16,
+          "tool": "import-owned-identity",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 20,
+          "timedOut": false,
+          "elapsedSeconds": 0.021270749999985128,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 17,
+          "tool": "security",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 15,
+          "timedOut": false,
+          "elapsedSeconds": 0.04221041700020578,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 18,
+          "tool": "security",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 15,
+          "timedOut": false,
+          "elapsedSeconds": 0.010661499999969237,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 19,
+          "tool": "security",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 15,
+          "timedOut": false,
+          "elapsedSeconds": 0.009284875000048487,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 20,
+          "tool": "security",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 15,
+          "timedOut": false,
+          "elapsedSeconds": 0.008846332999837614,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 21,
+          "tool": "security",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 15,
+          "timedOut": false,
+          "elapsedSeconds": 0.010221666999768786,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 22,
+          "tool": "security",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 15,
+          "timedOut": false,
+          "elapsedSeconds": 0.014888209000218922,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 23,
+          "tool": "xcrun",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 120,
+          "timedOut": false,
+          "elapsedSeconds": 0.9399496249998265,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 24,
+          "tool": "xcrun",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 120,
+          "timedOut": false,
+          "elapsedSeconds": 0.013320999999905325,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 25,
+          "tool": "xcrun",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 120,
+          "timedOut": false,
+          "elapsedSeconds": 0.01376970799992705,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 26,
+          "tool": "xcrun",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 120,
+          "timedOut": false,
+          "elapsedSeconds": 0.012211374999878899,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 27,
+          "tool": "xcrun",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 120,
+          "timedOut": false,
+          "elapsedSeconds": 0.012987042000077054,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 28,
+          "tool": "xcrun",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 120,
+          "timedOut": false,
+          "elapsedSeconds": 0.06108262499992634,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 29,
+          "tool": "xcrun",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 120,
+          "timedOut": false,
+          "elapsedSeconds": 0.014952291000099649,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 30,
+          "tool": "xcrun",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 120,
+          "timedOut": false,
+          "elapsedSeconds": 0.01722166700028538,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 31,
+          "tool": "openssl",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 30,
+          "timedOut": false,
+          "elapsedSeconds": 0.0151095000001078,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 32,
+          "tool": "openssl",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 30,
+          "timedOut": false,
+          "elapsedSeconds": 0.00847974999987855,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 33,
+          "tool": "codesign",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 45,
+          "timedOut": false,
+          "elapsedSeconds": 0.08274570800040237,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 34,
+          "tool": "openssl",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 30,
+          "timedOut": false,
+          "elapsedSeconds": 0.008270708000054583,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 35,
+          "tool": "openssl",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 30,
+          "timedOut": false,
+          "elapsedSeconds": 0.008175041999948007,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 36,
+          "tool": "codesign",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 45,
+          "timedOut": false,
+          "elapsedSeconds": 0.04169670800001768,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 37,
+          "tool": "codesign",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 45,
+          "timedOut": false,
+          "elapsedSeconds": 0.04293054200024926,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 38,
+          "tool": "codesign",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 45,
+          "timedOut": false,
+          "elapsedSeconds": 0.06511049999971874,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 39,
+          "tool": "codesign",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 45,
+          "timedOut": false,
+          "elapsedSeconds": 0.05624370800023826,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 40,
+          "tool": "codesign",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 45,
+          "timedOut": false,
+          "elapsedSeconds": 0.04088108399992052,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 41,
+          "tool": "codesign",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 45,
+          "timedOut": false,
+          "elapsedSeconds": 0.039005707999876904,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 42,
+          "tool": "openssl",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 30,
+          "timedOut": false,
+          "elapsedSeconds": 0.013453958999889437,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 43,
+          "tool": "openssl",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 30,
+          "timedOut": false,
+          "elapsedSeconds": 0.008964500000274711,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 44,
+          "tool": "codesign",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 45,
+          "timedOut": false,
+          "elapsedSeconds": 1.5523579159998917,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 45,
+          "tool": "codesign",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 45,
+          "timedOut": false,
+          "elapsedSeconds": 0.984380708000117,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 46,
+          "tool": "security",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 10,
+          "timedOut": false,
+          "elapsedSeconds": 0.011984707999999955,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 47,
+          "tool": "security",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 10,
+          "timedOut": false,
+          "elapsedSeconds": 0.011605332999806706,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 48,
+          "tool": "security",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 10,
+          "timedOut": false,
+          "elapsedSeconds": 0.010364334000314557,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        },
+        {
+          "index": 49,
+          "tool": "security",
+          "argvOmittedFromPublicArchive": true,
+          "exitCode": 0,
+          "privateInputBytesRetained": false,
+          "timeoutSeconds": 10,
+          "timedOut": false,
+          "elapsedSeconds": 0.01452566600028149,
+          "processCleanup": {
+            "hardKillAttempted": false,
+            "drained": true,
+            "childReaped": true,
+            "pipesClosed": true,
+            "issues": []
+          }
+        }
+      ]
+    },
+    "phases/device-runtime-stage-execution.json": {
+      "timeoutSeconds": 300,
+      "timedOut": false,
+      "exitCode": 0,
+      "output": {
+        "path": "device-runtime-stage.log",
+        "bytes": 3781,
+        "sha256": "64a8504f1e0736e05ca9c6ee2c347e355aee2fd2b7926afbf414cf6163884c3b"
+      },
+      "argvOmittedFromPublicArchive": true
+    },
+    "phases/full-device-build-execution.json": {
+      "timeoutSeconds": 3600,
+      "timedOut": false,
+      "exitCode": 0,
+      "output": {
+        "path": "full-device-build.log",
+        "bytes": 6574032,
+        "sha256": "9e7d5d5e4e621153b21bf7a7940c3603b3a196af5b170a1edd5ed949f085c3e0"
+      },
+      "argvOmittedFromPublicArchive": true
+    },
+    "phases/full-owned-producer-execution.json": {
+      "timeoutSeconds": 360,
+      "timedOut": false,
+      "exitCode": 0,
+      "output": {
+        "path": "full-owned-producer.log",
+        "bytes": 11962,
+        "sha256": "3b239f61569c5241a11ebb54c40b8b054804de65cffe25e5ba522e2f1a5e1dd3"
+      },
+      "argvOmittedFromPublicArchive": true
+    },
+    "phases/full-application-test-execution.json": {
+      "timeoutSeconds": 3660,
+      "timedOut": false,
+      "exitCode": 1,
+      "output": {
+        "path": "full-application-test.log",
+        "bytes": 475,
+        "sha256": "0da48ad6975edbe5fe4785b7b53c8a6c3791d0d9072302ceca6100873d760dcf"
+      },
+      "argvOmittedFromPublicArchive": true
+    },
+    "phases/full-application-summary-execution.json": {
+      "timeoutSeconds": 60,
+      "timedOut": false,
+      "exitCode": 0,
+      "output": {
+        "path": "full-application-summary.log",
+        "bytes": 1590,
+        "sha256": "8a42832bcc63201f1dd253dc6a4502d0c7077331de06e4e343573aa477f4e21a"
+      },
+      "argvOmittedFromPublicArchive": true
+    },
+    "phases/full-application-tests-execution.json": {
+      "timeoutSeconds": 60,
+      "timedOut": false,
+      "exitCode": 0,
+      "output": {
+        "path": "full-application-tests.log",
+        "bytes": 2188,
+        "sha256": "e51efbb76d686593b038229d1ae71fa8377f24b538e81117980ef00de6a852f4"
+      },
+      "argvOmittedFromPublicArchive": true
+    },
+    "phases/device-source-overlay-restoration.json": {
+      "restored": true,
+      "project": {
+        "bytes": 55843,
+        "sha256": "51dc69ae13c60bb330d1f61222c7b36e5e5c5e2576fe900061121f913920871e"
+      }
+    },
+    "ordinary-jar.json": {
+      "sha256": "b48cd0bcc1e06036ab7cafcaff305a9fbd5a31fcd76faaead4e9800cf1ae0f46",
+      "bytes": 10960540,
+      "maximumBaseClassMajor": 65,
+      "requiredClasses": [
+        "io/yuedu/legado/LegadoRuntime.class",
+        "io/yuedu/legado/NativeHost.class",
+        "io/yuedu/legado/ProductionHttpTransport.class",
+        "io/yuedu/legado/RuntimeSessionOptions.class",
+        "io/yuedu/legado/StaticScalarSelectorRule.class",
+        "org/htmlunit/corejs/javascript/Context.class",
+        "okhttp3/OkHttpClient.class",
+        "org/brotli/dec/BrotliInputStream.class",
+        "org/apache/commons/text/StringEscapeUtils.class",
+        "org/apache/commons/lang3/StringUtils.class",
+        "io/legado/app/model/analyzeRule/AnalyzeRule.class",
+        "io/legado/app/data/entities/Book.class",
+        "io/legado/app/data/entities/BookChapter.class",
+        "io/legado/app/data/entities/BookSource.class"
+      ],
+      "testClassesIncluded": false
+    },
+    "native-restore.json": {
+      "schemaVersion": 1,
+      "sourceCommit": "ccafd8b700691403889bc1cf205998bc74552bad",
+      "workflowRunID": "39591438686",
+      "status": "restored",
+      "nativeProducer": {
+        "runID": 39083752761,
+        "sourceSHA": "ce792982a30942e605fc935b733c5b41bef2736a",
+        "runAttempt": 1,
+        "workflowPath": ".github/workflows/legado-ios-prototype.yml",
+        "workflowBlob": "acc22e4f49b24200f75f85b679564b4e8867d28c",
+        "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39083752761",
+        "artifact": {
+          "id": 12120530642,
+          "name": "legado-zero-source-build",
+          "size_in_bytes": 89898489,
+          "digest": "sha256:6d91463d6e28a1bcc6c1d5ba79ad88f5a8d1ba79d0e2e11e78b5fbd5520346ac",
+          "expires_at": "2026-10-25T00:59:12Z"
+        }
+      },
+      "nativeInputChecks": [
+        {
+          "path": "scripts/legado-ios/build-zero.sh",
+          "sourceObject": "7b8ea2cf068d6a225d3084d8c7458a06585f9bb0",
+          "currentObject": "7b8ea2cf068d6a225d3084d8c7458a06585f9bb0",
+          "matches": true
+        },
+        {
+          "path": "scripts/legado-ios/prepare-zero-wx.py",
+          "sourceObject": "ff238311e1786281efdf2264b3c3a06768f3883b",
+          "currentObject": "ff238311e1786281efdf2264b3c3a06768f3883b",
+          "matches": true
+        },
+        {
+          "path": "scripts/legado-ios/prepare-zero-signal-context.py",
+          "sourceObject": "8d5a36bd479df9e4ebf8d9b31f77e2604db7c513",
+          "currentObject": "8d5a36bd479df9e4ebf8d9b31f77e2604db7c513",
+          "matches": true
+        },
+        {
+          "path": "scripts/legado-ios/prepare-zero-code-cache.py",
+          "sourceObject": "e3a86d3fc81d268b551f9a7c3ee073d8a31f834b",
+          "currentObject": "e3a86d3fc81d268b551f9a7c3ee073d8a31f834b",
+          "matches": true
+        },
+        {
+          "path": "scripts/legado-ios/prepare-symbol-keeper.py",
+          "sourceObject": "04b7c297b710f130a7cccfb4cadf6c8b7446f1e4",
+          "currentObject": "04b7c297b710f130a7cccfb4cadf6c8b7446f1e4",
+          "matches": true
+        },
+        {
+          "path": "scripts/legado-ios/fetch-sources.py",
+          "sourceObject": "1a52b19c09c5ad802e36518a690dbe395a95f55c",
+          "currentObject": "1a52b19c09c5ad802e36518a690dbe395a95f55c",
+          "matches": true
+        },
+        {
+          "path": "scripts/legado-ios/runtime-lock.json",
+          "sourceObject": "caa3a983d42eff74076f061a0c638712b67121ab",
+          "currentObject": "caa3a983d42eff74076f061a0c638712b67121ab",
+          "matches": true
+        }
+      ],
+      "nativeZIP": {
+        "bytes": 89898489,
+        "sha256": "6d91463d6e28a1bcc6c1d5ba79ad88f5a8d1ba79d0e2e11e78b5fbd5520346ac"
+      },
+      "nativeRuntimeRecompiled": false,
+      "freshOrdinaryJVMRequired": true,
+      "scope": "Audited native reuse and this checkout's ordinary JAR; no historical device acceptance is transferred.",
+      "jar": {
+        "sha256": "b48cd0bcc1e06036ab7cafcaff305a9fbd5a31fcd76faaead4e9800cf1ae0f46",
+        "bytes": 10960540,
+        "maximumBaseClassMajor": 65,
+        "requiredClasses": [
+          "io/yuedu/legado/LegadoRuntime.class",
+          "io/yuedu/legado/NativeHost.class",
+          "io/yuedu/legado/ProductionHttpTransport.class",
+          "io/yuedu/legado/RuntimeSessionOptions.class",
+          "io/yuedu/legado/StaticScalarSelectorRule.class",
+          "org/htmlunit/corejs/javascript/Context.class",
+          "okhttp3/OkHttpClient.class",
+          "org/brotli/dec/BrotliInputStream.class",
+          "org/apache/commons/text/StringEscapeUtils.class",
+          "org/apache/commons/lang3/StringUtils.class",
+          "io/legado/app/model/analyzeRule/AnalyzeRule.class",
+          "io/legado/app/data/entities/Book.class",
+          "io/legado/app/data/entities/BookChapter.class",
+          "io/legado/app/data/entities/BookSource.class"
+        ],
+        "testClassesIncluded": false
+      },
+      "nativeLayout": {
+        "device": {
+          "staticValidationPassed": true,
+          "modules": [
+            "java.base",
+            "java.xml",
+            "java.desktop",
+            "java.datatransfer",
+            "java.prefs",
+            "java.logging",
+            "jdk.charsets",
+            "java.compiler",
+            "java.instrument",
+            "java.net.http",
+            "java.sql",
+            "java.transaction.xa",
+            "jdk.unsupported"
+          ],
+          "deviceValidationPassed": false,
+          "bytecodeCompatibility": {
+            "source": "modules/java.base/java/lang/Object.class",
+            "nativeClassMajor": 72,
+            "nativeClassMinor": 0,
+            "freshJarMaximumBaseClassMajor": 65,
+            "runtimeJavaVersionMeasured": false
+          }
+        },
+        "simulator": {
+          "staticValidationPassed": true,
+          "modules": [
+            "java.base",
+            "java.xml",
+            "java.desktop",
+            "java.datatransfer",
+            "java.prefs",
+            "java.logging",
+            "jdk.charsets",
+            "java.compiler",
+            "java.instrument",
+            "java.net.http",
+            "java.sql",
+            "java.transaction.xa",
+            "jdk.unsupported"
+          ],
+          "deviceValidationPassed": false,
+          "bytecodeCompatibility": {
+            "source": "modules/java.base/java/lang/Object.class",
+            "nativeClassMajor": 72,
+            "nativeClassMinor": 0,
+            "freshJarMaximumBaseClassMajor": 65,
+            "runtimeJavaVersionMeasured": false
+          }
+        }
+      },
+      "nativeExecutionVerified": false,
+      "deviceValidationPassed": false
+    },
+    "phases/native-reuse-binding.json": {
+      "sourceCommit": "ccafd8b700691403889bc1cf205998bc74552bad",
+      "workflowRunID": "39591438686",
+      "nativeRecord": {
+        "path": ".build/native-reader-test/native-restore.json",
+        "bytes": 5107,
+        "sha256": "431260485948969892e838c29e4d1bdfdf0a476c62580ffb7396600d4f5268dc"
+      },
+      "audited": {
+        "jar": {
+          "sha256": "b48cd0bcc1e06036ab7cafcaff305a9fbd5a31fcd76faaead4e9800cf1ae0f46",
+          "bytes": 10960540,
+          "maximumBaseClassMajor": 65,
+          "requiredClasses": [
+            "io/yuedu/legado/LegadoRuntime.class",
+            "io/yuedu/legado/NativeHost.class",
+            "io/yuedu/legado/ProductionHttpTransport.class",
+            "io/yuedu/legado/RuntimeSessionOptions.class",
+            "io/yuedu/legado/StaticScalarSelectorRule.class",
+            "org/htmlunit/corejs/javascript/Context.class",
+            "okhttp3/OkHttpClient.class",
+            "org/brotli/dec/BrotliInputStream.class",
+            "org/apache/commons/text/StringEscapeUtils.class",
+            "org/apache/commons/lang3/StringUtils.class",
+            "io/legado/app/model/analyzeRule/AnalyzeRule.class",
+            "io/legado/app/data/entities/Book.class",
+            "io/legado/app/data/entities/BookChapter.class",
+            "io/legado/app/data/entities/BookSource.class"
+          ],
+          "testClassesIncluded": false
+        },
+        "nativeLayout": {
+          "device": {
+            "staticValidationPassed": true,
+            "modules": [
+              "java.base",
+              "java.xml",
+              "java.desktop",
+              "java.datatransfer",
+              "java.prefs",
+              "java.logging",
+              "jdk.charsets",
+              "java.compiler",
+              "java.instrument",
+              "java.net.http",
+              "java.sql",
+              "java.transaction.xa",
+              "jdk.unsupported"
+            ],
+            "deviceValidationPassed": false,
+            "bytecodeCompatibility": {
+              "source": "modules/java.base/java/lang/Object.class",
+              "nativeClassMajor": 72,
+              "nativeClassMinor": 0,
+              "freshJarMaximumBaseClassMajor": 65,
+              "runtimeJavaVersionMeasured": false
+            }
+          },
+          "simulator": {
+            "staticValidationPassed": true,
+            "modules": [
+              "java.base",
+              "java.xml",
+              "java.desktop",
+              "java.datatransfer",
+              "java.prefs",
+              "java.logging",
+              "jdk.charsets",
+              "java.compiler",
+              "java.instrument",
+              "java.net.http",
+              "java.sql",
+              "java.transaction.xa",
+              "jdk.unsupported"
+            ],
+            "deviceValidationPassed": false,
+            "bytecodeCompatibility": {
+              "source": "modules/java.base/java/lang/Object.class",
+              "nativeClassMajor": 72,
+              "nativeClassMinor": 0,
+              "freshJarMaximumBaseClassMajor": 65,
+              "runtimeJavaVersionMeasured": false
+            }
+          }
+        },
+        "nativeExecutionVerified": false,
+        "deviceValidationPassed": false
+      }
+    }
+  }
+}
