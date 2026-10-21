@@ -1,0 +1,94 @@
+--- a/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift
++++ b/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift
+@@ -626,6 +626,72 @@
+         }
+     }
+
++    @Test("AppSession first registration consumes its configured TLS paired target and exact three-component identity")
++    func appSessionRegistersOnlyItsConfiguredPairedTargetBeforeFirstProfiles() async throws {
++        for cancel in [false, true] {
++        try await Self.withInitialAccountAppSession { c in
++            try await SelfRenewalAuthenticatedInstallationFixture.withPeer(.registrationOnly, at: c.fixture.date,
++                allowRegistrationDisconnect: cancel) { peer in
++                let reference = try #require(peer.registrationIdentityPersistentReference)
++                let original = try JSONDecoder().decode(SelfRenewalAppSession.EnrollmentConfiguration.self,
++                    from: Data(contentsOf: c.input))
++                let device = SelfRenewalAppSession.DeviceConfiguration(identityPersistentReference: reference,
++                    deviceCertificateDER: peer.pairing.deviceCertificateDER, rootCertificateDER: peer.pairing.rootCertificateDER,
++                    hostID: peer.pairing.hostID, systemBUID: peer.pairing.systemBUID,
++                    numericAddress: peer.endpoint.numericAddress, port: peer.endpoint.port, interfaceIndex: peer.endpoint.interfaceIndex)
++                let proposed = SelfRenewalAppSession.EnrollmentConfiguration(schema: original.schema, namespaceID: nil,
++                    codeAnchors: original.codeAnchors, profileAnchors: original.profileAnchors, device: device)
++                try JSONEncoder().encode(proposed).write(to: c.input)
++                _ = try await c.session.initializeSigningNamespace(from: c.input)
++                let configured = try c.configuration()
++                let namespace = try await c.vault.resume(namespaceID: configured.namespaceID, identity: c.fixture.material)
++                let initialGeneration = try await c.vault.generation(in: namespace)
++                _ = try await c.session.connectDeveloperAccount(c.fixture.credentials)
++                await c.peer.startWithEmptyRegistration()
++                if cancel {
++                    await c.peer.setRegistration(.holdAppACK)
++                    try await c.session.close()
++                    let date = c.fixture.date
++                    let owner = await MainActor.run {
++                        SelfRenewalAppOwner(root: c.root, currentApplicationRoot: c.fixture.directory.appendingPathComponent("Owned.app"),
++                            developerServices: c.services, clock: { date })
++                    }
++                    do {
++                        await owner.observeDeveloperAccount()
++                        let operation = Task {
++                            await owner.refreshDeveloperMaterials(machineName: "Owned cancelled paired registration")
++                            await c.peer.refreshFinished()
++                        }
++                        let signal = await withTaskCancellationHandler { await c.peer.waitForCSROrRefreshCompletion() } onCancel: { operation.cancel() }
++                        if signal != .registrationArrived {
++                            await operation.value
++                            Issue.record("Owner registration ended before the actual held mutation")
++                        } else {
++                            operation.cancel(); await operation.value
++                            let problem = await owner.problem
++                            #expect(problem == .cancelled)
++                        }
++                        #expect(await c.peer.facts().validCSRs == 0)
++                        try await owner.close()
++                    } catch { do { try await owner.close() } catch { Issue.record(error) }; throw error }
++                    return
++                }
++                let published = try await c.session.refreshDeveloperMaterials(machineName: "Owned configured paired target")
++                #expect(published.generation == initialGeneration + 3)
++                #expect(!published.appleAuthorizationEstablished && !published.installedApplicationRenewed)
++                let registration = await c.peer.registrationFacts()
++                #expect(registration.devices == ["00008110-0011223344556677"] && registration.apps.count == 3)
++                #expect(registration.groups.count == Set(c.fixture.material.bundles.flatMap { $0.slices[0].appGroups }).count)
++                let hardware = peer.observed.snapshot
++                #expect(hardware.deviceValueRequests == 1 && hardware.stoppedSessions == ["owned-session"])
++                #expect(hardware.upgradeRequests == 0 && hardware.lookupRequests == 0 && hardware.uploaded.isEmpty)
++                #expect(try c.configuration().device == device)
++                #expect(try Data(contentsOf: c.sentinel) == c.sentinelBytes)
++            }
++        }
++        }
++    }
++
+     @Test("first enrollment reuses its pre-CSR key after restart and existing configuration cannot silently reinitialize")
+     func appSessionInitialEnrollmentReusesKeyAfterPreCSRFailure() async throws {
+         try await Self.withInitialAccountAppSession { c in
+@@ -633,8 +699,8 @@
+             let configuration = try c.configuration()
+             _ = try await c.session.connectDeveloperAccount(c.fixture.credentials)
+             await c.peer.set(.missingApp)
+-            do { _ = try await c.session.refreshDeveloperMaterials(machineName: "Owned missing App ID"); Issue.record("Missing original App ID was registered implicitly") }
+-            catch let failure as Client.EnrollmentFailure { #expect(failure.underlying as? Client.Failure == .appIdentifierMissing && !failure.remoteCertificateMayHaveBeenIssued) }
++            do { _ = try await c.session.refreshDeveloperMaterials(machineName: "Owned missing App ID"); Issue.record("Unavailable exact original App ID was accepted") }
++            catch let failure as Client.EnrollmentFailure { #expect(failure.underlying as? Client.Failure == .portal(9401) && !failure.remoteCertificateMayHaveBeenIssued && failure.remoteRegistrationMayHaveChanged) }
+             let namespace = try await c.vault.resume(namespaceID: configuration.namespaceID, identity: c.fixture.material)
+             let generation = try await c.vault.generation(in: namespace)
+             let key = try await c.vault.initialEnrollmentKey(in: namespace, expectedGeneration: generation)
+@@ -645,6 +711,7 @@
+             let reopened = c.newSession()
+             do {
+                 await c.peer.set(.normal)
++                await c.peer.startWithEmptyRegistration()
+                 let published = try await reopened.refreshDeveloperMaterials(machineName: "Owned retry after pre-CSR failure")
+                 #expect(published.keyID == key.id && published.generation == key.generation + 1)
+                 let facts = await c.peer.facts()

@@ -1,0 +1,98 @@
+--- a/Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift
++++ b/Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift
+@@ -101,6 +101,95 @@
+             installationAuthentication = installation; remoteStagingRemoved = true; self.submission = submission
+         }
+     }
++    /// A read from the paired TLS peer, not proof that it is this running App's
++    /// physical device. Construction and validity remain inside the live session.
++    struct RegistrationDeviceObservation: Sendable {
++        let identifier: String
++        let endpoint: Transport.Endpoint
++        let sessionID: String
++        let authentication: Transport.Authentication
++        private let lifetime: RegistrationLifetime
++        var samePhysicalDeviceVerified: Bool { false }
++        var noVPNRouteVerified: Bool { false }
++        fileprivate init(identifier: String, endpoint: Transport.Endpoint, sessionID: String,
++            authentication: Transport.Authentication, lifetime: RegistrationLifetime) {
++            self.identifier = identifier; self.endpoint = endpoint; self.sessionID = sessionID
++            self.authentication = authentication; self.lifetime = lifetime
++        }
++        func check() throws { try lifetime.check() }
++        func remainingSeconds() throws -> TimeInterval {
++            try lifetime.check()
++            let now = DispatchTime.now().uptimeNanoseconds
++            guard now < lifetime.deadline else { throw Transport.Failure.deadlineExceeded }
++            return TimeInterval(lifetime.deadline - now) / 1_000_000_000
++        }
++    }
++    fileprivate final class RegistrationLifetime: @unchecked Sendable {
++        private let lock = NSLock()
++        private var active = true
++        let cancellation: Transport.Cancellation
++        let deadline: UInt64
++        init(cancellation: Transport.Cancellation, deadline: UInt64) { self.cancellation = cancellation; self.deadline = deadline }
++        func end() { lock.lock(); active = false; lock.unlock() }
++        func check() throws {
++            try Task.checkCancellation(); try cancellation.check()
++            lock.lock(); let current = active; lock.unlock()
++            guard current else { throw Failure.sessionMismatch }
++            guard DispatchTime.now().uptimeNanoseconds < deadline else { throw Transport.Failure.deadlineExceeded }
++        }
++    }
++    struct RegistrationCleanupFailure: Error, @unchecked Sendable {
++        let underlying: Error
++        let stopSessionError: Error
++    }
++    struct RegistrationFinalizationFailure<Output: Sendable>: Error, @unchecked Sendable {
++        let completed: Output
++        let stopSessionError: Error
++    }
++    /// Exactly one existing authenticated Lockdown session; no StartService,
++    /// upload, guessed identifier, cached device list or new transport owner.
++    nonisolated static func withPairedRegistrationDevice<Output: Sendable>(pairing: Transport.PairingIdentity,
++        lockdownEndpoint endpoint: Transport.Endpoint, at date: Date, timeoutSeconds: TimeInterval = 300,
++        operation: @escaping @Sendable (RegistrationDeviceObservation) async throws -> Output) async throws -> Output {
++        let cancellation = Transport.Cancellation()
++        let worker = Task.detached(priority: .utility) {
++            let started = SourcePerfTrace.now
++            defer { SourcePerfTrace.record("renewal.install.registration-device", "main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
++            let deadline = try Transport.Stream.deadline(seconds: timeoutSeconds)
++            let lifetime = RegistrationLifetime(cancellation: cancellation, deadline: deadline)
++            defer { lifetime.end() }
++            let stream = try Transport.Stream(endpoint: endpoint, cancellation: cancellation, deadline: deadline)
++            defer { stream.close() }
++            let channel = PlistChannel(stream)
++            let session = try openSession(channel, pairing: pairing, at: date)
++            let output: Output
++            do {
++                try channel.send(["Label": .string("Reading"), "Request": .string("GetValue"), "Key": .string("UniqueDeviceID")])
++                let response = try channel.receive(request: "GetValue")
++                // ALTDevice treats the value as an opaque String. Do not confuse
++                // it with IDFV/anisette UUID or assume only one UDID layout.
++                guard case .string(let identifier)? = response["Value"], !identifier.isEmpty,
++                      identifier.utf8.count <= 128,
++                      identifier.utf8.allSatisfy({ (48...57).contains($0) || (65...90).contains($0) || (97...122).contains($0) || $0 == 45 }) else { throw Failure.invalidIdentity }
++                try lifetime.check(); try stream.check()
++                let observation = RegistrationDeviceObservation(identifier: identifier, endpoint: endpoint,
++                    sessionID: session.id, authentication: session.authentication, lifetime: lifetime)
++                output = try await operation(observation)
++            } catch {
++                let original = error
++                lifetime.end()
++                do { try stopSession(channel, sessionID: session.id) }
++                catch { throw RegistrationCleanupFailure(underlying: original, stopSessionError: error) }
++                throw original
++            }
++            lifetime.end()
++            do { try stopSession(channel, sessionID: session.id) }
++            catch { throw RegistrationFinalizationFailure(completed: output, stopSessionError: error) }
++            return output
++        }
++        return try await withTaskCancellationHandler { try await worker.value } onCancel: { cancellation.cancel(); worker.cancel() }
++    }
++
+     enum Limits {
+         static let archiveBytes = 1_073_741_824
+         static let chunkBytes = 65_536

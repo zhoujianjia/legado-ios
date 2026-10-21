@@ -10,6 +10,125 @@ struct SelfRenewalDeveloperAccountClientTests {
     typealias Vault = SelfRenewalSigningMaterialVault
     typealias PKI = SelfRenewalSigningOwnedPKIFixture
 
+    @Test("first registration uses the exact three original IDs and shared group plus only a live TLS paired target")
+    func registersOriginalPortalScopeAndReusesObservedRemoteIdentity() async throws {
+        try await Self.fixture { f in
+            await f.peer.startWithEmptyRegistration()
+            let client = try await f.client(); _ = try await client.connect(f.credentials)
+            for round in 0..<2 {
+                try await SelfRenewalAuthenticatedInstallationFixture.withPeer(.registrationOnly, at: f.date) { c in
+                    let lease = try await SelfRenewalAuthenticatedInstallationClient.withPairedRegistrationDevice(
+                        pairing: c.pairing, lockdownEndpoint: c.endpoint, at: c.date, timeoutSeconds: 20) { observed in
+                        try await client.refreshMaterials(keyID: f.pending.id,
+                            expectedGeneration: f.pending.generation + UInt64(round), machineName: "Owned registration", pairedDevice: observed)
+                    }
+                    try await f.vault.validate(lease, for: f.material)
+                    for profile in lease.profiles {
+                        guard case .dictionary(let properties) = profile.properties,
+                              case .array(let devices)? = properties["ProvisionedDevices"] else { Issue.record("Authenticated device allowance missing"); continue }
+                        #expect(devices.contains(.string("00008110-0011223344556677")))
+                    }
+                    #expect(!lease.appleSigningAuthorityEstablished && !lease.replacementAuthorized)
+                    #expect(c.observed.snapshot.deviceValueRequests == 1 && c.observed.snapshot.upgradeRequests == 0)
+                    // Keep the local result, not the non-escapable device observation.
+                    #expect(lease.generation == f.pending.generation + UInt64(round) + 1)
+                }
+                f.clock.set(f.date.addingTimeInterval(120 * Double(round + 1)))
+                await f.peer.issueNewMaterial(at: f.clock.now)
+            }
+            let facts = await f.peer.registrationFacts()
+            #expect(facts.devices == ["00008110-0011223344556677"])
+            #expect(Set(facts.apps) == Set(f.material.bundles.map(\.bundleIdentifier)) && facts.apps.count == 3)
+            let groups = Set(f.material.bundles.flatMap { $0.slices[0].appGroups })
+            #expect(Set(facts.groups) == groups && facts.groups.count == groups.count)
+            #expect(facts.assignments == 6 && facts.enabled == 3)
+            let portal = await f.peer.facts()
+            #expect(portal.validCSRs == 1 && portal.profileRequests == 6)
+            #expect(!portal.paths.contains(where: { $0.lowercased().contains("delete") || $0.lowercased().contains("revoke") }))
+        }
+    }
+
+    @Test("lost registration ACK cancellation stale generation and portal group refusal preserve partial effects and never issue a CSR")
+    func registrationFailuresRetainScopeAndAcceptedFactsBeforeCSR() async throws {
+        for mode in [RegistrationMode.wrongApp, .wrongGroup, .refuseGroupAssignment, .lostAppACK] {
+            try await Self.fixture { f in
+                await f.peer.startWithEmptyRegistration(); await f.peer.setRegistration(mode)
+                let before = try await f.vault.lease(in: f.namespace)
+                let client = try await f.client(); _ = try await client.connect(f.credentials)
+                do { _ = try await client.refreshMaterials(keyID: f.pending.id, expectedGeneration: f.pending.generation, machineName: "Owned failure"); Issue.record("Invalid registration accepted") }
+                catch let failure as Client.EnrollmentFailure {
+                    #expect(failure.remoteRegistrationMayHaveChanged && !failure.remoteCertificateMayHaveBeenIssued && !failure.remoteProfilesMayHaveBeenRefreshed)
+                    if mode == .refuseGroupAssignment {
+                        #expect(failure.underlying as? Client.Failure == .portal(35))
+                        #expect(failure.acceptedRegistrationMutations.contains("group.add"))
+                    }
+                }
+                let after = try await f.vault.lease(in: f.namespace)
+                #expect(after.generation == before.generation && after.profileInputs == before.profileInputs)
+                #expect(try await client.pendingEnrollment() == nil)
+                #expect(await f.peer.facts().validCSRs == 0)
+            }
+        }
+        for (component, mode) in [ProfileDeviceMode.missing, .wrong, .malformed].enumerated() {
+            try await Self.fixture { f in
+                await f.peer.startWithEmptyRegistration(); await f.peer.setProfileDevice(mode, component: component)
+                let client = try await f.client(); _ = try await client.connect(f.credentials)
+                let before = try await f.vault.lease(in: f.namespace)
+                try await SelfRenewalAuthenticatedInstallationFixture.withPeer(.registrationOnly, at: f.date) { c in
+                    do {
+                        _ = try await SelfRenewalAuthenticatedInstallationClient.withPairedRegistrationDevice(
+                            pairing: c.pairing, lockdownEndpoint: c.endpoint, at: c.date, timeoutSeconds: 20) { observed in
+                            try await client.refreshMaterials(keyID: f.pending.id, expectedGeneration: f.pending.generation,
+                                machineName: "Owned signed device mismatch", pairedDevice: observed)
+                        }
+                        Issue.record("A signed profile without the exact paired target was published")
+                    } catch let failure as Client.EnrollmentFailure {
+                        #expect(failure.underlying as? Vault.Failure == .invalidProfiles)
+                        #expect(failure.remoteCertificateMayHaveBeenIssued && failure.remoteProfilesMayHaveBeenRefreshed)
+                        #expect(failure.acceptedRegistrationMutations.contains("device.add"))
+                    }
+                }
+                let after = try await f.vault.lease(in: f.namespace)
+                #expect(after.generation == before.generation && after.profileInputs == before.profileInputs)
+                #expect(try await client.pendingEnrollment()?.phase == .certificateObserved)
+                #expect(await f.peer.facts().profileRequests == 3)
+            }
+        }
+        try await Self.fixture { f in
+            await f.peer.startWithEmptyRegistration(); await f.peer.setRegistration(.holdAppACK)
+            let client = try await f.client(); _ = try await client.connect(f.credentials)
+            let operation = Task {
+                do { let value = try await client.refreshMaterials(keyID: f.pending.id,
+                    expectedGeneration: f.pending.generation, machineName: "Owned cancelled registration"); await f.peer.refreshFinished(); return value }
+                catch { await f.peer.refreshFinished(); throw error }
+            }
+            let signal = await withTaskCancellationHandler { await f.peer.waitForCSROrRefreshCompletion() } onCancel: { operation.cancel() }
+            #expect(signal == .registrationArrived)
+            operation.cancel()
+            do { _ = try await operation.value; Issue.record("Cancelled registration published") }
+            catch let failure as Client.EnrollmentFailure {
+                #expect(failure.underlying is CancellationError && failure.remoteRegistrationMayHaveChanged)
+                #expect(!failure.remoteCertificateMayHaveBeenIssued && !failure.remoteProfilesMayHaveBeenRefreshed)
+            }
+            #expect(await f.peer.facts().validCSRs == 0)
+            await f.peer.setRegistration(.normal)
+            // Explicit restart/re-list reuses the peer's exact already-created
+            // App ID; no automatic retry, wildcard ID or renamed identifier.
+            let reopened = try await f.client()
+            _ = try await reopened.refreshMaterials(keyID: f.pending.id, expectedGeneration: f.pending.generation, machineName: "Owned explicit retry")
+            let registration = await f.peer.registrationFacts()
+            #expect(registration.apps.count == 3 && Set(registration.apps).count == 3)
+        }
+        try await Self.fixture { f in
+            await f.peer.startWithEmptyRegistration()
+            let client = try await f.client(); _ = try await client.connect(f.credentials)
+            _ = try await f.vault.generateKey(in: f.namespace, expectedGeneration: f.pending.generation)
+            do { _ = try await client.refreshMaterials(keyID: f.pending.id, expectedGeneration: f.pending.generation, machineName: "Owned stale registration"); Issue.record("Stale generation registered") }
+            catch let failure as Client.EnrollmentFailure { #expect(failure.underlying as? Vault.Failure == .staleGeneration && !failure.remoteRegistrationMayHaveChanged) }
+            #expect(await f.peer.registrationFacts().apps.isEmpty)
+        }
+    }
+
     @Test("real CSR signature exact portal fields and all three signed profiles publish through the same Vault")
     func submitsRealVaultCSRAndPublishesOnlyVerifiedOriginalIdentity() async throws {
         try await Self.fixture { f in
@@ -29,7 +148,9 @@ struct SelfRenewalDeveloperAccountClientTests {
             let facts = await f.peer.facts()
             #expect(facts.validCSRs == 1 && facts.profileRequests == 3)
             #expect(facts.paths == ["viewDeveloper.action", "listTeams.action", "viewDeveloper.action", "listTeams.action",
-                "ios/listAppIds.action", "certificates", "ios/submitDevelopmentCSR.action", "ios/downloadTeamProvisioningProfile.action",
+                "ios/listAppIds.action", "ios/listApplicationGroups.action",
+                "ios/assignApplicationGroupToAppId.action", "ios/assignApplicationGroupToAppId.action", "ios/assignApplicationGroupToAppId.action",
+                "certificates", "ios/submitDevelopmentCSR.action", "ios/downloadTeamProvisioningProfile.action",
                 "ios/downloadTeamProvisioningProfile.action", "ios/downloadTeamProvisioningProfile.action",
                 "viewDeveloper.action", "listTeams.action"])
         }
@@ -281,7 +402,7 @@ struct SelfRenewalDeveloperAccountClientTests {
         }
     }
 
-    @Test("stale revoked keys and absent original App IDs never dispatch a CSR")
+    @Test("stale revoked keys and refused exact original App ID registration never dispatch a CSR")
     func rejectsStaleKeysAndMissingOriginalAppIDsBeforeRemoteMutation() async throws {
         try await Self.fixture { f in
             let client = try await f.client(); _ = try await client.connect(f.credentials)
@@ -292,9 +413,10 @@ struct SelfRenewalDeveloperAccountClientTests {
             await f.peer.set(.missingApp)
             do {
                 _ = try await client.refreshMaterials(keyID: f.pending.id, expectedGeneration: f.pending.generation, machineName: "Owned")
-                Issue.record("Missing original App ID was recreated")
+                Issue.record("Refused exact original App ID was accepted")
             } catch let error as Client.EnrollmentFailure {
-                #expect(error.underlying as? Client.Failure == .appIdentifierMissing)
+                #expect(error.underlying as? Client.Failure == .portal(9401))
+                #expect(error.remoteRegistrationMayHaveChanged)
                 #expect(!error.remoteCertificateMayHaveBeenIssued)
             }
             try await f.vault.revoke(f.pending.id, in: f.namespace, expectedGeneration: f.pending.generation)
@@ -597,6 +719,8 @@ struct SelfRenewalDeveloperAccountClientTests {
         case normal, wrongCertificate, tamperedProfile, expired, changedAccount, changedTeam, holdCSR, missingApp, holdProfile
         case redirect, oversized, unauthorized, malformedSuccess, lostCSRACK, holdCertificateList
     }
+    enum ProfileDeviceMode: Sendable { case normal, missing, wrong, malformed }
+    enum RegistrationMode: Sendable { case normal, wrongApp, wrongGroup, refuseGroupAssignment, lostAppACK, holdAppACK }
     enum CertificateListMode: Sendable {
         case normal, priorOnly, publishedOnly, withoutPublished, ambiguous, missingCompleteness, paginated, nextCursor, truncatedMetadata, missingDER, wrongMachine
     }
@@ -607,6 +731,20 @@ struct SelfRenewalDeveloperAccountClientTests {
         let date: Date
         private var issuedMaterialDate: Date
         var mode: Mode = .normal
+        var registrationMode: RegistrationMode = .normal
+        private var profileDeviceMode: ProfileDeviceMode = .normal
+        private var profileDeviceComponent = 1
+        func setProfileDevice(_ mode: ProfileDeviceMode, component: Int) { profileDeviceMode = mode; profileDeviceComponent = component }
+        private var registeredApps: [String: String] = [:]
+        private var enabledApps: Set<String> = []
+        private var registeredGroups: [String: String] = [:]
+        private var registeredDevices: Set<String> = []
+        private var addedApps: [String] = [], addedGroups: [String] = [], addedDevices: [String] = []
+        private var groupAssignments = 0, groupEnables = 0
+        struct RegistrationFacts: Sendable { let apps: [String]; let groups: [String]; let devices: [String]; let assignments: Int; let enabled: Int }
+        func registrationFacts() -> RegistrationFacts { RegistrationFacts(apps: addedApps, groups: addedGroups, devices: addedDevices, assignments: groupAssignments, enabled: groupEnables) }
+        func startWithEmptyRegistration() { registeredApps.removeAll(); registeredGroups.removeAll(); enabledApps.removeAll(); registeredDevices.removeAll() }
+        func setRegistration(_ value: RegistrationMode) { registrationMode = value }
         var paths: [String] = []
         var validCSRs = 0, profileRequests = 0
         var certificate: Data?
@@ -620,7 +758,7 @@ struct SelfRenewalDeveloperAccountClientTests {
         enum ListEvent: Sendable, Equatable { case listArrived, operationFinished }
         private var firstListEvent: ListEvent?
         private var listWaiters: [CheckedContinuation<ListEvent, Never>] = []
-        enum EnrollmentEvent: Sendable, Equatable { case csrArrived, profileArrived, refreshFinished }
+        enum EnrollmentEvent: Sendable, Equatable { case csrArrived, profileArrived, registrationArrived, refreshFinished }
         private var firstEnrollmentEvent: EnrollmentEvent?
         private var profileContinuation: AsyncStream<Void>.Continuation?
         private var profilesReleased = false
@@ -630,6 +768,10 @@ struct SelfRenewalDeveloperAccountClientTests {
             self.material = material; self.issuer = issuer; self.key = key; self.date = date
             self.acceptsInitialCSR = acceptsInitialCSR
             issuedMaterialDate = date
+            for (index, bundle) in material.bundles.enumerated() {
+                registeredApps[bundle.bundleIdentifier] = String(index); enabledApps.insert(bundle.bundleIdentifier)
+                for group in bundle.slices[0].appGroups { registeredGroups[group] = "owned-group-" + String(registeredGroups.count) }
+            }
             self.priorCertificates = priorCertificates ?? key.certificateChainDER.first.map { [$0] } ?? []
         }
         func set(_ mode: Mode) { self.mode = mode }
@@ -688,8 +830,55 @@ struct SelfRenewalDeveloperAccountClientTests {
                 return try Self.plist(["resultCode": 0, "teams": [["teamId": mode == .changedTeam ? "OTHERTEAM1" : material.bundles[0].slices[0].teamIdentifier,
                     "type": "Individual", "memberships": [["name": "Free Provisioning"]]]]])
             case "ios/listAppIds.action":
-                let entries = mode == .missingApp ? [] : material.bundles.enumerated().map { ["identifier": $0.element.bundleIdentifier, "appIdId": String($0.offset)] }
+                let entries = mode == .missingApp ? [] : material.bundles.compactMap { bundle -> [String: Any]? in
+                    guard let id = registeredApps[bundle.bundleIdentifier] else { return nil }
+                    return appRow(bundle.bundleIdentifier, id: id)
+                }
                 return try Self.plist(["resultCode": 0, "appIds": entries])
+            case "ios/listDevices.action":
+                return try Self.plist(["resultCode": 0, "devices": registeredDevices.sorted().map { ["deviceNumber": $0, "name": "Owned target"] }])
+            case "ios/addDevice.action":
+                let id = try #require(body["deviceNumber"] as? String)
+                #expect(id == "00008110-0011223344556677" && id != "owned-device-id")
+                #expect(registeredDevices.insert(id).inserted); addedDevices.append(id)
+                return try Self.plist(["resultCode": 0, "device": ["deviceNumber": id, "name": "Owned target"]])
+            case "ios/addAppId.action":
+                if mode == .missingApp { return try Self.plist(["resultCode": 9401]) }
+                let id = try #require(body["identifier"] as? String)
+                #expect(material.bundles.contains { $0.bundleIdentifier == id } && registeredApps[id] == nil)
+                let portalID = String(try #require(material.bundles.firstIndex { $0.bundleIdentifier == id }))
+                registeredApps[id] = portalID; addedApps.append(id)
+                if registrationMode == .lostAppACK { throw URLError(.networkConnectionLost) }
+                if registrationMode == .holdAppACK {
+                    observe(.registrationArrived)
+                    let pair = AsyncStream<Void>.makeStream()
+                    for await _ in pair.stream {}
+                    throw CancellationError()
+                }
+                return try Self.plist(["resultCode": 0, "appId": appRow(registrationMode == .wrongApp ? "unowned.changed" : id, id: portalID)])
+            case "ios/listApplicationGroups.action":
+                return try Self.plist(["resultCode": 0, "applicationGroupList": registeredGroups.map { ["identifier": $0.key, "applicationGroup": $0.value, "name": "Owned group"] }])
+            case "ios/addApplicationGroup.action":
+                let id = try #require(body["identifier"] as? String)
+                #expect(material.bundles.contains { $0.slices[0].appGroups.contains(id) } && registeredGroups[id] == nil)
+                let portalID = "owned-group-" + String(registeredGroups.count)
+                registeredGroups[id] = portalID; addedGroups.append(id)
+                return try Self.plist(["resultCode": 0, "applicationGroup": ["identifier": registrationMode == .wrongGroup ? "group.unowned" : id, "applicationGroup": portalID, "name": "Owned group"]])
+            case "ios/updateAppId.action":
+                let portalID = try #require(body["appIdId"] as? String)
+                let id = try #require(registeredApps.first { $0.value == portalID }?.key)
+                #expect(body["APG3427HIY"] as? String == "true")
+                enabledApps.insert(id); groupEnables += 1
+                return try Self.plist(["resultCode": 0, "appId": appRow(id, id: portalID)])
+            case "ios/assignApplicationGroupToAppId.action":
+                if registrationMode == .refuseGroupAssignment { return try Self.plist(["resultCode": 35]) }
+                let portalID = try #require(body["appIdId"] as? String)
+                let id = try #require(registeredApps.first { $0.value == portalID }?.key)
+                let bundle = try #require(material.bundles.first { $0.bundleIdentifier == id })
+                let groups = try #require(body["applicationGroups"] as? [String])
+                #expect(groups == bundle.slices[0].appGroups.compactMap { registeredGroups[$0] })
+                #expect(enabledApps.contains(id)); groupAssignments += 1
+                return try Self.plist(["resultCode": 0])
             case "ios/submitDevelopmentCSR.action":
                 #expect(body["teamId"] as? String == material.bundles[0].slices[0].teamIdentifier)
                 let pem = try #require(body["csrContent"] as? String)
@@ -729,11 +918,30 @@ struct SelfRenewalDeveloperAccountClientTests {
                 let bundle = material.bundles[index]
                 let original = try #require(material.profiles.profiles.first { $0.file.relativePath == bundle.profileRelativePath })
                 let leaf = try #require(certificate ?? key.certificateChainDER.first)
-                var bytes = try PKI.profile(from: original, developerCertificate: leaf, issuer: issuer, at: issuedMaterialDate)
+                let registered = registeredDevices.sorted()
+                let deviceMode = profileDeviceMode, deviceComponent = profileDeviceComponent
+                var bytes = try PKI.profile(from: original, developerCertificate: leaf, issuer: issuer, at: issuedMaterialDate) { properties in
+                    if !registered.isEmpty {
+                        properties["ProvisionedDevices"] = .array(registered.map { .string($0) })
+                        if index == deviceComponent {
+                            switch deviceMode {
+                            case .normal: break
+                            case .missing: properties.removeValue(forKey: "ProvisionedDevices")
+                            case .wrong: properties["ProvisionedDevices"] = .array([.string("00008110-ffffffffffffffff")])
+                            case .malformed: properties["ProvisionedDevices"] = .string(registered[0])
+                            }
+                        }
+                    }
+                }
                 if mode == .tamperedProfile { bytes[10] ^= 1 }
                 return try Self.plist(["resultCode": 0, "provisioningProfile": ["encodedProfile": bytes]])
             default: throw CocoaError(.coderInvalidValue)
             }
+        }
+        private func appRow(_ identifier: String, id: String) -> [String: Any] {
+            let enabled = enabledApps.contains(identifier)
+            return ["identifier": identifier, "appIdId": id, "name": "Owned component",
+                "features": ["APG3427HIY": enabled ? "true" : "false"], "enabledFeatures": enabled ? ["APG3427HIY"] : []]
         }
         private func certificateList(_ request: URLRequest) async throws -> Data {
             paths.append("certificates"); certificateListRequests += 1

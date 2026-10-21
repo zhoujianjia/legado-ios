@@ -1,0 +1,56 @@
+--- a/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift
++++ b/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift
+@@ -407,7 +407,8 @@
+     /// Same publication CAS and full current profile verifier as normal issue.
+     /// Every bundle's signed expiry must advance; unchanged/shorter profiles
+     /// cannot be reported as a successful renewal or cause a generation write.
+-    func refreshProfiles(reusing identity: ReusableSigningIdentity, profiles: [ProfileInput]) throws -> Lease {
++    func refreshProfiles(reusing identity: ReusableSigningIdentity, profiles: [ProfileInput],
++        requiredDeviceIdentifier: String? = nil) throws -> Lease {
+         let started = SourcePerfTrace.now
+         defer { trace("refresh-profiles", bytes: profiles.reduce(0) { $0 + $1.bytes.count }, since: started) }
+         guard let current = try reusableSigningIdentity(in: identity.namespace, keyID: identity.keyID,
+@@ -429,7 +430,8 @@
+                   profile.summary.expiresAt > previous else { throw Failure.invalidProfiles }
+         }
+         return try publish(in: identity.namespace, keyID: identity.keyID, expectedGeneration: identity.generation,
+-            certificateChainDER: identity.certificateChainDER, profiles: profiles)
++            certificateChainDER: identity.certificateChainDER, profiles: profiles,
++            requiredDeviceIdentifier: requiredDeviceIdentifier)
+     }
+
+     /// Called only after the App has refused unresolved account intent and
+@@ -626,7 +628,7 @@
+     }
+
+     func publish(in namespace: Namespace, keyID: UUID, expectedGeneration: UInt64,
+-        certificateChainDER: [Data], profiles: [ProfileInput]) throws -> Lease {
++        certificateChainDER: [Data], profiles: [ProfileInput], requiredDeviceIdentifier: String? = nil) throws -> Lease {
+         let started = SourcePerfTrace.now
+         defer { trace("publish", bytes: profiles.prefix(Limits.bundles).reduce(0) { $0 + $1.bytes.count }, since: started) }
+         try Task.checkCancellation()
+@@ -635,6 +637,24 @@
+         let date = clock()
+         let candidate = Published(keyID: keyID, chain: certificateChainDER, profiles: profiles, publishedAt: date)
+         let (key, verifiedProfiles) = try verify(candidate, manifest: session.manifest, at: date)
++        // Only the independently authenticated inner DER properties returned by
++        // the existing verifier participate. Registration ACK and outer XML do
++        // not authorize this paired target, and missing fields never mean all.
++        if let device = requiredDeviceIdentifier {
++            guard !device.isEmpty, device.utf8.count <= 128 else { throw Failure.invalidProfiles }
++            for profile in verifiedProfiles {
++                guard case .dictionary(let properties) = profile.properties,
++                      case .array(let devices)? = properties["ProvisionedDevices"],
++                      !devices.isEmpty, devices.count <= 256 else { throw Failure.invalidProfiles }
++                var matched = false
++                for value in devices {
++                    guard case .string(let identifier) = value, !identifier.isEmpty,
++                          identifier.utf8.count <= 128 else { throw Failure.invalidProfiles }
++                    if Data(identifier.utf8) == Data(device.utf8) { matched = true }
++                }
++                guard matched else { throw Failure.invalidProfiles }
++            }
++        }
+         try Task.checkCancellation()
+         guard clock() >= date else { throw Failure.clockMovedBackwards }
+         guard verifiedProfiles.allSatisfy({ $0.summary.expiresAt > clock() }) else { throw Failure.invalidProfiles }

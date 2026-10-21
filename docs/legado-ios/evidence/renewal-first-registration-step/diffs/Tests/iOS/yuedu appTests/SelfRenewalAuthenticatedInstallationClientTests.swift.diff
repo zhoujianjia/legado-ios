@@ -1,0 +1,75 @@
+--- a/Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift
++++ b/Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift
+@@ -7,6 +7,72 @@
+     typealias Fixture = SelfRenewalAuthenticatedInstallationFixture
+     typealias Client = SelfRenewalAuthenticatedInstallationClient
+     typealias Transport = SelfRenewalAuthenticatedDeviceTransport
++
++    @Test("paired registration reads only the TLS UniqueDeviceID and cannot reuse the ended session observation")
++    func registrationDeviceObservationUsesAuthenticatedSessionAndExpiresAtStop() async throws {
++        for identifier in ["00112233445566778899aabbccddeeff00112233", "00008110-0011223344556677"] {
++            try await Fixture.withPeer(.registrationOnly, registrationValue: .string(identifier)) { c in
++                let observation = try await Client.withPairedRegistrationDevice(pairing: c.pairing,
++                    lockdownEndpoint: c.endpoint, at: c.date, timeoutSeconds: 8) { observed in
++                    try observed.check()
++                    #expect(Data(observed.identifier.utf8) == Data(identifier.utf8))
++                    #expect(observed.endpoint == c.endpoint && observed.sessionID == "owned-session")
++                    #expect(observed.authentication.peerCertificateSHA256 == Data(SHA256.hash(data: c.pairing.deviceCertificateDER)))
++                    #expect(!observed.samePhysicalDeviceVerified && !observed.noVPNRouteVerified)
++                    return observed
++                }
++                do { try observation.check(); Issue.record("Ended registration observation remained usable") }
++                catch let error as Client.Failure { #expect(error == .sessionMismatch) }
++                let facts = c.observed.snapshot
++                #expect(facts.deviceValueRequests == 1 && facts.stoppedSessions == ["owned-session"])
++                #expect(facts.authenticatedChannels == 1 && facts.upgradeRequests == 0 && facts.lookupRequests == 0 && facts.uploaded.isEmpty)
++            }
++        }
++        for value: Client.Value in [.string("not an id"), .string(""), .integer(7)] {
++            try await Fixture.withPeer(.registrationOnly, registrationValue: value) { c in
++                let error = await Self.rejected {
++                    try await Client.withPairedRegistrationDevice(pairing: c.pairing,
++                        lockdownEndpoint: c.endpoint, at: c.date, timeoutSeconds: 8) { _ in
++                        Issue.record("Invalid authenticated identifier reached account code")
++                    }
++                }
++                #expect(error as? Client.Failure == .invalidIdentity)
++                #expect(c.observed.snapshot.deviceValueRequests == 1 && c.observed.snapshot.stoppedSessions == ["owned-session"])
++            }
++        }
++        try await Fixture.withPeer(.wrongDeviceCertificate) { c in
++            _ = await Self.rejected {
++                try await Client.withPairedRegistrationDevice(pairing: c.pairing, lockdownEndpoint: c.endpoint,
++                    at: c.date, timeoutSeconds: 8) { _ in Issue.record("Wrong TLS peer reached registration") }
++            }
++            #expect(c.observed.snapshot.deviceValueRequests == 0)
++        }
++        try await Fixture.withPeer(.registrationOnly, allowRegistrationDisconnect: true) { c in
++            let entered = AsyncStream<Bool>.makeStream(bufferingPolicy: .bufferingNewest(1))
++            let operation = Task {
++                defer { entered.continuation.finish() }
++                try await Client.withPairedRegistrationDevice(pairing: c.pairing, lockdownEndpoint: c.endpoint,
++                    at: c.date, timeoutSeconds: 8) { _ in
++                    entered.continuation.yield(true)
++                    let held = AsyncStream<Void>.makeStream()
++                    for await _ in held.stream {}
++                    try Task.checkCancellation()
++                }
++            }
++            var iterator = entered.stream.makeAsyncIterator()
++            let arrived = await withTaskCancellationHandler { await iterator.next() } onCancel: { operation.cancel() }
++            guard arrived == true else {
++                _ = try await operation.value
++                Issue.record("Paired registration ended before its actual GetValue observation")
++                return
++            }
++            operation.cancel()
++            do { _ = try await operation.value; Issue.record("Cancelled paired observation completed successfully") }
++            catch let failure as Client.RegistrationCleanupFailure { #expect(failure.underlying is CancellationError) }
++            #expect(c.observed.snapshot.deviceValueRequests == 1 && c.observed.snapshot.upgradeRequests == 0)
++            entered.continuation.finish()
++        }
++    }
+
+     @Test
+     func uploadsRealTLSChunksAndRequiresCompleteLookupCleanupAndStop() async throws {

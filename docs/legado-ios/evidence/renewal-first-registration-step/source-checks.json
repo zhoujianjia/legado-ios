@@ -1,0 +1,124 @@
+{
+  "kind": "source/provenance assertions only, not parser or SDK acceptance",
+  "checks": [
+    {
+      "check": "canonical remains exact raw baseline and immutable candidate copied exactly",
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "passed": true
+    },
+    {
+      "check": "canonical remains exact raw baseline and immutable candidate copied exactly",
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "passed": true
+    },
+    {
+      "check": "canonical remains exact raw baseline and immutable candidate copied exactly",
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+      "passed": true
+    },
+    {
+      "check": "canonical remains exact raw baseline and immutable candidate copied exactly",
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "passed": true
+    },
+    {
+      "check": "canonical remains exact raw baseline and immutable candidate copied exactly",
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "passed": true
+    },
+    {
+      "check": "canonical remains exact raw baseline and immutable candidate copied exactly",
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+      "passed": true
+    },
+    {
+      "check": "canonical remains exact raw baseline and immutable candidate copied exactly",
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+      "passed": true
+    },
+    {
+      "check": "canonical remains exact raw baseline and immutable candidate copied exactly",
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "passed": true
+    },
+    {
+      "check": "canonical remains exact raw baseline and immutable candidate copied exactly",
+      "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "passed": true
+    },
+    {
+      "check": "exact existing TLS/session/service implementation preserved",
+      "function": "openSession",
+      "passed": true
+    },
+    {
+      "check": "exact existing TLS/session/service implementation preserved",
+      "function": "startService",
+      "passed": true
+    },
+    {
+      "check": "exact existing TLS/session/service implementation preserved",
+      "function": "stopSession",
+      "passed": true
+    }
+  ],
+  "testDefinitions": [
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "oldDefinitions": 19,
+      "finalDefinitions": 21,
+      "addedMethods": [
+        "registersOriginalPortalScopeAndReusesObservedRemoteIdentity",
+        "registrationFailuresRetainScopeAndAcceptedFactsBeforeCSR"
+      ],
+      "oldDefinitionsRetained": true
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "oldDefinitions": 19,
+      "finalDefinitions": 20,
+      "addedMethods": [
+        "appSessionRegistersOnlyItsConfiguredPairedTargetBeforeFirstProfiles"
+      ],
+      "oldDefinitionsRetained": true
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+      "oldDefinitions": 7,
+      "finalDefinitions": 8,
+      "addedMethods": [
+        "registrationDeviceObservationUsesAuthenticatedSessionAndExpiresAtStop"
+      ],
+      "oldDefinitionsRetained": true
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+      "oldDefinitions": 0,
+      "finalDefinitions": 0,
+      "addedMethods": [],
+      "oldDefinitionsRetained": true
+    }
+  ],
+  "newDefinitions": [
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "method": "registersOriginalPortalScopeAndReusesObservedRemoteIdentity"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "method": "registrationFailuresRetainScopeAndAcceptedFactsBeforeCSR"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "method": "appSessionRegistersOnlyItsConfiguredPairedTargetBeforeFirstProfiles"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+      "method": "registrationDeviceObservationUsesAuthenticatedSessionAndExpiresAtStop"
+    }
+  ],
+  "SDKExecutions": 0,
+  "SwiftGrammarRuns": 0,
+  "controlledTLSExecutions": 0,
+  "AppleAccountRequests": 0
+}

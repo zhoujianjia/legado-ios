@@ -858,6 +858,8 @@ actor SelfRenewalAppSession {
         if let failure = error as? Coordinator.PreparationFailure { return renewalWasCancelled(failure.underlying) }
         if let failure = error as? Coordinator.Interrupted { return renewalWasCancelled(failure.underlying) }
         if let failure = error as? SelfRenewalAuthenticatedInstallationClient.OperationFailure { return renewalWasCancelled(failure.underlying) }
+        if let failure = error as? SelfRenewalAuthenticatedInstallationClient.RegistrationCleanupFailure { return renewalWasCancelled(failure.underlying) }
+        if let failure = error as? SelfRenewalDeveloperAccountClient.EnrollmentFailure { return renewalWasCancelled(failure.underlying) }
         return (error as? Transport.Failure) == .cancelled
     }
 
@@ -870,6 +872,8 @@ actor SelfRenewalAppSession {
         if let failure = error as? Coordinator.PreparationFailure { return renewalExecutionProblem(failure.underlying) }
         if let failure = error as? Coordinator.Interrupted { return renewalExecutionProblem(failure.underlying) }
         if let failure = error as? SelfRenewalAuthenticatedInstallationClient.OperationFailure { return renewalExecutionProblem(failure.underlying) }
+        if let failure = error as? SelfRenewalAuthenticatedInstallationClient.RegistrationCleanupFailure { return renewalExecutionProblem(failure.underlying) }
+        if let failure = error as? SelfRenewalDeveloperAccountClient.EnrollmentFailure { return renewalExecutionProblem(failure.underlying) }
         if error is BookMetadataPersistenceFailure || error is BookSourcePersistenceFailure || error is ReadingPositionPersistenceFailure { return .storage }
         if isLocalStorageFailure(error) { return .storage }
         if isSigningMaterialUnavailable(error) { return .signingMaterials }
@@ -1159,13 +1163,69 @@ actor SelfRenewalAppSession {
             keyID = key.id; materialGeneration = key.generation
         }
         do {
-            let published = try await account.refreshMaterials(keyID: keyID,
-                expectedGeneration: materialGeneration, machineName: machineName)
+            let published: Vault.Lease
+            if let configuration, let device = configuration.device {
+                let binding = configuration
+                let pairing = try Self.pairing(device)
+                let endpoint = Transport.Endpoint(numericAddress: device.numericAddress,
+                    port: device.port, interfaceIndex: device.interfaceIndex)
+                published = try await SelfRenewalAuthenticatedInstallationClient.withPairedRegistrationDevice(
+                    pairing: pairing, lockdownEndpoint: endpoint, at: clock()) { observation in
+                    try await self.refreshMaterialsForPairedTarget(account: account, observation: observation,
+                        configuration: binding, keyID: keyID, generation: materialGeneration, machineName: machineName)
+                }
+            } else {
+                // Account/material work remains usable without a device route.
+                // This branch does not register or verify any hardware device.
+                published = try await account.refreshMaterials(keyID: keyID,
+                    expectedGeneration: materialGeneration, machineName: machineName)
+            }
             return try await reconnectPublishedDeveloperMaterials(published)
         } catch let failure as SelfRenewalDeveloperAccountClient.PublicationFinalizationFailure {
             return try await reconnectPublishedDeveloperMaterials(failure.publishedLease,
                 accountFinalizationError: failure.underlying)
+        } catch let failure as SelfRenewalAuthenticatedInstallationClient.RegistrationFinalizationFailure<Vault.Lease> {
+            // StopSession cannot erase an acknowledged material publication.
+            return try await reconnectPublishedDeveloperMaterials(failure.completed,
+                accountFinalizationError: failure.stopSessionError)
+        } catch let failure as SelfRenewalAuthenticatedInstallationClient.RegistrationCleanupFailure {
+            if let publication = failure.underlying as? SelfRenewalDeveloperAccountClient.PublicationFinalizationFailure {
+                return try await reconnectPublishedDeveloperMaterials(publication.publishedLease,
+                    accountFinalizationError: failure)
+            }
+            throw failure
         }
+    }
+
+    private func refreshMaterialsForPairedTarget(account: SelfRenewalDeveloperAccountClient,
+        observation: SelfRenewalAuthenticatedInstallationClient.RegistrationDeviceObservation,
+        configuration binding: Configuration, keyID: UUID, generation: UInt64, machineName: String,
+        reconcile: Bool = false) async throws -> Vault.Lease {
+        try Task.checkCancellation(); try observation.check()
+        guard configuration == binding, let namespace, namespace.id == binding.namespaceID, let vault,
+              let device = binding.device,
+              observation.authentication.peerCertificateSHA256 == Data(SHA256.hash(data: device.deviceCertificateDER)),
+              observation.endpoint == Transport.Endpoint(numericAddress: device.numericAddress,
+                port: device.port, interfaceIndex: device.interfaceIndex) else { throw Failure.configurationInUse }
+        guard try await vault.generation(in: namespace) == generation else { throw Vault.Failure.staleGeneration }
+        try Task.checkCancellation(); try observation.check()
+        guard configuration == binding else { throw Failure.configurationInUse }
+        // The account's live session and Vault generation are independently
+        // rechecked at each registration dispatch; this is paired-target scope.
+        let published: Vault.Lease
+        if reconcile { published = try await account.reconcilePendingMaterials(pairedDevice: observation) }
+        else {
+            published = try await account.refreshMaterials(keyID: keyID, expectedGeneration: generation,
+                machineName: machineName, pairedDevice: observation)
+        }
+        do {
+            guard configuration == binding, self.namespace == namespace else { throw Failure.configurationInUse }
+            guard try await vault.generation(in: namespace) == published.generation else { throw Vault.Failure.staleGeneration }
+            guard configuration == binding else { throw Failure.configurationInUse }
+        } catch {
+            throw SelfRenewalDeveloperAccountClient.PublicationFinalizationFailure(publishedLease: published, underlying: error)
+        }
+        return published
     }
 
     /// Explicit recovery of the existing CSR intent. A possible installation
@@ -1182,16 +1242,41 @@ actor SelfRenewalAppSession {
         defer { trace("developer-material-reconcile", since: started) }
         guard !developerLocallySignedOut else { throw SelfRenewalDeveloperAccountClient.Failure.signedOut }
         let account = try await developerAccountOwner()
-        guard try await account.pendingEnrollment() != nil else {
+        guard let pending = try await account.pendingEnrollment() else {
             throw SelfRenewalDeveloperAccountClient.Failure.reconciliationRequired
         }
-        guard let journal, let developerEnrollmentIdentity else { throw Failure.notConfigured }
+        guard let journal, let developerEnrollmentIdentity, let vault, let namespace else { throw Failure.notConfigured }
         try await Coordinator.retireBeforeEnrollmentRefresh(journal: journal, identity: developerEnrollmentIdentity, at: clock())
         do {
-            return try await reconnectPublishedDeveloperMaterials(try await account.reconcilePendingMaterials())
+            let published: Vault.Lease
+            let generation = try await vault.generation(in: namespace)
+            if generation == pending.materialGeneration, let configuration, let device = configuration.device {
+                let binding = configuration
+                let pairing = try Self.pairing(device)
+                let endpoint = Transport.Endpoint(numericAddress: device.numericAddress,
+                    port: device.port, interfaceIndex: device.interfaceIndex)
+                published = try await SelfRenewalAuthenticatedInstallationClient.withPairedRegistrationDevice(
+                    pairing: pairing, lockdownEndpoint: endpoint, at: clock()) { observation in
+                    try await self.refreshMaterialsForPairedTarget(account: account, observation: observation,
+                        configuration: binding, keyID: pending.keyID, generation: generation,
+                        machineName: "Reading reconciliation", reconcile: true)
+                }
+            } else {
+                // An already acknowledged publication may finalize locally.
+                published = try await account.reconcilePendingMaterials()
+            }
+            return try await reconnectPublishedDeveloperMaterials(published)
         } catch let failure as SelfRenewalDeveloperAccountClient.PublicationFinalizationFailure {
             return try await reconnectPublishedDeveloperMaterials(failure.publishedLease,
                 accountFinalizationError: failure.underlying)
+        } catch let failure as SelfRenewalAuthenticatedInstallationClient.RegistrationFinalizationFailure<Vault.Lease> {
+            return try await reconnectPublishedDeveloperMaterials(failure.completed,
+                accountFinalizationError: failure.stopSessionError)
+        } catch let failure as SelfRenewalAuthenticatedInstallationClient.RegistrationCleanupFailure {
+            if let publication = failure.underlying as? SelfRenewalDeveloperAccountClient.PublicationFinalizationFailure {
+                return try await reconnectPublishedDeveloperMaterials(publication.publishedLease, accountFinalizationError: failure)
+            }
+            throw failure
         }
     }
 

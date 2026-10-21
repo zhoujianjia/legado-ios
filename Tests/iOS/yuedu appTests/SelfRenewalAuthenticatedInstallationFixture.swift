@@ -13,6 +13,7 @@ enum SelfRenewalAuthenticatedInstallationFixture {
     typealias Transport = SelfRenewalAuthenticatedDeviceTransport
     typealias PKI = SelfRenewalSigningOwnedPKIFixture
     enum Mode: Sendable, Equatable {
+        case registrationOnly
         case normal, wrongDeviceCertificate, wrongHostCertificate, expiredPeer
         case falseSession, wrongSession, missingServiceSSL, invalidPort
         case badAFCSequence, truncatedAFC, afcError, midUploadError, midUploadCleanupError
@@ -34,6 +35,7 @@ enum SelfRenewalAuthenticatedInstallationFixture {
         var sessionCount: Int { isUnknownUpgradeRecovery ? 2 : cleanupSessionCount }
     }
     struct Observation: Sendable {
+        var deviceValueRequests = 0
         var uploaded = Data()
         var upgradeRequests = 0
         var lookupRequests = 0
@@ -64,6 +66,7 @@ enum SelfRenewalAuthenticatedInstallationFixture {
         let recoveryRemoveRequestReceived: AsyncStream<Bool>
         let lookupRepliesSent: AsyncStream<Bool>
         let wrongDeviceCertificateDER: Data
+        let registrationIdentityPersistentReference: Data?
         func upgrade(timeout: TimeInterval = 8, archive alternate: Client.ArchiveInput? = nil,
             beforeCreation: @escaping @Sendable (Client.UploadIntent) async throws -> Void = { _ in },
             beforeSubmission: @escaping @Sendable (Client.UpgradeSubmission) async throws -> Void = { _ in }) async throws -> Client.Receipt {
@@ -193,6 +196,8 @@ enum SelfRenewalAuthenticatedInstallationFixture {
         beforeRecoveryRemoveReply: @escaping @Sendable () throws -> Void = {},
         expectedUploadedArchive: (@Sendable () throws -> Data)? = nil,
         lookupResponses: [[String: Client.Value]]? = nil, holdLookupAfterReplies: Bool = false,
+        registrationValue: Client.Value = .string("00008110-0011223344556677"),
+        allowRegistrationDisconnect: Bool = false,
         _ action: @escaping @Sendable (Context) async throws -> Void) async throws {
         let cancellation = Transport.Cancellation()
         let worker = Task.detached(priority: .utility) {
@@ -213,6 +218,15 @@ enum SelfRenewalAuthenticatedInstallationFixture {
                 rootCertificateDER: issuer.certificateChainDER[0], hostID: "owned-host", systemBUID: "owned-system")
             let root = issuer.certificateChainDER[0]
             let peerHost = mode == .wrongHostCertificate ? wrong.certificate : host.certificate
+            var registrationIdentityReference: Data?
+            if mode == .registrationOnly {
+                var item: CFTypeRef?
+                let status = SecItemCopyMatching([kSecClass as String: kSecClassIdentity,
+                    kSecAttrLabel as String: host.label, kSecReturnPersistentRef as String: true,
+                    kSecMatchLimit as String: kSecMatchLimitOne] as CFDictionary, &item)
+                guard status == errSecSuccess, let bytes = item as? Data, !bytes.isEmpty else { throw FixtureFailure.keychain(status) }
+                registrationIdentityReference = bytes
+            }
             let peers: [Task<PeerResult, Never>] = [
                 peerTask {
                     // The event producer owns termination even when the action
@@ -233,7 +247,14 @@ enum SelfRenewalAuthenticatedInstallationFixture {
                     let serverIdentity = mode == .cleanupWrongServerCertificate && round > 0 ? wrong.identity : device.identity
                     try stream.authenticate(identity: serverIdentity, expectedPeerDER: peerHost, rootDER: root, at: date, server: true)
                     observed.update { $0.authenticatedChannels += 1 }
-                    for _ in 0..<(round > 0 || mode == .lookupOnly || mode == .lookupMissing ? 1 : 2) {
+                    if mode == .registrationOnly {
+                        let request = try channel.receive(request: "GetValue")
+                        guard request["Request"] == .string("GetValue"), request["Key"] == .string("UniqueDeviceID"),
+                              request["Domain"] == nil else { throw FixtureFailure.invalidRequest }
+                        observed.update { $0.deviceValueRequests += 1 }
+                        try channel.send(["Request": .string("GetValue"), "Value": registrationValue])
+                    }
+                    for _ in 0..<(mode == .registrationOnly ? 0 : (round > 0 || mode == .lookupOnly || mode == .lookupMissing ? 1 : 2)) {
                         let request = try channel.receive(request: "StartService")
                         guard request["Request"] == .string("StartService") else { throw FixtureFailure.invalidRequest }
                         let port: UInt16
@@ -263,6 +284,7 @@ enum SelfRenewalAuthenticatedInstallationFixture {
                     // The event producer owns termination even when the action
                     // is waiting for an event this peer failed before emitting.
                     defer { removalSignal.continuation.finish() }
+                    if mode == .registrationOnly { return }
                     var path: Data?
                     var remoteExists = false
                     for round in 0..<mode.cleanupSessionCount {
@@ -354,6 +376,7 @@ enum SelfRenewalAuthenticatedInstallationFixture {
                     // The event producer owns termination even when the action
                     // is waiting for an event this peer failed before emitting.
                     defer { lookupSignal.continuation.finish() }
+                    if mode == .registrationOnly { return }
                     for round in 0..<(mode.isUnknownUpgradeRecovery ? 2 : 1) {
                     let stream = try proxy.accept(cancellation: cancellation, deadline: deadline); defer { stream.close() }
                     try stream.authenticate(identity: device.identity, expectedPeerDER: peerHost, rootDER: root, at: date, server: true)
@@ -405,10 +428,11 @@ enum SelfRenewalAuthenticatedInstallationFixture {
                 }, bytes: bytes, date: mode == .expiredPeer ? date.addingTimeInterval(86_400 * 31) : date,
                 bundle: bundle, version: version, observed: observed, sessionRequestReceived: signal.stream,
                 recoveryRemoveRequestReceived: removalSignal.stream, lookupRepliesSent: lookupSignal.stream,
-                wrongDeviceCertificateDER: wrong.certificate)
+                wrongDeviceCertificateDER: wrong.certificate,
+                registrationIdentityPersistentReference: registrationIdentityReference)
             do {
                 try await action(context)
-                let requirePeerSuccess = mode == .normal || mode.isUnknownUpgradeRecovery || (mode.cleanupSessionCount > 1 && mode != .cleanupWrongServerCertificate)
+                let requirePeerSuccess = (mode == .registrationOnly && !allowRegistrationDisconnect) || mode == .normal || mode.isUnknownUpgradeRecovery || (mode.cleanupSessionCount > 1 && mode != .cleanupWrongServerCertificate)
                 if !requirePeerSuccess { cancellation.cancel() }
                 for peer in peers {
                     let result = await peer.value

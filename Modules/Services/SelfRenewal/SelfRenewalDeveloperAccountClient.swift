@@ -63,6 +63,8 @@ actor SelfRenewalDeveloperAccountClient {
         let underlying: Error
         let remoteCertificateMayHaveBeenIssued: Bool
         let remoteProfilesMayHaveBeenRefreshed: Bool
+        var remoteRegistrationMayHaveChanged: Bool = false
+        var acceptedRegistrationMutations: [String] = []
     }
     struct SessionInvalidationFailure: Error, @unchecked Sendable {
         let sessionError: Error
@@ -144,11 +146,20 @@ actor SelfRenewalDeveloperAccountClient {
     }
     private struct Loaded { var record: Record; var encoded: String }
     private struct RemoteAccount { let pin: AccountPin; let commonName: String }
-    private struct BundleTarget: Sendable { let component: String; let identifier: String }
+    private struct BundleTarget: Sendable { let component: String; let identifier: String; let appGroups: [String] }
+    private struct RegisteredApp { let identifier: String; let portalID: String; var features: [String: Value] }
+    private struct RegistrationProgress {
+        var intents: [String] = []
+        var accepted: [String] = []
+    }
     private enum Action: String {
         case developer = "viewDeveloper.action", teams = "listTeams.action"
         case certificates = "ios/submitDevelopmentCSR.action", appIDs = "ios/listAppIds.action"
         case profile = "ios/downloadTeamProvisioningProfile.action"
+        case devices = "ios/listDevices.action", addDevice = "ios/addDevice.action"
+        case addAppID = "ios/addAppId.action", updateAppID = "ios/updateAppId.action"
+        case groups = "ios/listApplicationGroups.action", addGroup = "ios/addApplicationGroup.action"
+        case assignGroups = "ios/assignApplicationGroupToAppId.action"
     }
     private let vault: Vault
     private let namespace: Vault.Namespace
@@ -215,7 +226,7 @@ actor SelfRenewalDeveloperAccountClient {
               Set(identity.issuerChainDER).count == identity.issuerChainDER.count,
               identity.issuerChainDER.allSatisfy({ !$0.isEmpty && $0.count <= Vault.Limits.certificateBytes }) else { throw Failure.invalidInput }
         self.vault = vault; namespace = identity.namespace; teamID = team
-        bundles = identity.bundles.map { BundleTarget(component: $0.componentRelativePath, identifier: $0.bundleIdentifier) }
+        bundles = identity.bundles.map { BundleTarget(component: $0.componentRelativePath, identifier: $0.bundleIdentifier, appGroups: $0.appGroups) }
         let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
         identitySHA256 = Data(SHA256.hash(data: try encoder.encode(IdentityPin(identity))))
         issuerChainDER = identity.issuerChainDER; self.transport = transport; self.storage = storage
@@ -237,7 +248,7 @@ actor SelfRenewalDeveloperAccountClient {
               Set(issuerChainDER).count == issuerChainDER.count,
               issuerChainDER.allSatisfy({ !$0.isEmpty && $0.count <= Vault.Limits.certificateBytes }) else { throw Failure.invalidInput }
         self.vault = vault; self.namespace = namespace; teamID = team
-        bundles = identity.bundles.map { BundleTarget(component: $0.componentRelativePath, identifier: $0.bundleIdentifier) }
+        bundles = identity.bundles.map { BundleTarget(component: $0.componentRelativePath, identifier: $0.bundleIdentifier, appGroups: $0.slices[0].appGroups) }
         // This sealed value already contains original bundles, ordered groups,
         // signed profile allowances and signer hashes. No caller-made team DTO.
         let identityEncoder = JSONEncoder(); identityEncoder.outputFormatting = [.sortedKeys]
@@ -273,9 +284,11 @@ actor SelfRenewalDeveloperAccountClient {
 
     /// Calls the actual portal CSR/profile protocol and publishes only through
     /// the SAME Vault's chain, private-key, profile double-CMS and identity CAS.
-    /// Existing registered App IDs are required: no bundle/group rewrite or
-    /// implicit remote certificate revocation is performed to make it succeed.
-    func refreshMaterials(keyID: UUID, expectedGeneration: UInt64, machineName: String) async throws -> Vault.Lease {
+    /// Registration is restricted to the immutable original bundle/group pin.
+    /// A hardware registration additionally requires a live authenticated paired
+    /// target observation; anisette metadata is never a hardware identifier.
+    func refreshMaterials(keyID: UUID, expectedGeneration: UInt64, machineName: String,
+        pairedDevice: SelfRenewalAuthenticatedInstallationClient.RegistrationDeviceObservation? = nil) async throws -> Vault.Lease {
         guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
         guard !locallyInvalidated else { throw Failure.signedOut }
         let started = SourcePerfTrace.now
@@ -286,11 +299,16 @@ actor SelfRenewalDeveloperAccountClient {
         guard loaded.record.pending == nil else { throw Failure.reconciliationRequired }
         guard Self.headerValue(machineName, limit: 128) else { throw Failure.invalidInput }
         var certificateIntent = false, profileIntent = false
+        var registration = RegistrationProgress()
         do {
             let account = try await validateRemote(credentials, expected: loaded.record.pin, epoch: operationEpoch)
-            let appIDs = try await request(.appIDs, credentials: credentials, team: teamID, epoch: operationEpoch)
-            let identifiers = try registeredAppIDs(appIDs)
             let publication = try await vault.publicationBaseline(in: namespace, expectedGeneration: expectedGeneration)
+            // Validate the current owned key before adding any portal identity.
+            // Constructing this local CSR is not dispatching an issuance request.
+            let preparedCSR = try await vault.certificateSigningRequest(in: namespace, keyID: keyID,
+                expectedGeneration: expectedGeneration, commonName: account.commonName, emailAddress: account.pin.email)
+            let identifiers = try await prepareRegistration(credentials: credentials, epoch: operationEpoch,
+                generation: expectedGeneration, pairedDevice: pairedDevice, progress: &registration)
             let certificates = try await listDevelopmentCertificates(credentials: credentials, epoch: operationEpoch)
             try check(operationEpoch)
             let currentPublication = try await vault.publicationBaseline(in: namespace, expectedGeneration: expectedGeneration)
@@ -305,10 +323,9 @@ actor SelfRenewalDeveloperAccountClient {
                     operationEpoch: operationEpoch, profileIntent: &profileIntent)
                 _ = try await validateRemote(credentials, expected: loaded.record.pin, epoch: operationEpoch)
                 try check(operationEpoch)
-                return try await vault.refreshProfiles(reusing: reusable, profiles: profiles)
+                return try await vault.refreshProfiles(reusing: reusable, profiles: profiles, requiredDeviceIdentifier: pairedDevice?.identifier)
             }
-            let csr = try await vault.certificateSigningRequest(in: namespace, keyID: keyID,
-                expectedGeneration: expectedGeneration, commonName: account.commonName, emailAddress: account.pin.email)
+            let csr = preparedCSR
             try check(operationEpoch)
             let currentRequest = try await vault.certificateSigningRequest(in: namespace, keyID: keyID,
                 expectedGeneration: expectedGeneration, commonName: account.commonName, emailAddress: account.pin.email)
@@ -336,7 +353,8 @@ actor SelfRenewalDeveloperAccountClient {
             loaded.encoded = try save(loaded.record, replacing: loaded.encoded)
             return try await completeEnrollment(loaded: &loaded, certificate: certificate, csr: csr,
                 account: account, identifiers: identifiers, credentials: credentials,
-                operationEpoch: operationEpoch, profileIntent: &profileIntent)
+                operationEpoch: operationEpoch, profileIntent: &profileIntent,
+                requiredDeviceIdentifier: pairedDevice?.identifier)
         } catch let error as PublicationFinalizationFailure { throw error }
         catch {
             // Only a verified session failure removes credential use. Pending
@@ -347,14 +365,16 @@ actor SelfRenewalDeveloperAccountClient {
             do { try invalidateIfNecessary(originalFailure, loaded: loaded); finalFailure = originalFailure }
             catch { finalFailure = error }
             throw EnrollmentFailure(underlying: finalFailure, remoteCertificateMayHaveBeenIssued: certificateIntent,
-                remoteProfilesMayHaveBeenRefreshed: profileIntent)
+                remoteProfilesMayHaveBeenRefreshed: profileIntent,
+                remoteRegistrationMayHaveChanged: !registration.intents.isEmpty,
+                acceptedRegistrationMutations: registration.accepted)
         }
     }
 
 
     private func completeEnrollment(loaded: inout Loaded, certificate: Data, csr: Vault.CertificateRequest,
         account: RemoteAccount, identifiers: [String: String], credentials: Credentials,
-        operationEpoch: UInt64, profileIntent: inout Bool) async throws -> Vault.Lease {
+        operationEpoch: UInt64, profileIntent: inout Bool, requiredDeviceIdentifier: String? = nil) async throws -> Vault.Lease {
         let profiles = try await downloadProfiles(identifiers: identifiers, credentials: credentials,
             operationEpoch: operationEpoch, profileIntent: &profileIntent)
         // Recheck remote account/team and the real persisted key after all
@@ -368,7 +388,7 @@ actor SelfRenewalDeveloperAccountClient {
             leaf: certificate, issuerCandidates: issuerChainDER)
         try check(operationEpoch)
         let lease = try await vault.publish(in: namespace, keyID: csr.keyID, expectedGeneration: csr.generation,
-            certificateChainDER: chain, profiles: profiles)
+            certificateChainDER: chain, profiles: profiles, requiredDeviceIdentifier: requiredDeviceIdentifier)
         // No cancellation check after this acknowledged Vault commit.
         // The later credential write cannot roll it back or hide its fact.
         do {
@@ -397,7 +417,8 @@ actor SelfRenewalDeveloperAccountClient {
     /// A read-only certificate-list reconciliation never submits another CSR.
     /// Candidate presence is not revocation, issue causality or Apple authority.
     /// Profiles and publication still use the sole verified Vault commit path.
-    func reconcilePendingMaterials() async throws -> Vault.Lease {
+    func reconcilePendingMaterials(
+        pairedDevice: SelfRenewalAuthenticatedInstallationClient.RegistrationDeviceObservation? = nil) async throws -> Vault.Lease {
         guard !busy else { throw Failure.busy }; busy = true; defer { busy = false }
         let started = SourcePerfTrace.now
         defer { SourcePerfTrace.record("renewal.account.reconcile", "main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
@@ -416,6 +437,7 @@ actor SelfRenewalDeveloperAccountClient {
         guard !locallyInvalidated, let credentials = loaded.record.credentials else { throw Failure.signedOut }
         guard let baseline = pending.reconciliationBaseline else { throw Failure.reconciliationRequired }
         var profileIntent = false
+        var registration = RegistrationProgress()
         do {
             let account = try await validateRemote(credentials, expected: loaded.record.pin, epoch: operationEpoch)
             let publication = try await vault.publicationBaseline(in: namespace, expectedGeneration: pending.materialGeneration)
@@ -443,14 +465,15 @@ actor SelfRenewalDeveloperAccountClient {
                 expectedGeneration: pending.materialGeneration, commonName: account.commonName, emailAddress: account.pin.email)
             guard currentCSR.der == csr.der, currentCSR.publicKeySHA256 == csr.publicKeySHA256 else { throw Failure.keyMismatch }
             try check(operationEpoch)
-            let response = try await request(.appIDs, credentials: credentials, team: teamID, epoch: operationEpoch)
-            let identifiers = try registeredAppIDs(response)
+            let identifiers = try await prepareRegistration(credentials: credentials, epoch: operationEpoch,
+                generation: pending.materialGeneration, pairedDevice: pairedDevice, progress: &registration)
             loaded.record.pending?.phase = .certificateObserved
             loaded.record.pending?.certificateSHA256 = candidate.sha256
             loaded.encoded = try save(loaded.record, replacing: loaded.encoded)
             return try await completeEnrollment(loaded: &loaded, certificate: candidate.der, csr: csr,
                 account: account, identifiers: identifiers, credentials: credentials,
-                operationEpoch: operationEpoch, profileIntent: &profileIntent)
+                operationEpoch: operationEpoch, profileIntent: &profileIntent,
+                requiredDeviceIdentifier: pairedDevice?.identifier)
         } catch let failure as PublicationFinalizationFailure { throw failure }
         catch {
             let original = error
@@ -458,7 +481,9 @@ actor SelfRenewalDeveloperAccountClient {
             do { try invalidateIfNecessary(original, loaded: loaded); finalFailure = original }
             catch { finalFailure = error }
             throw EnrollmentFailure(underlying: finalFailure, remoteCertificateMayHaveBeenIssued: true,
-                remoteProfilesMayHaveBeenRefreshed: profileIntent)
+                remoteProfilesMayHaveBeenRefreshed: profileIntent,
+                remoteRegistrationMayHaveChanged: !registration.intents.isEmpty,
+                acceptedRegistrationMutations: registration.accepted)
         }
     }
 
@@ -551,19 +576,25 @@ actor SelfRenewalDeveloperAccountClient {
     }
 
     private func request(_ action: Action, credentials: Credentials, team: String? = nil,
-        parameters: [String: String] = [:], epoch: UInt64) async throws -> [String: Value] {
+        parameters: [String: String] = [:], properties: [String: Value] = [:], epoch: UInt64, registrationGeneration: UInt64? = nil,
+        pairedDevice: SelfRenewalAuthenticatedInstallationClient.RegistrationDeviceObservation? = nil) async throws -> [String: Value] {
         let started = SourcePerfTrace.now
         var responseBytes = 0
         defer { SourcePerfTrace.record("renewal.account.request",
             "stage=\(action.rawValue) responseBytes=\(responseBytes) main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
-        var body = parameters
+        var body: [String: Any] = parameters
+        for (key, value) in properties {
+            guard body[key] == nil, !["clientId", "protocolVersion", "requestId", "teamId"].contains(key),
+                  Self.headerValue(key, limit: 128) else { throw Failure.invalidInput }
+            body[key] = try Self.portalProperty(value)
+        }
         body["clientId"] = "XABBG36SBA"; body["protocolVersion"] = "QH65B2"; body["requestId"] = UUID().uuidString
         if let team { body["teamId"] = team }
         let data = try PropertyListSerialization.data(fromPropertyList: body, format: .xml, options: 0)
         guard data.count <= 32_768,
               let url = URL(string: "https://developerservices2.apple.com/services/QH65B2/" + action.rawValue + "?clientId=XABBG36SBA") else { throw Failure.limit }
         let response = try await sendDeveloperRequest(url: url, body: data, mediaType: "text/x-xml-plist",
-            credentials: credentials, epoch: epoch)
+            credentials: credentials, epoch: epoch, registrationGeneration: registrationGeneration, pairedDevice: pairedDevice)
         responseBytes = response.count
         let result: [String: Value]
         do { result = try Self.dictionary(SelfRenewalDERPropertyList.decodeXMLPropertyList(response)) }
@@ -672,7 +703,8 @@ actor SelfRenewalDeveloperAccountClient {
     /// The same session, fresh anisette, privacy, cancellation and HTTP checks
     /// serve both the existing plist actions and the one read-only JSON action.
     private func sendDeveloperRequest(url: URL, body: Data, mediaType: String, methodOverride: String? = nil,
-        credentials: Credentials, epoch: UInt64) async throws -> Data {
+        credentials: Credentials, epoch: UInt64, registrationGeneration: UInt64? = nil,
+        pairedDevice: SelfRenewalAuthenticatedInstallationClient.RegistrationDeviceObservation? = nil) async throws -> Data {
         try check(epoch); try validateCredentials(credentials)
         guard body.count <= 32_768 else { throw Failure.limit }
         let anisette = try await freshAnisette()
@@ -695,6 +727,13 @@ actor SelfRenewalDeveloperAccountClient {
             "X-Apple-I-Locale": anisette.locale, "X-Apple-I-TimeZone": anisette.timeZone]
         for (name, value) in headers { request.setValue(value, forHTTPHeaderField: name) }
         if let methodOverride { request.setValue(methodOverride, forHTTPHeaderField: "X-HTTP-Method-Override") }
+        // Fresh anisette may suspend. Revalidate the exact original namespace,
+        // generation and live paired target after that await, at dispatch.
+        if let registrationGeneration {
+            guard try await vault.generation(in: namespace) == registrationGeneration else { throw Vault.Failure.staleGeneration }
+            try check(epoch); try validateCredentials(credentials); try pairedDevice?.check()
+            if let pairedDevice { request.timeoutInterval = min(30, try pairedDevice.remainingSeconds()) }
+        }
         let response: SelfRenewalDeveloperAccountResponse
         do { response = try await transport.send(request) }
         catch is CancellationError { throw CancellationError() }
@@ -710,19 +749,154 @@ actor SelfRenewalDeveloperAccountClient {
         return response.body
     }
 
-    private func registeredAppIDs(_ response: [String: Value]) throws -> [String: String] {
-        guard case .array(let values)? = response["appIds"], values.count <= 256 else { throw Failure.malformedResponse }
-        var result: [String: String] = [:]
-        for value in values {
-            let app = try Self.dictionary(value)
-            let bundle = try Self.text(app["identifier"], limit: 255)
-            if bundles.contains(where: { Self.same($0.identifier, bundle) }) {
-                guard result[bundle] == nil else { throw Failure.ambiguousAppIdentifier }
-                result[bundle] = try Self.text(app["appIdId"], limit: 128)
+    /// The sole remote-registration path. Unknown identifiers are never renamed,
+    /// adopted, deleted or registered; all requested values came from the Vault pin.
+    private func prepareRegistration(credentials: Credentials, epoch: UInt64, generation: UInt64,
+        pairedDevice: SelfRenewalAuthenticatedInstallationClient.RegistrationDeviceObservation?,
+        progress: inout RegistrationProgress) async throws -> [String: String] {
+        let started = SourcePerfTrace.now
+        defer { SourcePerfTrace.record("renewal.account.registration",
+            "bundles=\(bundles.count) intents=\(progress.intents.count) accepted=\(progress.accepted.count) main=\(Thread.isMainThread)",
+            since: started, thresholdMs: 0) }
+        func verify() async throws {
+            try check(epoch)
+            try pairedDevice?.check()
+            guard try await vault.generation(in: namespace) == generation else { throw Vault.Failure.staleGeneration }
+            try check(epoch)
+            try pairedDevice?.check()
+        }
+        var requiredGroups: [String] = []
+        for bundle in bundles {
+            for name in bundle.appGroups {
+                guard Self.headerValue(name, limit: 255), name.hasPrefix("group."),
+                      name.utf8.allSatisfy({ (48...57).contains($0) || (65...90).contains($0) || (97...122).contains($0) || $0 == 45 || $0 == 46 }) else { throw Failure.invalidInput }
+                if !requiredGroups.contains(where: { Self.same($0, name) }) { requiredGroups.append(name) }
             }
         }
-        guard bundles.allSatisfy({ result[$0.identifier] != nil }) else { throw Failure.appIdentifierMissing }
-        return result
+        guard requiredGroups.count <= 8 else { throw Failure.limit }
+        try await verify()
+        if let pairedDevice {
+            let listed = try await request(.devices, credentials: credentials, team: teamID, epoch: epoch, registrationGeneration: generation, pairedDevice: pairedDevice)
+            let devices = try Self.registrationList(listed, key: "devices")
+            var matches = 0
+            for value in devices {
+                let device = try Self.dictionary(value)
+                if Self.same(try Self.text(device["deviceNumber"], limit: 128), pairedDevice.identifier) { matches += 1 }
+            }
+            guard matches <= 1 else { throw Failure.malformedResponse }
+            if matches == 0 {
+                try await verify(); progress.intents.append("device.add")
+                let response = try await request(.addDevice, credentials: credentials, team: teamID,
+                    parameters: ["deviceNumber": pairedDevice.identifier, "name": "Reading paired target"], epoch: epoch, registrationGeneration: generation, pairedDevice: pairedDevice)
+                let device = try Self.dictionary(response["device"])
+                guard Self.same(try Self.text(device["deviceNumber"], limit: 128), pairedDevice.identifier) else { throw Failure.malformedResponse }
+                progress.accepted.append("device.add"); try await verify()
+            }
+        }
+        try await verify()
+        let response = try await request(.appIDs, credentials: credentials, team: teamID, epoch: epoch, registrationGeneration: generation, pairedDevice: pairedDevice)
+        var apps: [String: RegisteredApp] = [:]
+        for value in try Self.registrationList(response, key: "appIds") {
+            let app = try Self.registeredApp(value)
+            if bundles.contains(where: { Self.same($0.identifier, app.identifier) }) {
+                guard apps[app.identifier] == nil else { throw Failure.ambiguousAppIdentifier }
+                apps[app.identifier] = app
+            }
+        }
+        guard Set(apps.values.map(\.portalID)).count == apps.count else { throw Failure.ambiguousAppIdentifier }
+        for (index, bundle) in bundles.enumerated() where apps[bundle.identifier] == nil {
+            try await verify(); progress.intents.append("app.add")
+            let response = try await request(.addAppID, credentials: credentials, team: teamID,
+                parameters: ["identifier": bundle.identifier, "name": "Reading Component " + String(index + 1)], epoch: epoch, registrationGeneration: generation, pairedDevice: pairedDevice)
+            let app = try Self.registeredApp(response["appId"])
+            guard Self.same(app.identifier, bundle.identifier) else { throw Failure.malformedResponse }
+            guard !apps.values.contains(where: { Self.same($0.portalID, app.portalID) }) else { throw Failure.ambiguousAppIdentifier }
+            apps[bundle.identifier] = app; progress.accepted.append("app.add"); try await verify()
+        }
+        if !requiredGroups.isEmpty {
+            try await verify()
+            let response = try await request(.groups, credentials: credentials, team: teamID, epoch: epoch, registrationGeneration: generation, pairedDevice: pairedDevice)
+            var groups: [String: String] = [:]
+            for value in try Self.registrationList(response, key: "applicationGroupList") {
+                let group = try Self.dictionary(value)
+                let name = try Self.text(group["identifier"], limit: 255)
+                if requiredGroups.contains(where: { Self.same($0, name) }) {
+                    guard groups[name] == nil else { throw Failure.malformedResponse }
+                    groups[name] = try Self.identifier(group["applicationGroup"])
+                }
+            }
+            guard Set(groups.values).count == groups.count else { throw Failure.malformedResponse }
+            for (index, name) in requiredGroups.enumerated() where groups[name] == nil {
+                try await verify(); progress.intents.append("group.add")
+                let response = try await request(.addGroup, credentials: credentials, team: teamID,
+                    parameters: ["identifier": name, "name": "Reading Shared Group " + String(index + 1)], epoch: epoch, registrationGeneration: generation, pairedDevice: pairedDevice)
+                let group = try Self.dictionary(response["applicationGroup"])
+                guard Self.same(try Self.text(group["identifier"], limit: 255), name) else { throw Failure.malformedResponse }
+                let portalID = try Self.identifier(group["applicationGroup"])
+                guard !groups.values.contains(where: { Self.same($0, portalID) }) else { throw Failure.malformedResponse }
+                groups[name] = portalID
+                progress.accepted.append("group.add"); try await verify()
+            }
+            for bundle in bundles where !bundle.appGroups.isEmpty {
+                guard var app = apps[bundle.identifier] else { throw Failure.appIdentifierMissing }
+                // Pinned ALTCapabilities uses APG3427HIY; preserve all other
+                // enabled portal features rather than disabling unrelated ones.
+                if app.features["APG3427HIY"] != .string("true") && app.features["APG3427HIY"] != .boolean(true) {
+                    var features = app.features; features["APG3427HIY"] = .string("true")
+                    try await verify(); progress.intents.append("app.groups.enable")
+                    let response = try await request(.updateAppID, credentials: credentials, team: teamID,
+                        parameters: ["appIdId": app.portalID], properties: features, epoch: epoch, registrationGeneration: generation, pairedDevice: pairedDevice)
+                    let updated = try Self.registeredApp(response["appId"])
+                    guard Self.same(updated.identifier, bundle.identifier), Self.same(updated.portalID, app.portalID),
+                          updated.features["APG3427HIY"] == .string("true") || updated.features["APG3427HIY"] == .boolean(true) else { throw Failure.malformedResponse }
+                    app = updated; apps[bundle.identifier] = updated
+                    progress.accepted.append("app.groups.enable"); try await verify()
+                }
+                let ids = try bundle.appGroups.map { name -> Value in
+                    guard let id = groups[name] else { throw Failure.malformedResponse }; return .string(id)
+                }
+                try await verify(); progress.intents.append("app.groups.assign")
+                _ = try await request(.assignGroups, credentials: credentials, team: teamID,
+                    parameters: ["appIdId": app.portalID], properties: ["applicationGroups": .array(ids)], epoch: epoch, registrationGeneration: generation, pairedDevice: pairedDevice)
+                progress.accepted.append("app.groups.assign"); try await verify()
+            }
+        }
+        try await verify()
+        return apps.mapValues(\.portalID)
+    }
+    private static func registrationList(_ response: [String: Value], key: String) throws -> [Value] {
+        guard case .array(let values)? = response[key], values.count <= 256,
+              response["truncated"] != .boolean(true), response["hasMore"] != .boolean(true),
+              response["next"] == nil || response["next"] == .null || response["next"] == .string("") else { throw Failure.malformedResponse }
+        return values
+    }
+    private static func registeredApp(_ value: Value?) throws -> RegisteredApp {
+        let app = try dictionary(value)
+        var features: [String: Value] = [:]
+        if let enabled = app["enabledFeatures"] {
+            guard case .array(let names) = enabled, names.count <= 64 else { throw Failure.malformedResponse }
+            let all: [String: Value]
+            if let value = app["features"] { all = try dictionary(value) } else { all = [:] }
+            for name in names {
+                let key = try text(name, limit: 128)
+                guard features[key] == nil, let value = all[key] else { throw Failure.malformedResponse }
+                features[key] = value
+            }
+        }
+        return RegisteredApp(identifier: try text(app["identifier"], limit: 255),
+            portalID: try identifier(app["appIdId"]), features: features)
+    }
+    private static func portalProperty(_ value: Value) throws -> Any {
+        switch value {
+        case .string(let v): return v
+        case .boolean(let v): return v
+        case .integer(let v): return v
+        case .array(let values): return try values.map { try portalProperty($0) }
+        case .dictionary(let values): return try values.mapValues { try portalProperty($0) }
+        case .data(let v): return v
+        case .date(let v): return v
+        case .null: throw Failure.invalidInput
+        }
     }
 
     private func issuedCertificate(_ response: [String: Value], csr: Vault.CertificateRequest) throws -> Data {

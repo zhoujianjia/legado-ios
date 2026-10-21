@@ -1,0 +1,21 @@
+--- a/Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift
++++ b/Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift
+@@ -655,6 +655,10 @@
+         if let failure = error as? SelfRenewalControlledRenewalCoordinator.PreparationFailure { return classify(failure.underlying) }
+         if let failure = error as? SelfRenewalControlledRenewalCoordinator.Interrupted { return classify(failure.underlying) }
+         if let failure = error as? SelfRenewalAuthenticatedInstallationClient.OperationFailure { return classify(failure.underlying) }
++        if let failure = error as? SelfRenewalAuthenticatedInstallationClient.RegistrationCleanupFailure { return classify(failure.underlying) }
++        if let failure = error as? SelfRenewalAuthenticatedInstallationClient.RegistrationFinalizationFailure<SelfRenewalSigningMaterialVault.Lease> {
++            return classify(failure.stopSessionError)
++        }
+         if let failure = error as? SelfRenewalControlledRenewalCoordinator.Failure,
+            failure == .signingMaterialsUnavailable { return .signingMaterials }
+         if error is SelfRenewalAppSession.DeveloperServicesFailure { return .authenticationNotConfigured }
+@@ -670,6 +674,7 @@
+         if let failure = error as? SelfRenewalAppSession.InitialNamespaceBindingFailure { return classify(failure.underlying) }
+         if let failure = error as? SelfRenewalAppSession.DeveloperMaterialFinalizationFailure { return classify(failure.underlying) }
+         if let failure = error as? SelfRenewalDeveloperAccountClient.EnrollmentFailure { return classify(failure.underlying) }
++        if let failure = error as? SelfRenewalDeveloperAccountClient.PublicationFinalizationFailure { return classify(failure.underlying) }
+         if let failure = error as? SelfRenewalDeveloperAccountClient.SessionInvalidationFailure { return classify(failure.storageError) }
+         if let failure = error as? SelfRenewalDeveloperAccountClient.Failure {
+             switch failure {

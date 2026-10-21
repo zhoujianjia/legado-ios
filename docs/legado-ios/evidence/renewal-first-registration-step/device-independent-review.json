@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "reviewedUTC": "2026-10-21T02:39:14.371139+00:00",
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "approvalScope": "Source-only device/session subreview of five named frozen sources, not whole first-registration acceptance.",
+  "parent": {
+    "path": ".build/s2-first-registration-step/final-v1.json",
+    "bytes": 14538,
+    "sha256": "b6c52da211bbab7289cab08744bee628c6be1625d873328bbe7009fa9743ab1e"
+  },
+  "sourceRoot": ".build/s2-first-registration-step/snapshot-v1/work",
+  "frozenNineFileBindings": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "candidate": {
+        "path": ".build/s2-first-registration-step/snapshot-v1/work/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+        "bytes": 72084,
+        "sha256": "d823257c940243a379d8e051b3c860aa6e0c463750804b471535ffbf28bef5f4"
+      },
+      "semanticDeviceScope": false
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "candidate": {
+        "path": ".build/s2-first-registration-step/snapshot-v1/work/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+        "bytes": 120999,
+        "sha256": "ab91be82fad410a5afec802edc3405be8ed39a6fdc413f88bab273f6d2d9884b"
+      },
+      "semanticDeviceScope": true
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+      "candidate": {
+        "path": ".build/s2-first-registration-step/snapshot-v1/work/Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+        "bytes": 34406,
+        "sha256": "68f5c642486ba26220dae4e55463b635151a620225d430fd941289f8c81feec9"
+      },
+      "semanticDeviceScope": true
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "candidate": {
+        "path": ".build/s2-first-registration-step/snapshot-v1/work/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+        "bytes": 83067,
+        "sha256": "db01acd0a4c39ff08dd74d11cacafd268944cfe4a6f3bf995179033990de0d9d"
+      },
+      "semanticDeviceScope": false
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "candidate": {
+        "path": ".build/s2-first-registration-step/snapshot-v1/work/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+        "bytes": 73150,
+        "sha256": "fabd94c5e54d3f18dcf119cda6b8279a28001476f17284821a016d1227ec040a"
+      },
+      "semanticDeviceScope": true
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+      "candidate": {
+        "path": ".build/s2-first-registration-step/snapshot-v1/work/Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+        "bytes": 22623,
+        "sha256": "8f58acc2a0e8cbaecbbe715a30266329d776536803282999c61388c2ec30eb42"
+      },
+      "semanticDeviceScope": true
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+      "candidate": {
+        "path": ".build/s2-first-registration-step/snapshot-v1/work/Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+        "bytes": 33355,
+        "sha256": "bd62c29296bbc86b83f6f5aadc56302d116277a86f65e5c7898f7a1794fff44c"
+      },
+      "semanticDeviceScope": true
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "candidate": {
+        "path": ".build/s2-first-registration-step/snapshot-v1/work/Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+        "bytes": 37029,
+        "sha256": "5010aedb7e79031e91afbdad3b1e39f9e03ddb094298296bcdbced74fbee96c8"
+      },
+      "semanticDeviceScope": false
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "candidate": {
+        "path": ".build/s2-first-registration-step/snapshot-v1/work/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+        "bytes": 61420,
+        "sha256": "74261b3b4c13e266d6dadbe8882ed9620c7ff9a716fee2d67e8547d4ac45202b"
+      },
+      "semanticDeviceScope": false
+    }
+  ],
+  "deviceSemanticScope": [
+    "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+    "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+    "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift"
+  ],
+  "unchangedTransportDependency": {
+    "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedDeviceStream.swift",
+    "bytes": 23202,
+    "sha256": "df5f0f8d8c91a6cee54d9366d32672d6871fe8456ce877d5abb2e33f5ad034aa"
+  },
+  "reviewedProductionFacts": [
+    "Installer reads UniqueDeviceID only after existing StartSession requires EnableSessionSSL=true and exact paired peer/root TLS authentication. Its opaque observation has a fileprivate initializer and an internally owned monotonic-deadline/cancellation lifetime.",
+    "Identifier comes from bounded authenticated GetValue Value, not configuration, IDFV, anisette or a caller-created device assertion. Endpoint, session and peer-certificate evidence remain attached.",
+    "AppSession binds configured namespace, exact endpoint and device certificate, verifies Vault generation around awaits and configuration after publication; registration dispatch additionally rechecks epoch/generation/live observation after anisette in the Account owner (cross-layer seam read only).",
+    "Success and failure invalidate the observation before StopSession. Original errors and cleanup errors are both retained. Successful output survives failed StopSession as RegistrationFinalizationFailure; AppSession reconnects the accepted Lease with finalization error instead of discarding its publication.",
+    "Remote pending-CSR reconciliation uses the same configured paired scope where registration is still needed; already acknowledged publication retains existing local finalization route.",
+    "Removing only the new Installer registration block reconstructs every baseline byte, including openSession, StartService TLS=true requirement, installation socket handling, AFC and stopSession. Existing direct-TCP no-plaintext-service policy is unchanged.",
+    "No configured device retains the existing account/material-only branch and makes no hardware-registration claim. samePhysicalDeviceVerified and noVPNRouteVerified are explicitly false."
+  ],
+  "authoredRegressionSourceFacts": [
+    "registrationDeviceObservationUsesAuthenticatedSessionAndExpiresAtStop covers two identifier layouts through the actual controlled TLS peer, ended-token rejection, malformed authenticated Value, wrong certificate, held-operation cancellation and drained peer tasks.",
+    "appSessionRegistersOnlyItsConfiguredPairedTargetBeforeFirstProfiles uses the real controlled TLS fixture and configured persistent Keychain identity, existing Session/Account/Vault owners, exact three-component registration and no upload/installation; its second round drives Owner cancellation at an actual held registration request and checks .cancelled with no CSR.",
+    "TLS fixture reads only its owned identity label/persistent reference for registrationOnly. Positive mode requires real peer success; cancellation explicitly permits disconnect but still awaits all peer Tasks. The lookup stream producer now installs its finish defer before registrationOnly early return."
+  ],
+  "closedAdvisories": [
+    {
+      "finding": "lookup event producer early return preceded continuation.finish defer in mutable draft",
+      "resolution": "Final fixture installs producer finish defer first; no executed failure was claimed."
+    }
+  ],
+  "wholeReviewBoundary": {
+    "owner": "/root/login_info_v2_review",
+    "notIndependentlyApprovedHere": [
+      "complete AccountClient registration protocol",
+      "Vault authenticated profile target-UDID membership changes",
+      "Owner wrapper classification changes"
+    ],
+    "note": "Their final bytes are bound above only. Whole approval requires the separate Account/Vault/Owner review closing both identified P2 findings."
+  },
+  "actualValidation": {
+    "sourceReadAndByteBindingOnly": true,
+    "SwiftCompiler": 0,
+    "SwiftParser": 0,
+    "AppTests": 0,
+    "TLSFixtureExecutions": 0,
+    "AppleRequests": 0,
+    "deviceExecutions": 0,
+    "newTestsOrCloudRuns": 0,
+    "canonicalWrites": 0
+  },
+  "limits": [
+    "No SDK typecheck or runtime claim: @Sendable, actor, Security identity and Testing macro interactions still need Apple SDK execution.",
+    "Controlled peer/test definitions do not establish Apple Personal Team permission, physical same-device identity, no-VPN transport, authenticated in-place installation, relaunch/data handoff or autonomous renewal.",
+    "Bounded ASCII/hyphen identifier acceptance is an embedding limit; no claim covers every future identifier layout.",
+    "No ownership/API redesign, compiler/parser/test rerun, cloud query, credential access or canonical/Git mutation was performed."
+  ],
+  "automaticSelfRenewalImplemented": false,
+  "automaticSelfRenewalVerified": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "allNonDeviceWorkComplete": false
+}
