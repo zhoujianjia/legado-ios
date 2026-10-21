@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "status": "three previously-unreached producer portable groups passed once",
+  "groups": [
+    {
+      "group": "diagnostics",
+      "methods": 6,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "actualMethodIdentities": [
+        "ProducerDiagnosticsTests.test_actual_private_child_failure_publishes_no_stream_or_command",
+        "ProducerDiagnosticsTests.test_actual_public_child_failure_reaches_existing_uploaded_stdout",
+        "ProducerDiagnosticsTests.test_malformed_private_import_status_is_suppressed_not_echoed",
+        "ProducerDiagnosticsTests.test_private_public_log_request_is_rejected_before_child_executes",
+        "ProducerDiagnosticsTests.test_public_capture_is_bounded_and_redacts_secrets_before_truncation",
+        "ProducerDiagnosticsTests.test_typed_public_import_facts_keep_other_process_acl_unverified"
+      ],
+      "executionRecord": {
+        "path": ".build/7ef3-unreached-portable-remainder/producer/diagnostics-v1.json",
+        "bytes": 728,
+        "sha256": "1dcb62fc46ff28b35e6f960eba52c75b77441f140f9c7175028490a9352f111b"
+      },
+      "log": {
+        "path": ".build/7ef3-unreached-portable-remainder/producer/diagnostics-v1.log",
+        "bytes": 1153,
+        "sha256": "111372bbcf15cd1e3e1c0b7caad5688bf4e8d25ef86b17a4bcf89390ad1ae21f"
+      }
+    },
+    {
+      "group": "timeouts",
+      "methods": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "actualMethodIdentities": [
+        "ProducerToolTimeoutTests.test_actual_private_timeout_never_forwards_partial_status_or_secret",
+        "ProducerToolTimeoutTests.test_actual_public_timeout_terminates_child_and_retains_failure_log",
+        "ProducerToolTimeoutTests.test_actual_remaining_producer_budget_caps_a_longer_tool_budget",
+        "ProducerToolTimeoutTests.test_actual_signal_and_drain_errors_remain_failed_and_close_owned_pipes",
+        "ProducerToolTimeoutTests.test_actual_timeout_uses_one_hard_kill_and_reaps_owned_child",
+        "ProducerToolTimeoutTests.test_cleanup_has_a_separate_real_child_budget_after_producer_expiry",
+        "ProducerToolTimeoutTests.test_each_producer_tool_has_an_explicit_budget_and_invalid_values_never_spawn",
+        "ProducerToolTimeoutTests.test_exhausted_producer_deadline_does_not_start_another_tool",
+        "ProducerToolTimeoutTests.test_private_spawn_failure_has_no_argv_or_raw_exception_chain"
+      ],
+      "executionRecord": {
+        "path": ".build/7ef3-unreached-portable-remainder/producer/timeouts-v1.json",
+        "bytes": 720,
+        "sha256": "e6faab0ecf0efea6852fd294397bad6339035021362c5bb8188182322bbcf962"
+      },
+      "log": {
+        "path": ".build/7ef3-unreached-portable-remainder/producer/timeouts-v1.log",
+        "bytes": 1703,
+        "sha256": "94dce373a884b8c601f3a146db439f1b3ac4738d0505eabd0642f6e5dd3fd0da"
+      }
+    },
+    {
+      "group": "user-trust",
+      "methods": 28,
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0,
+      "actualMethodIdentities": [
+        "OwnedTemporaryAdminTrustTests.test_actual_child_admin_marker_install_read_remove_is_zero_one_zero",
+        "OwnedTemporaryAdminTrustTests.test_cleanup_failure_keeps_admin_remaining_scope_and_original_error_separate",
+        "OwnedTemporaryAdminTrustTests.test_false_root_completion_and_wrong_deadline_never_grant_install_intent",
+        "OwnedTemporaryAdminTrustTests.test_fixed_sudo_n_private_public_cert_only_preflight_preserves_parent_budgets",
+        "OwnedTemporaryAdminTrustTests.test_foreign_cert_and_unknown_operation_cannot_reach_root_command",
+        "OwnedTemporaryAdminTrustTests.test_lost_root_install_ack_still_removes_real_child_marker",
+        "OwnedTemporaryAdminTrustTests.test_schema5_requires_admin_root_and_exact_short_self_deadline",
+        "OwnedTemporaryAdminTrustTests.test_sudo_or_host_refusal_cannot_start_install",
+        "OwnedTemporaryUserSearchListTests.test_actual_children_append_only_owned_then_restore_exact_private_order_including_empty_list",
+        "OwnedTemporaryUserSearchListTests.test_cleanup_failure_records_exact_read_child_decode_restore_child_and_final_comparison",
+        "OwnedTemporaryUserSearchListTests.test_failed_append_reports_bounded_relations_without_paths_or_relaxing_exact_order",
+        "OwnedTemporaryUserSearchListTests.test_lost_append_ack_preserves_original_error_and_restores_real_effect",
+        "OwnedTemporaryUserSearchListTests.test_lost_restore_ack_does_not_erase_original_failure_and_finally_confirms_absence",
+        "OwnedTemporaryUserSearchListTests.test_observed_before_append_and_cleanup_conflicts_never_overwrite_foreign_state",
+        "OwnedTemporaryUserSearchListTests.test_public_cli_path_representation_preserves_order_spaces_backslashes_and_rejects_ambiguity",
+        "OwnedTemporaryUserTrustTests.test_actual_child_pipeline_installs_reads_then_cleans_exact_scope_in_order",
+        "OwnedTemporaryUserTrustTests.test_actual_private_child_declassifies_only_exact_status_and_preserves_nonzero",
+        "OwnedTemporaryUserTrustTests.test_cleanup_failure_retains_original_error_and_reports_unremoved_trust_separately",
+        "OwnedTemporaryUserTrustTests.test_exact_valid_identity_parser_rejects_foreign_duplicates_unknown_and_missing_summary",
+        "OwnedTemporaryUserTrustTests.test_lost_install_ack_retains_cleanup_intent_and_removes_actual_child_effect",
+        "OwnedTemporaryUserTrustTests.test_preflight_failure_blocks_install_and_does_not_claim_cleanup_authority",
+        "OwnedTemporaryUserTrustTests.test_requires_all_hosted_runner_facts_before_any_mutation_capability",
+        "OwnedTemporaryUserTrustTests.test_schema4_rejects_unknown_missing_scope_and_inconsistent_cleanup_facts",
+        "OwnedUserSearchListFileIdentityTests.test_actual_parent_alias_is_one_owned_entry_and_restores_exact_original_order",
+        "OwnedUserSearchListFileIdentityTests.test_foreign_equal_bytes_and_duplicate_alias_never_authorize_restore",
+        "OwnedUserSearchListFileIdentityTests.test_original_raw_tuple_rebound_to_owned_alias_never_claims_restored_absence",
+        "OwnedUserSearchListFileIdentityTests.test_owned_alias_already_present_refuses_before_any_write",
+        "OwnedUserSearchListFileIdentityTests.test_rebound_owned_name_cannot_restore_or_claim_same_file"
+      ],
+      "executionRecord": {
+        "path": ".build/7ef3-unreached-portable-remainder/producer/user-trust-v1.json",
+        "bytes": 726,
+        "sha256": "effb5c2b76eff0866004e293b5265448bdc611a2905b14b027fbc5302e5b6518"
+      },
+      "log": {
+        "path": ".build/7ef3-unreached-portable-remainder/producer/user-trust-v1.log",
+        "bytes": 5695,
+        "sha256": "84b139365a55d7e1681b43827de33f48cb680a3cda579760dd2660e48fbd3065"
+      }
+    }
+  ],
+  "totalActualMethods": 43,
+  "passed": 43,
+  "failed": 0,
+  "skipped": 0,
+  "producerSource": {
+    "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+    "bytes": 73458,
+    "sha256": "d8144d8bd05fb3b1043f4a3b7212243ebe3849f231cd0494f51501d2b923b249"
+  },
+  "actualGroupExecutions": 3,
+  "sourceChanges": 0,
+  "scope": "Portable Python controlled-child/protocol/static guards after the earlier cloud portable failure. They do not run macOS Keychain/codesign, Swift, a complete device build or production full-app signing.",
+  "oldPassingGroupsRerun": false,
+  "cloudQueries": 0,
+  "newTags": 0,
+  "canonicalWrites": false,
+  "GitWrites": false,
+  "actualSwiftSDK": 0,
+  "actualJVM": 0,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}
