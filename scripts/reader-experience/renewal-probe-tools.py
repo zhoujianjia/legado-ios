@@ -1115,6 +1115,14 @@ CURRENTCORE_GENERAL_WEBJS_RUNTIME_REPAIR_INPUTS = (
 SOURCE_INPUTS += tuple(path for path in CURRENTCORE_GENERAL_WEBJS_RUNTIME_REPAIR_INPUTS if path not in SOURCE_INPUTS)
 assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 346
 
+CURRENTCORE_NATIVE_CHARACTERIZATION_JVM_FIXTURE_INPUTS = (
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalAnalyzeRuleTest.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalUrlExecutionTest.kt',
+    'Tests/iOS/LegadoNativeWebRequestCharacterizationTests.swift',
+)
+SOURCE_INPUTS += tuple(path for path in CURRENTCORE_NATIVE_CHARACTERIZATION_JVM_FIXTURE_INPUTS if path not in SOURCE_INPUTS)
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 349
+
 
 def selection_mode():
     mode = os.environ.get("YUEDU_RENEWAL_SELECTION", "all")

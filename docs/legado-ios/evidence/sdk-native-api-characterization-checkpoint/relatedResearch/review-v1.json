@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-21T00:38:14.743851+00:00",
+  "status": "Attempted route ruled out for required ordered-object result guarantee; source-only finding, no new candidate.",
+  "question": "Can public scripting.executeScript MAIN run the original page Program once and let background host code preserve its completion JSON order?",
+  "conclusion": "Files can execute a page Program. But completion has already become native Foundation id before resultJSON encoding, is parsed into ObjC containers again, and only then projected to background JS. It is not end-to-end SerializedScriptValue or original ordered JSON delivery. This cannot provide the required property-order contract.",
+  "primaryBinding": {
+    "path": ".build/original-scripting-ordered-result-primary-step/primary-binding-v2.json",
+    "bytes": 2081,
+    "sha256": "ccafc94f63381949c0bb57e519fb4c98fca43597fe09d57be4155edee42165fe"
+  },
+  "primary": [
+    {
+      "sourcePath": "Source/WebKit/UIProcess/Extensions/Cocoa/API/WebExtensionContextAPIScriptingCocoa.mm",
+      "url": "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebKit/UIProcess/Extensions/Cocoa/API/WebExtensionContextAPIScriptingCocoa.mm",
+      "saved": {
+        "path": ".build/original-scripting-ordered-result-primary-step/primary/WebExtensionContextAPIScriptingCocoa.mm",
+        "bytes": 24176,
+        "sha256": "fc1a0a61089e09386864d7fc20297f995b418fa6bc409d52d1619748623e91dd"
+      }
+    },
+    {
+      "sourcePath": "Source/WebKit/WebProcess/Extensions/API/Cocoa/WebExtensionAPIScriptingCocoa.mm",
+      "url": "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebKit/WebProcess/Extensions/API/Cocoa/WebExtensionAPIScriptingCocoa.mm",
+      "saved": {
+        "path": ".build/original-scripting-ordered-result-primary-step/primary/WebExtensionAPIScriptingCocoa.mm",
+        "bytes": 28097,
+        "sha256": "e02523a7ce5efac9375175a999d0919bcb2c0c4c57c995eefb54064ea219c4b1"
+      }
+    },
+    {
+      "sourcePath": "Source/WebKit/UIProcess/Extensions/Cocoa/WebExtensionDynamicScriptsCocoa.mm",
+      "url": "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebKit/UIProcess/Extensions/Cocoa/WebExtensionDynamicScriptsCocoa.mm",
+      "saved": {
+        "path": ".build/original-scripting-ordered-result-primary-step/primary/WebExtensionDynamicScriptsCocoa.mm",
+        "bytes": 9663,
+        "sha256": "c06f8f79e3887e2c698d0152c17a99a0b716e96ddbd364f2efbbfa381f0e6e05"
+      }
+    }
+  ],
+  "callChain": [
+    {
+      "file": "WebExtensionAPIScriptingCocoa.mm",
+      "lines": [
+        401,
+        475
+      ],
+      "finding": "Public details accepts resource files or func, not both. Func must be a function, converted to function.toString; no original lexical closure crosses."
+    },
+    {
+      "file": "WebExtensionAPIScriptingCocoa.mm",
+      "lines": [
+        308,
+        321
+      ],
+      "finding": "MAIN selects the page Main content-world enum."
+    },
+    {
+      "file": "WebExtensionContextAPIScriptingCocoa.mm",
+      "lines": [
+        128,
+        158
+      ],
+      "finding": "Loaded privileged extension, scripting permission, actual tab and URL/tab access are checked before resolving source pairs/world."
+    },
+    {
+      "file": "WebExtensionDynamicScriptsCocoa.mm",
+      "lines": [
+        68,
+        151
+      ],
+      "finding": "Selects frames/documents and checks frame permission. Func is return(function)(...arguments) via async function. Files use native page-world Program evaluation, retaining that distinction."
+    },
+    {
+      "file": "WebExtensionDynamicScriptsCocoa.mm",
+      "lines": [
+        133,
+        147
+      ],
+      "finding": "Both branches already return native id resultOfExecution, not an opaque original JS value."
+    },
+    {
+      "file": "WebExtensionDynamicScriptsCocoa.mm",
+      "lines": [
+        188,
+        204
+      ],
+      "finding": "Encodes native id as internal resultJSON, with frame/document identifiers and error string."
+    },
+    {
+      "file": "WebExtensionAPIScriptingCocoa.mm",
+      "lines": [
+        64,
+        100
+      ],
+      "finding": "Parses internal resultJSON back into Objective-C value; puts it into NSMutableDictionary result. Raw original JSON is not a public return field."
+    },
+    {
+      "file": "WebExtensionAPIScriptingCocoa.mm",
+      "lines": [
+        169,
+        183
+      ],
+      "finding": "Public callback receives toJSValueRef(globalContext,toWebAPI(...)); background serialization happens after these projections."
+    }
+  ],
+  "reusedBoundary": [
+    {
+      "path": ".build/original-general-webjs-ordered-result-step/primary/Source/WebKit/UIProcess/API/Cocoa/WKWebView.mm",
+      "bytes": 281890,
+      "sha256": "93a6939f86e269497d4f3f6664715d8d5173dbdaac06e1d516bc9effcd6f22f3",
+      "lines": [
+        5937,
+        5954
+      ],
+      "finding": "Engine native internal entrypoints distinguish Program and async function. Referencing these sources is not app authorization to call private API."
+    },
+    {
+      "path": ".build/original-general-webjs-ordered-result-step/primary/Source/WebCore/bindings/js/ScriptController.cpp",
+      "bytes": 43033,
+      "sha256": "a9f27dd54768711b5a1cccb0f1be32807ad55c9c590bea84db887161fedfbb83",
+      "lines": [
+        665,
+        695
+      ],
+      "finding": "Native Program source is evaluated directly in the selected world, not through page eval."
+    },
+    {
+      "path": ".build/original-general-webjs-ordered-result-step/primary/Source/WebKit/Shared/JavaScriptEvaluationResult.cpp",
+      "bytes": 23044,
+      "sha256": "2a3fdde167071fe938fce26022b8ed9c7812bf70a6e02e3ee714d7c719c317fa",
+      "lines": [
+        270,
+        302
+      ],
+      "finding": "JS object properties are extracted into a dictionary container before native reconstruction; original JS property ordering is not a public dictionary guarantee."
+    }
+  ],
+  "counterexamples": [
+    {
+      "kind": "Transport-contract distinction, not observed SDK reordering",
+      "ProgramA": "({b:2,a:1})",
+      "ProgramB": "({a:1,b:2})",
+      "requiredJSONA": "{\"b\":2,\"a\":1}",
+      "requiredJSONB": "{\"a\":1,\"b\":2}",
+      "meaning": "These share the native dictionary key/value mapping but require different JSON order. Foundation encode/parse/toJS does not promise to preserve that distinction. Passing one sample would not prove the required general contract."
+    },
+    {
+      "kind": "Program versus func semantics, not executed here",
+      "Program": "var v=1; let l=2; ({b:v,a:l})",
+      "func": "()=>{var v=1;let l=2;({b:v,a:l})}",
+      "meaning": "Func wrapping yields undefined unless a return is inserted and keeps declarations function-local. Inserting a return still changes declaration lifetime. Files avoid that wrapper, but not the failed ordered-result transport."
+    }
+  ],
+  "CSP": {
+    "scope": "Not expanded after the transport failure, per Root instruction. Files call native page-world Program execution; no eval/CSP bypass or shipped-platform CSP equivalence is claimed."
+  },
+  "errorsAndOwnership": "Native localized execution errors become per-injection error strings; frame denial also becomes a result. Frames/file callbacks are asynchronously aggregated. This is not proof of existing App source revision/page lease/cancellation/drain semantics.",
+  "availability": {
+    "publicHostFloor": "iOS18.4",
+    "requiredExtraPermission": "scripting",
+    "permissionEvidence": {
+      "path": ".build/original-webrequest-native-characterization-step/primary/WKWebExtensionPermission.h",
+      "bytes": 6012,
+      "sha256": "39edc859c18be4e2f19df84f0990dab1a76b6abc1bc846bdd675a4321ac8e528"
+    },
+    "limit": "Actual SDK/host option support is unexecuted."
+  },
+  "proofLimits": [
+    "No actual WK order loss was measured; the negative conclusion concerns the transport contract, not a claim that every sample is reordered.",
+    "No author Program executed in an extension background or new VM/JSContext. No runtime tests or new candidate.",
+    "This does not rule out legitimate unrelated uses of the scripting API.",
+    "The separate single-expression page-encoding characterization still awaits real WK tests and is not arbitrary Program support."
+  ],
+  "actual": {
+    "SwiftCompiler": 0,
+    "SDK": 0,
+    "WK": 0,
+    "Node": 0,
+    "JVM": 0,
+    "Java": 0
+  },
+  "mutations": {
+    "production": false,
+    "candidates": false,
+    "controls": false,
+    "canonical": false,
+    "Git": false,
+    "cloud": false,
+    "tags": false
+  },
+  "lookupFailureRetained": [
+    {
+      "path": "Source/WebKit/UIProcess/Extensions/Cocoa/WebExtensionContextScriptingCocoa.mm",
+      "url": "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebKit/UIProcess/Extensions/Cocoa/WebExtensionContextScriptingCocoa.mm",
+      "status": 404,
+      "error": "HTTPError"
+    }
+  ],
+  "preparationFailure": {
+    "cause": "First report construction used a relative savedPath with absolute relative_to root.",
+    "correction": "Resolve the existing file path before producing its root-relative metadata.",
+    "runtimeTests": 0,
+    "sourceChanged": false
+  }
+}

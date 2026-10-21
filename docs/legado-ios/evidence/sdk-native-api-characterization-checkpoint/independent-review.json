@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-21T00:56:14.510128+00:00",
+  "final": true,
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "parent": {
+    "path": ".build/sdk-native-api-coherent-checkpoint-composition/final-v1.json",
+    "bytes": 15599,
+    "sha256": "2e0d6a792052278b600d54fcb732202409efa0e7fbfb0312ad157423a2bd1b4b"
+  },
+  "reviewedPredecessor": {
+    "path": ".build/consolidated-sdk-native-characterization-jvm-fixtures-checkpoint/preparation/final-v1.json",
+    "bytes": 20900,
+    "sha256": "0f936cba0f11196842d207d1008dda6b60646df033337f4f539b225f18e20335"
+  },
+  "reviewedPredecessorIndependentReview": {
+    "path": ".build/consolidated-sdk-native-characterization-jvm-fixtures-independent-review/review-v1.json",
+    "bytes": 18751,
+    "sha256": "63b9be4547c1ba46114841595eb62c3a4ab088bc6252954c5782068d1686f8ef"
+  },
+  "status": "Incremental source composition review passed. Root integration and SDK88 canonical terminal archive verification must precede any later workflow submission.",
+  "delta": {
+    "controlFiles": 5,
+    "controlCandidateBytesExactParent": true,
+    "controlBaselineBytesExactParentAndCanonical": true,
+    "inputRows": 365,
+    "onlyChangedInputRow": {
+      "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+      "bytes": 39821,
+      "sha256": "31a8ef0639246a6cf60e1a9bf5db59472c21da3bb4864a93fcbeeded33c8ec22",
+      "core": true,
+      "native": true,
+      "candidateControl": false
+    },
+    "other364RowsExactParent": true,
+    "all360NoncontrolBytesExactCurrentCanonical": true,
+    "integratedChangedSources": 8,
+    "sevenPriorBindingsExactPlusHeadless": true,
+    "Package23RosterByteExactParent": true
+  },
+  "counts": {
+    "core": 349,
+    "native": 161,
+    "uniqueUnion": 365,
+    "AppDefinitions": 463,
+    "AppExecutions": 466,
+    "BoolPairs": 3,
+    "oldProductNativeMethods": 28,
+    "platformCharacterizationMethods": 2,
+    "totalOriginalGroupMethods": 30,
+    "MainJS": 1,
+    "separateColdHosts": 2,
+    "PackageMethods": 24,
+    "PackageInputs": 23,
+    "unchangedCanonicalNonControlInputs": 360,
+    "ReaderMethodsIncludingCold": 15,
+    "LoginInfoMethods": 16,
+    "ResourceCharacterizationMethods": 1
+  },
+  "selectorComposition": {
+    "oldProductMethodsPreserved": 28,
+    "explicitPlatformCharacterizations": 2,
+    "originalGroupTotal": 30,
+    "independentMainJS": 1,
+    "independentColdHosts": 2,
+    "AppDefinitions": 463,
+    "AppLeaves": 466,
+    "BoolPairs": 3,
+    "unchangedFromReviewedParent": true
+  },
+  "gatePreservation": "Exact unchanged five controls inherit the prior independent review of production function ASTs, old JNI requirements, Resource-specific synthetic guard exception, strict skip/raw exit/source/export gates, mandatory same-job signed fixture,3600/3720 currentcore budget and1800/2700 native budgets. No parser or guard rerun was needed.",
+  "portableEvidence": {
+    "newExecutions": 0,
+    "priorFourRecordsExactParent": true,
+    "priorImportFailureBeforeMethodsPreserved": true,
+    "reference": {
+      "path": ".build/sdk-native-api-coherent-checkpoint-composition/inherited-portable-evidence-v1.json",
+      "bytes": 3340,
+      "sha256": "a9a063b536f3e31142a93baa763e0c8b9ba8da399e9184406cad37ac4e3c6f59"
+    }
+  },
+  "sourceRosters": {
+    "path": ".build/sdk-native-api-coherent-checkpoint-composition/source-rosters-v1.json",
+    "bytes": 99609,
+    "sha256": "62c62043f5c706f69e1247b1122bf05a9348b2483a596f286a397016d6369dc8"
+  },
+  "integratedSources": {
+    "path": ".build/sdk-native-api-coherent-checkpoint-composition/integrated-source-bindings-v1.json",
+    "bytes": 1638,
+    "sha256": "6cd137d611e6d793c80238a237b42dae11c0ebc94e7ac0d2e7e3a365759d61cf"
+  },
+  "PackageSourceRoster": {
+    "path": ".build/sdk-native-api-coherent-checkpoint-composition/Package-source-inputs-v1.json",
+    "bytes": 4293,
+    "sha256": "cb7633de60b337d08519f35502f44ba357b8c420a34e08c3160681fced1f16b5"
+  },
+  "currentPrerequisites": {
+    "path": ".build/sdk-native-api-coherent-checkpoint-composition/current-prerequisites-v1.json",
+    "bytes": 2396,
+    "sha256": "575424f3e705d677c7898315ad6ada6d911464257ad6f53aa33a4c6435ecaee2"
+  },
+  "terminalBoundary": {
+    "SDK88": "completed/failure,0App definitions/0leaves; source API repair does not alter the old result",
+    "Native88": "already canonical terminal failure; targeted test repair remains separate evidence",
+    "beforeSubmission": "Root must first archive and independently verify SDK88 terminal/source supplement; this incremental approval is not permission to omit that prerequisite."
+  },
+  "limits": [
+    "The one changed Headless row has separate source-only approval; it has not passed a new Apple compile or WK run.",
+    "The historical four portable passes cover unchanged controls only, not the changed Headless API behavior.",
+    "No current roster claim is an independent historical Git blob audit or complete Xcode compilation whitelist.",
+    "Neither two platform characterizations nor Package24/producer results establish original-rule completeness, iPhone installation or unattended renewal."
+  ],
+  "operations": {
+    "tests": 0,
+    "parser": 0,
+    "SwiftCompiler": 0,
+    "SDK": 0,
+    "JNI": 0,
+    "WK": 0,
+    "JVM": 0,
+    "cloud": 0,
+    "Git": 0,
+    "canonicalWrites": 0,
+    "peerWrites": 0
+  }
+}

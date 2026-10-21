@@ -1,0 +1,635 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T00:58:14.277923+00:00",
+  "status": "reviewed-coherent-API-repair-JVM-fixtures-and-platform-characterization-controls-integrated-actual-new-SDK-pending",
+  "sourceFiles": [
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "baseline": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/rawbaseline/scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 198409,
+        "sha256": "6e4bad03d761821eb209cb07984076689cd22e781a35dd5dbb5f2e9ea50c779b"
+      },
+      "candidate": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/work/scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 198910,
+        "sha256": "d11deb264ff4d3af752e7838deca7f58c2f0454bc0130b7b87ee523dd5667591"
+      },
+      "diff": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/diffs/scripts/reader-experience/renewal-probe-tools.py.diff",
+        "bytes": 910,
+        "sha256": "bb56f5afe6889ae785d03450f4381382a1c4510bfd217c774be1ec924392a315"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/native-smoke-tools.py",
+      "baseline": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/rawbaseline/scripts/reader-experience/native-smoke-tools.py",
+        "bytes": 55929,
+        "sha256": "67dc3df5b3971b33c7a0d24b752022cd5caf9f6a8aeb5ac35e201d79a10199ad"
+      },
+      "candidate": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/work/scripts/reader-experience/native-smoke-tools.py",
+        "bytes": 56952,
+        "sha256": "a3144ed98d5aaa6ab1a05ad4a0588f6b3101cdebdd9563cfece8c9b21151db35"
+      },
+      "diff": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/diffs/scripts/reader-experience/native-smoke-tools.py.diff",
+        "bytes": 2035,
+        "sha256": "5932465741dadf447e4a1780c719a30087f5ee262b2943f69648681e6d656e1a"
+      }
+    },
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "baseline": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/rawbaseline/.github/workflows/legado-native-reader-test.yml",
+        "bytes": 11036,
+        "sha256": "8ba4d7169a891d335e00d17c31f44ba1e606b75bf63831832c71c0e807bb0116"
+      },
+      "candidate": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/work/.github/workflows/legado-native-reader-test.yml",
+        "bytes": 11036,
+        "sha256": "3b047e84133e0ed879951d3831ef3d9b40e5d059f3f74cf480683038aae3924e"
+      },
+      "diff": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/diffs/.github/workflows/legado-native-reader-test.yml.diff",
+        "bytes": 778,
+        "sha256": "7abfa37fa2136df0f4d77ebdd1b1032d3a3132e7bdbd289fc79e9bf363f1cdd3"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "baseline": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/rawbaseline/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 190328,
+        "sha256": "0d43ed5359bc82a3ad52abcfd7729502732e14aa2aa54a4135601a0b9fffb0ba"
+      },
+      "candidate": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/work/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 190759,
+        "sha256": "04e41f9777a3b1499904e95c0b481765e58d972eac4499b74dc1ada5955bc38e"
+      },
+      "diff": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/diffs/scripts/reader-experience/test-renewal-probe-tools.py.diff",
+        "bytes": 15225,
+        "sha256": "af7caabdb73c2865aa4e4a5af922087ebd231bab4de0163b82e7fb3d8b9e3eef"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "baseline": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/rawbaseline/scripts/reader-experience/test-native-smoke-tools.py",
+        "bytes": 26630,
+        "sha256": "f350df6099cb97f59e5d5409561b4f4108a041fd5d2aab5278eaa8d4dd622073"
+      },
+      "candidate": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/work/scripts/reader-experience/test-native-smoke-tools.py",
+        "bytes": 27838,
+        "sha256": "5ff63017b3eb2f9e51d5b7eb8e75c59c2556816a30dbdee7eae5a8245aa85f61"
+      },
+      "diff": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/diffs/scripts/reader-experience/test-native-smoke-tools.py.diff",
+        "bytes": 5099,
+        "sha256": "dabec59227b80fe686c051768836927bb9d25700050d7cf36e37705c3f2b1dd6"
+      }
+    }
+  ],
+  "changedControls": 5,
+  "integratedChangedSources": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalAnalyzeRuleTest.kt",
+      "bytes": 18803,
+      "sha256": "96fc3d1ea45759026a5a2fbaa5701b623161d149c85b601e87ceafb4c72627f3"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserAwaitTest.kt",
+      "bytes": 10968,
+      "sha256": "090fcc92efcf058f18698adaf6cf21cc3a90fd3ea33ecba3abde46963a3a4d24"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserTest.kt",
+      "bytes": 8090,
+      "sha256": "a606991499176e82c1e8310f96da22818400c27cd15065e786954bea9503a06c"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginV2BrowserTest.kt",
+      "bytes": 12639,
+      "sha256": "b9b33fdee62e0efcafcaed5daed1a10e28bfea4d2f6de661b3ba607cabdbe369"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalUrlExecutionTest.kt",
+      "bytes": 20733,
+      "sha256": "8a5aae3e1eb03f01bc042aa6934bdb0286106c5eb478364fa02fb102e7d11554"
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "bytes": 109133,
+      "sha256": "97a04aaf65d117e5f677f87b53cc2d3b15dcc7985a0f66ed4a8570a275f15810"
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeWebRequestCharacterizationTests.swift",
+      "bytes": 26766,
+      "sha256": "267589c56d9b7200292671f59edaeddfd6e9af44a03d2fa04e47472a16a70515"
+    },
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+      "bytes": 39821,
+      "sha256": "31a8ef0639246a6cf60e1a9bf5db59472c21da3bb4864a93fcbeeded33c8ec22"
+    }
+  ],
+  "countsForNextCheckpoint": {
+    "AppDefinitions": 463,
+    "AppLeaves": 466,
+    "BoolParameterPairs": 3,
+    "coreInputs": 349,
+    "nativeInputs": 161,
+    "uniqueInputUnion": 365,
+    "unchangedCanonicalNoncandidateInputs": 360,
+    "NativeOriginalDefinitions": 30,
+    "NativeProductDefinitions": 28,
+    "NativePlatformCharacterizations": 2,
+    "NativeLoginInfoDefinitions": 16,
+    "NativeMainJSDefinitions": 1,
+    "NativeIndependentColdHosts": 2,
+    "PackageMethods": 24,
+    "PackageCompilationInputs": 16,
+    "PackageControls": 7,
+    "PackageAllInputs": 23
+  },
+  "sourceReviewFindings": [],
+  "sourceRoster": {
+    "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/sourceRosters/source-rosters-v1.json",
+    "bytes": 99609,
+    "sha256": "62c62043f5c706f69e1247b1122bf05a9348b2483a596f286a397016d6369dc8",
+    "original": {
+      "path": ".build/sdk-native-api-coherent-checkpoint-composition/source-rosters-v1.json",
+      "bytes": 99609,
+      "sha256": "62c62043f5c706f69e1247b1122bf05a9348b2483a596f286a397016d6369dc8"
+    },
+    "normalization": "UTF8/LF/trailing whitespace only"
+  },
+  "sourceComposition": {
+    "parentRows": 365,
+    "parentRowChanges": [
+      "Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift"
+    ],
+    "other364RowsExactParent": true,
+    "controlCandidatesExactParent": true,
+    "controlBaselineStillCanonical": true,
+    "currentCanonicalNonControlRows": 360,
+    "parentCanonicalNonControlRowsUnchanged": 359,
+    "all365RowsBoundToCanonicalOr5CandidateControls": true,
+    "canonicalAnchorRootReported": "9d826e7",
+    "historicalGitBlobBindingPerformed": false
+  },
+  "selectorComposition": {
+    "oldProductMethodsOrdered": [
+      "LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",
+      "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+      "LegadoNativeOriginalReaderTests/testNativeOriginalBookNotificationCancellationDrains",
+      "LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+      "LegadoNativeOriginalReaderTests/testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+      "LegadoNativeOriginalReaderTests/testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+      "LegadoNativeOriginalReaderTests/testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+      "LegadoNativeOriginalReaderTests/testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix",
+      "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners",
+      "LegadoNativeOriginalReaderTests/testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority",
+      "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoUsesExistingKeychainAndReopens",
+      "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoCancellationRetainsAcceptedKeychainEffect",
+      "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginInfoMapDefaultsUseExistingKeychainAndReopen",
+      "LegadoNativeOriginalLoginInfoTests/testNativeOriginalFormSubmissionUsesProductSourceServiceAndExistingOwners",
+      "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIUsesProductSourceServiceAndStoredMap",
+      "LegadoNativeOriginalReaderTests/testNativeOriginalCachedExplorePageOpensAndSavesOnLeave",
+      "LegadoNativeOriginalLoginInfoTests/testNativeOriginalRowActionUsesProductServiceWithoutImplicitCredentialWrite",
+      "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginUIEventsReachExistingFormProjectionAfterServiceGateRelease",
+      "LegadoNativeOriginalLoginInfoTests/testNativeOriginalDismissPersistenceUsesCheckedOwnerWithoutExecutingLoginJS",
+      "LegadoNativeOriginalLoginInfoTests/testNativeOriginalDeltaLoginUIReusesPhysicalControlsThroughProductServiceWithoutCredentialWrite",
+      "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2UsesProductRhinoAndCheckedLoginBeforeClose",
+      "LegadoNativeOriginalLoginInfoTests/testNativeOriginalBrowserUsesSharedProcessAndKeepsAcceptedPageUntilActualDismissal",
+      "LegadoNativeOriginalLoginInfoTests/testNativeOriginalAwaitBrowserConfirmsThroughRealPageAndCancelsWithoutLateCredentialWrite",
+      "LegadoNativeOriginalLoginInfoTests/testNativeOriginalPostBrowserDisplaysPrefetchedHtmlAndReusesSingleHttpBody",
+      "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginHeaderUsesExistingOwnersAndKeepsPartialCancellationFacts",
+      "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2BrowserUsesProductServiceAndExistingPageOwner",
+      "LegadoNativeOriginalLoginInfoTests/testNativeOriginalLocalHTMLWebJSKeepsSameSessionAfterProducerAndDrainsAwaitCancellation",
+      "LegadoNativeOriginalReaderTests/testNativeOriginalGeneralWebJSUsesPreviewBatchAndBookCallbackOwners"
+    ],
+    "newPlatformCharacterizations": [
+      "LegadoNativeOriginalReaderTests/testNativeOriginalOrderedWebJSCharacterizesCSPAndOriginalJSONInSamePageWorld",
+      "LegadoNativeWebRequestCharacterizationTests/testPublicWebRequestCharacterizesOwnedFramesResourcesAndObserverCancellation"
+    ],
+    "originalGroupTotal": 30,
+    "MainJSIndependent": 1,
+    "coldIndependent": 2
+  },
+  "invariants": {
+    "allOldProduct28SelectorsOrderedExact": true,
+    "platformCharacterizationsNotCountedAsProductionOriginalRuleCases": true,
+    "productionCoreAndNativeFunctionsASTExact": true,
+    "allOldModesAndBool3App463_466Unchanged": true,
+    "package24MethodsAnd23InputsBytesUnchanged": true,
+    "sourcePhaseRawArgvExitExportGatesUnchanged": true,
+    "requiredSameJobSignedSDKFixtureUnchanged": true,
+    "oneCurrentcoreInvocation": true,
+    "currentcoreWrapperSeconds": 3600,
+    "currentcoreParentSeconds": 3720,
+    "originalSeconds": 1800,
+    "mainjsSeconds": 2700,
+    "coldTwoHostProtocolUnchanged": true,
+    "oldJNIRequirementsRemainForOldSuites": true,
+    "ResourceGuardExceptionOnlyNewNamedPublicWKClass": true
+  },
+  "actualPortableValidation": {
+    "reusedParentFacts": {
+      "path": ".build/sdk-native-api-coherent-checkpoint-composition/inherited-portable-evidence-v1.json",
+      "bytes": 3340,
+      "sha256": "a9a063b536f3e31142a93baa763e0c8b9ba8da399e9184406cad37ac4e3c6f59"
+    },
+    "distinctMethods": 4,
+    "passed": 4,
+    "failed": 0,
+    "newExecutions": 0,
+    "scope": "Four prior actual guards on unchanged controls only. Their historical validation-root bytes are preserved; these are not Headless compiler/WK execution.",
+    "preMethodImportFailurePreserved": true
+  },
+  "preservedEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/composition.json",
+      "bytes": 15599,
+      "sha256": "2e0d6a792052278b600d54fcb732202409efa0e7fbfb0312ad157423a2bd1b4b",
+      "original": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/final-v1.json",
+        "bytes": 15599,
+        "sha256": "2e0d6a792052278b600d54fcb732202409efa0e7fbfb0312ad157423a2bd1b4b"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/independent-review.json",
+      "bytes": 5372,
+      "sha256": "ac37ad3c65571ebea9dee6ff03e7b451093bdf7072086664c66a5c01b81e8a68",
+      "original": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-independent-review/review-v1.json",
+        "bytes": 5372,
+        "sha256": "ac37ad3c65571ebea9dee6ff03e7b451093bdf7072086664c66a5c01b81e8a68"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/integration.py",
+      "bytes": 7659,
+      "sha256": "e7cd3d2395446ed8d64afe42716753daa98e8cbb6a08b1261875ad220b1b12dd",
+      "original": {
+        "path": ".build/integrate-sdk-native-api-coherent-controls.py",
+        "bytes": 7659,
+        "sha256": "e7cd3d2395446ed8d64afe42716753daa98e8cbb6a08b1261875ad220b1b12dd"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/parent/final-v1.json",
+      "bytes": 20900,
+      "sha256": "0f936cba0f11196842d207d1008dda6b60646df033337f4f539b225f18e20335",
+      "original": {
+        "path": ".build/consolidated-sdk-native-characterization-jvm-fixtures-checkpoint/preparation/final-v1.json",
+        "bytes": 20900,
+        "sha256": "0f936cba0f11196842d207d1008dda6b60646df033337f4f539b225f18e20335"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/parentIndependentReview/review-v1.json",
+      "bytes": 18751,
+      "sha256": "63b9be4547c1ba46114841595eb62c3a4ab088bc6252954c5782068d1686f8ef",
+      "original": {
+        "path": ".build/consolidated-sdk-native-characterization-jvm-fixtures-independent-review/review-v1.json",
+        "bytes": 18751,
+        "sha256": "63b9be4547c1ba46114841595eb62c3a4ab088bc6252954c5782068d1686f8ef"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/sourceRosters/source-rosters-v1.json",
+      "bytes": 99609,
+      "sha256": "62c62043f5c706f69e1247b1122bf05a9348b2483a596f286a397016d6369dc8",
+      "original": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/source-rosters-v1.json",
+        "bytes": 99609,
+        "sha256": "62c62043f5c706f69e1247b1122bf05a9348b2483a596f286a397016d6369dc8"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/integratedChangedSources/integrated-source-bindings-v1.json",
+      "bytes": 1638,
+      "sha256": "6cd137d611e6d793c80238a237b42dae11c0ebc94e7ac0d2e7e3a365759d61cf",
+      "original": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/integrated-source-bindings-v1.json",
+        "bytes": 1638,
+        "sha256": "6cd137d611e6d793c80238a237b42dae11c0ebc94e7ac0d2e7e3a365759d61cf"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/PackageSourceRoster/Package-source-inputs-v1.json",
+      "bytes": 4293,
+      "sha256": "cb7633de60b337d08519f35502f44ba357b8c420a34e08c3160681fced1f16b5",
+      "original": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/Package-source-inputs-v1.json",
+        "bytes": 4293,
+        "sha256": "cb7633de60b337d08519f35502f44ba357b8c420a34e08c3160681fced1f16b5"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/relatedResearch/review-v1.json",
+      "bytes": 9313,
+      "sha256": "07f75ae2119c02390bfab7d69a4b633d015fd1010841bb4fec5051efb140d729",
+      "original": {
+        "path": ".build/original-scripting-ordered-result-primary-step/review-v1.json",
+        "bytes": 9313,
+        "sha256": "07f75ae2119c02390bfab7d69a4b633d015fd1010841bb4fec5051efb140d729"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/currentPrerequisites/current-prerequisites-v1.json",
+      "bytes": 2396,
+      "sha256": "575424f3e705d677c7898315ad6ada6d911464257ad6f53aa33a4c6435ecaee2",
+      "original": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/current-prerequisites-v1.json",
+        "bytes": 2396,
+        "sha256": "575424f3e705d677c7898315ad6ada6d911464257ad6f53aa33a4c6435ecaee2"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/inherited-portable/validation-facts-v1.json",
+      "bytes": 3340,
+      "sha256": "a9a063b536f3e31142a93baa763e0c8b9ba8da399e9184406cad37ac4e3c6f59",
+      "original": {
+        "path": ".build/consolidated-sdk-native-characterization-jvm-fixtures-checkpoint/validation-facts-v1.json",
+        "bytes": 3340,
+        "sha256": "a9a063b536f3e31142a93baa763e0c8b9ba8da399e9184406cad37ac4e3c6f59"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/inherited-portable/validation-inputs-v1.json",
+      "bytes": 84251,
+      "sha256": "8dca7c18ce9997e5ca09543a3841281db59d2f86784dd3f2b7b97acc5cbd27ba",
+      "original": {
+        "path": ".build/consolidated-sdk-native-characterization-jvm-fixtures-checkpoint/validation-inputs-v1.json",
+        "bytes": 84251,
+        "sha256": "8dca7c18ce9997e5ca09543a3841281db59d2f86784dd3f2b7b97acc5cbd27ba"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/inherited-portable/validation-ancillary-inputs-v1.json",
+      "bytes": 574,
+      "sha256": "baf2cbaa0ee888860bca571a648a68d6974933277f8f65e89e13c52ca94e9eeb",
+      "original": {
+        "path": ".build/consolidated-sdk-native-characterization-jvm-fixtures-checkpoint/validation-ancillary-inputs-v1.json",
+        "bytes": 574,
+        "sha256": "baf2cbaa0ee888860bca571a648a68d6974933277f8f65e89e13c52ca94e9eeb"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/inherited-portable/production-function-ast-v1.json",
+      "bytes": 454,
+      "sha256": "d8684f86827a2c770d559daccfcaf4d45eef8b460d7c0f4b71c1a2bb4748e5b4",
+      "original": {
+        "path": ".build/consolidated-sdk-native-characterization-jvm-fixtures-checkpoint/production-function-ast-v1.json",
+        "bytes": 454,
+        "sha256": "d8684f86827a2c770d559daccfcaf4d45eef8b460d7c0f4b71c1a2bb4748e5b4"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/inherited-portable/source-preparation-history-v1.json",
+      "bytes": 570,
+      "sha256": "b68ff8f7e79a4a7179886ea45cbd74bc5b9ae623b02c093737c35170e7243901",
+      "original": {
+        "path": ".build/consolidated-sdk-native-characterization-jvm-fixtures-checkpoint/source-preparation-history-v1.json",
+        "bytes": 570,
+        "sha256": "b68ff8f7e79a4a7179886ea45cbd74bc5b9ae623b02c093737c35170e7243901"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/inherited-portable/affected-core-v1.json",
+      "bytes": 751,
+      "sha256": "45ece74e816cf1f2be0d71bc4abf528f60b56dcd68974933ef9620b796b6fd9f",
+      "original": {
+        "path": ".build/consolidated-sdk-native-characterization-jvm-fixtures-checkpoint/affected-core-v1.json",
+        "bytes": 751,
+        "sha256": "45ece74e816cf1f2be0d71bc4abf528f60b56dcd68974933ef9620b796b6fd9f"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/inherited-portable/affected-core-v1.log",
+      "bytes": 558,
+      "sha256": "a600b40b1c77458e67a95e7bd9a2431d9cfdafd546b39ffa8f198f06c563a9dc",
+      "original": {
+        "path": ".build/consolidated-sdk-native-characterization-jvm-fixtures-checkpoint/affected-core-v1.log",
+        "bytes": 565,
+        "sha256": "44a69c2fcf24216f69d529fbd92bdb4e212cea08373c12c1c05201e00089c68e"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/inherited-portable/affected-native-v1.json",
+      "bytes": 909,
+      "sha256": "e2e0c126a65752697e13c484779e59f0363c7928c95d826ff4ca81128fcfe972",
+      "original": {
+        "path": ".build/consolidated-sdk-native-characterization-jvm-fixtures-checkpoint/affected-native-v1.json",
+        "bytes": 909,
+        "sha256": "e2e0c126a65752697e13c484779e59f0363c7928c95d826ff4ca81128fcfe972"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/inherited-portable/affected-native-v1.log",
+      "bytes": 1768,
+      "sha256": "bdd0dab61132987f2ec52ffddc283a47b56c051a8906b9055e477910cf906e9e",
+      "original": {
+        "path": ".build/consolidated-sdk-native-characterization-jvm-fixtures-checkpoint/affected-native-v1.log",
+        "bytes": 1786,
+        "sha256": "45cd348009e73202e54088b40603e67975c6e0a987fb2b0034ec3c739f83257b"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/inherited-portable/affected-native-v2.json",
+      "bytes": 908,
+      "sha256": "0525fbfeaf2ecb0abef17e0577f95f057c67d6d208c44eb44541ba5d7cbb510d",
+      "original": {
+        "path": ".build/consolidated-sdk-native-characterization-jvm-fixtures-checkpoint/affected-native-v2.json",
+        "bytes": 908,
+        "sha256": "0525fbfeaf2ecb0abef17e0577f95f057c67d6d208c44eb44541ba5d7cbb510d"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/inherited-portable/affected-native-v2.log",
+      "bytes": 448,
+      "sha256": "d3df1bb37157f50cff24c32620fbcfb057968ca9231f4f2b69b707d7f5079901",
+      "original": {
+        "path": ".build/consolidated-sdk-native-characterization-jvm-fixtures-checkpoint/affected-native-v2.log",
+        "bytes": 455,
+        "sha256": "e46ac267a8edda9c654a0f9ea5c5f8d52c3d9a145731f5ac21d7733e3d0e2fa6"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/inherited-portable/prepare-draft-v1.py",
+      "bytes": 10863,
+      "sha256": "92965e01e2f3dc3395f25b4189b43095e680e4b27a5160ee2deea67261ba79e5",
+      "original": {
+        "path": ".build/consolidated-sdk-native-characterization-jvm-fixtures-checkpoint/prepare-draft-v1.py",
+        "bytes": 10863,
+        "sha256": "92965e01e2f3dc3395f25b4189b43095e680e4b27a5160ee2deea67261ba79e5"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/inherited-portable/prepare-validation-once.py",
+      "bytes": 2218,
+      "sha256": "835efd531e01da55c53cb6be6e26c61c7e296107587ae3456079f04960d40275",
+      "original": {
+        "path": ".build/consolidated-sdk-native-characterization-jvm-fixtures-checkpoint/prepare-validation-once.py",
+        "bytes": 2218,
+        "sha256": "835efd531e01da55c53cb6be6e26c61c7e296107587ae3456079f04960d40275"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/inherited-portable/run-guard-once.py",
+      "bytes": 1730,
+      "sha256": "c3acf17b643e9b74a17fd6130fec5640f27551fa0815b6216f63675b83d4d95d",
+      "original": {
+        "path": ".build/consolidated-sdk-native-characterization-jvm-fixtures-checkpoint/run-guard-once.py",
+        "bytes": 1730,
+        "sha256": "c3acf17b643e9b74a17fd6130fec5640f27551fa0815b6216f63675b83d4d95d"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/inherited-portable/freeze-v1.py",
+      "bytes": 9350,
+      "sha256": "14e27ba63813a0555f3c471f0768fabe1485165eed9d21e80f9457d140435e23",
+      "original": {
+        "path": ".build/consolidated-sdk-native-characterization-jvm-fixtures-checkpoint/freeze-v1.py",
+        "bytes": 9350,
+        "sha256": "14e27ba63813a0555f3c471f0768fabe1485165eed9d21e80f9457d140435e23"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/diffs/scripts/reader-experience/renewal-probe-tools.py.patch",
+      "bytes": 908,
+      "sha256": "4f6e085d7d9454a8983a9c16e82b1ab2817fb5c7ab655ea4d7d30d36c938ac12",
+      "original": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/diffs/scripts/reader-experience/renewal-probe-tools.py.diff",
+        "bytes": 910,
+        "sha256": "bb56f5afe6889ae785d03450f4381382a1c4510bfd217c774be1ec924392a315"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/diffs/scripts/reader-experience/native-smoke-tools.py.patch",
+      "bytes": 2034,
+      "sha256": "010a3409b249f87acc51fb1e821e8d215aa6cc055f0521ac86806cb78ca65325",
+      "original": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/diffs/scripts/reader-experience/native-smoke-tools.py.diff",
+        "bytes": 2035,
+        "sha256": "5932465741dadf447e4a1780c719a30087f5ee262b2943f69648681e6d656e1a"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/diffs/.github/workflows/legado-native-reader-test.yml.patch",
+      "bytes": 778,
+      "sha256": "7abfa37fa2136df0f4d77ebdd1b1032d3a3132e7bdbd289fc79e9bf363f1cdd3",
+      "original": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/diffs/.github/workflows/legado-native-reader-test.yml.diff",
+        "bytes": 778,
+        "sha256": "7abfa37fa2136df0f4d77ebdd1b1032d3a3132e7bdbd289fc79e9bf363f1cdd3"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/diffs/scripts/reader-experience/test-renewal-probe-tools.py.patch",
+      "bytes": 15223,
+      "sha256": "87fe8780bc439f9a4c11b8f9a68bf78570a39337e5df73922dba3cf91e6d6492",
+      "original": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/diffs/scripts/reader-experience/test-renewal-probe-tools.py.diff",
+        "bytes": 15225,
+        "sha256": "af7caabdb73c2865aa4e4a5af922087ebd231bab4de0163b82e7fb3d8b9e3eef"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-native-api-characterization-checkpoint/diffs/scripts/reader-experience/test-native-smoke-tools.py.patch",
+      "bytes": 5097,
+      "sha256": "27d1de9f54b7bc7f4adbba64fb6a2c88850ee4da06b2a4e40c84c3a74795d071",
+      "original": {
+        "path": ".build/sdk-native-api-coherent-checkpoint-composition/diffs/scripts/reader-experience/test-native-smoke-tools.py.diff",
+        "bytes": 5099,
+        "sha256": "dabec59227b80fe686c051768836927bb9d25700050d7cf36e37705c3f2b1dd6"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only"
+    }
+  ],
+  "actualNewSDK_JNI_WK": 0,
+  "actualResultAccepted": false,
+  "priorSDK88Terminal": {
+    "sourceCommit": "88c61ee4b80889a617d344fda668d077f73fa95b",
+    "runID": 39520239925,
+    "jobID": 118962037971,
+    "status": "completed",
+    "conclusion": "failure",
+    "queryAgain": false,
+    "record": "docs/legado-ios/core-sdk-88c61ee-terminal-result.json",
+    "failure": "Two unique production WebKit Swift API-shape compiler errors (50 repeated diagnostics); App executed0, no native timeout.",
+    "AppDefinitionsExecuted": 0,
+    "AppLeavesExecuted": 0,
+    "AppSuitePassed": false,
+    "uniqueCompilerErrors": 2,
+    "PackageMethodsPassed": 24,
+    "producerCommandsPassed": 48,
+    "producerPublicOutputs": 43,
+    "producerMachOs": 4
+  },
+  "priorNative88Terminal": {
+    "sourceCommit": "88c61ee4b80889a617d344fda668d077f73fa95b",
+    "runID": 39520240533,
+    "jobID": 118962039359,
+    "status": "completed",
+    "conclusion": "failure",
+    "queryAgain": false,
+    "record": "docs/legado-ios/core-native-88c61ee-terminal-result.json",
+    "actualOrdinaryJVMPassed": 348,
+    "actualOrdinaryJVMFailed": 5,
+    "actualOrdinaryJVMSkipped": 0,
+    "actualNativeSelectedMethodsExecuted": 0,
+    "actualColdHostsExecuted": 0,
+    "failure": "Gradle:test five old expectation failures; later native phases skipped"
+  },
+  "historicalPreparationPendingArchiveNowSatisfied": true,
+  "proofLimits": [
+    "5 controls and four passing portable records are inherited exactly; no new guard or compiler execution is claimed.",
+    "Headless API spelling/label repair is integrated but remains unaccepted by a new Apple compile; SDK88 historical failure stays failure.",
+    "Two platform characterizations remain pending WK behavior, distinct from28 product original-rule methods. Unsupported OS/API skip cannot become acceptance.",
+    "Source roster binds current canonical text bytes and5 candidate controls, not an independent historical Git blob audit.",
+    "No new tag/cloud workflow/query/production edit is authorized or performed by this composition."
+  ],
+  "newCloudTags": 0,
+  "newIPATag": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

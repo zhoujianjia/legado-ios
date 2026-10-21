@@ -1,0 +1,32 @@
+--- a/scripts/reader-experience/native-smoke-tools.py
++++ b/scripts/reader-experience/native-smoke-tools.py
+@@ -59,6 +59,14 @@
+             'LegadoNativeOriginalLoginInfoTests/testNativeOriginalLocalHTMLWebJSKeepsSameSessionAfterProducerAndDrainsAwaitCancellation',
+             'LegadoNativeOriginalReaderTests/testNativeOriginalGeneralWebJSUsesPreviewBatchAndBookCallbackOwners')},
+ }
++# These two platform characterizations are not production original-rule cases.
++# Keep the established 28 product methods in their original order and host.
++NATIVE_PLATFORM_CHARACTERIZATION_METHODS = (
++    'LegadoNativeOriginalReaderTests/testNativeOriginalOrderedWebJSCharacterizesCSPAndOriginalJSONInSamePageWorld',
++    'LegadoNativeWebRequestCharacterizationTests/testPublicWebRequestCharacterizesOwnedFramesResourcesAndObserverCancellation',
++)
++NATIVE_GROUPS["original"]["methods"] += NATIVE_PLATFORM_CHARACTERIZATION_METHODS
++
+ SOURCE_INPUTS = (
+     ".github/workflows/legado-native-reader-test.yml", "scripts/reader-experience/native-smoke-tools.py",
+     "scripts/reader-experience/test-native-smoke-tools.py", "scripts/reader-experience/smoke-tools.py",
+@@ -442,6 +450,14 @@
+ SOURCE_INPUTS += tuple(path for path in ORIGINAL_GENERAL_WEBJS_RUNTIME_REPAIR_INPUTS if path not in SOURCE_INPUTS)
+ assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 158
+
++ORIGINAL_NATIVE_CHARACTERIZATION_JVM_FIXTURE_INPUTS = (
++    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalAnalyzeRuleTest.kt',
++    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalUrlExecutionTest.kt',
++    'Tests/iOS/LegadoNativeWebRequestCharacterizationTests.swift',
++)
++SOURCE_INPUTS += tuple(path for path in ORIGINAL_NATIVE_CHARACTERIZATION_JVM_FIXTURE_INPUTS if path not in SOURCE_INPUTS)
++assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 161
++
+ CACHE_CASES = {
+     'ChapterCacheMigrationTests': ('packageLoaderUpgradesDownloadedLegacyChapter()',
+         'corruptLegacyBodyDoesNotRewriteStoredChecksum(hasCachedState:)',
