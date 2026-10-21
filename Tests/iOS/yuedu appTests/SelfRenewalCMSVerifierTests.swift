@@ -38,6 +38,35 @@ struct SelfRenewalCMSVerifierTests {
             let constructed = try CMS.verify(SDKBERFixture.constructedCMS,
                 anchors: [SDKBERFixture.anchor], at: SDKBERFixture.validationDate)
             #expect(constructed.content == SDKBERFixture.frameworkContent)
+            // The actual full app produced a 1,203,832-byte primary CodeDirectory.
+            // Sign equally sized detached bytes with a fresh owned in-memory key;
+            // the profile/embedded limit must not reject this separate content.
+            let issuer = try SelfRenewalSigningOwnedPKIFixture.issuer(at: Fixture.validationDate)
+            let largeContent = Data(repeating: 0xa5, count: 1_203_832)
+            #expect(largeContent.count > CMS.Limits.contentBytes)
+            #expect(CMS.Limits.detachedContentBytes == SelfRenewalMachOSignatureReader.Limits.signatureBytes)
+            let largeDetached = try SelfRenewalSigningOwnedPKIFixture.cms(largeContent, issuer: issuer, detached: true)
+            let verifiedLarge = try CMS.verify(largeDetached, detachedContent: largeContent,
+                anchors: issuer.certificateChainDER, at: Fixture.validationDate)
+            #expect(verifiedLarge.content == largeContent && verifiedLarge.signers.count == 1)
+            #expect(verifiedLarge.signers.first?.verifiedCertificateChainDER == issuer.certificateChainDER)
+            #expect(!verifiedLarge.accountIdentityEstablished && !verifiedLarge.replacementAuthorized)
+            var tamperedLarge = largeContent
+            tamperedLarge[tamperedLarge.startIndex] ^= 1
+            #expect(throws: CMS.Failure.invalidSignature) {
+                try CMS.verify(largeDetached, detachedContent: tamperedLarge,
+                    anchors: issuer.certificateChainDER, at: Fixture.validationDate)
+            }
+            let largeEmbedded = try SelfRenewalSigningOwnedPKIFixture.cms(largeContent, issuer: issuer)
+            #expect(largeEmbedded.count <= CMS.Limits.messageBytes)
+            #expect(throws: CMS.Failure.sizeLimit) {
+                try CMS.verify(largeEmbedded, anchors: issuer.certificateChainDER, at: Fixture.validationDate)
+            }
+            #expect(throws: CMS.Failure.sizeLimit) {
+                try CMS.verify(largeDetached,
+                    detachedContent: Data(repeating: 0, count: CMS.Limits.detachedContentBytes + 1),
+                    anchors: issuer.certificateChainDER, at: Fixture.validationDate)
+            }
         }.value
     }
 

@@ -1,0 +1,246 @@
+{
+  "schemaVersion": 1,
+  "status": "source-review-approved-Apple-SDK-validation-pending",
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "final": {
+    "path": ".build/native-ccafd8b-s3-detached-content-limit-repair/final-v1.json",
+    "bytes": 6415,
+    "sha256": "d9975eab44423719d91736727a63445a7c64811e180f4a776be0f66fb339ed70"
+  },
+  "sourceRoot": ".build/native-ccafd8b-s3-detached-content-limit-repair/work",
+  "baselineCommit": "0148f0e060abcbdb3d127331a3ebbac9e7bd8f97",
+  "files": [
+    {
+      "sourcePath": "Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift",
+      "baseline": {
+        "path": ".build/native-ccafd8b-s3-detached-content-limit-repair/baseline/Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift",
+        "bytes": 29782,
+        "sha256": "688e95c2eed047414fc1113ead036f95e81bbafc8733229105ac387221026e12"
+      },
+      "candidate": {
+        "path": ".build/native-ccafd8b-s3-detached-content-limit-repair/work/Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift",
+        "bytes": 30101,
+        "sha256": "261ad25760655b169ca2050b6841f4a7c1e050910d2e06eaf3331d036700385f"
+      },
+      "diff": {
+        "path": ".build/native-ccafd8b-s3-detached-content-limit-repair/diffs/Modules__Services__SelfRenewal__SelfRenewalCMSVerifier.swift.diff",
+        "bytes": 2032,
+        "sha256": "8e0e2d0199e25aede159d793f782f4ddb17f01b9a483566e1244d1321db7e738"
+      }
+    },
+    {
+      "sourcePath": "Modules/Services/SelfRenewal/SelfRenewalSignedCodeVerifier.swift",
+      "baseline": {
+        "path": ".build/native-ccafd8b-s3-detached-content-limit-repair/baseline/Modules/Services/SelfRenewal/SelfRenewalSignedCodeVerifier.swift",
+        "bytes": 12752,
+        "sha256": "f62872ca82474ddfad24ef7a588312f4db78e6ddbe55e7541120d7fb3884ba3d"
+      },
+      "candidate": {
+        "path": ".build/native-ccafd8b-s3-detached-content-limit-repair/work/Modules/Services/SelfRenewal/SelfRenewalSignedCodeVerifier.swift",
+        "bytes": 12760,
+        "sha256": "c6102d6c552f641e4719ddac93dfa26b5144290da6541680cac34cd05c8a052f"
+      },
+      "diff": {
+        "path": ".build/native-ccafd8b-s3-detached-content-limit-repair/diffs/Modules__Services__SelfRenewal__SelfRenewalSignedCodeVerifier.swift.diff",
+        "bytes": 797,
+        "sha256": "c21128019da909ef41daa3cdc499abf601092a5cacab4842c19ff3d7c315c64b"
+      }
+    },
+    {
+      "sourcePath": "Tests/iOS/yuedu appTests/SelfRenewalCMSVerifierTests.swift",
+      "baseline": {
+        "path": ".build/native-ccafd8b-s3-detached-content-limit-repair/baseline/Tests/iOS/yuedu appTests/SelfRenewalCMSVerifierTests.swift",
+        "bytes": 58618,
+        "sha256": "0b0be00e2fb72050206f5f762958cf3a45c9b519acfa9525fd114a5ad15e6e29"
+      },
+      "candidate": {
+        "path": ".build/native-ccafd8b-s3-detached-content-limit-repair/work/Tests/iOS/yuedu appTests/SelfRenewalCMSVerifierTests.swift",
+        "bytes": 60799,
+        "sha256": "1588f95cbc4e57d2442aa09c3cea7df67d5218e3e8d9586d365eb65e3e7fd74c"
+      },
+      "diff": {
+        "path": ".build/native-ccafd8b-s3-detached-content-limit-repair/diffs/Tests__iOS__yuedu appTests__SelfRenewalCMSVerifierTests.swift.diff",
+        "bytes": 2621,
+        "sha256": "b4201e420b20ec18f25121800c6f4be19bfc3aced555a5174e4ff32d91918702"
+      }
+    },
+    {
+      "sourcePath": "Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift",
+      "baseline": {
+        "path": ".build/native-ccafd8b-s3-detached-content-limit-repair/baseline/Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift",
+        "bytes": 9819,
+        "sha256": "e97757b283bf11a5c6041506e6c2118aef198318299109440c9e56958182bc3e"
+      },
+      "candidate": {
+        "path": ".build/native-ccafd8b-s3-detached-content-limit-repair/work/Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift",
+        "bytes": 9948,
+        "sha256": "6c1eb71207090b0739091a09f698936ce3db318e24ad81aaebdc4dfe2d5754d4"
+      },
+      "diff": {
+        "path": ".build/native-ccafd8b-s3-detached-content-limit-repair/diffs/Tests__iOS__yuedu appTests__SelfRenewalSigningOwnedPKIFixture.swift.diff",
+        "bytes": 1605,
+        "sha256": "f6a72bb1dc2dfa757302ebc27bea50df1504bd6b28b9429b6d94fa44af79a12a"
+      }
+    }
+  ],
+  "conclusion": "The concrete shared-cap conflict is corrected with a separate bounded detached-content limit. No signature/anchor/profile/parser fallback or acceptance bypass was introduced.",
+  "actualFailureBinding": {
+    "raw": {
+      "path": ".build/native-ccafd8b-terminal/artifact-12347048129/.build/s3-full-application-signing/full-application-test-build.log",
+      "bytes": 8512240,
+      "sha256": "2b0b56ca988a5c27a3a46deec9dd34c48ddb594607407cc449e9c0952247c32e"
+    },
+    "boundedRows": [
+      36885,
+      36887,
+      36889,
+      36891,
+      36895
+    ],
+    "observed": "The raw signed-code span reports 1203832 additional bytes, followed by S3 sizeLimit during initial input unpack. The old primary <=1048576 guard rejects before reading its CMS wrapper. No raw App/CodeDirectory binary was independently re-verified in this review.",
+    "failureStage": "input unpack authentication before Vault/re-signing",
+    "oldRunPromotedToPass": false
+  },
+  "securityReview": [
+    "CMS message remains <=2097152 bytes; embedded/profile content remains <=1048576 in both contentOctets and final embedded guard. parseDER, BER/DER depth/node/child bounds, certificates, signers and anchor limits are byte unchanged.",
+    "Only separately supplied detached content may reach <=16777216 bytes. Ambiguous embedded+detached and missing detached inputs still reject before authentication. SignedCode primary uses the same cap as the existing bounded Mach-O signature reader.",
+    "Same-FD reads and actual raw CodeDirectory digest agreement, CMS wrapper bound, content signature or authenticated-attribute digest, every-signer cryptographic verification, explicit-anchor-only trust, disabled trust network fetch, verify date, hash-agility and terminal proof construction are unchanged.",
+    "Existing synchronous crypto retains off-main preconditions/cancellation and existing trace. No new owner, parser, persistent data store, credentials, workflow, selector or budget is introduced."
+  ],
+  "testSourceReview": {
+    "existingMethod": "SelfRenewalCMSVerifierTests/verifiesIndependentRSAAndDetachedVectors",
+    "existingDefinitions": 7,
+    "newDefinitions": 0,
+    "outsideAddedRegressionBlock": "entire prior test file byte exact",
+    "fixture": "The existing ephemeral RSA issuer and SecKeyCreateSignature generate actual CMS signature bytes. detached defaults false, so old embedded/profile callers retain identical encoding. The new bool omits eContent rather than mocking verification.",
+    "newVectors": [
+      "1203832-byte actual signed detached content accepted against its explicit owned certificate with no account/replacement authority",
+      "One-byte detached-content tamper requires invalidSignature",
+      "Same actual signed embedded content >1MiB requires sizeLimit while its CMS message remains <2MiB",
+      "Detached content at 16MiB+1 requires sizeLimit"
+    ],
+    "actualSwiftOrSDKExecution": 0
+  },
+  "readOnlyDependency": {
+    "path": "Modules/Services/SelfRenewal/SelfRenewalMachOSignatureReader.swift",
+    "bytes": 35801,
+    "sha256": "503ccc6ccf2916be26100095e01760416f80db52fee1744a422596a6480eace9"
+  },
+  "sourceCounts": {
+    "core": 420,
+    "native": 284,
+    "union": 442,
+    "package": 23,
+    "newPaths": 0
+  },
+  "checks": [
+    {
+      "check": "frozen final exact",
+      "passed": true
+    },
+    {
+      "check": "Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift baseline exact",
+      "passed": true
+    },
+    {
+      "check": "Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift candidate exact",
+      "passed": true
+    },
+    {
+      "check": "Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift diff exact",
+      "passed": true
+    },
+    {
+      "check": "Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift baseline equals canonical",
+      "passed": true
+    },
+    {
+      "check": "Modules/Services/SelfRenewal/SelfRenewalSignedCodeVerifier.swift baseline exact",
+      "passed": true
+    },
+    {
+      "check": "Modules/Services/SelfRenewal/SelfRenewalSignedCodeVerifier.swift candidate exact",
+      "passed": true
+    },
+    {
+      "check": "Modules/Services/SelfRenewal/SelfRenewalSignedCodeVerifier.swift diff exact",
+      "passed": true
+    },
+    {
+      "check": "Modules/Services/SelfRenewal/SelfRenewalSignedCodeVerifier.swift baseline equals canonical",
+      "passed": true
+    },
+    {
+      "check": "Tests/iOS/yuedu appTests/SelfRenewalCMSVerifierTests.swift baseline exact",
+      "passed": true
+    },
+    {
+      "check": "Tests/iOS/yuedu appTests/SelfRenewalCMSVerifierTests.swift candidate exact",
+      "passed": true
+    },
+    {
+      "check": "Tests/iOS/yuedu appTests/SelfRenewalCMSVerifierTests.swift diff exact",
+      "passed": true
+    },
+    {
+      "check": "Tests/iOS/yuedu appTests/SelfRenewalCMSVerifierTests.swift baseline equals canonical",
+      "passed": true
+    },
+    {
+      "check": "Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift baseline exact",
+      "passed": true
+    },
+    {
+      "check": "Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift candidate exact",
+      "passed": true
+    },
+    {
+      "check": "Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift diff exact",
+      "passed": true
+    },
+    {
+      "check": "Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift baseline equals canonical",
+      "passed": true
+    },
+    {
+      "check": "entire CMS file reverses exactly to baseline after only new detached constant/two guard changes",
+      "passed": true
+    },
+    {
+      "check": "entire SignedCode file reverses exactly by primary cap token",
+      "passed": true
+    },
+    {
+      "check": "removing added first-method regression block restores entire original seven-test file",
+      "passed": true
+    },
+    {
+      "check": "seven original @Test declarations retained without new definitions",
+      "passed": true
+    },
+    {
+      "check": "four paths already bound by core420/native284/union442, outside Package23",
+      "passed": true
+    },
+    {
+      "check": "separate cap equals existing signature reader 16MiB cap",
+      "passed": true
+    }
+  ],
+  "reviewerExecution": {
+    "tests": 0,
+    "SwiftCompiler": 0,
+    "SwiftParser": 0,
+    "cloudQueries": 0,
+    "downloads": 0,
+    "canonicalWrites": 0,
+    "GitMutations": 0
+  },
+  "limits": [
+    "Approval covers source correctness and retained security bounds, not successful Apple compilation or crypto execution.",
+    "The added vectors use real production crypto APIs in test source but were not executed on Windows.",
+    "The old Native S3 failure and independent reader/cold failures remain failures; complete signing/installation/automatic renewal and device validation are not established."
+  ]
+}

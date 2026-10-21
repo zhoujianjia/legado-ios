@@ -69,6 +69,9 @@ enum SelfRenewalCMSVerifier {
     enum Limits {
         static let messageBytes = 2_097_152
         static let contentBytes = 1_048_576
+        // Detached CodeDirectories share the existing bounded signature-reader
+        // ceiling. Embedded profile/DER/BER content keeps its separate 1 MiB cap.
+        static let detachedContentBytes = 16_777_216
         static let certificateBytes = 65_536
         static let certificates = 16
         static let anchors = 8
@@ -89,7 +92,7 @@ enum SelfRenewalCMSVerifier {
                 "bytes=\(message.count) main=\(Thread.isMainThread)", since: started, thresholdMs: 0)
         }
         guard !message.isEmpty, message.count <= Limits.messageBytes,
-              detachedContent.map({ $0.count <= Limits.contentBytes }) ?? true else { throw Failure.sizeLimit }
+              detachedContent.map({ $0.count <= Limits.detachedContentBytes }) ?? true else { throw Failure.sizeLimit }
         guard !anchors.isEmpty, anchors.count <= Limits.anchors,
               anchors.allSatisfy({ !$0.isEmpty && $0.count <= Limits.certificateBytes }),
               Set(anchors).count == anchors.count, date.timeIntervalSince1970.isFinite else { throw Failure.invalidAnchors }
@@ -116,7 +119,8 @@ enum SelfRenewalCMSVerifier {
             guard let detachedContent else { throw Failure.missingContent }
             content = detachedContent
         }
-        guard content.count <= Limits.contentBytes else { throw Failure.sizeLimit }
+        let contentLimit = detachedContent == nil ? Limits.contentBytes : Limits.detachedContentBytes
+        guard content.count <= contentLimit else { throw Failure.sizeLimit }
         let certificateNodes = try children(signed[3])
         guard !certificateNodes.isEmpty, certificateNodes.count <= Limits.certificates else { throw Failure.certificateLimit }
         guard Set(certificateNodes.map(\.full)).count == certificateNodes.count else { throw Failure.malformedCertificate }

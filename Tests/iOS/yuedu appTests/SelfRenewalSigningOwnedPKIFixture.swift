@@ -59,13 +59,15 @@ enum SelfRenewalSigningOwnedPKIFixture {
         let outer = try PropertyListSerialization.data(fromPropertyList: ["DER-Encoded-Profile": inner], format: .xml, options: 0)
         return try cms(outer, issuer: issuer)
     }
-    static func cms(_ content: Data, issuer: Material) throws -> Data {
+    static func cms(_ content: Data, issuer: Material, detached: Bool = false) throws -> Data {
         let certificate = try certificateFields(issuer.certificateChainDER[0])
         let digest = sequence([oid([0x60, 0x86, 0x48, 1, 0x65, 3, 4, 2, 1]), der(5, Data())])
         let algorithm = signatureAlgorithm(ec: try isEC(issuer.privateKey))
         let signature = try sign(content, key: issuer.privateKey)
         let signer = sequence([integer(1), sequence([certificate.issuer, certificate.serial]), digest, algorithm, der(4, signature)])
-        let signed = sequence([integer(1), der(0x31, digest), sequence([oid([0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 1, 7, 1]), der(0xa0, der(4, content))]),
+        let contentType = oid([0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 1, 7, 1])
+        let encapsulated = sequence(detached ? [contentType] : [contentType, der(0xa0, der(4, content))])
+        let signed = sequence([integer(1), der(0x31, digest), encapsulated,
             der(0xa0, issuer.certificateChainDER.reduce(into: Data()) { $0.append($1) }), der(0x31, signer)])
         return sequence([oid([0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 1, 7, 2]), der(0xa0, signed)])
     }

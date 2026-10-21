@@ -256,6 +256,125 @@ def verify_cases(tree):
     return cases
 
 
+def early_summary(work, source, run_id):
+    """Project fixed existing outputs only; never export arbitrary diagnostics.
+
+    This is not an acceptance gate. Unknown/missing evidence stays unknown.
+    Execution argv, arbitrary output paths and free failure text never leave.
+    """
+    if re.fullmatch('[0-9a-f]{40}', source) is None or re.fullmatch('[0-9]{1,20}', run_id) is None:
+        raise ValueError('Invalid early diagnostic source identity')
+    work = checked(work)
+    def read(name, maximum=1_048_576, json_object=True):
+        path = checked(work / name)
+        try:
+            with path.open('rb') as stream:
+                raw = stream.read(maximum + 1)
+        except FileNotFoundError:
+            return 'missing', None, None
+        except OSError:
+            return 'unreadable', None, None
+        if len(raw) > maximum:
+            return 'oversize', None, None
+        fixed_fact = {'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()}
+        if not json_object:
+            return 'available', None, fixed_fact
+        try:
+            value = json.loads(raw)
+        except (ValueError, UnicodeError, RecursionError):
+            return 'invalid', None, fixed_fact
+        return ('available', value, fixed_fact) if isinstance(value, dict) else ('invalid', None, fixed_fact)
+    def number(value, low=0, high=1_000_000):
+        return value if type(value) is int and low <= value <= high else None
+    prepared_state, prepared, _ = read('prepared.json')
+    result_state, result, _ = read('result.json')
+    bound = (prepared is not None and prepared.get('sourceCommit') == source
+        and prepared.get('workflowRunID') == run_id
+        and (result is None or result.get('sourceCommit') == source))
+    output = {'schema': 1, 'kind': 'early-s3-public-diagnostic', 'sourceCommit': source,
+        'workflowRunID': run_id, 'expectedCase': CASE, 'sourceBinding': 'matched' if bound else 'unknown',
+        'diagnosticOnly': True, 'productionSigningAcceptance': False, 'deviceValidationPassed': False,
+        'preparedState': prepared_state, 'resultState': result_state, 'sourceResultStatus': 'unknown',
+        'execution': {}, 'fixedOutputFacts': {}, 'summary': None,
+        'observedExecuted': None, 'observedPassed': None, 'observedFailed': None, 'observedSkipped': None,
+        'exactCaseSelectionObserved': None, 'failureTags': [], 'unknownFailureOccurrencesWithheld': 0}
+    if bound and result is not None and result.get('status') in ('passed', 'failed'):
+        output['sourceResultStatus'] = result['status']
+    for phase in ('full-application-test', 'full-application-summary', 'full-application-tests'):
+        state, value, _ = read(phase + '-execution.json', 65_536)
+        entry = {'state': state, 'exitCode': None, 'timeoutSeconds': None, 'timedOut': None}
+        if bound and value is not None:
+            entry.update(exitCode=number(value.get('exitCode'), -255, 255),
+                timeoutSeconds=number(value.get('timeoutSeconds'), 1, 3660),
+                timedOut=value.get('timedOut') if type(value.get('timedOut')) is bool else None)
+        output['execution'][phase] = entry
+        _, _, value_fact = read(phase + '.log', json_object=False)
+        if value_fact is not None:
+            output['fixedOutputFacts'][phase + '.log'] = value_fact
+    safe_tags = {'sizeLimit', 'missingSignature', 'unsupportedHash', 'contentReadLimit', 'hashOperationLimit',
+        'truncatedRead', 'changedDirectory', 'missingSpecialSlot', 'unexpectedSpecialSlot',
+        'codeSlotMismatch', 'specialSlotMismatch', 'invalidInfoMetadata', 'malformedInfoPlist',
+        'missingApplicationInfo', 'unsupportedComponents', 'profileBytesNotBound', 'malformedEnvelope',
+        'changedCodeDirectory', 'missingResource', 'addedResource', 'digestMismatch',
+        'missingComponentMaterial', 'changedInfo', 'unsignedCode', 'missingDEREntitlements',
+        'signerNotInProfile', 'applicationIdentifierMismatch', 'teamMismatch', 'groupNotInProfile'}
+    tags = set()
+    def failure(text):
+        match = re.search(r'Caught error: \.?([A-Za-z][A-Za-z0-9]*)(?=\(|$)', text) if isinstance(text, str) else None
+        if match is None or match[1] not in safe_tags:
+            output['unknownFailureOccurrencesWithheld'] += 1
+            return
+        # Only a fixed public enum tag survives. Associated strings/paths and
+        # arbitrary numeric payloads are withheld, including unknown failures.
+        tags.add(match[1])
+    summary_state, summary, _ = read('full-application-summary.log')
+    output['summaryState'] = summary_state
+    if bound and summary is not None:
+        output['summary'] = {key: number(summary.get(key)) for key in
+            ('totalTestCount', 'passedTests', 'failedTests', 'skippedTests', 'expectedFailures')}
+        for item in summary.get('testFailures', [])[:256] if isinstance(summary.get('testFailures', []), list) else []:
+            if isinstance(item, dict) and item.get('testIdentifierString') == CASE + '()':
+                failure(item.get('failureText'))
+    tree_state, tree, _ = read('full-application-tests.log')
+    output['testsState'] = tree_state
+    exports_ok = all(output['execution'][phase]['exitCode'] == 0 and output['execution'][phase]['timedOut'] is False
+        for phase in ('full-application-summary', 'full-application-tests'))
+    execution_valid = all(entry['exitCode'] is not None and entry['timeoutSeconds'] is not None
+        and entry['timedOut'] is False for entry in output['execution'].values())
+    counts_available = (exports_ok and execution_valid and output['summary'] is not None
+        and all(value is not None for value in output['summary'].values())
+        and output['execution']['full-application-test']['timedOut'] is False)
+    if bound and tree is not None and isinstance(tree.get('testNodes'), list):
+        stack = [(node, 0, False) for node in tree['testNodes']]
+        statuses = []; unexpected = False; valid = True; visited = 0
+        while stack:
+            node, depth, selected = stack.pop(); visited += 1
+            if visited > 4096 or depth > 32 or not isinstance(node, dict) or not isinstance(node.get('children', []), list):
+                valid = False
+                break
+            if node.get('nodeType') == 'Test Case':
+                selected = node.get('nodeIdentifier') in (CASE, CASE + '()', 'yuedu appTests/' + CASE, 'yuedu appTests/' + CASE + '()')
+                if selected: statuses.append(node.get('result'))
+                else: unexpected = True
+            if selected and node.get('nodeType') == 'Failure Message':
+                failure(node.get('name'))
+            stack.extend((child, depth + 1, selected) for child in node.get('children', []))
+        if counts_available and valid and unexpected:
+            output['exactCaseSelectionObserved'] = False
+        reconciled = (counts_available and output['summary']['totalTestCount'] == len(statuses)
+            and output['summary']['passedTests'] == statuses.count('Passed')
+            and output['summary']['failedTests'] == statuses.count('Failed')
+            and output['summary']['skippedTests'] == statuses.count('Skipped'))
+        if reconciled and valid and not unexpected and all(status in ('Passed', 'Failed', 'Skipped') for status in statuses):
+            output.update(observedExecuted=sum(status != 'Skipped' for status in statuses),
+                observedPassed=statuses.count('Passed'), observedFailed=statuses.count('Failed'),
+                observedSkipped=statuses.count('Skipped'), exactCaseSelectionObserved=len(statuses) == 1 and not unexpected)
+    output['failureTags'] = sorted(tags)
+    if not tags:
+        output['failureTags'] = ['unknown']
+    return output
+
+
 def run():
     source = admission()
     work = REPO / WORK
@@ -312,13 +431,16 @@ def run():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("phase", choices=("prepare", "run"))
+    parser.add_argument("phase", choices=("prepare", "run", "early-summary"))
     parser.add_argument("--native-record", type=Path, default=REPO / ".build/native-reader-test/native-restore.json")
     args = parser.parse_args()
     if args.phase == "prepare":
         prepare(args.native_record)
-    else:
+    elif args.phase == 'run':
         run()
+    else:
+        source = admission()
+        write_new(REPO / WORK / 'early-public-summary.json', early_summary(REPO / WORK, source, os.environ['GITHUB_RUN_ID']))
 
 
 if __name__ == "__main__":

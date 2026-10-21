@@ -142,7 +142,7 @@ enum SelfRenewalSignedCodeVerifier {
                 guard let wrapper = signature.blobs.first(where: { $0.slot == 0x10000 }), wrapper.range.byteCount > 8 else {
                     throw Failure.missingCMS
                 }
-                guard primary.bytes.count <= CMS.Limits.contentBytes,
+                guard primary.bytes.count <= CMS.Limits.detachedContentBytes,
                       wrapper.range.byteCount - 8 <= CMS.Limits.messageBytes else { throw CMS.Failure.sizeLimit }
                 let cmsBytes = try read(Reader.ByteRange(offset: signature.range.offset + wrapper.range.offset + 8,
                     byteCount: wrapper.range.byteCount - 8))

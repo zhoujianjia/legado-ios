@@ -11,6 +11,7 @@ import struct
 import tempfile
 from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
 
 HERE = Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location("full_signing_guarded_tools", HERE / "full-application-signing-tools.py")
@@ -77,6 +78,128 @@ class FullApplicationSigningProtocolTests(unittest.TestCase):
                         {"testNodes": [dict(node, result="Failed")]}, {"testNodes": [dict(node, result="Skipped")]}):
             with self.subTest(variant=variant), self.assertRaises(ValueError):
                 tools.verify_cases(variant)
+        # Early evidence is a bounded diagnostic projection of existing fixed
+        # outputs, not a new test host or a replacement for the gate above.
+        secret = 'SYNTHETIC-NEVER-EXPORT-SECRET'
+        with tempfile.TemporaryDirectory() as name:
+            work = Path(name).resolve()
+            unknown = tools.early_summary(work, 'a' * 40, '1234')
+            self.assertIsNone(unknown['observedExecuted'])
+            self.assertEqual(unknown['failureTags'], ['unknown'])
+            self.assertFalse(unknown['productionSigningAcceptance'])
+            prepared = {'sourceCommit': 'a' * 40, 'workflowRunID': '1234', 'anchor': secret}
+            (work / 'prepared.json').write_text(json.dumps(prepared))
+            (work / 'result.json').write_text(json.dumps({'sourceCommit': 'a' * 40, 'status': 'failed', 'private': secret}))
+            outside = work / 'never-follow-argv-or-output-path'
+            outside.write_text(secret)
+            for phase in ('full-application-test', 'full-application-summary', 'full-application-tests'):
+                (work / (phase + '-execution.json')).write_text(json.dumps({'argv': [secret, str(outside)],
+                    'exitCode': 1 if phase.endswith('-test') else 0, 'timeoutSeconds': 3660 if phase.endswith('-test') else 60,
+                    'timedOut': False, 'output': {'path': str(outside), 'bytes': 42, 'sha256': 'b' * 64}}))
+            failure = {'nodeType': 'Failure Message', 'name': 'SelfRenewalCodeDirectoryHashVerifier.swift:181: Caught error: .missingSpecialSlot(1)'}
+            failed_node = dict(node, result='Failed', children=[failure])
+            (work / 'full-application-test.log').write_text(secret)
+            (work / 'full-application-summary.log').write_text(json.dumps({'totalTestCount': 1, 'passedTests': 0,
+                'failedTests': 1, 'skippedTests': 0, 'expectedFailures': 0, 'freeText': secret,
+                'testFailures': [{'testIdentifierString': tools.CASE + '()', 'failureText': 'Caught error: .missingSpecialSlot(1)'}]}))
+            (work / 'full-application-tests.log').write_text(json.dumps({'testNodes': [failed_node], 'PKI': secret}))
+            original_open = Path.open
+            def guarded_open(path, *args, **kwargs):
+                if path == outside:
+                    raise AssertionError('Early projection followed an untrusted argv/output path')
+                return original_open(path, *args, **kwargs)
+            with patch.object(Path, 'open', guarded_open):
+                projected = tools.early_summary(work, 'a' * 40, '1234')
+            self.assertEqual((projected['observedExecuted'], projected['observedPassed'], projected['observedFailed']), (1, 0, 1))
+            self.assertTrue(projected['exactCaseSelectionObserved'])
+            self.assertEqual(projected['failureTags'], ['missingSpecialSlot'])
+            self.assertEqual(projected['fixedOutputFacts']['full-application-test.log'], {
+                'bytes': len(secret), 'sha256': hashlib.sha256(secret.encode()).hexdigest()})
+            encoded = json.dumps(projected)
+            for withheld in (secret, str(outside), 'argv', 'anchor', 'PKI', 'SelfRenewalCodeDirectoryHashVerifier.swift'):
+                self.assertNotIn(withheld, encoded)
+            self.assertLess(len(encoded), 8192)
+            original_tree = (work / 'full-application-tests.log').read_bytes()
+            original_failure_name = failure['name']
+            failure['name'] = 'SelfRenewalFullApplicationSignerTests.swift:15: Caught error: sizeLimit'
+            (work / 'full-application-tests.log').write_text(json.dumps({'testNodes': [dict(failed_node, children=[failure])]}))
+            bounded = tools.early_summary(work, 'a' * 40, '1234')
+            self.assertEqual(bounded['failureTags'], ['missingSpecialSlot', 'sizeLimit'])
+            self.assertEqual((bounded['observedExecuted'], bounded['observedPassed'], bounded['observedFailed']), (1, 0, 1))
+            (work / 'full-application-tests.log').write_bytes(original_tree)
+            failure['name'] = original_failure_name
+            summary_path = work / 'full-application-summary.log'
+            summary_bytes = summary_path.read_bytes(); summary_path.unlink()
+            self.assertIsNone(tools.early_summary(work, 'a' * 40, '1234')['observedExecuted'])
+            summary_path.write_bytes(summary_bytes)
+            for phase in ('full-application-test', 'full-application-summary', 'full-application-tests'):
+                ledger_path = work / (phase + '-execution.json')
+                ledger_bytes = ledger_path.read_bytes()
+                for field, value in (('exitCode', None), ('exitCode', True), ('exitCode', 'invalid'), ('exitCode', 256),
+                        ('timeoutSeconds', None), ('timeoutSeconds', True), ('timeoutSeconds', 0), ('timeoutSeconds', 'invalid'),
+                        ('timedOut', None), ('timedOut', 'false'), ('timedOut', True)):
+                    ledger = json.loads(ledger_bytes)
+                    if value is None: ledger.pop(field)
+                    else: ledger[field] = value
+                    ledger_path.write_text(json.dumps(ledger))
+                    with self.subTest(phase=phase, field=field, value=value):
+                        self.assertIsNone(tools.early_summary(work, 'a' * 40, '1234')['observedExecuted'])
+                ledger_path.write_bytes(ledger_bytes)
+            tree_path = work / 'full-application-tests.log'
+            tree_bytes = tree_path.read_bytes()
+            summary_object = json.loads(summary_bytes)
+            for changed_summary, changed_tree in (
+                    (summary_object, {'testNodes': []}),
+                    (dict(summary_object, passedTests=1, failedTests=0), {'testNodes': [failed_node]}),
+                    (dict(summary_object, totalTestCount=2), {'testNodes': [failed_node]})):
+                summary_path.write_text(json.dumps(changed_summary))
+                tree_path.write_text(json.dumps(changed_tree))
+                self.assertIsNone(tools.early_summary(work, 'a' * 40, '1234')['observedExecuted'])
+            summary_path.write_text(json.dumps(dict(summary_object, totalTestCount=0, failedTests=0)))
+            tree_path.write_text(json.dumps({'testNodes': []}))
+            zero = tools.early_summary(work, 'a' * 40, '1234')
+            self.assertEqual((zero['observedExecuted'], zero['observedPassed'], zero['observedFailed']), (0, 0, 0))
+            self.assertFalse(zero['exactCaseSelectionObserved'])
+            summary_path.write_bytes(summary_bytes)
+            deep_bytes = ('{"nested":' * 1200 + '0' + '}' * 1200).encode()
+            tree_path.write_bytes(deep_bytes)
+            original_loads = json.loads
+            def decoder_with_recursion_failure(raw, *args, **kwargs):
+                # Decoder recursion thresholds differ across Python versions.
+                # Inject only this bounded deep fixture's decoder exception.
+                if raw == deep_bytes: raise RecursionError('Synthetic deep decoder refusal')
+                return original_loads(raw, *args, **kwargs)
+            with patch.object(tools.json, 'loads', side_effect=decoder_with_recursion_failure):
+                deep = tools.early_summary(work, 'a' * 40, '1234')
+            self.assertEqual(deep['testsState'], 'invalid')
+            self.assertIsNone(deep['observedExecuted'])
+            tree_path.write_bytes(tree_bytes)
+            restored = tools.early_summary(work, 'a' * 40, '1234')
+            self.assertEqual((restored['observedExecuted'], restored['observedPassed'], restored['observedFailed']), (1, 0, 1))
+            for variant in ({'testNodes': [dict(failed_node, nodeIdentifier=secret)]},
+                            {'testNodes': [dict(failed_node, result=secret)]}, {'testNodes': None}):
+                (work / 'full-application-tests.log').write_text(json.dumps(variant))
+                observed = tools.early_summary(work, 'a' * 40, '1234')
+                self.assertIsNone(observed['observedExecuted'])
+                self.assertFalse(observed['productionSigningAcceptance'])
+                self.assertNotIn(secret, json.dumps(observed))
+            failure['name'] = 'Caught error: UnknownPrivateError(' + secret + ')'
+            (work / 'full-application-summary.log').write_text('{}')
+            (work / 'full-application-tests.log').write_text(json.dumps({'testNodes': [dict(failed_node, children=[failure])]}))
+            observed = tools.early_summary(work, 'a' * 40, '1234')
+            self.assertEqual(observed['failureTags'], ['unknown'])
+            self.assertGreater(observed['unknownFailureOccurrencesWithheld'], 0)
+            self.assertNotIn(secret, json.dumps(observed))
+            execution_path = work / 'full-application-test-execution.json'
+            execution = json.loads(execution_path.read_text()); execution['timedOut'] = True
+            execution_path.write_text(json.dumps(execution))
+            self.assertIsNone(tools.early_summary(work, 'a' * 40, '1234')['observedExecuted'])
+            (work / 'prepared.json').write_text(json.dumps(dict(prepared, workflowRunID='5678')))
+            unbound = tools.early_summary(work, 'a' * 40, '1234')
+            self.assertEqual(unbound['sourceBinding'], 'unknown')
+            self.assertIsNone(unbound['observedExecuted'])
+            (work / 'full-application-tests.log').write_bytes(b'x' * 1_048_577)
+            self.assertEqual(tools.early_summary(work, 'a' * 40, '1234')['testsState'], 'oversize')
 
     def test_producer_minimal_default_body_is_unchanged_and_full_branch_is_explicit(self):
         candidate = ast.parse((HERE / "owned-package-fixture/generate-sdk-owned-package.py").read_text())

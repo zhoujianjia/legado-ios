@@ -83,8 +83,21 @@ jobs:
           python -B scripts/legado-ios/stage-runtime.py --java-home .build/legado-ios/simulator-static/java-home --jar Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar --destination Resources/LegadoRuntime --replace
           python -B scripts/reader-experience/native-smoke-tools.py prepare
       - name: Re-sign and independently verify the required complete device package
+        id: full_application_signing
         if: ${{ !startsWith(github.ref_name, 'legado-native-reader-test-cold-') }}
         run: python -B scripts/reader-experience/full-application-signing-tools.py run
+      - name: Project the failed S3 step's bounded public diagnostic
+        if: ${{ always() && !cancelled() && !startsWith(github.ref_name, 'legado-native-reader-test-cold-') && steps.native_simulator_prepare.outcome == 'success' && steps.full_application_signing.outcome == 'failure' }}
+        run: python -B scripts/reader-experience/full-application-signing-tools.py early-summary
+      - name: Retain the failed S3 step's early public diagnostic
+        if: ${{ always() && !cancelled() && !startsWith(github.ref_name, 'legado-native-reader-test-cold-') && steps.native_simulator_prepare.outcome == 'success' && steps.full_application_signing.outcome == 'failure' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: legado-native-s3-early-public-diagnostic
+          path: .build/s3-full-application-signing/early-public-summary.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
       - name: Execute1 MainJS and32 original methods in separate required hosts
         # Collect independent host failures after S3 execution fails. Full S3
         # proof remains required by native-smoke-tools.result and the job outcome.
