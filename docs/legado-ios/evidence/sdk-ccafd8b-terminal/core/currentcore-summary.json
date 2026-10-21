@@ -1,0 +1,56 @@
+{
+  "devicesAndConfigurations" : [
+    {
+      "device" : {
+        "architecture" : "arm64",
+        "deviceId" : "4C675116-265D-488F-BFFA-836A4545674C",
+        "deviceName" : "iPhone 17 Pro Max",
+        "modelName" : "iPhone 17 Pro Max",
+        "osBuildNumber" : "23C54",
+        "osVersion" : "26.2",
+        "platform" : "iOS Simulator"
+      },
+      "expectedFailures" : 0,
+      "failedTests" : 1,
+      "passedTests" : 481,
+      "skippedTests" : 0,
+      "testPlanConfiguration" : {
+        "configurationId" : "1",
+        "configurationName" : "Test Scheme Action"
+      }
+    }
+  ],
+  "environmentDescription" : "Yuedu-Reader · Built with macOS 15.7.9",
+  "expectedFailures" : 0,
+  "failedTests" : 1,
+  "finishTime" : 1792584911.071,
+  "passedTests" : 478,
+  "result" : "Failed",
+  "skippedTests" : 0,
+  "startTime" : 1792582298.471,
+  "statistics" : [
+    {
+      "subtitle" : "6 test runs",
+      "title" : "3 tests ran with dynamic parameters"
+    }
+  ],
+  "testFailures" : [
+    {
+      "failureText" : "Caught error: LegadoRuntimeError(code: \"UNSUPPORTED_CAPABILITY\", message: \"Parsed original Cookie cannot be represented by the existing native owner [expiry] persistent=true seedSession=false seedExpiry=true nativeSession=false nativeExpiry=true originalExpiresMs=4071686400000 expectedRefBits=41e70c2710000000 seedRefBits=41c94c1da5000000 nativeRefBits=41c94c1da5000000 seedMaximumAge=false seedCreated=true\", completedEffects: nil, loginUIEvents: nil, secondaryFailures: nil)",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 140,
+      "testIdentifierString" : "LegadoCookieTextHostTests/responseTextPrecedenceAndNativeMetadataSurviveTheirCorrectLifetimes()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoCookieTextHostTests/responseTextPrecedenceAndNativeMetadataSurviveTheirCorrectLifetimes()",
+      "testName" : "response text uses last-name update across path/subdomain while rich RFC attributes and DB/session restart lifetimes stay distinct"
+    }
+  ],
+  "title" : "Test - Yuedu-Reader",
+  "topInsights" : [
+    {
+      "category" : "Longest Test Runs",
+      "impact" : "50% of duration",
+      "text" : "4 longest test runs with outlier durations exceeding 24.51s (three standard deviations)"
+    }
+  ],
+  "totalTestCount" : 479
+}

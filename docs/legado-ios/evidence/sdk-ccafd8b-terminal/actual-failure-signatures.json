@@ -1,0 +1,40 @@
+{
+  "qualifiedFailures": [
+    {
+      "identity": "LegadoCookieTextHostTests/responseTextPrecedenceAndNativeMetadataSurviveTheirCorrectLifetimes",
+      "source": "Tests/iOS/yuedu appTests/LegadoCookieTextHostTests.swift:125:6",
+      "rawLogLines": [
+        39029,
+        39030
+      ],
+      "failure": "UNSUPPORTED_CAPABILITY: Parsed original Cookie [expiry]; persistent=true seedSession=false seedExpiry=true nativeSession=false nativeExpiry=true",
+      "diagnostic": {
+        "originalExpiresMs": 4071686400000,
+        "expectedRefBits": "41e70c2710000000",
+        "seedRefBits": "41c94c1da5000000",
+        "nativeRefBits": "41c94c1da5000000",
+        "seedMaximumAge": false,
+        "seedCreated": true
+      },
+      "caseElapsedSeconds": 0.021
+    }
+  ],
+  "unassociatedIssues": [],
+  "rawUnknownOccurrences": [],
+  "rawIssueOccurrences": [
+    {
+      "rawLogLine": 39029,
+      "rawText": "✘ Test \"response text uses last-name update across path/subdomain while rich RFC attributes and DB/session restart lifetimes stay distinct\" recorded an issue at LegadoCookieTextHostTests.swift:125:6: Caught error: LegadoRuntimeError(code: \"UNSUPPORTED_CAPABILITY\", message: \"Parsed original Cookie cannot be represented by the existing native owner [expiry] persistent=true seedSession=false seedExpiry=true nativeSession=false nativeExpiry=true originalExpiresMs=4071686400000 expectedRefBits=41e70c2710000000 seedRefBits=41c94c1da5000000 nativeRefBits=41c94c1da5000000 seedMaximumAge=false seedCreated=true\", completedEffects: nil, loginUIEvents: nil, secondaryFailures: nil)"
+    }
+  ],
+  "uniqueStructuredSwiftCompilerErrors": [],
+  "rawBuildLog": {
+    "path": ".build/sdk-ccafd8b-terminal/artifact-12344528413/reader-renewal-probe/currentcore-tests.log",
+    "bytes": 20731801,
+    "sha256": "92f8d03ff189f1eb6f51138c3a35df5a9753ff72c9119bc78adad0052df2f6ac"
+  },
+  "noCompilerBlock": true,
+  "all479SelectedDefinitionsObserved": true,
+  "all482SelectedLeavesObserved": true,
+  "unknownIssuesCannotBeDiscardedOrConvertedToPassingEvidence": true
+}

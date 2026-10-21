@@ -1,0 +1,27 @@
+{
+  "sourceCommit": "ccafd8b700691403889bc1cf205998bc74552bad",
+  "observations": [
+    {
+      "identity": "LegadoCookieOwnerTests/staleWebViewCookieDecisionCannotEndReusedLease",
+      "result": "Passed"
+    },
+    {
+      "identity": "LegadoCookieTextHostTests/originalRawExpiryAndRandomPruningBoundaryRemainExplicit",
+      "result": "Passed"
+    },
+    {
+      "identity": "SelfRenewalAuthenticatedInstallationClientTests/cancellationWakesActualStalledTLSHandshakeWithoutLateWrites",
+      "result": "Passed"
+    },
+    {
+      "identity": "SelfRenewalUserDataHandoffTests/actualSourceWriteFailurePreventsUpgradeAndKeepsPendingOwnership",
+      "result": "Passed"
+    },
+    {
+      "identity": "SelfRenewalControlledPackageSignerTests/signsSDKProducedMainExtensionsAndFrameworkInSameJob",
+      "result": "Passed"
+    }
+  ],
+  "unassociatedIssueCount": 0,
+  "meaning": "These exact methods actually passed without the earlier unknown-context assertions. The SDK signer is only the required minimal main/extensions/framework fixture, not full iPhoneOS/JVM package acceptance. Cookie expiry remains a real failure; diagnostic bits are not a repair."
+}
