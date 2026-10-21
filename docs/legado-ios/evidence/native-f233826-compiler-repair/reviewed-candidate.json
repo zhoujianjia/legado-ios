@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-21T01:44:16.617892+00:00",
+  "status": "Test-only actual compiler repair candidate; future Apple compiler execution pending",
+  "sourceCommit": "f23382618c747c97c23a1c345664cffd589a5359",
+  "sourceRoot": ".build/native-f233826-native-fixture-repair-step/snapshot-v1/work",
+  "files": [
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "baseline": {
+        "path": ".build/native-f233826-native-fixture-repair-step/rawbaseline/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+        "bytes": 93615,
+        "sha256": "c7379540df3b2051e8be7bb1237dd713a0abf5344ebf069d44c9e4bb51864211"
+      },
+      "candidate": {
+        "path": ".build/native-f233826-native-fixture-repair-step/snapshot-v1/work/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+        "bytes": 93635,
+        "sha256": "aa4162285fd449d0cb37cb0e3802f10b69dd53c7081d8c20306c0c0d0a63b7f8"
+      },
+      "diff": {
+        "path": ".build/native-f233826-native-fixture-repair-step/diffs/Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift.diff",
+        "bytes": 759,
+        "sha256": "c86701b9f03161f8515e50f75651389fdbc6038d6a645b77df0a0d4e81c91139"
+      },
+      "testDefinitionsUnchanged": 16
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "baseline": {
+        "path": ".build/native-f233826-native-fixture-repair-step/rawbaseline/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+        "bytes": 109133,
+        "sha256": "97a04aaf65d117e5f677f87b53cc2d3b15dcc7985a0f66ed4a8570a275f15810"
+      },
+      "candidate": {
+        "path": ".build/native-f233826-native-fixture-repair-step/snapshot-v1/work/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+        "bytes": 109194,
+        "sha256": "ddf09646d1221b8bf659cb8311d814278a521bb97a44e09917d61e94397ab8c1"
+      },
+      "diff": {
+        "path": ".build/native-f233826-native-fixture-repair-step/diffs/Tests/iOS/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 879,
+        "sha256": "6d85e427a3ce83d03c76a00fb6775d5836303b8300674ce7e9e803856d678af0"
+      },
+      "testDefinitionsUnchanged": 15
+    }
+  ],
+  "changedSources": 2,
+  "productionAPIsChanged": 0,
+  "newTestDefinitions": 0,
+  "semanticChoices": [
+    "isLongClick:false explicitly chooses ordinary action for the synthetic local-page producer; it does not invent a default API argument",
+    "XCTUnwrap requires the actual owned fixture contentBatch to exist before prefixing it; nil is a fixture failure, never silently converted to empty batch code"
+  ],
+  "composition": {
+    "path": ".build/native-f233826-native-fixture-repair-step/composition-v1.json",
+    "bytes": 1451,
+    "sha256": "4336a7a2f67f6df66515735a8aa02f8be596cfa71f2e5c920c02cf2692b387cb"
+  },
+  "actualFailuresReference": ".build/native-f233826-terminal/extracted/.build/native-reader-test/native-build.log",
+  "limits": [
+    "No Swift compiler/parser/SDK/JNI execution of this candidate",
+    "These two test fixes do not repair or prove any installation/renewal functionality",
+    "Resource and native-information candidates remain independent future sources; whole-file replacement would discard their Reader hunks"
+  ],
+  "operations": {
+    "canonicalOrGitWrites": 0,
+    "cloudOperations": 0,
+    "newTestsRun": 0
+  }
+}

@@ -62,7 +62,7 @@ final class LegadoNativeOriginalLoginInfoTests: XCTestCase {
                     ? "java.startBrowserAwait('https://local-webjs.invalid/page','Synthetic local',false,\(literal));"
                     : "java.startBrowser('https://local-webjs.invalid/page','Synthetic local',\(literal));"
                 let pending = Task {
-                    try await service.originalLoginAction(source: admitted, action: action, credentials: [:])
+                    try await service.originalLoginAction(source: admitted, action: action, credentials: [:], isLongClick: false)
                 }
                 do {
                     await fulfillment(of: [presented, loaded], timeout: 20)

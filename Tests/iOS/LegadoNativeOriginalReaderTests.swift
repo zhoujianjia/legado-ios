@@ -92,8 +92,9 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
 
             let owned = try await self.ownedBatchBook(fixture)
             var authored = fixture.source
+            let existingBatch = try XCTUnwrap(authored.ruleContent.contentBatch)
             authored.ruleContent.contentBatch = "if(java.webView('<html>batch</html>',null,\"'batch-ready'\")!=='batch-ready')throw new Error('batch WebJS failed');\n"
-                + authored.ruleContent.contentBatch
+                + existingBatch
             authored.eventListener = true
             authored.ruleContent.callBackJs = "if(java.webView('<html>callback</html>',null,\"'callback-ready'\")!=='callback-ready')throw new Error('callback WebJS failed');book.putVariable('nativeGeneralCallback','accepted')"
             let source = authored

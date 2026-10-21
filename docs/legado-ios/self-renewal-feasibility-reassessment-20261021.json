@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T01:45:58.827278+00:00",
+  "sourceCommitAtReview": "39c8d1721f6a853cfe8350099adee8434c013a4b",
+  "status": "strict-single-app-renewal-feasibility-unproven-real-implementation-gaps-confirmed",
+  "conclusionZh": "应用内处理IPA副本并重签在技术上可行；系统覆盖安装需要独立的授权通道。免费团队、未越狱、单App、后续电脑关闭且无VPN无伴侣的组合，当前工程与本次核对的上游资料均未提供已验证可用方案。未证明该组合在所有系统上绝对不可能，也不能承诺现有实现能够跑通。",
+  "strictScenario": {
+    "freePersonalTeam": true,
+    "nonJailbroken": true,
+    "singleReaderApp": true,
+    "computerForInitialSetupOnly": true,
+    "VPNDuringRenewal": false,
+    "companionAppDuringRenewal": false,
+    "identityAndUserDataMustSurvive": true
+  },
+  "latestCloud": {
+    "sourceCommit": "f23382618c747c97c23a1c345664cffd589a5359",
+    "SDK": {
+      "runID": 39524696933,
+      "jobID": 118976499912,
+      "status": "completed",
+      "conclusion": "failure",
+      "actualAppCases": 0,
+      "intendedAppDefinitions": 463,
+      "intendedArgumentLeaves": 466,
+      "uniqueTestCompilerErrors": 2,
+      "independentMacOSPackageMethodsPassed": 24,
+      "queryAgain": false
+    },
+    "Native": {
+      "runID": 39524697051,
+      "jobID": 118976500962,
+      "status": "completed",
+      "conclusion": "failure",
+      "actualNativeMethods": 0,
+      "uniqueTestCompilerErrors": 2,
+      "ordinaryJVMTestsPassed": 353,
+      "macOSDiagnosticMethodsPassed": 17,
+      "queryAgain": false
+    },
+    "sameCompilerBlock": [
+      "originalLoginAction call omits required isLongClick argument",
+      "contentBatch optional String is concatenated without explicit unwrap"
+    ],
+    "fullTerminalArchives": "Separate complete terminal records are still being prepared. Counts above are scoped to their actual independent hosts, not added together or presented as end-to-end renewal."
+  },
+  "sourceCoreProgress": {
+    "proxyAndRemoteJsLibCandidate": ".build/original-proxy-remote-union-step/final-v1.json",
+    "jointMainSourcesCompiled": 11,
+    "candidateFiles": 22,
+    "distinctTargetMethodsWithPassingEvidence": 23,
+    "actualExecutions": {
+      "first": {
+        "passed": 18,
+        "failed": 5
+      },
+      "failedOnlyRerun": {
+        "passed": 5,
+        "failed": 0
+      }
+    },
+    "integratedIntoCanonicalAtThisReview": false,
+    "SwiftSDKAndJNIValidation": "pending",
+    "fullBookSourceCompatibilityAccepted": false
+  },
+  "confirmedProductionGaps": [
+    {
+      "area": "authenticated installation route",
+      "finding": "Current client accepts an explicitly configured numeric endpoint and implements strict Direct Lockdown only. It has no RemotePairing/CDTunnel/RSD provider branch.",
+      "nextConcreteProof": "A read-only request through the actual authenticated same-device route must identify its protocol and return an authenticated installation Lookup; TCP-open or synthetic peers are insufficient."
+    },
+    {
+      "area": "service transport modes",
+      "finding": "Current StartService requires EnableServiceSSL=true. Both checked upstream clients also handle false/missing. This is a supported-subset gap, not evidence of what the user device returned.",
+      "constraint": "Do not delete TLS/authentication guards without binding the alternative to an authenticated provider/tunnel."
+    },
+    {
+      "area": "initial Apple enrollment",
+      "finding": "Current account client requires previously registered App IDs and contains no complete device/App ID/App Group registration flow. Initial computer provisioning may satisfy some prerequisites, which must be checked explicitly."
+    },
+    {
+      "area": "repeated certificate renewal",
+      "finding": "Refresh creates a new CSR and deliberately avoids revocation. Certificate reuse and quota-aware continuous renewal are not established."
+    },
+    {
+      "area": "real complete application signing",
+      "finding": "Leaf-to-root nested signing and independent verification code exists. Successful owned synthetic SDK packages do not prove a fresh Apple-issued profile or actual signing of this full JVM application."
+    },
+    {
+      "area": "background and expiry recovery",
+      "finding": "System scheduling has no promised deadline. An expired non-launchable app cannot rely on its own code to recover. Unattended multi-cycle renewal and recovery remain unaccepted."
+    }
+  ],
+  "build13Evidence": {
+    "record": "docs/legado-ios/self-renewal-report-build13-analysis.json",
+    "observed": "One loopback TCP-open success; zero application payload. No service identity/TLS/session/pairing/signing/installation attempted. Owner unconfigured and automatic renewal disabled.",
+    "userReportedContext": "computer on; USB unplugged; VPN off; no companion app",
+    "computerIndependenceOrRenewalProven": false
+  },
+  "claimAssessment": [
+    {
+      "claim": "iOS makes every form of in-app signing/self-refresh fundamentally impossible",
+      "verdict": "too absolute",
+      "correction": "Creating and signing a separate IPA in the app sandbox differs from modifying the installed executable. Conditional self-refresh exists; installation permission/routing is the decisive separate prerequisite."
+    },
+    {
+      "claim": "free Apple certificate is always valid for seven days",
+      "verdict": "wrong object",
+      "correction": "Apple documents seven-day Personal Team provisioning profiles; certificate, profile, signed artifact and installed entitlement validation are distinct."
+    },
+    {
+      "claim": "remote anisette makes AltStore Classic computer independent",
+      "verdict": "incorrect",
+      "correction": "Current official AltServer documentation still requires AltServer on a computer over Wi-Fi/USB. Anisette assists account authentication and does not provide device installation transport."
+    },
+    {
+      "claim": "SideStore refresh uses a local VPN",
+      "verdict": "confirmed prerequisite",
+      "correction": "Current official instructions require LocalDevVPN for install/update/refresh; they also explicitly instruct refreshing SideStore itself."
+    },
+    {
+      "claim": "Sideloop provides self-hosted Wi-Fi refresh",
+      "verdict": "upstream documented, not tested here",
+      "correction": "The checked project uses Docker/AltServer-Linux and a running server; its current notes require an unlocked device on the same Wi-Fi."
+    },
+    {
+      "claim": "Shortcuts guarantee unattended timely renewal",
+      "verdict": "not established",
+      "correction": "Triggers do not supply installation permission or a guaranteed execution deadline."
+    },
+    {
+      "claim": "paid membership permanently solves renewal",
+      "verdict": "overstated",
+      "correction": "Membership is annual; material expiry/revocation and reinstall still matter. TestFlight builds have a separate maximum 90-day testing window and applicable review."
+    },
+    {
+      "claim": "historical jailbreak tools work on every current device",
+      "verdict": "not established",
+      "correction": "Privileged jailbreak routes are a different scenario; exact iOS/tool compatibility must be checked separately."
+    }
+  ],
+  "orderedAcceptanceGates": [
+    {
+      "order": 1,
+      "gate": "compile",
+      "passEvidence": "Apply the two exact test call fixes and run one coherent SDK/Native selection after the pending batch is composed. Compilation success alone grants no renewal acceptance."
+    },
+    {
+      "order": 2,
+      "gate": "authenticated read-only route",
+      "passEvidence": "On the intended device under explicitly recorded conditions, bind service protocol, pairing identity, authenticated transport and installation Lookup. If this fails, keep strict standalone renewal unaccepted and do not request another generic TCP-only test."
+    },
+    {
+      "order": 3,
+      "gate": "Apple material renewal",
+      "passEvidence": "A real authorized account yields same-team/same-identity profiles with later expiration for all application components. Preserve certificate/private-key association and handle quotas."
+    },
+    {
+      "order": 4,
+      "gate": "full IPA cryptography",
+      "passEvidence": "Sign the full original-JVM application and all nested code, independently verify CMS, CodeDirectory, resources, entitlements and archive. Retain before/after digests."
+    },
+    {
+      "order": 5,
+      "gate": "actual replacement and cold launch",
+      "passEvidence": "Actual same-identity overwrite, new-process observation of the later installed expiry, and preserved books/sources/reading progress. Upgrade ACK and bundle/version Lookup alone cannot pass."
+    },
+    {
+      "order": 6,
+      "gate": "automatic cycles and recovery",
+      "passEvidence": "Repeated actual foreground/system-granted background cycles plus interruption/restart/retry evidence; explicitly identify external recovery after the app becomes non-launchable."
+    }
+  ],
+  "primaryReferences": [
+    "https://developer.apple.com/help/account/basics/about-your-developer-account/",
+    "https://developer.apple.com/help/account/reference/supported-capabilities-ios/",
+    "https://docs.sidestore.io/docs/installation/prerequisites",
+    "https://docs.sidestore.io/docs/installation/install",
+    "https://faq.altstore.io/altstore-classic/altserver",
+    "https://github.com/filippofinke/sideloop",
+    "https://developer.apple.com/documentation/backgroundtasks/bgtaskrequest/earliestbegindate",
+    "https://developer.apple.com/programs/whats-included/",
+    "https://developer.apple.com/help/app-store-connect/test-a-beta-version/testflight-overview/"
+  ],
+  "currentLocalSourceFacts": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+      "bytes": 29023,
+      "sha256": "1b917b4b678e7b1df40f2f0e6d32210852cf9604ce759c8723b357aa274e1ec5"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "bytes": 57793,
+      "sha256": "2b46314c0920eaf82d8ea87941636230fb24d6fb7d9c84e56c461339fd01bcb0"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift",
+      "bytes": 18839,
+      "sha256": "62a4c1d185253d5498f74a9875d18ac0b1f56ce0e8c5b1a08866f3097d4b715c"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 114569,
+      "sha256": "139d89cd6c9c161fdc22334cc7f1fbda82b44761e28075b7ac7dc8affe489520"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalBackgroundTaskBridge.swift",
+      "bytes": 4794,
+      "sha256": "d82f34662f993493bf48e219734c65241c2411549a6b70311959c3370c64f1fe"
+    }
+  ],
+  "preservedEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/renewal-feasibility-20261021/upstream-source-bindings.json",
+      "bytes": 4701,
+      "sha256": "c8dc07e28b911a8295698f684486d4a8feb10703c0e8f9c8c4a3bb3ef2aa7e32"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-feasibility-20261021/public-capability-observation.json",
+      "bytes": 2084,
+      "sha256": "5ba466c36c14df3b9b24b1f5e73996aa0194f1bb3ba36f40ea9126b0aa1f1cd8"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-feasibility-20261021/sdk-compiler-errors.json",
+      "bytes": 378,
+      "sha256": "99e6fdd6930df73506b2bfca300611f6bd2ef915d9347dc36ce6597c89689ad1"
+    }
+  ],
+  "noDeviceOrRealAccountAccessPerformed": true,
+  "newCloudRunsOrTags": 0,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "testCompilerRepairs": {
+    "record": "docs/legado-ios/core-native-f233826-test-compiler-repair.json",
+    "exactSourceRepairsIntegrated": true,
+    "SDKRevalidation": "pending",
+    "renewalAcceptance": false
+  }
+}

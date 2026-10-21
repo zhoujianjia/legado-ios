@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "status": "actual-test-compiler-errors-repaired-SDK-revalidation-pending",
+  "failedSourceCommit": "f23382618c747c97c23a1c345664cffd589a5359",
+  "actualFailedRuns": [
+    39524696933,
+    39524697051
+  ],
+  "changes": [
+    "isLongClick:false explicitly chooses ordinary action for the synthetic local-page producer; it does not invent a default API argument",
+    "XCTUnwrap requires the actual owned fixture contentBatch to exist before prefixing it; nil is a fixture failure, never silently converted to empty batch code"
+  ],
+  "sourceFiles": [
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift",
+      "bytes": 93635,
+      "sha256": "aa4162285fd449d0cb37cb0e3802f10b69dd53c7081d8c20306c0c0d0a63b7f8"
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "bytes": 109194,
+      "sha256": "ddf09646d1221b8bf659cb8311d814278a521bb97a44e09917d61e94397ab8c1"
+    }
+  ],
+  "rootReview": "Exact byte transformations and unchanged XCTest method identities checked before canonical writes.",
+  "productionChanges": 0,
+  "newTestDefinitions": 0,
+  "newSDKExecutions": 0,
+  "newCloudRuns": 0,
+  "limits": [
+    "No Swift compiler/parser/SDK/JNI execution of this candidate",
+    "These two test fixes do not repair or prove any installation/renewal functionality",
+    "Resource and native-information candidates remain independent future sources; whole-file replacement would discard their Reader hunks"
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "archivedDiffFormat": "Zero-context unified diffs generated from exact frozen before/after bytes; original full-context diff hashes remain in reviewed-candidate.json. Initial staging guard rejected whitespace-only context lines before commit."
+}
