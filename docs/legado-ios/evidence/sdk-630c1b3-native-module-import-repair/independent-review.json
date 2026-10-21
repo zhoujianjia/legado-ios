@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "status": "source-approved-actual-SDK-pending",
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "final": {
+    "path": ".build/sdk-630c1b3-native-module-import-repair/final-v2.json",
+    "bytes": 3025,
+    "sha256": "35b60f48d60713c6d0110c968ea92d5e93f0fcbf82f08a838625ea1e60f0e7ba"
+  },
+  "scope": "One defining-module import in existing Native reader test; no logic, dependency, method, selector, host or budget change.",
+  "sourceRoot": ".build/sdk-630c1b3-native-module-import-repair/snapshot-v1/work",
+  "source": {
+    "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+    "baseline": {
+      "path": ".build/sdk-630c1b3-native-module-import-repair/rawbaseline/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "bytes": 174559,
+      "sha256": "bf9d49552847d332d72be47a577cbf6261bfbb7cfe6cf58c1bae9ad47020fdd5"
+    },
+    "candidate": {
+      "path": ".build/sdk-630c1b3-native-module-import-repair/snapshot-v1/work/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "bytes": 174580,
+      "sha256": "67821a56afbb7287d32786be66bc0f272286cb2d58737d2a3f744ebd26cfc2a4"
+    },
+    "diff": {
+      "path": ".build/sdk-630c1b3-native-module-import-repair/native-reader-import.diff",
+      "bytes": 304,
+      "sha256": "f8aec1b8a3475c4e8879404ce9ed67308db3c3f6998b002d4a2afa8047a4b1be"
+    },
+    "canonicalBytesMatch": true
+  },
+  "actualFailedRun": {
+    "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
+    "run": 39564545834,
+    "job": 119103568353,
+    "rawLog": {
+      "path": ".build/sdk-630c1b3-terminal/artifact-12331196880/reader-renewal-probe/currentcore-tests.log",
+      "bytes": 8103373,
+      "sha256": "4b449cd1fc2dcdd24070c9d39ad45c97d94750bef14ec64f586d7caccbc6e4d0"
+    },
+    "nativePhase": {
+      "path": ".build/sdk-630c1b3-terminal/artifact-12331196880/reader-renewal-probe/currentcore-phase-native.json",
+      "bytes": 120152,
+      "sha256": "2363ecf59cfb135a856ec4f3e71e91c700486287b8bc16985e3d76a3abe715d0"
+    },
+    "uniqueCompilerErrors": [
+      [
+        32872,
+        "/Users/runner/work/legado-ios/legado-ios/Tests/iOS/LegadoNativeOriginalReaderTests.swift:1761:66: error: enum case 'horizontal' is not available due to missing import of defining module 'YueduCoreText'"
+      ]
+    ],
+    "importSuggestionLine": 32875,
+    "timedOut": false,
+    "elapsedSeconds": 1639.640208,
+    "actualAppTests": 0,
+    "wrapperCommandExitCode": 1,
+    "reportedXcodebuildExitCode": 65
+  },
+  "moduleOwnership": {
+    "type": "YueduCoreText.ReaderWritingMode.horizontal",
+    "productionUse": "Modules/Services/LibraryStore/Models.swift:898",
+    "existingTestImport": "Tests/iOS/yuedu appTests/CoreTextWritingModeTests.swift:1",
+    "projectPackageProduct": "Yuedu-Reader.xcodeproj/project.pbxproj:1332",
+    "existingTestTargetDependency": "Yuedu-Reader.xcodeproj/project.pbxproj:620"
+  },
+  "metadataHistory": {
+    "v2OnlyCorrectsEnumTypeName": true,
+    "v1": {
+      "path": ".build/sdk-630c1b3-native-module-import-repair/final-v1.json",
+      "bytes": 2715,
+      "sha256": "77c1d075e0422566447ecb7e0deb683051235f0876d5d8a8729b5f45a59b32f4",
+      "reason": "Correct enum type name; the one import source and every source byte are unchanged."
+    }
+  },
+  "checks": [
+    {
+      "name": "final manifest exact",
+      "passed": true
+    },
+    {
+      "name": "baseline bound bytes and sha256",
+      "passed": true
+    },
+    {
+      "name": "candidate bound bytes and sha256",
+      "passed": true
+    },
+    {
+      "name": "diff bound bytes and sha256",
+      "passed": true
+    },
+    {
+      "name": "baseline is actual failed source Git blob",
+      "passed": true
+    },
+    {
+      "name": "candidate equals canonical source bytes",
+      "passed": true
+    },
+    {
+      "name": "only one defining-module import added",
+      "passed": true
+    },
+    {
+      "name": "source LF and zero NUL",
+      "passed": true
+    },
+    {
+      "name": "raw log and phase bound",
+      "passed": true
+    },
+    {
+      "name": "one actual unique compiler diagnostic",
+      "passed": true
+    },
+    {
+      "name": "compiler explicitly recommends import",
+      "passed": true
+    },
+    {
+      "name": "phase failed 65 without timeout",
+      "passed": true
+    },
+    {
+      "name": "no App test start before compilation failure",
+      "passed": true
+    },
+    {
+      "name": "defining-module data flow",
+      "passed": true
+    },
+    {
+      "name": "existing project package and test dependency",
+      "passed": true
+    },
+    {
+      "name": "four completion flags remain false",
+      "passed": true
+    },
+    {
+      "name": "no definitions hosts selectors or executions added",
+      "passed": true
+    },
+    {
+      "name": "manifest v1 facts and metadata-only v2 successor",
+      "passed": true
+    }
+  ],
+  "actualReviewExecution": {
+    "tests": 0,
+    "SwiftCompilerOrParser": 0,
+    "cloudQueriesOrDownloads": 0,
+    "canonicalOrGitMutation": 0
+  },
+  "limits": [
+    "The repair resolves the exact missing-import source diagnostic; no subsequent Apple compilation or App test pass is asserted.",
+    "Actual failed SDK had zero App test execution; independent Native run status was not queried."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "reviewCorrectionHistory": {
+    "previous": {
+      "path": ".build/sdk-630c1b3-native-module-import-independent-review/review-v1.json",
+      "bytes": 5352,
+      "sha256": "337d05f4500473318b9159add09582c997178f6b4d9d08411f0b8a210bfa7ddd"
+    },
+    "reason": "Correct two local review predicates: the import is inserted after UIKit, and the phase records wrapper exit 1 separately from reported xcodebuild exit 65. Both match the frozen diff/raw phase; no source or evidence changed.",
+    "testsOrCompilerExecuted": 0
+  }
+}

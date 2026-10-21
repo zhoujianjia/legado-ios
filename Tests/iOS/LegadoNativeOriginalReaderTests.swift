@@ -8,6 +8,7 @@ import LegadoRuntime
 import WebKit
 import XCTest
 import UIKit
+import YueduCoreText
 @testable import yuedu_app
 
 /// The existing native-reader target must link the real ordinary JAR and Zero VM.

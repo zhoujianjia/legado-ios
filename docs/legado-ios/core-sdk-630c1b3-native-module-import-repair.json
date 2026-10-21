@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "status": "reviewed-source-integrated-actual-SDK-and-full-Native-pending",
+  "reasonZh": "实际 SDK 编译失败指出 ReaderWritingMode.horizontal 缺少定义模块 YueduCoreText 导入；仅补上该 import。",
+  "actualFailedSource": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
+  "actualFailedRun": 39564545834,
+  "actualFailedJob": 119103568353,
+  "changedSources": [
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "bytes": 174580,
+      "sha256": "67821a56afbb7287d32786be66bc0f272286cb2d58737d2a3f744ebd26cfc2a4"
+    }
+  ],
+  "sourceCounts": {
+    "core": 418,
+    "native": 282,
+    "union": 440,
+    "package": 23
+  },
+  "all440CurrentInputsVerified": true,
+  "Package23InputsUnchanged": true,
+  "onlyImportLineChanges": true,
+  "newTestDefinitions": 0,
+  "newHostsOrSelectors": 0,
+  "sourceRosterDelta": {
+    "path": "docs/legado-ios/evidence/sdk-630c1b3-native-module-import-repair/source-roster-delta.json",
+    "bytes": 1162,
+    "sha256": "cd8cc2aacaf27f4319a321d76ada303e0266d1e9d4e323c506876c7a9faa1432"
+  },
+  "evidence": [
+    {
+      "path": "docs/legado-ios/evidence/sdk-630c1b3-native-module-import-repair/compiler-failure.json",
+      "bytes": 1149,
+      "sha256": "30e099d7a6439bf88a7181eb771626d96f44a28056cbcb5850b4833dfacd86f9"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-630c1b3-native-module-import-repair/module-import-diff.json",
+      "bytes": 705,
+      "sha256": "97cb28834265484e3d6c75992f5e5b3889746d4e45cf8cabb70272e1e3972ce8"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-630c1b3-native-module-import-repair/independent-review.json",
+      "bytes": 5957,
+      "sha256": "b88f05a953ebbd928d93fbd275e2d98a1df347a30fdb9ec5ae30c731e5e9de5d"
+    }
+  ],
+  "intendedUnchangedSelection": {
+    "SDKDefinitions": 479,
+    "SDKLeaves": 482,
+    "boolPairs": 3,
+    "originalNativeMethods": 32,
+    "productNativeMethods": 29,
+    "platformNativeMethods": 3,
+    "MainJS": 1,
+    "coldIndependent": 2,
+    "fullS3RequiredDefinitions": 1,
+    "PackageDefinitions": 24
+  },
+  "actualNewValidation": {
+    "SwiftCompilationOrParser": 0,
+    "newSwiftTests": 0,
+    "newCloudRuns": 0
+  },
+  "temporaryCompatibilityTargetPercent": 90,
+  "measuredCompatibilityPercent": null,
+  "otherSeventeenItemsRemainDeferred": true,
+  "limits": [
+    "Import repair awaits actual SDK and full Native execution.",
+    "Immutable source630 results and all earlier failures remain unchanged.",
+    "No real Apple authorization, same-device install, expiry extension, cold data retention or unattended renewal acceptance."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

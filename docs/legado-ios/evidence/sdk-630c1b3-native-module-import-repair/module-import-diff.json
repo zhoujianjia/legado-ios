@@ -1,0 +1,9 @@
+{
+  "rawPatchIgnoredFact": {
+    "path": ".build/sdk-630c1b3-native-module-import-repair/native-reader-import.diff",
+    "bytes": 304,
+    "sha256": "f8aec1b8a3475c4e8879404ce9ed67308db3c3f6998b002d4a2afa8047a4b1be"
+  },
+  "patch": "--- a/Tests/iOS/LegadoNativeOriginalReaderTests.swift\n+++ b/Tests/iOS/LegadoNativeOriginalReaderTests.swift\n@@ -8,6 +8,7 @@\n import WebKit\n import XCTest\n import UIKit\n+import YueduCoreText\n @testable import yuedu_app\n \n /// The existing native-reader target must link the real ordinary JAR and Zero VM.\n",
+  "reasonForJSONEncoding": "Preserve exact patch including blank context lines without treating patch context as whitespace in the containing Git diff."
+}
