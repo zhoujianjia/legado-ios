@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "status": "source-review-approved-actual-CI-pending",
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "final": {
+    "path": ".build/native-s3-independent-attempt/proposal-v1.json",
+    "bytes": 3599,
+    "sha256": "f80250f0825cea060d5c2c826c7b42cfcd7fe60c4ed0398c326775c12b448fd8"
+  },
+  "sourceRoot": ".build/native-s3-independent-attempt/snapshot-v1/work",
+  "baselineSource": "e67e4b25b12eadb92099d7be889684d90f952716",
+  "files": [
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "baseline": {
+        "git": "e67e4b25b12eadb92099d7be889684d90f952716",
+        "bytes": 14745,
+        "sha256": "59fc0da0fc2944b7f9e96d21203e19af052fbaa135e94d4ee766890f122f4c1b"
+      },
+      "candidate": {
+        "path": ".build/native-s3-independent-attempt/snapshot-v1/work/.github/workflows/legado-native-reader-test.yml",
+        "bytes": 15026,
+        "sha256": "308a9205a29147d3783f8d4a7c22d9b2ddd370e03ec657e9b9665001b9609865"
+      },
+      "workingExactCandidate": true,
+      "reviewedDiff": {
+        "bytes": 1335,
+        "sha256": "5229af698c5414cbf2819ef721a4fae6e1a692389dc7c2ef4999d3da5e5dc491"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "baseline": {
+        "git": "e67e4b25b12eadb92099d7be889684d90f952716",
+        "bytes": 44808,
+        "sha256": "1ce2313479aecd02f607ef3325fa3ac3607cddcd7e0e41760ff2f1cb1e17238d"
+      },
+      "candidate": {
+        "path": ".build/native-s3-independent-attempt/snapshot-v1/work/scripts/reader-experience/test-native-smoke-tools.py",
+        "bytes": 45593,
+        "sha256": "092ed74cf578b2abc1640f2c0c5473f7b88d2e7dc1e8fa2deeefada917105c33"
+      },
+      "workingExactCandidate": true,
+      "reviewedDiff": {
+        "bytes": 1723,
+        "sha256": "b76c4caf37a246ccd7bc7974b8151f62ab1a1da070c933128da8ca214d64bc66"
+      }
+    }
+  ],
+  "readOnlyDependencies": [
+    {
+      "path": "scripts/reader-experience/native-smoke-tools.py",
+      "bytes": 85166,
+      "sha256": "b82d419f9e86f8b156fcb92c4797434734b3a686e0ef15c4530d238c20e85bad"
+    },
+    {
+      "path": "scripts/reader-experience/full-application-signing-tools.py",
+      "bytes": 18444,
+      "sha256": "9d5dc206f766351cdb10fc0e9029774880f1560b0e9188c39fe178760abf966d"
+    }
+  ],
+  "checks": [
+    {
+      "check": "proposalExactSuppliedBytesAndSHA",
+      "passed": true
+    },
+    {
+      "check": "baselineExactGit:.github/workflows/legado-native-reader-test.yml",
+      "passed": true
+    },
+    {
+      "check": "candidateAndWorkingExact:.github/workflows/legado-native-reader-test.yml",
+      "passed": true
+    },
+    {
+      "check": "baselineExactGit:scripts/reader-experience/test-native-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "check": "candidateAndWorkingExact:scripts/reader-experience/test-native-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "check": "entireWorkflowRestoresBaselineByOnlyTwoDeclaredEdits",
+      "passed": true
+    },
+    {
+      "check": "uniquePrepareStepIDAndNoContinueOnError",
+      "passed": true
+    },
+    {
+      "check": "existingFull150Cold120JobBudgetsPreserved",
+      "passed": true
+    },
+    {
+      "check": "onlyExistingWorkflowPortableMethodChanged",
+      "passed": true
+    },
+    {
+      "check": "allPortableDefinitionsAndOrderUnchanged",
+      "passed": true
+    },
+    {
+      "check": "requiredRuntimeToolExactBaseline:scripts/reader-experience/native-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "check": "requiredRuntimeToolExactBaseline:scripts/reader-experience/full-application-signing-tools.py",
+      "passed": true
+    },
+    {
+      "check": "requiredS3FinalOneDefinitionOneLeafVerifierStillCalled",
+      "passed": true
+    },
+    {
+      "check": "retainedActualPortableLogContainsExactlyTwoSuccessfulRequestedMethods",
+      "passed": true
+    }
+  ],
+  "schedulingAssessment": {
+    "earlyFailureBeforeSimulatorPreparation": "Existing default success() conditions remain on required ordinary runtime/restore/device build-and-producer/Simulator prep; if they fail, native_simulator_prepare cannot have success outcome, so the independent attempt is blocked.",
+    "failedSeparateS3Execution": "Once Simulator prep succeeded, always() suppresses implicit success() for only the independent host step; !cancelled() and the ordinary-tag exclusion remain mandatory. The failed S3 step has no continue-on-error and still fails the job.",
+    "acceptance": "Independent hosts can only be attempted. native.result still calls unchanged fullS3 same-job/source/resources/six-command/one-definition-one-leaf verification; focused cold branch and all commands/selectors/budgets are byte-exact baseline.",
+    "documentation": "https://docs.github.com/en/actions/reference/workflows-and-actions/expressions#status-check-functions"
+  },
+  "retainedActualValidation": {
+    "portable": {
+      "path": ".build/native-s3-independent-attempt/portable-check.json",
+      "bytes": 952,
+      "sha256": "a7e90a02ca604d67eea24d16adf11d03a32de62295cbd7ec1bb4fc8abcefe5ea"
+    },
+    "methods": [
+      "NativeSmokeProvenanceTests.test_complete_application_result_requires_actual_same_job_case_outputs_and_resources",
+      "NativeSmokeProvenanceTests.test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging"
+    ],
+    "executions": 2,
+    "passed": 2,
+    "scope": "Supplied successful existing-method output inspected; review did not execute or re-run it."
+  },
+  "reviewActions": {
+    "testsExecuted": 0,
+    "parsersExecuted": 0,
+    "cloudActionsQueries": 0,
+    "cloudRunsOrTags": 0,
+    "sourceOrCanonicalMutation": 0,
+    "gitMutation": 0
+  },
+  "limits": [
+    "Actual GitHub scheduling and Apple execution remain unverified for this candidate.",
+    "Common test-target compiler errors may still prevent every selected host from starting.",
+    "The full route retains its existing shared 150-minute job budget. This change provides neither acceleration nor a success claim for an existing live run."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "reviewPreparationHistory": "Before freezing this review, its own successful-output line matcher was corrected to normalize retained CRLF. No source, log, assertion or functional test execution changed; this was not a candidate finding."
+}

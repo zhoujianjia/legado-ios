@@ -1158,6 +1158,10 @@ CURRENTCORE_FIRST_REGISTRATION_FULL_APPLICATION_INPUTS = ('.github/workflows/leg
 SOURCE_INPUTS += tuple(path for path in CURRENTCORE_FIRST_REGISTRATION_FULL_APPLICATION_INPUTS if path not in SOURCE_INPUTS)
 assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 418
 
+CURRENTCORE_FULL_APPLICATION_INFO_INPUTS = ('ShareExtension/Info.plist', 'Widget/Info.plist')
+SOURCE_INPUTS += CURRENTCORE_FULL_APPLICATION_INFO_INPUTS
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 420
+
 
 def selection_mode():
     mode = os.environ.get("YUEDU_RENEWAL_SELECTION", "all")

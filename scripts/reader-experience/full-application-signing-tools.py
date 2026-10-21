@@ -68,6 +68,7 @@ def signing_source_inputs():
         "scripts/reader-experience/full-application-signing-tools.py",
         "scripts/reader-experience/build.sh", "scripts/reader-experience/stage-config.py",
         "scripts/reader-experience/runtime-packaging.py", "scripts/reader-experience/runtime-notices.py",
+        "ShareExtension/Info.plist", "Widget/Info.plist",
         "scripts/legado-ios/stage-runtime.py", "scripts/legado-ios/verify-runtime.py",
         "scripts/legado-ios/verify-native-reuse.py", "scripts/legado-ios/runtime-lock.json",
         "scripts/xctest.sh", "scripts/reader-experience/smoke-tools.py",

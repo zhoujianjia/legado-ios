@@ -1,0 +1,199 @@
+{
+  "schemaVersion": 1,
+  "status": "reviewed-source-integrated-actual-SDK-and-full-Native-pending",
+  "actualFailedSource": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+  "actualNativeRun": 39578204500,
+  "actualSDKRun": 39578204127,
+  "actualNativeTerminalRecord": "docs/legado-ios/core-native-f330274-terminal-result.json",
+  "actualSDKTerminalRecord": "docs/legado-ios/core-sdk-f330274-terminal-result.json",
+  "previousRuntimeFollowup": {
+    "path": "docs/legado-ios/core-sdk-f330274-runtime-followup.json",
+    "bytes": 5617,
+    "sha256": "88938a536e545f381ef644321a491fd7988f2e1b836d4e1f43fa11ec48c58ee8"
+  },
+  "sourceCounts": {
+    "core": 420,
+    "native": 284,
+    "package": 23,
+    "union": 442
+  },
+  "all442CurrentInputsVerified": true,
+  "Package23InputsUnchanged": true,
+  "changedSources": [
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "bytes": 15026,
+      "sha256": "308a9205a29147d3783f8d4a7c22d9b2ddd370e03ec657e9b9665001b9609865"
+    },
+    {
+      "path": "Modules/Services/Network/CookieStore+WebKit.swift",
+      "bytes": 14370,
+      "sha256": "6c2870c1808c335741f31c5a7be58f6e0b8afa936b3e5db07c1e1413ccf563dc"
+    },
+    {
+      "path": "Modules/Services/Network/WebViewFetcher.swift",
+      "bytes": 38594,
+      "sha256": "2173c7b7150b6f33c46a95cc172a644c5aa27a8b20cc4a3e558c37faee79dc48"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "bytes": 129471,
+      "sha256": "a7351a931474e378cae73af33d1c056c3eb664b072f18f0c773749c8cc765e0e"
+    },
+    {
+      "path": "ShareExtension/Info.plist",
+      "bytes": 1412,
+      "sha256": "2081e9ce6f16e3c4378dd510efab524d7228498827f7495428e39472f778e09d"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift",
+      "bytes": 40870,
+      "sha256": "66bc61ba5f9d6ab2817402542d26e6de8b124d92f65e925466109d4d9a8e54b2"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+      "bytes": 23332,
+      "sha256": "4f0148487ae02d5376077aeddb521e4dc2d4f898c07ae3c3b754838991f00aab"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift",
+      "bytes": 32981,
+      "sha256": "5a9621f70e59efb4b4b1db001777ecc8609e14d49108327dcfd8dbf10a220a13"
+    },
+    {
+      "path": "Widget/Info.plist",
+      "bytes": 866,
+      "sha256": "c6275c6c63f932e7f567b7b60eabedc4386a4337dcd2efff46f9301167cbb74c"
+    },
+    {
+      "path": "scripts/reader-experience/full-application-signing-tools.py",
+      "bytes": 18502,
+      "sha256": "87ea1c03769e050aa1c9d7db563c0603389eb0bba2b8469053abb32ccc951355"
+    },
+    {
+      "path": "scripts/reader-experience/native-smoke-tools.py",
+      "bytes": 85369,
+      "sha256": "92c1e37f0bf008778754baeccb7e6e425cbe481adc4a7b8beea9f85134b5f580"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/full-application-package.py",
+      "bytes": 17140,
+      "sha256": "05e91f796cf199932447714e2754768117b151b118b4aad27f41aca761ff3ae8"
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "bytes": 213451,
+      "sha256": "43353c2d72a3a5994caa0fe620332bbd2bed95bb6322565f66c4b4ba80b03aaa"
+    },
+    {
+      "path": "scripts/reader-experience/test-full-application-signing-tools.py",
+      "bytes": 17848,
+      "sha256": "3d46cd7496288c45cf62221c7e14fc568c7e12199a68125b7b03a1c46b378e5a"
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "bytes": 45816,
+      "sha256": "c77d7bf1e3241e70dcebfb11506fed9906d5c680ed14d58d3f0febc808e4c552"
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "bytes": 197397,
+      "sha256": "dc02fe993b4731118bcd31a0430734f57906f4fecc95bd2ed2e622423909abb2"
+    }
+  ],
+  "newTestDefinitions": 0,
+  "newHostsOrSelectors": 0,
+  "changes": [
+    "Both authored extension Info.plists explicitly declare XPC! for the existing strict inventory parser. The full owned producer rejects incomplete expected-bundle metadata before codesign without altering the input.",
+    "Both production extension plists are now declared inputs of full signing, SDK and Native evidence; all existing source-count guards match420/284/442, with independent Package23 unchanged.",
+    "After successful Simulator preparation, ordinary independent MainJS/Original/cold attempts may run even when the required S3 test failed. S3 and whole-job acceptance remain mandatory and fail closed.",
+    "The prior six reviewed Cookie response/diagnostic and renewal-oracle changes remain composed into this exact checkpoint."
+  ],
+  "unresolved": [
+    "missingSpecialSlot(1) occurred during initial complete-input verification after five framework signatures. Missing extension package types are supported by authored source and actual build commands; the processed extension Info.plists were not archived, so exact built missing-key causality still requires the new actual run.",
+    "Cookie expiry remains unresolved; the next actual run must produce exact numeric representation diagnostics without tolerance or rebasing.",
+    "No post-fix Apple SDK, full-package signing, JNI or cold host execution has occurred. Individual review and portable checks do not establish those results."
+  ],
+  "sourceRosterDelta": {
+    "path": "docs/legado-ios/evidence/sdk-f330274-s3-metadata-followup/source-roster-delta.json",
+    "bytes": 8819,
+    "sha256": "7cacf87d395ddeafcf59314b7542b2f3046fa1a4caf9c32a28ace583cb6aeff0"
+  },
+  "evidence": [
+    {
+      "path": "docs/legado-ios/evidence/sdk-f330274-s3-metadata-followup/metadata-source-candidate.json",
+      "bytes": 9468,
+      "sha256": "d36719b1a8563cf6d05abcaf587e60673be4517289fcd0ebc85f12049fd6bc24"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-f330274-s3-metadata-followup/metadata/independent-review.json",
+      "bytes": 6604,
+      "sha256": "5af0236cfb87def94ba9d53424bdf562afc75330dc73c5f93176431cab035895"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-f330274-s3-metadata-followup/independent-attempt-source-candidate.json",
+      "bytes": 3599,
+      "sha256": "f80250f0825cea060d5c2c826c7b42cfcd7fe60c4ed0398c326775c12b448fd8"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-f330274-s3-metadata-followup/independent-attempt/independent-review.json",
+      "bytes": 6505,
+      "sha256": "45b21d8901176c7f638145635557b3599c60da568c9b67c60f1c4d2918577cb4"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-f330274-s3-metadata-followup/cause-evidence-v1.json",
+      "bytes": 7090,
+      "sha256": "d336689ba24f54da620a253d74dae4cc8eed8fadff2469589fb43e8717697aee"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-f330274-s3-metadata-followup/portable-full-result-v1.json",
+      "bytes": 544,
+      "sha256": "4799299dde17e1e01f18b772fa6bbe0147c857d2ea500fb2b3abaf935e0b51e7"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-f330274-s3-metadata-followup/portable-native.log",
+      "bytes": 109,
+      "sha256": "cb45d7bb7dd8e53712f0a403bd4e74b105e0e9b5afec1c41865d2908ae3ac95b"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-f330274-s3-metadata-followup/portable-core.log",
+      "bytes": 177,
+      "sha256": "61b6ab25f3dd0f07e47009d70ce6196c2eae49c3b460793d61d72879e11160f7"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-f330274-s3-metadata-followup/reviewed-source-diffs.json",
+      "bytes": 47767,
+      "sha256": "22c2064a4733bcf6fe2bec51ddf529f27cc13f94cc6c05614573c88ec16a164a"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-f330274-s3-metadata-followup/source-roster-delta.json",
+      "bytes": 8819,
+      "sha256": "7cacf87d395ddeafcf59314b7542b2f3046fa1a4caf9c32a28ace583cb6aeff0"
+    },
+    {
+      "path": "docs/legado-ios/core-sdk-f330274-runtime-followup.json",
+      "bytes": 5617,
+      "sha256": "88938a536e545f381ef644321a491fd7988f2e1b836d4e1f43fa11ec48c58ee8"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-f330274-s3-metadata-followup/portable-public-normalization.json",
+      "bytes": 1343,
+      "sha256": "9a51114b4849a35677262077d2f38d1dc3135e4185f706ad76c8d46abc2b73c0"
+    }
+  ],
+  "temporaryCompatibilityTargetPercent": 90,
+  "measuredCompatibilityPercent": null,
+  "otherSeventeenItemsRemainDeferred": true,
+  "limits": [
+    "No real Apple authorization, on-device installation permission, renewed installed profile, cold replacement data retention or unattended renewal acceptance. Declared input rosters are not every transitive Xcode input."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "portablePublicNormalization": {
+    "path": "docs/legado-ios/evidence/sdk-f330274-s3-metadata-followup/portable-public-normalization.json",
+    "bytes": 1343,
+    "sha256": "9a51114b4849a35677262077d2f38d1dc3135e4185f706ad76c8d46abc2b73c0"
+  }
+}

@@ -6,6 +6,7 @@ import hashlib
 import importlib.util
 import json
 from pathlib import Path
+import plistlib
 import struct
 import tempfile
 from types import SimpleNamespace
@@ -116,6 +117,60 @@ class FullApplicationSigningProtocolTests(unittest.TestCase):
             HERE / 'owned-package-fixture/full-application-package.py')
         full = importlib.util.module_from_spec(full_spec)
         full_spec.loader.exec_module(full)
+        # Synthetic metadata only: no Apple SDK, codesign or real App input.
+        main_info = {'CFBundleIdentifier': 'test.owned.reader', 'CFBundleExecutable': 'Reader',
+            'CFBundleShortVersionString': '3.0.0', 'CFBundleVersion': '14',
+            'CFBundlePackageType': 'APPL', 'CFBundleSupportedPlatforms': ['iPhoneOS']}
+        roles = {'.': None, 'PlugIns/yuedu_app_ShareExtension.appex': 'com.apple.share-services',
+            'PlugIns/yuedu_app_Widget.appex': 'com.apple.widgetkit-extension'}
+        for relative, point in roles.items():
+            info = copy.deepcopy(main_info)
+            if point is not None:
+                info['CFBundlePackageType'] = 'XPC!'
+                info['NSExtension'] = {'NSExtensionPointIdentifier': point}
+            original = copy.deepcopy(info)
+            full.validate_expected_bundle_metadata(info, relative)
+            self.assertEqual(info, original)
+            for field in ('CFBundleIdentifier', 'CFBundleExecutable', 'CFBundleShortVersionString',
+                          'CFBundleVersion', 'CFBundlePackageType', 'CFBundleSupportedPlatforms'):
+                missing = copy.deepcopy(info)
+                del missing[field]
+                with self.subTest(bundle=relative, missing=field), self.assertRaises(ValueError):
+                    full.validate_expected_bundle_metadata(missing, relative)
+            for field, value in (('CFBundleIdentifier', 'test..reader'), ('CFBundleIdentifier', '.reader'),
+                    ('CFBundleIdentifier', 'reader.'), ('CFBundleIdentifier', 'x' * 256),
+                    ('CFBundleIdentifier', 1), ('CFBundleExecutable', '../Reader'),
+                    ('CFBundleExecutable', 'sub\\Reader'), ('CFBundleExecutable', '.'),
+                    ('CFBundleExecutable', 'x' * 256), ('CFBundleShortVersionString', ''),
+                    ('CFBundleShortVersionString', 'x' * 65), ('CFBundleVersion', 14),
+                    ('CFBundleVersion', '14 '), ('CFBundlePackageType', 'FMWK'),
+                    ('CFBundleSupportedPlatforms', ['iPhoneSimulator'])):
+                invalid = dict(info, **{field: value})
+                with self.subTest(bundle=relative, invalid=field, value=value), self.assertRaises(ValueError):
+                    full.validate_expected_bundle_metadata(invalid, relative)
+            invalid = copy.deepcopy(info)
+            if point is None:
+                invalid['NSExtension'] = {'NSExtensionPointIdentifier': 'com.apple.share-services'}
+            else:
+                del invalid['NSExtension']
+            with self.subTest(bundle=relative, missing_or_extra_extension=True), self.assertRaises(ValueError):
+                full.validate_expected_bundle_metadata(invalid, relative)
+            if point is not None:
+                invalid = dict(info, NSExtension={'NSExtensionPointIdentifier': 'wrong.extension'})
+                with self.subTest(bundle=relative, wrong_extension=True), self.assertRaises(ValueError):
+                    full.validate_expected_bundle_metadata(invalid, relative)
+        # Existing build input bytes must explicitly retain the extension role.
+        for relative in ('ShareExtension/Info.plist', 'Widget/Info.plist'):
+            self.assertEqual(plistlib.loads((HERE.parents[1] / relative).read_bytes())['CFBundlePackageType'], 'XPC!')
+        self.assertTrue({'ShareExtension/Info.plist', 'Widget/Info.plist'} <= {
+            row['path'] for row in tools.signing_source_inputs()})
+        full_ast = ast.parse((HERE / 'owned-package-fixture/full-application-package.py').read_text())
+        production = next(v for v in full_ast.body if isinstance(v, ast.FunctionDef) and v.name == 'produce')
+        validation_call = next(v for v in ast.walk(production) if isinstance(v, ast.Call)
+            and isinstance(v.func, ast.Name) and v.func.id == 'validate_expected_bundle_metadata')
+        signing_call = next(v for v in ast.walk(production) if isinstance(v, ast.Call)
+            and isinstance(v.func, ast.Name) and v.func.id == 'codesign')
+        self.assertLess(validation_call.lineno, signing_call.lineno)
         cpu = 0x0100000c
         thin = struct.pack('<8I', 0xfeedfacf, cpu, 0, 6, 1, 24, 0, 0) + struct.pack('<6I', 0x32, 24, 2, 0, 0, 0)
         offset = 4096

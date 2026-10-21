@@ -57,6 +57,38 @@ def load_module(name,path):
     spec=importlib.util.spec_from_file_location(name,path)
     module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);return module
 
+def validate_expected_bundle_metadata(info,relative):
+    """Refuse incomplete real input before codesign; never fill or rewrite it.
+
+    These are the same required fields/roles consumed by MaterialInventory.
+    Missing extension metadata must not first appear as a missing Info slot.
+    """
+    points={'PlugIns/yuedu_app_ShareExtension.appex':'com.apple.share-services',
+        'PlugIns/yuedu_app_Widget.appex':'com.apple.widgetkit-extension'}
+    if relative!='.' and relative not in points:raise ValueError('full-app unknown expected bundle')
+    if not isinstance(info,dict):raise ValueError('full-app invalid required metadata '+relative+' dictionary')
+    identifier=info.get('CFBundleIdentifier')
+    if (not isinstance(identifier,str) or len(identifier)>255
+        or re.fullmatch(r'[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*',identifier) is None):
+        raise ValueError('full-app invalid required metadata '+relative+' CFBundleIdentifier')
+    executable=info.get('CFBundleExecutable')
+    if (not isinstance(executable,str) or not 1<=len(executable)<=255 or executable in ('.','..')
+        or any(not 32<=ord(c)<=126 or c in '/\\' for c in executable)):
+        raise ValueError('full-app invalid required metadata '+relative+' CFBundleExecutable')
+    for field in ('CFBundleShortVersionString','CFBundleVersion'):
+        value=info.get(field)
+        if not isinstance(value,str) or not 1<=len(value)<=64 or any(not 33<=ord(c)<=126 for c in value):
+            raise ValueError('full-app invalid required metadata '+relative+' '+field)
+    if info.get('CFBundlePackageType')!=('APPL' if relative=='.' else 'XPC!'):
+        raise ValueError('full-app invalid required metadata '+relative+' CFBundlePackageType')
+    if relative=='.':
+        if 'NSExtension' in info:raise ValueError('full-app invalid required metadata . NSExtension')
+    elif (not isinstance(info.get('NSExtension'),dict)
+        or info['NSExtension'].get('NSExtensionPointIdentifier')!=points[relative]):
+        raise ValueError('full-app invalid required metadata '+relative+' NSExtensionPointIdentifier')
+    if info.get('CFBundleSupportedPlatforms')!=['iPhoneOS']:
+        raise ValueError('full-app must preserve real device platform')
+
 def validate_input(base,build):
     repo=base.HERE.parents[2];build=checked(build)
     manifest_path=build/'output/build-manifest.json'
@@ -110,14 +142,14 @@ def produce(base,out,owned,prepared,cms,codesign,root,at):
         file_facts.append({'path':relative,'bytes':path.stat().st_size,'sha256':digest(path)})
         if relative.startswith('lib/modules/') and relative.endswith('.class'):class_count+=1
         if path.name!='Info.plist':continue
-        info=plistlib.loads(path.read_bytes());executable=info.get('CFBundleExecutable')
+        info=plistlib.loads(path.read_bytes())
+        relative_bundle=path.parent.relative_to(app).as_posix()
+        if relative_bundle in expected:validate_expected_bundle_metadata(info,relative_bundle)
+        executable=info.get('CFBundleExecutable')
         if not isinstance(executable,str) or '/' in executable or not (path.parent/executable).is_file():continue
         binary=path.parent/executable
-        relative_bundle=path.parent.relative_to(app).as_posix()
         kind=info.get('CFBundlePackageType')
         if relative_bundle not in expected and kind!='FMWK':raise ValueError('full-app unknown native component')
-        if relative_bundle in expected and info.get('CFBundleSupportedPlatforms')!=['iPhoneOS']:
-            raise ValueError('full-app must preserve real device platform')
         identifier=info.get('CFBundleIdentifier')
         if not isinstance(identifier,str) or not re.fullmatch('[A-Za-z0-9.-]{1,255}',identifier):raise ValueError('full-app malformed identity')
         try:

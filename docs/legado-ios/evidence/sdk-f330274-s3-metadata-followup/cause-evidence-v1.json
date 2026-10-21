@@ -1,0 +1,131 @@
+{
+  "schema": 1,
+  "failedSourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+  "sourceFacts": [
+    {
+      "path": "ShareExtension/Info.plist",
+      "bytes": 1357,
+      "sha256": "baa834a313e48e2167231f8054b5d9182c97d484a70814ea83f1c96a738728a4",
+      "sameAsWorkingBaseline": true
+    },
+    {
+      "path": "Widget/Info.plist",
+      "bytes": 811,
+      "sha256": "cc7536c38da1e50231776a93f3ee71f066af78559d850616ff2481f0a7393b18",
+      "sameAsWorkingBaseline": true
+    },
+    {
+      "path": "Yuedu-Reader.xcodeproj/project.pbxproj",
+      "bytes": 55843,
+      "sha256": "51dc69ae13c60bb330d1f61222c7b36e5e5c5e2576fe900061121f913920871e",
+      "sameAsWorkingBaseline": true
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalMaterialInventory.swift",
+      "bytes": 21268,
+      "sha256": "8aac99356d13991803f5e2db10882622fc1c9c176b0b8201b521358f4f95dbd0",
+      "sameAsWorkingBaseline": true
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalMachOSignatureReader.swift",
+      "bytes": 35801,
+      "sha256": "503ccc6ccf2916be26100095e01760416f80db52fee1744a422596a6480eace9",
+      "sameAsWorkingBaseline": true
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalCodeDirectoryHashVerifier.swift",
+      "bytes": 13572,
+      "sha256": "49bb4f1008ec93cecfe99b69cb542aa03dbefe917f4474e4a2e2687e0f274a7c",
+      "sameAsWorkingBaseline": true
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift",
+      "bytes": 22554,
+      "sha256": "b88ea6c43c98e56ab94b031f39f9d31398f55fdb2eda2a79933353c983da7233",
+      "sameAsWorkingBaseline": true
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/full-application-package.py",
+      "bytes": 14984,
+      "sha256": "f818f85a412842060188f0258ce5cc6b99125944b35f7e51ff84fa4e0ea40bea",
+      "sameAsWorkingBaseline": true
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "bytes": 73458,
+      "sha256": "d8144d8bd05fb3b1043f4a3b7212243ebe3849f231cd0494f51501d2b923b249",
+      "sameAsWorkingBaseline": true
+    }
+  ],
+  "rawFacts": [
+    {
+      "path": ".build/native-f330274-terminal/artifact-12340668298/.build/s3-full-application-signing/full-application-test-build.log",
+      "bytes": 8512491,
+      "sha256": "96e759ab3c06635c4ae5fb0ed1bf76308bceb524f29a9910f1d7e38add9e1f45"
+    },
+    {
+      "path": ".build/native-f330274-terminal/artifact-12340668298/.build/s3-full-application-signing/full-application-summary.log",
+      "bytes": 1602,
+      "sha256": "eae5626c42ba68b8932b7fef1281501c5d7e0839d2ebde53fe039b80434c2e46"
+    },
+    {
+      "path": ".build/native-f330274-terminal/artifact-12340668298/.build/s3-full-application-signing/full-application-tests.log",
+      "bytes": 2207,
+      "sha256": "f6de6da8dc0a0f9c7735fe55d6fabd5a7f15b83e94582fe8865071077125695a"
+    },
+    {
+      "path": ".build/native-f330274-terminal/artifact-12340668298/.build/s3-full-application-signing/full-device-build.log",
+      "bytes": 6574030,
+      "sha256": "1f252186b19f9211fe07688c4955cde1cdc3e0e282921e7b2e99c92d0674aaf8"
+    },
+    {
+      "path": ".build/native-f330274-terminal/artifact-12340668298/.build/s3-full-application-signing/full-owned-producer.log",
+      "bytes": 11962,
+      "sha256": "0370dd691d9cff5d32fda3acb07aee5379562b629df56495d597ab504ecc9c25"
+    },
+    {
+      "path": ".build/native-f330274-terminal/artifact-12340668298/.build/s3-full-application-signing/full-sdk-owned-package.json",
+      "bytes": 2638,
+      "sha256": "1ec0dcd7e5d3ea73acaf52e23d33e38b5f3fd2859156d68058307e3b1f8383f6"
+    },
+    {
+      "path": ".build/native-f330274-terminal/artifact-12340668298/.build/s3-full-application-signing/full-sdk-produced-fixture-manifest.json",
+      "bytes": 46015,
+      "sha256": "128aa96b96033432b0a45b90ecb1e7991d1bb1a1476e2473baa2a21dd5e43e01"
+    }
+  ],
+  "actualSDKRunsAdded": 0,
+  "findings": [
+    {
+      "classification": "proved-from-actual-raw-and-source",
+      "fact": "Selected full application signing case fails during the first Unpacker.withOwnedApplication baseline validation, before Vault creation, lease publication, resign or output reopen. Raw file-count trace records 5 complete verified Mach-Os then missingSpecialSlot(1); the selected case fails once after 47.817 seconds. No compiler error or timeout is this failure."
+    },
+    {
+      "classification": "proved-from-verifier-source",
+      "fact": "missingSpecialSlot(1) requires a nonzero expected CodeDirectory Info special-slot hash with neither supplied external nor embedded material. A missing expected Info slot is not the observed error. MachOSignatureReader returns nil for all external slots when component executable-path lookup is absent. For a matched component, Info materialFact throws on unreadable/missing Info instead of returning nil."
+    },
+    {
+      "classification": "source-supported-component-inference",
+      "fact": "Producer metadata lists 5 signed framework bundles plus main/Share/Widget. Inventory code files are traversed lexically; after 5 Frameworks entries the first expected component is PlugIns/yuedu_app_ShareExtension.appex/yuedu_app_ShareExtension. Raw trace includes no failing executable path, so this attribution is an inference, not a binary-path observation."
+    },
+    {
+      "classification": "proved-from-f330-source",
+      "fact": "Both explicit extension Info.plist inputs omit CFBundlePackageType; project extension configurations do not enable GENERATE_INFOPLIST_FILE. MaterialInventory.parseInfoPlist requires a string CFBundlePackageType and nonroot invalid metadata becomes an issue with nil executable mapping. Both extensions must describe XPC! roles; main generation is separately enabled, so absence in main source plist is not equivalent."
+    },
+    {
+      "classification": "proved-producer-admission-gap",
+      "fact": "Original full producer accepted expected main/Share/Widget kinds without requiring APPL/XPC! or all MaterialInventory mandatory metadata. It signs whole bundles using codesign, deep strict Apple verification passed for all 8, and original Info bytes are protected by the unrelated-file preservation assertion. Candidate refuses invalid required metadata before any codesign, never fills or rewrites fixture metadata."
+    },
+    {
+      "classification": "not-measured",
+      "fact": "The retained artifact excludes the complete IPA and processed Info.plist/Mach-O bytes. Built extension CFBundlePackageType absence is not directly observed; builtin-infoPlistUtility output must be verified by the next actual SDK run. No new Apple build, signing or device validation has run."
+    }
+  ],
+  "unchangedProtections": [
+    "CodeDirectory slot1 requirement and tamper checks",
+    "MaterialInventory strict metadata and role checks",
+    "all 8 actual component code/resources retained",
+    "all exact selectors, hosts, budgets and success gates",
+    "original source Info bytes preserved by producer; no postbuild metadata repair"
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "status": "source-candidate-with-two-existing-portable-regressions-passed-actual-CI-pending",
+  "baselineSource": "e67e4b25b12eadb92099d7be889684d90f952716",
+  "sourceRoot": ".build/native-s3-independent-attempt/snapshot-v1/work",
+  "files": [
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "baseline": {
+        "bytes": 14745,
+        "sha256": "59fc0da0fc2944b7f9e96d21203e19af052fbaa135e94d4ee766890f122f4c1b"
+      },
+      "candidate": {
+        "path": ".build/native-s3-independent-attempt/snapshot-v1/work/.github/workflows/legado-native-reader-test.yml",
+        "bytes": 15026,
+        "sha256": "308a9205a29147d3783f8d4a7c22d9b2ddd370e03ec657e9b9665001b9609865"
+      },
+      "working": {
+        "path": ".github/workflows/legado-native-reader-test.yml",
+        "bytes": 15026,
+        "sha256": "308a9205a29147d3783f8d4a7c22d9b2ddd370e03ec657e9b9665001b9609865"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "baseline": {
+        "bytes": 44808,
+        "sha256": "1ce2313479aecd02f607ef3325fa3ac3607cddcd7e0e41760ff2f1cb1e17238d"
+      },
+      "candidate": {
+        "path": ".build/native-s3-independent-attempt/snapshot-v1/work/scripts/reader-experience/test-native-smoke-tools.py",
+        "bytes": 45593,
+        "sha256": "092ed74cf578b2abc1640f2c0c5473f7b88d2e7dc1e8fa2deeefada917105c33"
+      },
+      "working": {
+        "path": "scripts/reader-experience/test-native-smoke-tools.py",
+        "bytes": 45593,
+        "sha256": "092ed74cf578b2abc1640f2c0c5473f7b88d2e7dc1e8fa2deeefada917105c33"
+      }
+    }
+  ],
+  "portableCheck": {
+    "path": ".build/native-s3-independent-attempt/portable-check.json",
+    "bytes": 952,
+    "sha256": "a7e90a02ca604d67eea24d16adf11d03a32de62295cbd7ec1bb4fc8abcefe5ea"
+  },
+  "actualPortableMethodsPassed": 2,
+  "newPortableDefinitions": 0,
+  "newSwiftDefinitionsOrSelectors": 0,
+  "purpose": "After successful ordinary runtime and complete device producer plus Simulator staging, attempt independent MainJS/original/cold hosts even if the separate mandatory complete-package execution fails. Preserve all terminal failures and every final gate.",
+  "condition": "always() && !cancelled() && !startsWith(github.ref_name, 'legado-native-reader-test-cold-') && steps.native_simulator_prepare.outcome == 'success'",
+  "invariants": {
+    "coldOnlyBodyByteExact": true,
+    "normalExecutionBodyByteExact": true,
+    "prepareProducerAndSourceGuardsUnchanged": true,
+    "S3RequiredOneCaseAndFinalFullVerificationUnchanged": true,
+    "noContinueOnError": true,
+    "allSelectorsAndBudgetsUnchanged": true,
+    "sourceInputPathsUnchanged": true,
+    "currentRunningF330WorkflowUntouched": true
+  },
+  "officialSemantics": "https://docs.github.com/en/actions/reference/workflows-and-actions/expressions#status-check-functions",
+  "limits": [
+    "This changes scheduling of diagnostic attempts, not acceptance or a current live run.",
+    "A common test-target compiler error can still prevent every host from executing; independent attempts do not prove any case passed.",
+    "All phases still share the original150-minute job budget; no timeout, required input, case or signer gate was relaxed.",
+    "Both existing portable methods test guards and source wiring only, not an actual GitHub job or Apple execution."
+  ],
+  "newCloudQueriesRunsTags": 0,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

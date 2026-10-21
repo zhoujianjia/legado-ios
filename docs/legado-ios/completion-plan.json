@@ -170,7 +170,7 @@
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
       "nextPlannedCheckpoint": "Collect each exact new terminal once. Require actual SDK479/482 and FULL Native S3/MainJS1/Original32/cold2 results; preserve all previous failures and do not replace full validation with focused cold.",
-      "alreadyRunningTasks": "SDK f330274 is terminal/failed and archived: actual479 definitions/482 leaves, two Cookie failures and one orphan failure case (two renewal source locations, three issue occurrences); no compiler error or timeout. Only exact Native f330274 run39578204500/job119148927121 remains independently live; no new CI submitted.",
+      "alreadyRunningTasks": "Both f330274 tasks are terminal/failed and independently archived; no live CI handles. SDK executed479 definitions/482 leaves with two selected Cookie failures plus an orphan failure case. Native built the complete device App and producer successfully, then its one S3 case failed initial-input verification with missingSpecialSlot(1); MainJS/Original32/cold did not run. Queued followup source is not an executed result; no new CI submitted.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "7ef3c7ec1b0d37ce2b395bb897f6806f5acbafa8",
         "sourceTag": "reader-renewal-7ef3c7e",
@@ -370,17 +370,17 @@
       },
       "latestOriginalNativeTerminal": {
         "schemaVersion": 1,
-        "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
-        "sourceTag": "legado-native-reader-test-630c1b3",
-        "runID": 39564545728,
-        "jobID": 119103568067,
+        "sourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+        "sourceTag": "legado-native-reader-test-f330274",
+        "runID": 39578204500,
+        "jobID": 119148927121,
         "status": "completed",
         "conclusion": "failure",
         "queryAgain": false,
         "factualReview": {
-          "path": "docs/legado-ios/evidence/native-630c1b3-terminal/factual-review-v1.json",
-          "bytes": 5903,
-          "sha256": "a801bcd606207d318bfeb7ae136c13b408bb035d27ff27d97f7edddab3d68521"
+          "path": "docs/legado-ios/evidence/native-f330274-terminal/factual-review-v1.json",
+          "bytes": 6305,
+          "sha256": "4f69a16258d6921eb694d43d9a88435496202aaf6fc973c0a002298b2152bd66"
         },
         "actualJVM": {
           "xmlFiles": 58,
@@ -419,26 +419,35 @@
           "inputFiles": 17553,
           "javaClassResources": 16614,
           "archiveBytes": 287383849,
-          "archiveSHA256": "5de97bbcd7e9e38087cbb113563e469f1dd312bd26f817f6053138b82f83ea92",
+          "archiveSHA256": "1a642097d69f68230800af5674832f6b1a0c4a6302256a425b35f2cb76d385bb",
           "rawIPAInArtifact": false,
           "preControlledSigningInputShapes": {
             "singleArm64FAT32": 5,
             "thin64": 3
           },
-          "SwiftProductionPackageSignerExecuted": false
+          "SwiftProductionPackageSignerCompleted": false,
+          "S3CaseExecuted": true
         },
         "firstFailure": {
-          "phase": "full-application-test-build",
+          "phase": "full-application-test-runtime",
           "exitCode": 1,
           "timedOut": false,
           "reportedXcodeStatus": 65,
-          "uniqueCompilerErrors": 1,
-          "sourceLocation": "Tests/iOS/LegadoNativeOriginalReaderTests.swift:1761:66",
-          "rawLogLine": 29228,
-          "message": "enum case 'horizontal' is not available due to missing import of defining module 'YueduCoreText'",
-          "actualFullApplicationSignerTests": 0
+          "uniqueCompilerErrors": 0,
+          "testIssueCount": 1,
+          "sourceLocation": "SelfRenewalCodeDirectoryHashVerifier.swift:181",
+          "testDeclaration": "SelfRenewalFullApplicationSignerTests.swift:15:6",
+          "rawLogLine": 36896,
+          "message": "Caught error: missingSpecialSlot(1)",
+          "actualFullApplicationSignerTests": 1,
+          "passed": 0,
+          "failed": 1,
+          "caseDurationSeconds": 47.817,
+          "testRunDurationSeconds": 47.834
         },
-        "actualFullApplicationSigner": 0,
+        "actualFullApplicationSigner": 1,
+        "actualFullApplicationSignerPassed": 0,
+        "actualFullApplicationSignerFailed": 1,
         "actualMainJS": 0,
         "actualNative": 0,
         "actualCold": 0,
@@ -449,24 +458,23 @@
         "SDKHandleChanged": false,
         "measuredCompatibilityPercent": null,
         "limits": [
-          "Complete device build and controlled original Apple codesign producer succeeded; production Swift PackageSigner/Vault/Verifier S3 case did not execute. These are distinct facts.",
+          "Complete device build and controlled original Apple codesign producer succeeded. The production Swift S3 case actually ran once but failed during original-input verification with missingSpecialSlot(1), before Vault creation and resign; no successful full re-sign/independent-output acceptance.",
           "Actual pre-controlled-code-signing input shape records are available, but no input/output Mach-O, full IPA or raw JAR bytes were uploaded. Hashes are metadata facts, not independent binary rehash.",
-          "Missing YueduCoreText import is the same already reviewed later source fix; that fix does not change this historical630 result.",
-          "Both source630 CI tasks are terminal according to Root; this archive closes Native only and does not re-query or rewrite the separately archived SDK.",
+          "The earlier missing-import fix is present in historical f330 and this test target compiled; later e67e runtime followup is not part of this source or result.",
+          "Both source f330 CI tasks are terminal according to Root; this archive closes Native only and does not re-query or rewrite the separately archived SDK.",
           "No real Apple authorization, physical installation, same-device/noVPN route, automatic renewal or measured90percent compatibility acceptance established."
         ],
         "allNonDeviceWorkComplete": false,
         "automaticSelfRenewalImplemented": false,
         "fullLegadoCompatibilityEstablished": false,
         "legalRedistributionClearanceEstablished": false,
-        "record": "docs/legado-ios/core-native-630c1b3-terminal-result.json",
+        "record": "docs/legado-ios/core-native-f330274-terminal-result.json",
         "archiveStatus": "public-terminal-archive-reviewed-and-integrated",
         "independentReview": {
-          "path": "docs/legado-ios/evidence/native-630c1b3-terminal/independent-review.json",
-          "bytes": 5574,
-          "sha256": "fcd8d1590836d10c387b1509c1d9f071e29ded5be47fa4151efb080d3325236e"
-        },
-        "separateSourceRepairRecord": "docs/legado-ios/core-sdk-630c1b3-native-module-import-repair.json"
+          "path": "docs/legado-ios/evidence/native-f330274-terminal/independent-review.json",
+          "bytes": 4545,
+          "sha256": "1f81185d1320477d584210c4b95f881ad9afcfe67468f9c5ff65ac0b8b5553aa"
+        }
       },
       "currentUnifiedCheckpoint": {
         "sourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
@@ -490,9 +498,10 @@
           "PackageInputs": 23,
           "boolPairs": 3
         },
-        "status": "SDK-terminal-failed-Native-independently-live",
+        "status": "both-terminal-failed-archived",
         "actualResultAccepted": false,
-        "SDKTerminalRecord": "docs/legado-ios/core-sdk-f330274-terminal-result.json"
+        "SDKTerminalRecord": "docs/legado-ios/core-sdk-f330274-terminal-result.json",
+        "NativeTerminalRecord": "docs/legado-ios/core-native-f330274-terminal-result.json"
       },
       "live8dPortableFailureRepair": {
         "record": "docs/legado-ios/core-sdk-8d-portable-expectations-repair.json",
@@ -662,14 +671,14 @@
       },
       "terminalArchivesPending": [],
       "latestClosedCorePair": {
-        "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
-        "recordedUTC": "2026-10-21T09:35:15.318545+00:00",
+        "sourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+        "recordedUTC": "2026-10-21T11:12:33.128247+00:00",
         "SDK": {
           "schemaVersion": 1,
-          "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
-          "sourceTag": "reader-renewal-630c1b3",
-          "runID": 39564545834,
-          "jobID": 119103568353,
+          "sourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+          "sourceTag": "reader-renewal-f330274",
+          "runID": 39578204127,
+          "jobID": 119148925693,
           "status": "completed",
           "conclusion": "failure",
           "queryAgain": false,
@@ -677,18 +686,65 @@
             "selectedDefinitions": 479,
             "selectedArgumentLeaves": 482,
             "selectedBoolPairs": 3,
-            "actualStartedDefinitions": 0,
-            "actualStartedLeaves": 0,
-            "actualPassed": 0,
-            "actualFailedTests": 0,
-            "actualSkipped": 0,
-            "summaryResult": "unknown",
-            "summaryTotalTestCount": 0,
-            "treeTestNodes": 0,
-            "compileBlocked": true,
-            "uniqueCompilerErrors": 1,
-            "cleanSuiteAcceptance": false,
-            "unexecutedTestsAreNotFailuresOrPassingEvidence": true
+            "actualExecutedDefinitions": 479,
+            "actualExecutedLeaves": 482,
+            "selectedDefinitionPassed": 477,
+            "selectedDefinitionFailed": 2,
+            "selectedLeafPassed": 480,
+            "selectedLeafFailed": 2,
+            "skipped": 0,
+            "BoolPairs": [
+              {
+                "identity": "AozoraTXTTests/storedV6LocationsMigrateOnce",
+                "rawIdentifier": "AozoraTXTTests/storedV6LocationsMigrateOnce(interrupt:)",
+                "values": [
+                  {
+                    "name": "false",
+                    "result": "Passed"
+                  },
+                  {
+                    "name": "true",
+                    "result": "Passed"
+                  }
+                ]
+              },
+              {
+                "identity": "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll",
+                "rawIdentifier": "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll(nestedBackdrop:)",
+                "values": [
+                  {
+                    "name": "false",
+                    "result": "Passed"
+                  },
+                  {
+                    "name": "true",
+                    "result": "Passed"
+                  }
+                ]
+              },
+              {
+                "identity": "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit",
+                "rawIdentifier": "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit(interrupt:)",
+                "values": [
+                  {
+                    "name": "false",
+                    "result": "Passed"
+                  },
+                  {
+                    "name": "true",
+                    "result": "Passed"
+                  }
+                ]
+              }
+            ],
+            "unassociatedFailureCases": 1,
+            "unassociatedDistinctLocations": 2,
+            "unassociatedRawIssueOccurrences": 3,
+            "rawSummaryCases": 480,
+            "rawDeviceExecutions": 483,
+            "compileBlocked": false,
+            "uniqueCompilerErrors": 0,
+            "cleanSuiteAcceptance": false
           },
           "firstFailure": {
             "phase": "native",
@@ -697,20 +753,21 @@
             "actualXcodeExitCode": 65,
             "timedOut": false,
             "phaseBudgetSeconds": 3720,
-            "elapsedSeconds": 1639.640208,
-            "cause": "LegadoNativeOriginalReaderTests.swift:1761:66 missing import of defining module YueduCoreText"
+            "elapsedSeconds": 2123.073311,
+            "cause": "Two qualified Cookie failures plus one unassociated failure case containing three issue occurrences at two renewal-related source locations"
           },
           "extraction": {
-            "summaryBytes": 429,
-            "testsBytes": 367,
+            "summaryBytes": 3326,
+            "testsBytes": 299825,
             "summaryCommandExitCode": 0,
             "testsCommandExitCode": 0,
-            "validZeroTestJSON": true,
+            "validNonemptyActualTestJSON": true,
             "parameterExports": [
               {
-                "error": "Actual parameter method is missing or duplicated"
+                "error": "Ambiguous qualified test identifier"
               }
             ],
+            "parameterAmbiguityCause": "Synthetic orphan Test Case has no qualified method; existing fail-closed _qualified_method rejects it. No selector or gate change.",
             "casesGatePassed": false,
             "afterTestsState": "blocked",
             "resultProduced": false
@@ -746,8 +803,8 @@
             "notAllXcodeTransitiveDependencies": true
           },
           "resultProduced": false,
-          "evidence": "docs/legado-ios/evidence/sdk-630c1b3-terminal/factual-review-v1.json",
-          "actualFailures": "docs/legado-ios/evidence/sdk-630c1b3-terminal/actual-compiler-errors.json",
+          "evidence": "docs/legado-ios/evidence/sdk-f330274-terminal/factual-review-v1.json",
+          "actualFailures": "docs/legado-ios/evidence/sdk-f330274-terminal/actual-failure-signatures.json",
           "allNonDeviceWorkComplete": false,
           "automaticSelfRenewalImplemented": false,
           "fullLegadoCompatibilityEstablished": false,
@@ -756,35 +813,35 @@
           "measuredCompatibilityPercent": null,
           "otherSeventeenItemsRemainDeferred": true,
           "limits": [
-            "Build failed before any App test executed; zero failedTests does not establish App acceptance.",
-            "479/482 and three Bool pairs were selected, not executed. Parameter export failure is downstream of the compilation block.",
-            "Package24, minimal producer48/43/4 and portable200 remain separate scopes, not App signer/JNI/real installation/Apple/unattended proof.",
+            "Actual479 definitions/482 leaves completed; two selected failures and one orphan failure case remain. This is not clean suite acceptance.",
+            "Associated renewal methods may reportPassed while unknown-context assertions fail; retain all three issue occurrences/two source locations.",
+            "All three actual Bool pairs passed, but strict parameter extraction remained ambiguous and cases/result gates failed; no gate was weakened.",
+            "Package24/minimal producer48,43,4/portable200 are separate scopes, not full Native App signing/real Apple/physical installation/unattended proof.",
             "Historical418 is an evidence inventory, not all Xcode transitive dependencies; current440 was not substituted.",
-            "Separate Native run39564545728 remains independently owned/live as of this task; no status inference or mutation.",
-            "No reviewer test/compiler/parser/cloud query/download; later import repair is not an actual successful rerun."
+            "Separate full Native is independently owned; no query, status inference or mutation for that handle.",
+            "No reviewer test/compiler/parser/cloud query/download; subsequent repairs cannot relabel this closed source result."
           ],
-          "record": "docs/legado-ios/core-sdk-630c1b3-terminal-result.json",
+          "record": "docs/legado-ios/core-sdk-f330274-terminal-result.json",
           "archiveStatus": "public-terminal-archive-reviewed-and-integrated",
           "independentReview": {
-            "path": "docs/legado-ios/evidence/sdk-630c1b3-terminal/independent-review.json",
-            "bytes": 4518,
-            "sha256": "664c3a7587da3ad0be1845801b3061a3a7f19ba7d8f57bfc8b87c17b3083894d"
-          },
-          "separateSourceRepairRecord": "docs/legado-ios/core-sdk-630c1b3-native-module-import-repair.json"
+            "path": "docs/legado-ios/evidence/sdk-f330274-terminal/independent-review.json",
+            "bytes": 3857,
+            "sha256": "75d6ef525f9e078533611520b8d27b385fdc5804e533183c83a694a6e0ed88fa"
+          }
         },
         "Native": {
           "schemaVersion": 1,
-          "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
-          "sourceTag": "legado-native-reader-test-630c1b3",
-          "runID": 39564545728,
-          "jobID": 119103568067,
+          "sourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+          "sourceTag": "legado-native-reader-test-f330274",
+          "runID": 39578204500,
+          "jobID": 119148927121,
           "status": "completed",
           "conclusion": "failure",
           "queryAgain": false,
           "factualReview": {
-            "path": "docs/legado-ios/evidence/native-630c1b3-terminal/factual-review-v1.json",
-            "bytes": 5903,
-            "sha256": "a801bcd606207d318bfeb7ae136c13b408bb035d27ff27d97f7edddab3d68521"
+            "path": "docs/legado-ios/evidence/native-f330274-terminal/factual-review-v1.json",
+            "bytes": 6305,
+            "sha256": "4f69a16258d6921eb694d43d9a88435496202aaf6fc973c0a002298b2152bd66"
           },
           "actualJVM": {
             "xmlFiles": 58,
@@ -823,26 +880,35 @@
             "inputFiles": 17553,
             "javaClassResources": 16614,
             "archiveBytes": 287383849,
-            "archiveSHA256": "5de97bbcd7e9e38087cbb113563e469f1dd312bd26f817f6053138b82f83ea92",
+            "archiveSHA256": "1a642097d69f68230800af5674832f6b1a0c4a6302256a425b35f2cb76d385bb",
             "rawIPAInArtifact": false,
             "preControlledSigningInputShapes": {
               "singleArm64FAT32": 5,
               "thin64": 3
             },
-            "SwiftProductionPackageSignerExecuted": false
+            "SwiftProductionPackageSignerCompleted": false,
+            "S3CaseExecuted": true
           },
           "firstFailure": {
-            "phase": "full-application-test-build",
+            "phase": "full-application-test-runtime",
             "exitCode": 1,
             "timedOut": false,
             "reportedXcodeStatus": 65,
-            "uniqueCompilerErrors": 1,
-            "sourceLocation": "Tests/iOS/LegadoNativeOriginalReaderTests.swift:1761:66",
-            "rawLogLine": 29228,
-            "message": "enum case 'horizontal' is not available due to missing import of defining module 'YueduCoreText'",
-            "actualFullApplicationSignerTests": 0
+            "uniqueCompilerErrors": 0,
+            "testIssueCount": 1,
+            "sourceLocation": "SelfRenewalCodeDirectoryHashVerifier.swift:181",
+            "testDeclaration": "SelfRenewalFullApplicationSignerTests.swift:15:6",
+            "rawLogLine": 36896,
+            "message": "Caught error: missingSpecialSlot(1)",
+            "actualFullApplicationSignerTests": 1,
+            "passed": 0,
+            "failed": 1,
+            "caseDurationSeconds": 47.817,
+            "testRunDurationSeconds": 47.834
           },
-          "actualFullApplicationSigner": 0,
+          "actualFullApplicationSigner": 1,
+          "actualFullApplicationSignerPassed": 0,
+          "actualFullApplicationSignerFailed": 1,
           "actualMainJS": 0,
           "actualNative": 0,
           "actualCold": 0,
@@ -853,25 +919,52 @@
           "SDKHandleChanged": false,
           "measuredCompatibilityPercent": null,
           "limits": [
-            "Complete device build and controlled original Apple codesign producer succeeded; production Swift PackageSigner/Vault/Verifier S3 case did not execute. These are distinct facts.",
+            "Complete device build and controlled original Apple codesign producer succeeded. The production Swift S3 case actually ran once but failed during original-input verification with missingSpecialSlot(1), before Vault creation and resign; no successful full re-sign/independent-output acceptance.",
             "Actual pre-controlled-code-signing input shape records are available, but no input/output Mach-O, full IPA or raw JAR bytes were uploaded. Hashes are metadata facts, not independent binary rehash.",
-            "Missing YueduCoreText import is the same already reviewed later source fix; that fix does not change this historical630 result.",
-            "Both source630 CI tasks are terminal according to Root; this archive closes Native only and does not re-query or rewrite the separately archived SDK.",
+            "The earlier missing-import fix is present in historical f330 and this test target compiled; later e67e runtime followup is not part of this source or result.",
+            "Both source f330 CI tasks are terminal according to Root; this archive closes Native only and does not re-query or rewrite the separately archived SDK.",
             "No real Apple authorization, physical installation, same-device/noVPN route, automatic renewal or measured90percent compatibility acceptance established."
           ],
           "allNonDeviceWorkComplete": false,
           "automaticSelfRenewalImplemented": false,
           "fullLegadoCompatibilityEstablished": false,
           "legalRedistributionClearanceEstablished": false,
-          "record": "docs/legado-ios/core-native-630c1b3-terminal-result.json",
+          "record": "docs/legado-ios/core-native-f330274-terminal-result.json",
           "archiveStatus": "public-terminal-archive-reviewed-and-integrated",
           "independentReview": {
-            "path": "docs/legado-ios/evidence/native-630c1b3-terminal/independent-review.json",
-            "bytes": 5574,
-            "sha256": "fcd8d1590836d10c387b1509c1d9f071e29ded5be47fa4151efb080d3325236e"
-          },
-          "separateSourceRepairRecord": "docs/legado-ios/core-sdk-630c1b3-native-module-import-repair.json"
+            "path": "docs/legado-ios/evidence/native-f330274-terminal/independent-review.json",
+            "bytes": 4545,
+            "sha256": "1f81185d1320477d584210c4b95f881ad9afcfe67468f9c5ff65ac0b8b5553aa"
+          }
         },
+        "handles": [
+          {
+            "runID": 39578204127,
+            "jobID": 119148925693,
+            "sourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+            "sourceTag": "reader-renewal-f330274",
+            "workflow": ".github/workflows/reader-renewal-probe.yml",
+            "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39578204127",
+            "initialStatus": "queued",
+            "status": "completed",
+            "conclusion": "failure",
+            "queryAgain": false,
+            "terminalRecord": "docs/legado-ios/core-sdk-f330274-terminal-result.json"
+          },
+          {
+            "runID": 39578204500,
+            "jobID": 119148927121,
+            "sourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+            "sourceTag": "legado-native-reader-test-f330274",
+            "workflow": ".github/workflows/legado-native-reader-test.yml",
+            "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39578204500",
+            "initialStatus": "queued",
+            "status": "completed",
+            "conclusion": "failure",
+            "queryAgain": false,
+            "terminalRecord": "docs/legado-ios/core-native-f330274-terminal-result.json"
+          }
+        ],
         "bothActualFailures": true,
         "subsequentSourceRepairsDoNotChangeHistoricalResults": true
       },
@@ -900,24 +993,27 @@
             "workflow": ".github/workflows/legado-native-reader-test.yml",
             "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39578204500",
             "initialStatus": "queued",
-            "status": "queued"
+            "status": "completed",
+            "conclusion": "failure",
+            "queryAgain": false,
+            "terminalRecord": "docs/legado-ios/core-native-f330274-terminal-result.json"
           }
         ],
         "actualNewAcceptedTests": 0
       },
       "latestNativeTerminal": {
         "schemaVersion": 1,
-        "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
-        "sourceTag": "legado-native-reader-test-630c1b3",
-        "runID": 39564545728,
-        "jobID": 119103568067,
+        "sourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+        "sourceTag": "legado-native-reader-test-f330274",
+        "runID": 39578204500,
+        "jobID": 119148927121,
         "status": "completed",
         "conclusion": "failure",
         "queryAgain": false,
         "factualReview": {
-          "path": "docs/legado-ios/evidence/native-630c1b3-terminal/factual-review-v1.json",
-          "bytes": 5903,
-          "sha256": "a801bcd606207d318bfeb7ae136c13b408bb035d27ff27d97f7edddab3d68521"
+          "path": "docs/legado-ios/evidence/native-f330274-terminal/factual-review-v1.json",
+          "bytes": 6305,
+          "sha256": "4f69a16258d6921eb694d43d9a88435496202aaf6fc973c0a002298b2152bd66"
         },
         "actualJVM": {
           "xmlFiles": 58,
@@ -956,26 +1052,35 @@
           "inputFiles": 17553,
           "javaClassResources": 16614,
           "archiveBytes": 287383849,
-          "archiveSHA256": "5de97bbcd7e9e38087cbb113563e469f1dd312bd26f817f6053138b82f83ea92",
+          "archiveSHA256": "1a642097d69f68230800af5674832f6b1a0c4a6302256a425b35f2cb76d385bb",
           "rawIPAInArtifact": false,
           "preControlledSigningInputShapes": {
             "singleArm64FAT32": 5,
             "thin64": 3
           },
-          "SwiftProductionPackageSignerExecuted": false
+          "SwiftProductionPackageSignerCompleted": false,
+          "S3CaseExecuted": true
         },
         "firstFailure": {
-          "phase": "full-application-test-build",
+          "phase": "full-application-test-runtime",
           "exitCode": 1,
           "timedOut": false,
           "reportedXcodeStatus": 65,
-          "uniqueCompilerErrors": 1,
-          "sourceLocation": "Tests/iOS/LegadoNativeOriginalReaderTests.swift:1761:66",
-          "rawLogLine": 29228,
-          "message": "enum case 'horizontal' is not available due to missing import of defining module 'YueduCoreText'",
-          "actualFullApplicationSignerTests": 0
+          "uniqueCompilerErrors": 0,
+          "testIssueCount": 1,
+          "sourceLocation": "SelfRenewalCodeDirectoryHashVerifier.swift:181",
+          "testDeclaration": "SelfRenewalFullApplicationSignerTests.swift:15:6",
+          "rawLogLine": 36896,
+          "message": "Caught error: missingSpecialSlot(1)",
+          "actualFullApplicationSignerTests": 1,
+          "passed": 0,
+          "failed": 1,
+          "caseDurationSeconds": 47.817,
+          "testRunDurationSeconds": 47.834
         },
-        "actualFullApplicationSigner": 0,
+        "actualFullApplicationSigner": 1,
+        "actualFullApplicationSignerPassed": 0,
+        "actualFullApplicationSignerFailed": 1,
         "actualMainJS": 0,
         "actualNative": 0,
         "actualCold": 0,
@@ -986,64 +1091,41 @@
         "SDKHandleChanged": false,
         "measuredCompatibilityPercent": null,
         "limits": [
-          "Complete device build and controlled original Apple codesign producer succeeded; production Swift PackageSigner/Vault/Verifier S3 case did not execute. These are distinct facts.",
+          "Complete device build and controlled original Apple codesign producer succeeded. The production Swift S3 case actually ran once but failed during original-input verification with missingSpecialSlot(1), before Vault creation and resign; no successful full re-sign/independent-output acceptance.",
           "Actual pre-controlled-code-signing input shape records are available, but no input/output Mach-O, full IPA or raw JAR bytes were uploaded. Hashes are metadata facts, not independent binary rehash.",
-          "Missing YueduCoreText import is the same already reviewed later source fix; that fix does not change this historical630 result.",
-          "Both source630 CI tasks are terminal according to Root; this archive closes Native only and does not re-query or rewrite the separately archived SDK.",
+          "The earlier missing-import fix is present in historical f330 and this test target compiled; later e67e runtime followup is not part of this source or result.",
+          "Both source f330 CI tasks are terminal according to Root; this archive closes Native only and does not re-query or rewrite the separately archived SDK.",
           "No real Apple authorization, physical installation, same-device/noVPN route, automatic renewal or measured90percent compatibility acceptance established."
         ],
         "allNonDeviceWorkComplete": false,
         "automaticSelfRenewalImplemented": false,
         "fullLegadoCompatibilityEstablished": false,
         "legalRedistributionClearanceEstablished": false,
-        "record": "docs/legado-ios/core-native-630c1b3-terminal-result.json",
+        "record": "docs/legado-ios/core-native-f330274-terminal-result.json",
         "archiveStatus": "public-terminal-archive-reviewed-and-integrated",
         "independentReview": {
-          "path": "docs/legado-ios/evidence/native-630c1b3-terminal/independent-review.json",
-          "bytes": 5574,
-          "sha256": "fcd8d1590836d10c387b1509c1d9f071e29ded5be47fa4151efb080d3325236e"
-        },
-        "separateSourceRepairRecord": "docs/legado-ios/core-sdk-630c1b3-native-module-import-repair.json"
+          "path": "docs/legado-ios/evidence/native-f330274-terminal/independent-review.json",
+          "bytes": 4545,
+          "sha256": "1f81185d1320477d584210c4b95f881ad9afcfe67468f9c5ff65ac0b8b5553aa"
+        }
       },
       "queuedSourceCheckpoint": {
-        "record": "docs/legado-ios/core-sdk-f330274-runtime-followup.json",
+        "record": "docs/legado-ios/core-sdk-f330274-s3-metadata-followup.json",
         "status": "reviewed-source-integrated-actual-SDK-and-full-Native-pending",
-        "changedExistingSources": 6,
+        "changedExistingSources": 16,
         "CookieExpiryResolved": false,
         "newTestDefinitions": 0,
         "actualNewSwiftTests": 0,
         "newTagsOrRuns": 0,
         "sourceCounts": {
-          "core": 418,
-          "native": 282,
-          "union": 440,
-          "package": 23
+          "core": 420,
+          "native": 284,
+          "package": 23,
+          "union": 442
         }
       },
-      "onlyLiveNativeHandles": [
-        {
-          "runID": 39578204500,
-          "jobID": 119148927121,
-          "sourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
-          "sourceTag": "legado-native-reader-test-f330274",
-          "workflow": ".github/workflows/legado-native-reader-test.yml",
-          "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39578204500",
-          "initialStatus": "queued",
-          "status": "queued"
-        }
-      ],
-      "activeSourceBoundRunHandles": [
-        {
-          "runID": 39578204500,
-          "jobID": 119148927121,
-          "sourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
-          "sourceTag": "legado-native-reader-test-f330274",
-          "workflow": ".github/workflows/legado-native-reader-test.yml",
-          "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39578204500",
-          "initialStatus": "queued",
-          "status": "queued"
-        }
-      ],
+      "onlyLiveNativeHandles": [],
+      "activeSourceBoundRunHandles": [],
       "queuedOriginalColdRenewalDataHandoff": {
         "record": "docs/legado-ios/core-renewal-cold-process-handoff-step.json",
         "status": "included-in-submitted-full-Native-actual-execution-pending",
@@ -1109,14 +1191,25 @@
       },
       "queuedDisabledWorkerLifecycleRepair": {
         "record": "docs/legado-ios/core-renewal-disabled-worker-lifecycle-repair.json",
-        "status": "source-integrated-actual-SDK-pending",
+        "status": "scoped-regressions-observed-pass",
         "productionChanges": 1,
         "newTestDefinitions": 0,
         "actualNewTests": 0,
         "newTagsOrRuns": 0,
         "sourceObservedWithRepair": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
         "observedSourceContainsRepair": true,
-        "SDKExecutionAtObservedSourceBlockedByCompiler": true
+        "SDKExecutionAtObservedSourceBlockedByCompiler": true,
+        "actualObservedSourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+        "actualRunID": 39578204127,
+        "actualPassedExistingRegressions": [
+          "SelfRenewalAppOwnerTests/startupBootstrapCannotLaunchAfterBackground",
+          "SelfRenewalAppOwnerTests/latestActivationWaitsForBootstrapAndRunsOnce",
+          "SelfRenewalAppOwnerTests/backgroundGrantUsesSameWorkerAndSurvivesSceneCleanup",
+          "SelfRenewalAppOwnerTests/cancelledForegroundBootstrapCannotCreateWorker"
+        ],
+        "actualAcceptanceRecord": "docs/legado-ios/evidence/sdk-f330274-scoped-acceptance/actual-scope-review.json",
+        "systemBGTaskGrantEstablished": false,
+        "wholeS6Accepted": false
       },
       "queuedOriginalNativeCoreTextRendering": {
         "record": "docs/legado-ios/core-original-native-coretext-product-step.json",
@@ -1681,6 +1774,220 @@
           },
           "bothActualFailures": true,
           "subsequentSourceRepairsDoNotChangeHistoricalResults": true
+        },
+        {
+          "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
+          "recordedUTC": "2026-10-21T09:35:15.318545+00:00",
+          "SDK": {
+            "schemaVersion": 1,
+            "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
+            "sourceTag": "reader-renewal-630c1b3",
+            "runID": 39564545834,
+            "jobID": 119103568353,
+            "status": "completed",
+            "conclusion": "failure",
+            "queryAgain": false,
+            "actualApp": {
+              "selectedDefinitions": 479,
+              "selectedArgumentLeaves": 482,
+              "selectedBoolPairs": 3,
+              "actualStartedDefinitions": 0,
+              "actualStartedLeaves": 0,
+              "actualPassed": 0,
+              "actualFailedTests": 0,
+              "actualSkipped": 0,
+              "summaryResult": "unknown",
+              "summaryTotalTestCount": 0,
+              "treeTestNodes": 0,
+              "compileBlocked": true,
+              "uniqueCompilerErrors": 1,
+              "cleanSuiteAcceptance": false,
+              "unexecutedTestsAreNotFailuresOrPassingEvidence": true
+            },
+            "firstFailure": {
+              "phase": "native",
+              "pipelineExitCode": 1,
+              "commandExitCode": 1,
+              "actualXcodeExitCode": 65,
+              "timedOut": false,
+              "phaseBudgetSeconds": 3720,
+              "elapsedSeconds": 1639.640208,
+              "cause": "LegadoNativeOriginalReaderTests.swift:1761:66 missing import of defining module YueduCoreText"
+            },
+            "extraction": {
+              "summaryBytes": 429,
+              "testsBytes": 367,
+              "summaryCommandExitCode": 0,
+              "testsCommandExitCode": 0,
+              "validZeroTestJSON": true,
+              "parameterExports": [
+                {
+                  "error": "Actual parameter method is missing or duplicated"
+                }
+              ],
+              "casesGatePassed": false,
+              "afterTestsState": "blocked",
+              "resultProduced": false
+            },
+            "actualPackage": {
+              "methods": 24,
+              "passed": 24,
+              "failures": 0,
+              "errors": 0,
+              "skipped": 0,
+              "XMLVerboseResultSelectedIdentitiesExact": true,
+              "packageInputs": 23,
+              "AppOrJNIProof": false
+            },
+            "minimalProducer": {
+              "commands": 48,
+              "publicOutputs": 43,
+              "MachOs": 4,
+              "allCommandExitZeroNonTimeout": true,
+              "allPublicOutputBytesHashesVerified": true,
+              "ownedKeychainDeleted": true,
+              "originalSearchListRestoredOwnedAbsent": true,
+              "AppSignerExecutedByProducer": false
+            },
+            "requiredPortableMethodsPassed": 200,
+            "sourceInputs": {
+              "historicalCore": 418,
+              "all418GitBytesMatched": true,
+              "Package23Subset": true,
+              "producer7Subset": true,
+              "uniqueRepositoryInputs": 418,
+              "all11PhaseStatesSameSource": true,
+              "notAllXcodeTransitiveDependencies": true
+            },
+            "resultProduced": false,
+            "evidence": "docs/legado-ios/evidence/sdk-630c1b3-terminal/factual-review-v1.json",
+            "actualFailures": "docs/legado-ios/evidence/sdk-630c1b3-terminal/actual-compiler-errors.json",
+            "allNonDeviceWorkComplete": false,
+            "automaticSelfRenewalImplemented": false,
+            "fullLegadoCompatibilityEstablished": false,
+            "legalRedistributionClearanceEstablished": false,
+            "temporaryCompatibilityTargetPercent": 90,
+            "measuredCompatibilityPercent": null,
+            "otherSeventeenItemsRemainDeferred": true,
+            "limits": [
+              "Build failed before any App test executed; zero failedTests does not establish App acceptance.",
+              "479/482 and three Bool pairs were selected, not executed. Parameter export failure is downstream of the compilation block.",
+              "Package24, minimal producer48/43/4 and portable200 remain separate scopes, not App signer/JNI/real installation/Apple/unattended proof.",
+              "Historical418 is an evidence inventory, not all Xcode transitive dependencies; current440 was not substituted.",
+              "Separate Native run39564545728 remains independently owned/live as of this task; no status inference or mutation.",
+              "No reviewer test/compiler/parser/cloud query/download; later import repair is not an actual successful rerun."
+            ],
+            "record": "docs/legado-ios/core-sdk-630c1b3-terminal-result.json",
+            "archiveStatus": "public-terminal-archive-reviewed-and-integrated",
+            "independentReview": {
+              "path": "docs/legado-ios/evidence/sdk-630c1b3-terminal/independent-review.json",
+              "bytes": 4518,
+              "sha256": "664c3a7587da3ad0be1845801b3061a3a7f19ba7d8f57bfc8b87c17b3083894d"
+            },
+            "separateSourceRepairRecord": "docs/legado-ios/core-sdk-630c1b3-native-module-import-repair.json"
+          },
+          "Native": {
+            "schemaVersion": 1,
+            "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
+            "sourceTag": "legado-native-reader-test-630c1b3",
+            "runID": 39564545728,
+            "jobID": 119103568067,
+            "status": "completed",
+            "conclusion": "failure",
+            "queryAgain": false,
+            "factualReview": {
+              "path": "docs/legado-ios/evidence/native-630c1b3-terminal/factual-review-v1.json",
+              "bytes": 5903,
+              "sha256": "a801bcd606207d318bfeb7ae136c13b408bb035d27ff27d97f7edddab3d68521"
+            },
+            "actualJVM": {
+              "xmlFiles": 58,
+              "uniqueMethods": 378,
+              "actualExecutions": 378,
+              "passed": 378,
+              "failures": 0,
+              "errors": 0,
+              "skipped": 0
+            },
+            "actualPortable": {
+              "selected": 101,
+              "passed": 100,
+              "skipped": 1,
+              "failures": 0,
+              "errors": 0
+            },
+            "actualMacPackageDiagnostics": {
+              "platform": "macOS",
+              "suite": "LegadoRuntimeTests",
+              "selected": 17,
+              "passed": 17,
+              "failures": 0,
+              "skipped": 0,
+              "actualJNIOrAppHost": 0
+            },
+            "completeDeviceBuilds": 1,
+            "fullProducer": {
+              "accepted": true,
+              "commands": 50,
+              "commandsPassed": 50,
+              "nativeComponents": 8,
+              "appBundles": 3,
+              "frameworks": 5,
+              "publicOutputFacts": 28,
+              "inputFiles": 17553,
+              "javaClassResources": 16614,
+              "archiveBytes": 287383849,
+              "archiveSHA256": "5de97bbcd7e9e38087cbb113563e469f1dd312bd26f817f6053138b82f83ea92",
+              "rawIPAInArtifact": false,
+              "preControlledSigningInputShapes": {
+                "singleArm64FAT32": 5,
+                "thin64": 3
+              },
+              "SwiftProductionPackageSignerExecuted": false
+            },
+            "firstFailure": {
+              "phase": "full-application-test-build",
+              "exitCode": 1,
+              "timedOut": false,
+              "reportedXcodeStatus": 65,
+              "uniqueCompilerErrors": 1,
+              "sourceLocation": "Tests/iOS/LegadoNativeOriginalReaderTests.swift:1761:66",
+              "rawLogLine": 29228,
+              "message": "enum case 'horizontal' is not available due to missing import of defining module 'YueduCoreText'",
+              "actualFullApplicationSignerTests": 0
+            },
+            "actualFullApplicationSigner": 0,
+            "actualMainJS": 0,
+            "actualNative": 0,
+            "actualCold": 0,
+            "nativeSourceStampProduced": true,
+            "historicalNativeInputsBound": 282,
+            "deviceProjectOverlayRestored": true,
+            "ordinaryJarRawRehash": false,
+            "SDKHandleChanged": false,
+            "measuredCompatibilityPercent": null,
+            "limits": [
+              "Complete device build and controlled original Apple codesign producer succeeded; production Swift PackageSigner/Vault/Verifier S3 case did not execute. These are distinct facts.",
+              "Actual pre-controlled-code-signing input shape records are available, but no input/output Mach-O, full IPA or raw JAR bytes were uploaded. Hashes are metadata facts, not independent binary rehash.",
+              "Missing YueduCoreText import is the same already reviewed later source fix; that fix does not change this historical630 result.",
+              "Both source630 CI tasks are terminal according to Root; this archive closes Native only and does not re-query or rewrite the separately archived SDK.",
+              "No real Apple authorization, physical installation, same-device/noVPN route, automatic renewal or measured90percent compatibility acceptance established."
+            ],
+            "allNonDeviceWorkComplete": false,
+            "automaticSelfRenewalImplemented": false,
+            "fullLegadoCompatibilityEstablished": false,
+            "legalRedistributionClearanceEstablished": false,
+            "record": "docs/legado-ios/core-native-630c1b3-terminal-result.json",
+            "archiveStatus": "public-terminal-archive-reviewed-and-integrated",
+            "independentReview": {
+              "path": "docs/legado-ios/evidence/native-630c1b3-terminal/independent-review.json",
+              "bytes": 5574,
+              "sha256": "fcd8d1590836d10c387b1509c1d9f071e29ded5be47fa4151efb080d3325236e"
+            },
+            "separateSourceRepairRecord": "docs/legado-ios/core-sdk-630c1b3-native-module-import-repair.json"
+          },
+          "bothActualFailures": true,
+          "subsequentSourceRepairsDoNotChangeHistoricalResults": true
         }
       ],
       "initialAdmissionRunningTasksStatement": "Initial admission: exact fb6aa7a SDK39553639652/job119068228859 and FULL Native39553639579/job119068228619 are live. SDK job was in_progress and Native job queued in the captured API observations; run-collection snapshots were both queued. This is not a passing result. All d820/older handles are closed; no focused-cold extra.",
@@ -1723,6 +2030,21 @@
           "native": 282,
           "union": 440,
           "package": 23
+        }
+      },
+      "queuedF330274S3MetadataFollowup": {
+        "record": "docs/legado-ios/core-sdk-f330274-s3-metadata-followup.json",
+        "status": "reviewed-source-integrated-actual-SDK-and-full-Native-pending",
+        "changedExistingSources": 16,
+        "CookieExpiryResolved": false,
+        "newTestDefinitions": 0,
+        "actualNewSwiftTests": 0,
+        "newTagsOrRuns": 0,
+        "sourceCounts": {
+          "core": 420,
+          "native": 284,
+          "package": 23,
+          "union": 442
         }
       }
     },
@@ -2584,7 +2906,17 @@
           "verificationZh": [
             "自有目录／包／证书样本，读盘与解析失败回归、签名独立验证及对应SDK测试；当前5个元数据方法不能代替材料验签。"
           ],
-          "actualAcceptedEvidence": [],
+          "actualAcceptedEvidence": [
+            {
+              "record": "docs/legado-ios/evidence/sdk-f330274-scoped-acceptance/actual-scope-review.json",
+              "independentReview": "docs/legado-ios/evidence/sdk-f330274-scoped-acceptance/independent-review.json",
+              "actualSourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+              "runID": 39578204127,
+              "jobID": 119148925693,
+              "scopeZh": "实际受控清单、IPA、Mach-O哈希/CMS/profile/资源及嵌套代码校验已通过对应回归；仅接受所列受控材料范围，完整当前应用包输入校验仍失败。",
+              "wholeStepAccepted": false
+            }
+          ],
           "requiresPhysicalDevice": false,
           "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
           "implementedSubtasksZh": [
@@ -2641,7 +2973,7 @@
               "scope": "Reviewed actual SDK failure and orphan repair batch; actual SDK/full Native validation pending."
             }
           ],
-          "nextActionZh": "提交同一源码的集中SDK/模拟器验证，实际执行已选续签、认证安装、事务恢复和触发回归；完整应用包重签另以同job必需1项验签。不以便携检查或源码审查代替真实执行。",
+          "nextActionZh": "修复完整当前应用包的实际输入校验失败并执行重签与独立验签；已通过的受控材料回归保留其有限范围。",
           "lastClosedSDKRequest": "docs/legado-ios/core-sdk-7ef3c7e-request.json",
           "lastSDKTerminalRecord": "docs/legado-ios/core-sdk-7ef3c7e-terminal-result.json",
           "pendingSDKRequest": "docs/legado-ios/core-sdk-f330274-request.json"
@@ -2666,7 +2998,17 @@
           "verificationZh": [
             "受控授权服务与材料向量、系统凭据存储SDK回归；真实账号服务验证条件具备时单独登记，不依赖真机的实现继续进行。"
           ],
-          "actualAcceptedEvidence": [],
+          "actualAcceptedEvidence": [
+            {
+              "record": "docs/legado-ios/evidence/sdk-f330274-scoped-acceptance/actual-scope-review.json",
+              "independentReview": "docs/legado-ios/evidence/sdk-f330274-scoped-acceptance/independent-review.json",
+              "actualSourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+              "runID": 39578204127,
+              "jobID": 119148925693,
+              "scopeZh": "实际GSA/SRP、认证会话、团队/材料协议、Keychain/Vault/CSR复用、profile有效期推进及丢ACK核对的受控回归已通过；真实Apple授权未验证。",
+              "wholeStepAccepted": false
+            }
+          ],
           "requiresPhysicalDevice": false,
           "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
           "implementationEvidence": [
@@ -2744,7 +3086,7 @@
             "GSA 登录、可信设备二次认证、真实任务取消和退出已接入同一 AppSession/AppOwner；Task 覆盖材料 owner 打开到认证完成，退出先取消并等实际任务结束，再清内存挑战和原凭据。Session epoch 与 UI 操作 UUID 防止旧结果/旧 defer 影响新状态，确认保存的账号事实不伪装撤回。修正首次登录取消后凭据应为空的测试断言；3 项新回归仍仅定义，SDK 执行 0；默认真实 anisette 和登录界面尚不可用。",
             "已接真实Anisette v3及同owner账号网络/Keychain；设置可选服务、观察注册及确认恢复未知注册。认证/配对/界面共15源已合入，11项有行为回归仍待SDK执行，真实Apple授权未验证。"
           ],
-          "nextActionZh": "提交同一源码的集中SDK/模拟器验证，实际执行已选续签、认证安装、事务恢复和触发回归；完整应用包重签另以同job必需1项验签。不以便携检查或源码审查代替真实执行。",
+          "nextActionZh": "复用已通过的受控材料生命周期结果，完成整包回归；真实Apple签发与免费团队能力保留为外部未验证边界。",
           "lastClosedSDKRequest": "docs/legado-ios/core-sdk-7ef3c7e-request.json",
           "lastSDKTerminalRecord": "docs/legado-ios/core-sdk-7ef3c7e-terminal-result.json",
           "pendingSDKRequest": "docs/legado-ios/core-sdk-f330274-request.json"
@@ -3081,7 +3423,17 @@
           "verificationZh": [
             "服务级与生命周期SDK测试；UI改动才按设计技能和五语言本地化验证，不扩展外围设置。"
           ],
-          "actualAcceptedEvidence": [],
+          "actualAcceptedEvidence": [
+            {
+              "record": "docs/legado-ios/evidence/sdk-f330274-scoped-acceptance/actual-scope-review.json",
+              "independentReview": "docs/legado-ios/evidence/sdk-f330274-scoped-acceptance/independent-review.json",
+              "actualSourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+              "runID": 39578204127,
+              "jobID": 119148925693,
+              "scopeZh": "禁用配置下实际共用worker的四项生命周期回归全部通过，未建立真实系统BGTask授权或无人值守续签证据。",
+              "wholeStepAccepted": false
+            }
+          ],
           "requiresPhysicalDevice": false,
           "startRuleZh": "纯接口、固定参考和不改变产品行为的底层准备可并行；产品接线依次通过本主线前一步及所属原工作包 dependsOn，不能以此顺序覆盖原依赖图。",
           "preparatoryEvidence": [
@@ -3158,7 +3510,7 @@
               "scope": "Restore shared worker admission/cancellation while preserving disabled bootstrap errors; source-only, existing lifecycle assertions unchanged."
             }
           ],
-          "nextActionZh": "禁用自动续签时保留bootstrap错误并维持原共用worker生命周期的修正已合入；当前fb6任务不含此后续修改，须待其终态后集中执行必要回归。",
+          "nextActionZh": "保留四项实际worker生命周期通过结果；集中执行完整签名链路，真实系统后台调度和长期无人值守仍未验证。",
           "lastClosedSDKRequest": "docs/legado-ios/core-sdk-7ef3c7e-request.json",
           "lastSDKTerminalRecord": "docs/legado-ios/core-sdk-7ef3c7e-terminal-result.json",
           "pendingSDKRequest": "docs/legado-ios/core-sdk-f330274-request.json"
@@ -4503,14 +4855,25 @@
       },
       "queuedDisabledWorkerLifecycleRepair": {
         "record": "docs/legado-ios/core-renewal-disabled-worker-lifecycle-repair.json",
-        "status": "source-integrated-actual-SDK-pending",
+        "status": "scoped-regressions-observed-pass",
         "productionChanges": 1,
         "newTestDefinitions": 0,
         "actualNewTests": 0,
         "newTagsOrRuns": 0,
         "sourceObservedWithRepair": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
         "observedSourceContainsRepair": true,
-        "SDKExecutionAtObservedSourceBlockedByCompiler": true
+        "SDKExecutionAtObservedSourceBlockedByCompiler": true,
+        "actualObservedSourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+        "actualRunID": 39578204127,
+        "actualPassedExistingRegressions": [
+          "SelfRenewalAppOwnerTests/startupBootstrapCannotLaunchAfterBackground",
+          "SelfRenewalAppOwnerTests/latestActivationWaitsForBootstrapAndRunsOnce",
+          "SelfRenewalAppOwnerTests/backgroundGrantUsesSameWorkerAndSurvivesSceneCleanup",
+          "SelfRenewalAppOwnerTests/cancelledForegroundBootstrapCannotCreateWorker"
+        ],
+        "actualAcceptanceRecord": "docs/legado-ios/evidence/sdk-f330274-scoped-acceptance/actual-scope-review.json",
+        "systemBGTaskGrantEstablished": false,
+        "wholeS6Accepted": false
       },
       "deferredFullSourceCompatibilityBoundaries": [
         {
@@ -5164,6 +5527,135 @@
           "native": 282,
           "union": 440,
           "package": 23
+        }
+      },
+      "currentF330274ScopedAcceptance": {
+        "record": "docs/legado-ios/evidence/sdk-f330274-scoped-acceptance/actual-scope-review.json",
+        "wholeS1S2S6Accepted": false,
+        "retainedOrphanLocations": 2,
+        "retainedOrphanIssueOccurrences": 3
+      },
+      "currentF330274NativeTerminal": {
+        "schemaVersion": 1,
+        "sourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+        "sourceTag": "legado-native-reader-test-f330274",
+        "runID": 39578204500,
+        "jobID": 119148927121,
+        "status": "completed",
+        "conclusion": "failure",
+        "queryAgain": false,
+        "factualReview": {
+          "path": "docs/legado-ios/evidence/native-f330274-terminal/factual-review-v1.json",
+          "bytes": 6305,
+          "sha256": "4f69a16258d6921eb694d43d9a88435496202aaf6fc973c0a002298b2152bd66"
+        },
+        "actualJVM": {
+          "xmlFiles": 58,
+          "uniqueMethods": 378,
+          "actualExecutions": 378,
+          "passed": 378,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "actualPortable": {
+          "selected": 101,
+          "passed": 100,
+          "skipped": 1,
+          "failures": 0,
+          "errors": 0
+        },
+        "actualMacPackageDiagnostics": {
+          "platform": "macOS",
+          "suite": "LegadoRuntimeTests",
+          "selected": 17,
+          "passed": 17,
+          "failures": 0,
+          "skipped": 0,
+          "actualJNIOrAppHost": 0
+        },
+        "completeDeviceBuilds": 1,
+        "fullProducer": {
+          "accepted": true,
+          "commands": 50,
+          "commandsPassed": 50,
+          "nativeComponents": 8,
+          "appBundles": 3,
+          "frameworks": 5,
+          "publicOutputFacts": 28,
+          "inputFiles": 17553,
+          "javaClassResources": 16614,
+          "archiveBytes": 287383849,
+          "archiveSHA256": "1a642097d69f68230800af5674832f6b1a0c4a6302256a425b35f2cb76d385bb",
+          "rawIPAInArtifact": false,
+          "preControlledSigningInputShapes": {
+            "singleArm64FAT32": 5,
+            "thin64": 3
+          },
+          "SwiftProductionPackageSignerCompleted": false,
+          "S3CaseExecuted": true
+        },
+        "firstFailure": {
+          "phase": "full-application-test-runtime",
+          "exitCode": 1,
+          "timedOut": false,
+          "reportedXcodeStatus": 65,
+          "uniqueCompilerErrors": 0,
+          "testIssueCount": 1,
+          "sourceLocation": "SelfRenewalCodeDirectoryHashVerifier.swift:181",
+          "testDeclaration": "SelfRenewalFullApplicationSignerTests.swift:15:6",
+          "rawLogLine": 36896,
+          "message": "Caught error: missingSpecialSlot(1)",
+          "actualFullApplicationSignerTests": 1,
+          "passed": 0,
+          "failed": 1,
+          "caseDurationSeconds": 47.817,
+          "testRunDurationSeconds": 47.834
+        },
+        "actualFullApplicationSigner": 1,
+        "actualFullApplicationSignerPassed": 0,
+        "actualFullApplicationSignerFailed": 1,
+        "actualMainJS": 0,
+        "actualNative": 0,
+        "actualCold": 0,
+        "nativeSourceStampProduced": true,
+        "historicalNativeInputsBound": 282,
+        "deviceProjectOverlayRestored": true,
+        "ordinaryJarRawRehash": false,
+        "SDKHandleChanged": false,
+        "measuredCompatibilityPercent": null,
+        "limits": [
+          "Complete device build and controlled original Apple codesign producer succeeded. The production Swift S3 case actually ran once but failed during original-input verification with missingSpecialSlot(1), before Vault creation and resign; no successful full re-sign/independent-output acceptance.",
+          "Actual pre-controlled-code-signing input shape records are available, but no input/output Mach-O, full IPA or raw JAR bytes were uploaded. Hashes are metadata facts, not independent binary rehash.",
+          "The earlier missing-import fix is present in historical f330 and this test target compiled; later e67e runtime followup is not part of this source or result.",
+          "Both source f330 CI tasks are terminal according to Root; this archive closes Native only and does not re-query or rewrite the separately archived SDK.",
+          "No real Apple authorization, physical installation, same-device/noVPN route, automatic renewal or measured90percent compatibility acceptance established."
+        ],
+        "allNonDeviceWorkComplete": false,
+        "automaticSelfRenewalImplemented": false,
+        "fullLegadoCompatibilityEstablished": false,
+        "legalRedistributionClearanceEstablished": false,
+        "record": "docs/legado-ios/core-native-f330274-terminal-result.json",
+        "archiveStatus": "public-terminal-archive-reviewed-and-integrated",
+        "independentReview": {
+          "path": "docs/legado-ios/evidence/native-f330274-terminal/independent-review.json",
+          "bytes": 4545,
+          "sha256": "1f81185d1320477d584210c4b95f881ad9afcfe67468f9c5ff65ac0b8b5553aa"
+        }
+      },
+      "queuedF330274S3MetadataFollowup": {
+        "record": "docs/legado-ios/core-sdk-f330274-s3-metadata-followup.json",
+        "status": "reviewed-source-integrated-actual-SDK-and-full-Native-pending",
+        "changedExistingSources": 16,
+        "CookieExpiryResolved": false,
+        "newTestDefinitions": 0,
+        "actualNewSwiftTests": 0,
+        "newTagsOrRuns": 0,
+        "sourceCounts": {
+          "core": 420,
+          "native": 284,
+          "package": 23,
+          "union": 442
         }
       }
     }
@@ -9456,6 +9948,18 @@
     "sdk-f330274-runtime-followup": {
       "path": "docs/legado-ios/core-sdk-f330274-runtime-followup.json",
       "scope": "Reviewed WK response ownership repair plus two renewal oracle repairs; expiry only diagnosed, not resolved; zero new actual Apple execution."
+    },
+    "sdk-f330274-scoped-acceptance": {
+      "path": "docs/legado-ios/evidence/sdk-f330274-scoped-acceptance/actual-scope-review.json",
+      "scope": "Actual scoped S1/S2 controlled vectors and four disabled-worker S6 regressions; all whole steps remain in progress; two orphan source locations and whole full-application failure remain."
+    },
+    "native-f330274-terminal": {
+      "path": "docs/legado-ios/core-native-f330274-terminal-result.json",
+      "scope": "Actual JVM378pass; portable100pass+oneWindows-onlyskip; macOS Package17 separate. Device build and full producer passed; production S3 case1failed missingSpecialSlot(1) after47.817s, no compiler error/timeout; JNI/MainJS/Original32/cold0. No successful full re-sign, Apple authorization, device installation, automatic renewal or measured90percent claim."
+    },
+    "sdk-f330274-s3-metadata-followup": {
+      "path": "docs/legado-ios/core-sdk-f330274-s3-metadata-followup.json",
+      "scope": "Reviewed extension metadata and strict producer preflight, exact newly declared plist inputs, independent Native attempts; previous six-source repairs retained. Actual coherent rerun pending; expiry unresolved."
     }
   },
   "retainedExistingWork": [

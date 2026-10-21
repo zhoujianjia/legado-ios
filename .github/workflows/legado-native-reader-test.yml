@@ -65,6 +65,7 @@ jobs:
           python -B scripts/reader-experience/test-full-application-signing-tools.py -v
           python -B scripts/reader-experience/full-application-signing-tools.py prepare
       - name: Prepare the Simulator payload and synthetic local application
+        id: native_simulator_prepare
         if: ${{ !startsWith(github.ref_name, 'legado-native-reader-test-cold-') }}
         run: |
           test "$(uname -m)" = arm64
@@ -85,7 +86,9 @@ jobs:
         if: ${{ !startsWith(github.ref_name, 'legado-native-reader-test-cold-') }}
         run: python -B scripts/reader-experience/full-application-signing-tools.py run
       - name: Execute1 MainJS and32 original methods in separate required hosts
-        if: ${{ !startsWith(github.ref_name, 'legado-native-reader-test-cold-') }}
+        # Collect independent host failures after S3 execution fails. Full S3
+        # proof remains required by native-smoke-tools.result and the job outcome.
+        if: ${{ always() && !cancelled() && !startsWith(github.ref_name, 'legado-native-reader-test-cold-') && steps.native_simulator_prepare.outcome == 'success' }}
         run: |
           unset LEGADO_RUNTIME_SOURCE_ONLY
           ARGS=(

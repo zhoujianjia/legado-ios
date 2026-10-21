@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "status": "source-and-root-helper-review-approved-actual-Apple-pending",
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "final": {
+    "path": ".build/sdk-f330274-s3-info-metadata-repair/final-v1.json",
+    "bytes": 9468,
+    "sha256": "d36719b1a8563cf6d05abcaf587e60673be4517289fcd0ebc85f12049fd6bc24"
+  },
+  "sourceRoot": "F:/yuedu-reader/.build/sdk-f330274-s3-info-metadata-repair/work",
+  "sourceRoster": {
+    "path": ".build/sdk-f330274-s3-info-metadata-repair/source-rosters-v1.json",
+    "bytes": 245770,
+    "sha256": "d31a865b9aa6a3ce755a670e6222d4cc67037b9f1377de896de978770bc4af83"
+  },
+  "causeEvidence": {
+    "path": ".build/sdk-f330274-s3-info-metadata-repair/cause-evidence-v1.json",
+    "bytes": 7090,
+    "sha256": "d336689ba24f54da620a253d74dae4cc8eed8fadff2469589fb43e8717697aee"
+  },
+  "rootHelpers": [
+    {
+      "path": ".build/sdk-f330274-s3-info-metadata-repair/integrate-checkpoint.py",
+      "bytes": 10162,
+      "sha256": "53d431faefeea02f8bd5964e838b0b50365c9817a2b4e7921b1a3831bffeb00c"
+    },
+    {
+      "path": ".build/next-unified-full-pair-root-helpers/prepare-full-pair.py",
+      "bytes": 26131,
+      "sha256": "2cd1f503aaf3289ab5cb706b4f792f800d3f51a2f16471c08947f1a6f3958d56"
+    }
+  ],
+  "checks": [
+    {
+      "check": "finalExact",
+      "passed": true,
+      "detail": "Author final source candidate exactly bound."
+    },
+    {
+      "check": "nineCandidateBaselineAndDiffFactsExact",
+      "passed": true,
+      "detail": "All nine baseline/candidate/diff hashes matched; no source modifications made by reviewer."
+    },
+    {
+      "check": "extensionOnlyAddsXPC:ShareExtension/Info.plist",
+      "passed": true,
+      "detail": "Production extension metadata is explicit; every previous key/value preserved. Processed built Info/IPA remains unavailable."
+    },
+    {
+      "check": "extensionOnlyAddsXPC:Widget/Info.plist",
+      "passed": true,
+      "detail": "Production extension metadata is explicit; every previous key/value preserved. Processed built Info/IPA remains unavailable."
+    },
+    {
+      "check": "actual442FinalSourceRosterAndPackage23",
+      "passed": true,
+      "detail": "Exact overlay bytefacts420/284/442 and S3signing58; only two new paths. Package23 bytefacts unchanged. Not a transitive-Xcode closure claim."
+    },
+    {
+      "check": "originalSelectorsBudgetsSlotAndResultGatesUnchanged",
+      "passed": true,
+      "detail": "Removing only the new source-list insertions reconstructs whole core/native/full-tools baselines. Thus original functions, all selection modes, fullS3 one-case/resources and budgets remain exact; Swift verifiers/tests unchanged."
+    },
+    {
+      "check": "producerPreflightBeforeAnyCodesignWithoutInputRepair",
+      "passed": true,
+      "detail": "All three expected bundles require typed identity/executable/version/role/extension/platform before signing. No input metadata fill/rewrite; unchanged unknown-component, device-native, unrelated-byte and deep strict codesign checks retained."
+    },
+    {
+      "check": "retained90PortablePassAndNoDefinitionsAdded",
+      "passed": true,
+      "detail": "Existing full4/native10/core76 actual saved results only. Initial missing-import0-discovery history retained; no reviewer execution/re-run. These are portable checks, not SDK/Apple passes."
+    },
+    {
+      "check": "causeDeclarationBoundAndBuiltMetadataUnproven",
+      "passed": true,
+      "detail": "Actual missingSpecialSlot(1) after five completed framework signatures and authored missing package types support the fix. No claim that unavailable built extension bytes were independently observed, or that the fix passed Apple execution."
+    },
+    {
+      "check": "admissionHelperSixCountOrDescriptionEditsOnly",
+      "passed": true,
+      "detail": "Exact reverse to previously reviewed helper proves all other guard/selection/budget/terminal/admission bodies byte-unchanged. Current helper hash bound below; never executed."
+    },
+    {
+      "check": "integrationHelperSchemaBoundedCompositionAndPlanUpdate",
+      "passed": true,
+      "detail": "Static review: CLI exact candidate/review hashes;9-path baseline/candidate guards; prior6 repairs+2 independent controls retained in16 unique f330 differences. Exact442 historical Git/working and Package23 assertions; bounded source/evidence copies and loaded-plan key updates, UTF8LF writes. No tags/CI/Git mutations in helper. Root executes later; reviewer did not run it."
+    }
+  ],
+  "retainedValidation": [
+    {
+      "fact": {
+        "path": ".build/sdk-f330274-s3-info-metadata-repair/portable-full-result-v1.json",
+        "bytes": 544,
+        "sha256": "4799299dde17e1e01f18b772fa6bbe0147c857d2ea500fb2b3abaf935e0b51e7"
+      },
+      "passed": 4,
+      "matched": true
+    },
+    {
+      "fact": {
+        "path": ".build/sdk-f330274-s3-info-metadata-repair/portable-native.log",
+        "bytes": 114,
+        "sha256": "a76ebda0c4a7f33b2650f40eb22e41aff62303552a59565cea48c3fe7753f79e"
+      },
+      "passed": 10,
+      "matched": true
+    },
+    {
+      "fact": {
+        "path": ".build/sdk-f330274-s3-info-metadata-repair/portable-core.log",
+        "bytes": 182,
+        "sha256": "34c8588d74319d6664e85b7933a17c0f7523cd6a291373b7e6174b79c4c6f224"
+      },
+      "passed": 76,
+      "matched": true
+    },
+    {
+      "definitionOrder": "scripts/reader-experience/test-full-application-signing-tools.py",
+      "matched": true
+    },
+    {
+      "definitionOrder": "scripts/reader-experience/test-native-smoke-tools.py",
+      "matched": true
+    },
+    {
+      "definitionOrder": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "matched": true
+    }
+  ],
+  "limits": [
+    "No new Swift/Apple execution, tests, cloud query/download or helper execution occurred during review.",
+    "Actual built extension Info.plists and IPA bytes are absent. Missing-key causality remains source-supported and awaits the real rebuilt package.",
+    "Cookie expiry remains unresolved; strict comparison and exact next-run diagnostics remain. Full signing, JNI/cold, real device/Apple-account renewal and full compatibility remain unaccepted."
+  ],
+  "reviewActions": {
+    "tests": 0,
+    "sourceParsers": 0,
+    "cloudQueries": 0,
+    "downloads": 0,
+    "helpersExecuted": 0,
+    "canonicalOrSourceOrGitMutation": 0
+  },
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "measuredCompatibilityPercent": null
+}

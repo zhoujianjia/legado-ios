@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+  "runID": 39578204500,
+  "jobID": 119148927121,
+  "status": "completed",
+  "conclusion": "failure",
+  "queryAgain": false,
+  "actualJVM": {
+    "xmlFiles": 58,
+    "uniqueMethods": 378,
+    "actualExecutions": 378,
+    "passed": 378,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "actualPortable": {
+    "selected": 101,
+    "passed": 100,
+    "skipped": 1,
+    "failures": 0,
+    "errors": 0
+  },
+  "actualMacPackageDiagnostics": {
+    "platform": "macOS",
+    "suite": "LegadoRuntimeTests",
+    "selected": 17,
+    "passed": 17,
+    "failures": 0,
+    "skipped": 0,
+    "actualJNIOrAppHost": 0
+  },
+  "phases": {
+    "device-runtime-stage": {
+      "timeoutSeconds": 300,
+      "timedOut": false,
+      "exitCode": 0,
+      "output": {
+        "path": "device-runtime-stage.log",
+        "bytes": 3781,
+        "sha256": "6902e20591940ab4d0437eb7decc0db2e508b6143b1bf10c84df1cdea5fa2a5e"
+      },
+      "argvOmittedFromPublicArchive": true
+    },
+    "full-device-build": {
+      "timeoutSeconds": 3600,
+      "timedOut": false,
+      "exitCode": 0,
+      "output": {
+        "path": "full-device-build.log",
+        "bytes": 6574030,
+        "sha256": "1f252186b19f9211fe07688c4955cde1cdc3e0e282921e7b2e99c92d0674aaf8"
+      },
+      "argvOmittedFromPublicArchive": true
+    },
+    "full-owned-producer": {
+      "timeoutSeconds": 360,
+      "timedOut": false,
+      "exitCode": 0,
+      "output": {
+        "path": "full-owned-producer.log",
+        "bytes": 11962,
+        "sha256": "0370dd691d9cff5d32fda3acb07aee5379562b629df56495d597ab504ecc9c25"
+      },
+      "argvOmittedFromPublicArchive": true
+    },
+    "full-application-test": {
+      "timeoutSeconds": 3660,
+      "timedOut": false,
+      "exitCode": 1,
+      "output": {
+        "path": "full-application-test.log",
+        "bytes": 475,
+        "sha256": "a26d8934ccd148a0fc5fe1c8093dd74f736de8d9ef33573f750a06256c409d7e"
+      },
+      "argvOmittedFromPublicArchive": true
+    },
+    "full-application-summary": {
+      "timeoutSeconds": 60,
+      "timedOut": false,
+      "exitCode": 0,
+      "output": {
+        "path": "full-application-summary.log",
+        "bytes": 1602,
+        "sha256": "eae5626c42ba68b8932b7fef1281501c5d7e0839d2ebde53fe039b80434c2e46"
+      },
+      "argvOmittedFromPublicArchive": true
+    },
+    "full-application-tests": {
+      "timeoutSeconds": 60,
+      "timedOut": false,
+      "exitCode": 0,
+      "output": {
+        "path": "full-application-tests.log",
+        "bytes": 2207,
+        "sha256": "f6de6da8dc0a0f9c7735fe55d6fabd5a7f15b83e94582fe8865071077125695a"
+      },
+      "argvOmittedFromPublicArchive": true
+    }
+  },
+  "fullDeviceBuildPassed": true,
+  "completeDeviceBuilds": 1,
+  "fullProducer": {
+    "accepted": true,
+    "commands": 50,
+    "commandsPassed": 50,
+    "nativeComponents": 8,
+    "appBundles": 3,
+    "frameworks": 5,
+    "publicOutputFacts": 28,
+    "inputFiles": 17553,
+    "javaClassResources": 16614,
+    "archiveBytes": 287383849,
+    "archiveSHA256": "1a642097d69f68230800af5674832f6b1a0c4a6302256a425b35f2cb76d385bb",
+    "rawIPAInArtifact": false,
+    "preControlledSigningInputShapes": {
+      "singleArm64FAT32": 5,
+      "thin64": 3
+    },
+    "SwiftProductionPackageSignerCompleted": false,
+    "S3CaseExecuted": true
+  },
+  "firstFailure": {
+    "phase": "full-application-test-runtime",
+    "exitCode": 1,
+    "timedOut": false,
+    "reportedXcodeStatus": 65,
+    "uniqueCompilerErrors": 0,
+    "testIssueCount": 1,
+    "sourceLocation": "SelfRenewalCodeDirectoryHashVerifier.swift:181",
+    "testDeclaration": "SelfRenewalFullApplicationSignerTests.swift:15:6",
+    "rawLogLine": 36896,
+    "message": "Caught error: missingSpecialSlot(1)",
+    "actualFullApplicationSignerTests": 1,
+    "passed": 0,
+    "failed": 1,
+    "caseDurationSeconds": 47.817,
+    "testRunDurationSeconds": 47.834
+  },
+  "actualFullApplicationSigner": 1,
+  "actualFullApplicationSignerPassed": 0,
+  "actualFullApplicationSignerFailed": 1,
+  "actualSimulatorTestHosts": 1,
+  "actualMainJS": 0,
+  "actualOriginalNative": 0,
+  "actualCold": 0,
+  "actualInstallation": 0,
+  "nativeSourceStampProduced": true,
+  "historicalGitInputsBound": 282,
+  "deviceProjectOverlayRestoredAndHistoricalGitExact": true,
+  "ordinaryJar": {
+    "metadataCopiesConsistent": 4,
+    "bytes": 10960540,
+    "sha256": "7dab65eab5eb04821132ec60e5a7ede2a6e002700e6fdc10941bf871ab8ca964",
+    "testClassesIncluded": false,
+    "rawJarAvailableInArtifact": false,
+    "rawJarRehashedByArchivePreparer": false
+  },
+  "archiveIntegrity": {
+    "artifactID": 12340668298,
+    "zipBytes": 818412,
+    "zipSHA256": "32081c06c806461fd90ab6b25447400536ef5f32317d54380cae52fbfb3f97c4",
+    "memberCount": 98,
+    "uncompressedBytes": 15431197,
+    "crcVerified": true,
+    "safePathsCasefoldUniquenessNoSymlinkNoEncryption": true,
+    "windowsExtendedAbsolutePathUsed": true,
+    "downloadAttempts": 1
+  },
+  "integrityVerificationPerformedBy": "Root download-once; reused, not repeated",
+  "measuredCompatibilityPercent": null,
+  "limits": [
+    "Complete device build and controlled original Apple codesign producer succeeded. The production Swift S3 case actually ran once but failed during original-input verification with missingSpecialSlot(1), before Vault creation and resign; no successful full re-sign/independent-output acceptance.",
+    "Actual pre-controlled-code-signing input shape records are available, but no input/output Mach-O, full IPA or raw JAR bytes were uploaded. Hashes are metadata facts, not independent binary rehash.",
+    "The earlier missing-import fix is present in historical f330 and this test target compiled; later e67e runtime followup is not part of this source or result.",
+    "Both source f330 CI tasks are terminal according to Root; this archive closes Native only and does not re-query or rewrite the separately archived SDK.",
+    "No real Apple authorization, physical installation, same-device/noVPN route, automatic renewal or measured90percent compatibility acceptance established."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

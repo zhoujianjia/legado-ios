@@ -249,7 +249,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(len(record["intendedTests"]["replacement"]), 5)
             self.assertEqual(len(record["intendedTests"]["ui"]), 1)
             paths = {item["path"] for item in record["sourceInputs"]}
-            self.assertEqual(len(record["sourceInputs"]), 418)
+            self.assertEqual(len(record["sourceInputs"]), 420)
             self.assertTrue({"scripts/reader-experience/inspect-renewal-report.py",
                              "scripts/reader-experience/renewal-report-schema1.py",
                              "scripts/reader-experience/test-inspect-renewal-report.py",
@@ -566,7 +566,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(inputs["selectionMode"], "implementation")
             self.assertEqual(inputs["intendedTests"], expected)
             self.assertEqual(sum(map(len, expected.values())), 11)
-            self.assertEqual(len(inputs["sourceInputs"]), 418)
+            self.assertEqual(len(inputs["sourceInputs"]), 420)
             for group in ("unit", "discovery", "signature", "ui", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal", "transactionrenewal"):
                 for suffix in ("-summary.json", "-tests.json"):
                     self.assertFalse((self.work / (group + suffix)).exists())
@@ -663,7 +663,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(inputs["selectionMode"], "signature")
             self.assertEqual(inputs["intendedTests"], {"signature": sorted(probe.EXPECTED_CASES["signature"])})
             self.assertEqual(len(inputs["intendedTests"]["signature"]), 9)
-            self.assertEqual(len(inputs["sourceInputs"]), 418)
+            self.assertEqual(len(inputs["sourceInputs"]), 420)
             for group in ("unit", "discovery", "replacement", "materials", "ui", "cryptography", "sealedmaterials", "boundmaterials", "controlledsigning", "integratedrenewal", "transactionrenewal"):
                 for suffix in ("-summary.json", "-tests.json"):
                     self.assertFalse((self.work / (group + suffix)).exists())
@@ -739,7 +739,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.assertEqual(inputs["selectionMode"], "cryptography")
             self.assertEqual(inputs["intendedTests"], {"cryptography": sorted(probe.EXPECTED_CASES["cryptography"])})
             self.assertEqual(len(inputs["intendedTests"]["cryptography"]), 25)
-            self.assertEqual(len(inputs["sourceInputs"]), 418)
+            self.assertEqual(len(inputs["sourceInputs"]), 420)
             for group in probe.EXPECTED_CASES:
                 if group == "cryptography":
                     continue
@@ -831,7 +831,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             expected = probe.EXPECTED_CASES["sealedmaterials"]
             self.assertEqual(inputs["selectionMode"], "sealedmaterials")
             self.assertEqual(inputs["intendedTests"], {"sealedmaterials": sorted(expected)})
-            self.assertEqual(len(inputs["sourceInputs"]), 418)
+            self.assertEqual(len(inputs["sourceInputs"]), 420)
             self.assertEqual(len(expected), 48)
             self.assertTrue(probe.EXPECTED_CASES["cryptography"] | probe.EXPECTED_CASES["materials"] <= expected)
             suites = (probe.SIGNATURE_SUITE, probe.HASH_SUITE, probe.CMS_SUITE,
@@ -933,7 +933,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             expected = probe.EXPECTED_CASES["boundmaterials"]
             self.assertEqual(inputs["selectionMode"], "boundmaterials")
             self.assertEqual(inputs["intendedTests"], {"boundmaterials": sorted(expected)})
-            self.assertEqual(len(inputs["sourceInputs"]), 418)
+            self.assertEqual(len(inputs["sourceInputs"]), 420)
             self.assertEqual(len(expected), 78)
             self.assertTrue(probe.EXPECTED_CASES["sealedmaterials"] <= expected)
             suites = (probe.SIGNATURE_SUITE, probe.HASH_SUITE, probe.CMS_SUITE, probe.PROFILE_SUITE,
@@ -1078,7 +1078,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
             self.built_fixture()
             inputs = smoke.read_json(self.work / "source-inputs.json")
             expected = probe.EXPECTED_CASES["controlledsigning"]
-            self.assertEqual(len(inputs["sourceInputs"]), 418)
+            self.assertEqual(len(inputs["sourceInputs"]), 420)
             self.assertEqual(inputs["intendedTests"], {"controlledsigning": sorted(expected)})
             self.assertEqual(len(expected), 23)
             suites = (probe.IPA_SUITE, probe.VAULT_SUITE, probe.CONTROLLED_SIGNER_SUITE)
@@ -1202,8 +1202,8 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         self.assertEqual(len(additional), 39)
         self.assertEqual(expected, probe.EXPECTED_CASES["boundmaterials"] | probe.EXPECTED_CASES["controlledsigning"] |
                          additional)
-        self.assertEqual(len(probe.SOURCE_INPUTS), 418)
-        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 418)
+        self.assertEqual(len(probe.SOURCE_INPUTS), 420)
+        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 420)
         for path in probe.SOURCE_INPUTS:
             self.assertTrue((HERE.parents[1] / path).is_file(), path)
         selected_suites = {case.split("/")[0] for case in expected}
@@ -1493,8 +1493,8 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         self.assertIn("!cancelled() && steps.toolchain.outcome == 'success'", workflow)
         self.assertIn('private keys/P12/passwords are never artifact members', workflow)
         self.assertIn('original-api-package-tests.sh', workflow)
-        self.assertEqual(len(probe.SOURCE_INPUTS), 418)
-        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 418)
+        self.assertEqual(len(probe.SOURCE_INPUTS), 420)
+        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 420)
         for path in probe.SOURCE_INPUTS: self.assertTrue((HERE.parents[1] / path).is_file(), path)
 
 
@@ -1771,7 +1771,7 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         self.assertEqual(expected,probe.EXPECTED_CASES['handoffrenewal']|declared|probe.CURRENTCORE_NEW_QUALIFIED_CASES|probe.CURRENTCORE_LIVE_QUALIFIED_CASES|probe.CURRENTCORE_GLYPH_QUALIFIED_CASES|probe.CURRENTCORE_SOURCE_LOGIN_QUALIFIED_CASES|probe.CURRENTCORE_MATERIAL_REFRESH_QUALIFIED_CASES|probe.CURRENTCORE_LOGIN_ACTION_REGRESSION_QUALIFIED_CASES|probe.CURRENTCORE_EXPLORE_LIFECYCLE_QUALIFIED_CASES|probe.CURRENTCORE_FOREGROUND_LIFECYCLE_QUALIFIED_CASES|probe.CURRENTCORE_CERTIFICATE_PREUPDATE_QUALIFIED_CASES|probe.CURRENTCORE_FIRST_REGISTRATION_QUALIFIED_CASES|probe.CURRENTCORE_S5_READINESS_QUALIFIED_CASES)
         self.assertEqual(len(expected),479);self.assertEqual(probe.expected_leaf_count('currentcore'),482)
         self.assertIn(probe.SDK_REQUIRED_CASE,expected)
-        self.assertEqual(len(probe.SOURCE_INPUTS),418);self.assertEqual(len(set(probe.SOURCE_INPUTS)),418)
+        self.assertEqual(len(probe.SOURCE_INPUTS),420);self.assertEqual(len(set(probe.SOURCE_INPUTS)),420)
         self.assertEqual(len(probe.SDK_TOOL_NAMES),7)
         self.assertEqual(probe.expected_leaf_count('handoffrenewal'),255)
         for group in ('transactionrenewal','handoffrenewal','currentcore'):
@@ -1909,8 +1909,8 @@ class AccountCoreSelectionTests(unittest.TestCase):
             self.assertTrue(set(names) <= set(declared), suite)
             selected = {case.split('/', 1)[1] for case in probe.EXPECTED_CASES['currentcore'] if case.startswith(suite + '/')}
             self.assertEqual(selected, set(names), suite)
-        self.assertEqual(len(probe.SOURCE_INPUTS), 418)
-        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 418)
+        self.assertEqual(len(probe.SOURCE_INPUTS), 420)
+        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 420)
         self.assertIn(probe.CURRENTCORE_TRUST_GUARD_SOURCE, probe.SOURCE_INPUTS)
         self.assertIn(probe.CURRENTCORE_HEALTH_CONFORMANCE_SOURCE, probe.SOURCE_INPUTS)
         workflow = (HERE.parents[1] / '.github/workflows/reader-renewal-probe.yml').read_text(encoding='utf8')
@@ -1997,8 +1997,8 @@ class EnrollmentRecoverySelectionTests(unittest.TestCase):
         self.assertIn(probe.SDK_REQUIRED_CASE, probe.EXPECTED_CASES["currentcore"])
         self.assertEqual(set(probe.PARAMETER_CASES.values()), {"interrupt"})
         self.assertEqual(len(probe.PARAMETER_CASES), 2)
-        self.assertEqual(len(probe.SOURCE_INPUTS), 418)
-        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 418)
+        self.assertEqual(len(probe.SOURCE_INPUTS), 420)
+        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 420)
         self.assertIn("Tests/iOS/LegadoNativeOriginalReaderTests.swift", probe.SOURCE_INPUTS)
         relative = "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift"
         self.assertIn(relative, probe.CURRENTCORE_ACCOUNT_SOURCE_PATHS[suite])
@@ -2056,7 +2056,7 @@ class LiveCoreSelectionTests(unittest.TestCase):
         self.assertEqual(probe.PARAMETER_CASES, {
             'TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit': 'interrupt',
             'AozoraTXTTests/storedV6LocationsMigrateOnce': 'interrupt'})
-        self.assertEqual(len(probe.SOURCE_INPUTS), 418)
+        self.assertEqual(len(probe.SOURCE_INPUTS), 420)
         self.assertEqual(len(probe.CURRENTCORE_LIVE_SOURCE_INPUTS), 47)
         for suite, selected in probe.CURRENTCORE_LIVE_CASES.items():
             actual = []
@@ -2213,7 +2213,7 @@ class SourceLoginCheckpointSelectionTests(unittest.TestCase):
         self.assertIn(probe.SDK_REQUIRED_CASE, probe.EXPECTED_CASES['currentcore'])
         for group in probe.EXPECTED_CASES:
             if group != 'currentcore': self.assertTrue(added.isdisjoint(probe.EXPECTED_CASES[group]))
-        self.assertEqual(len(probe.SOURCE_INPUTS), 418)
+        self.assertEqual(len(probe.SOURCE_INPUTS), 420)
         self.assertEqual(len(probe.CURRENTCORE_SOURCE_STATE_INPUTS), 20)
         self.assertTrue(set(probe.CURRENTCORE_SOURCE_STATE_INPUTS) <= set(probe.SOURCE_INPUTS))
         self.assertEqual(len(probe.CURRENTCORE_LOGIN_MAP_INPUTS), 11)
@@ -2292,7 +2292,7 @@ class MaterialPublicationAndLoginActionSelectionTests(unittest.TestCase):
                 self.assertTrue((added | probe.CURRENTCORE_LOGIN_ACTION_REGRESSION_QUALIFIED_CASES).isdisjoint(probe.EXPECTED_CASES[group]))
         self.assertEqual(len(probe.CURRENTCORE_LOGIN_ACTION_MATERIAL_INPUTS), 23)
         self.assertTrue(set(probe.CURRENTCORE_LOGIN_ACTION_MATERIAL_INPUTS) <= set(probe.SOURCE_INPUTS))
-        self.assertEqual(len(probe.SOURCE_INPUTS), 418)
+        self.assertEqual(len(probe.SOURCE_INPUTS), 420)
         wrapper = (HERE / 'renewal-probe-tests.sh').read_text(encoding='utf8')
         self.assertIn('479 definitions,482 argument leaves', wrapper)
         workflow = (HERE.parents[1] / '.github/workflows/reader-renewal-probe.yml').read_text(encoding='utf8')
@@ -2359,7 +2359,7 @@ class LoginUIExploreCheckpointSelectionTests(unittest.TestCase):
         self.assertTrue(set(probe.CURRENTCORE_ROW_ACTION_INPUTS) <= set(probe.SOURCE_INPUTS))
         self.assertEqual(len(probe.CURRENTCORE_LOGIN_UI_EXPLORE_INPUTS), 27)
         self.assertTrue(set(probe.CURRENTCORE_LOGIN_UI_EXPLORE_INPUTS) <= set(probe.SOURCE_INPUTS))
-        self.assertEqual(len(probe.SOURCE_INPUTS), 418)
+        self.assertEqual(len(probe.SOURCE_INPUTS), 420)
         workflow = (HERE.parents[1] / '.github/workflows/reader-renewal-probe.yml').read_text(encoding='utf8')
         self.assertIn('Execute479 current-core definitions with482 exact native argument leaves', workflow)
         self.assertIn('Execute24 independent current-source macOS package XCTest cases', workflow)
@@ -2424,8 +2424,8 @@ class LoginEventsDismissForegroundCheckpointTests(unittest.TestCase):
         bound = set(probe.CURRENTCORE_LOGIN_EVENTS_DISMISS_LIFECYCLE_INPUTS)
         self.assertEqual(len(bound), 29)
         self.assertTrue(bound <= set(probe.SOURCE_INPUTS))
-        self.assertEqual(len(probe.SOURCE_INPUTS), 418)
-        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 418)
+        self.assertEqual(len(probe.SOURCE_INPUTS), 420)
+        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 420)
         for path in ('Targets/Yuedu/SharedApp/yuedu_appApp.swift',
                 'Modules/Services/SelfRenewal/SelfRenewalBackgroundTaskBridge.swift',
                 'Tests/iOS/yuedu appTests/SelfRenewalForegroundMaterialRevalidationTests.swift',
@@ -2541,12 +2541,14 @@ class DeltaReuseCheckpointSelectionTests(unittest.TestCase):
     tree = RenewalProbeEvidenceTests.tree
 
     def test_delta_inputs_keep_app_inventory_all_three_pairs_required_fixture_and_new_package_mode(self):
+        self.assertEqual(probe.CURRENTCORE_FULL_APPLICATION_INFO_INPUTS, ('ShareExtension/Info.plist', 'Widget/Info.plist'))
+        self.assertTrue(set(probe.CURRENTCORE_FULL_APPLICATION_INFO_INPUTS) <= set(probe.SOURCE_INPUTS))
         self.assertEqual(len(probe.EXPECTED_CASES['currentcore']), 479)
         self.assertEqual(probe.expected_leaf_count('currentcore'), 482)
         self.assertEqual(len(probe.parameter_cases('currentcore')), 3)
         self.assertIn(probe.SDK_REQUIRED_CASE, probe.EXPECTED_CASES['currentcore'])
-        self.assertEqual(len(probe.SOURCE_INPUTS), 418)
-        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 418)
+        self.assertEqual(len(probe.SOURCE_INPUTS), 420)
+        self.assertEqual(len(set(probe.SOURCE_INPUTS)), 420)
         self.assertEqual(len(probe.CURRENTCORE_ORIGINAL_LOGIN_HEADER_V2_BROWSER_INPUTS), 10)
         self.assertTrue(set(probe.CURRENTCORE_ORIGINAL_LOGIN_HEADER_V2_BROWSER_INPUTS) <= set(probe.SOURCE_INPUTS))
         self.assertTrue(set(probe.CURRENTCORE_SPD_WEBJS_COLD_INPUTS) <= set(probe.SOURCE_INPUTS))

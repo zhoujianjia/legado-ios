@@ -1,0 +1,80 @@
+{
+  "raw": {
+    "path": ".build/native-f330274-terminal/artifact-12340668298/.build/s3-full-application-signing/full-application-test-build.log",
+    "bytes": 8512491,
+    "sha256": "96e759ab3c06635c4ae5fb0ed1bf76308bceb524f29a9910f1d7e38add9e1f45"
+  },
+  "firstFailure": {
+    "phase": "full-application-test-runtime",
+    "exitCode": 1,
+    "timedOut": false,
+    "reportedXcodeStatus": 65,
+    "uniqueCompilerErrors": 0,
+    "testIssueCount": 1,
+    "sourceLocation": "SelfRenewalCodeDirectoryHashVerifier.swift:181",
+    "testDeclaration": "SelfRenewalFullApplicationSignerTests.swift:15:6",
+    "rawLogLine": 36896,
+    "message": "Caught error: missingSpecialSlot(1)",
+    "actualFullApplicationSignerTests": 1,
+    "passed": 0,
+    "failed": 1,
+    "caseDurationSeconds": 47.817,
+    "testRunDurationSeconds": 47.834
+  },
+  "excerpt": [
+    {
+      "line": 36843,
+      "text": "◇ Suite \"Complete current-source iPhoneOS JVM package through the production signing owners\" started."
+    },
+    {
+      "line": 36844,
+      "text": "◇ Test \"real main Widget Share framework JVM JAR and Java resources survive controlled re-signing and independent archive verification\" started."
+    },
+    {
+      "line": 36845,
+      "text": "2026-10-21 10:59:36.275062+0000 YueduReader[96285:477190] [parse] ⏱ renewal.package.full-input 103ms bytes=2638 main=false"
+    },
+    {
+      "line": 36848,
+      "text": "2026-10-21 11:00:12.121922+0000 YueduReader[96285:477192] [parse] ⏱ renewal.material.inventory 12410ms entries=18315 bytes=185040 declaredBytes=282693831 main=false"
+    },
+    {
+      "line": 36856,
+      "text": "2026-10-21 11:00:12.162776+0000 YueduReader[96285:477183] [parse] ⏱ renewal.signature.code-directory-cms 25ms slices=1 bytes=2182 main=false"
+    },
+    {
+      "line": 36890,
+      "text": "2026-10-21 11:00:12.229986+0000 YueduReader[96285:477183] [parse] ⏱ renewal.material.macho 106ms files=5 bytes=120784 hashBytes=224943 signatureBytes=10836 hashOperations=45 main=false"
+    },
+    {
+      "line": 36892,
+      "text": "2026-10-21 11:00:23.788086+0000 YueduReader[96285:478181] [parse] ⏱ renewal.ipa.unpack 47509ms bytes=287383849 expandedBytes=282693831 main=false"
+    },
+    {
+      "line": 36894,
+      "text": "2026-10-21 11:00:23.801938+0000 YueduReader[96285:478181] [parse] ⏱ renewal.package.full-application-test 47525ms bytes=287383849 main=false"
+    },
+    {
+      "line": 36896,
+      "text": "✘ Test \"real main Widget Share framework JVM JAR and Java resources survive controlled re-signing and independent archive verification\" recorded an issue at SelfRenewalFullApplicationSignerTests.swift:15:6: Caught error: missingSpecialSlot(1)"
+    },
+    {
+      "line": 36897,
+      "text": "✘ Test \"real main Widget Share framework JVM JAR and Java resources survive controlled re-signing and independent archive verification\" failed after 47.817 seconds with 1 issue."
+    },
+    {
+      "line": 36898,
+      "text": "✘ Suite \"Complete current-source iPhoneOS JVM package through the production signing owners\" failed after 47.833 seconds with 1 issue."
+    },
+    {
+      "line": 36902,
+      "text": "✘ Test run with 1 test in 1 suite failed after 47.834 seconds with 1 issue."
+    },
+    {
+      "line": 36910,
+      "text": "** TEST FAILED **"
+    }
+  ],
+  "testStartEvents": 1,
+  "scope": "Actual initial input unpack/verification failed before the source test reaches its Vault creation and resign call. Whole production signing acceptance remains false."
+}

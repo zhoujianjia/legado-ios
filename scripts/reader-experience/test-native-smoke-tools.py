@@ -439,7 +439,9 @@ class NativeSmokeProvenanceTests(unittest.TestCase):
     def test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging(self):
         repo = Path(__file__).resolve().parents[2]
         workflow = (repo / ".github/workflows/legado-native-reader-test.yml").read_text(encoding="utf-8")
-        self.assertEqual(len(native.SOURCE_INPUTS), 282)
+        self.assertEqual(len(native.SOURCE_INPUTS), 284)
+        self.assertEqual(native.NATIVE_FULL_APPLICATION_INFO_INPUTS, ('ShareExtension/Info.plist', 'Widget/Info.plist'))
+        self.assertTrue(set(native.NATIVE_FULL_APPLICATION_INFO_INPUTS) <= set(native.SOURCE_INPUTS))
         self.assertEqual(len(native.ORIGINAL_LOGIN_ACTION_MATERIAL_INPUTS), 23)
         self.assertTrue(set(native.ORIGINAL_LOGIN_ACTION_MATERIAL_INPUTS) <= set(native.SOURCE_INPUTS))
         self.assertIn("Execute1 MainJS and32 original methods in separate required hosts", workflow)
@@ -451,7 +453,14 @@ class NativeSmokeProvenanceTests(unittest.TestCase):
         self.assertIn("original-cold-process-tools.py --admission cold-only --udid", workflow)
         self.assertIn("native-smoke-tools.py collect-cold --udid", workflow)
         self.assertIn("collect-native-diagnostics.py --udid", workflow)
-        self.assertEqual(workflow.count("if: ${{ !startsWith(github.ref_name, 'legado-native-reader-test-cold-') }}"), 4)
+        self.assertEqual(workflow.count("if: ${{ !startsWith(github.ref_name, 'legado-native-reader-test-cold-') }}"), 3)
+        prepared = workflow[workflow.index("      - name: Prepare the Simulator payload and synthetic local application"):
+            workflow.index("      - name: Re-sign and independently verify the required complete device package")]
+        self.assertIn("id: native_simulator_prepare", prepared)
+        execution = workflow[workflow.index("      - name: Execute1 MainJS and32 original methods in separate required hosts"):
+            workflow.index("      - name: Prepare only the current-source native cold Simulator host")]
+        self.assertIn("if: ${{ always() && !cancelled() && !startsWith(github.ref_name, 'legado-native-reader-test-cold-') && steps.native_simulator_prepare.outcome == 'success' }}", execution)
+        self.assertNotIn("continue-on-error:", workflow)
         focused = workflow[workflow.index("      - name: Prepare only the current-source native cold Simulator host"):
             workflow.index("      - name: Preserve this Simulator run's JVM diagnostics")]
         self.assertNotIn("full-application-signing-tools.py", focused)

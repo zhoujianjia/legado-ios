@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "status": "public-terminal-archive-source-review-approved",
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "final": {
+    "path": ".build/native-f330274-terminal-archive-candidate/final-v1.json",
+    "bytes": 27483,
+    "sha256": "be4d298cb70ff8bc87437635069f32a4c4aafda86a554d0a07e46a5d947f0afd"
+  },
+  "sourceRoot": ".build/native-f330274-terminal-archive-candidate/snapshot-v1/work",
+  "sourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+  "checks": [
+    {
+      "check": "frozenFinalExact",
+      "passed": true,
+      "detail": "Supplied final-v1 bytes/SHA verified."
+    },
+    {
+      "check": "public104ExactTextFilesPrivacyBoundaries",
+      "passed": true,
+      "detail": "104 files / 536441 B, exact map; UTF8/LF/noNUL/trailing-space-free text only. No private-key/token/signedURL/long-encoded-binary pattern; no raw IPA/JAR/MachO/xcresult/log copy."
+    },
+    {
+      "check": "publicFilemapAndReferencedRawHashes",
+      "passed": true,
+      "detail": "103 non-self public mappings plus self map; all referenced raw file bytehashes read and matched. Normalized/projection transformations remain explicit; no original signed download URL file read."
+    },
+    {
+      "check": "actualJVMIdentitiesAndCounts",
+      "passed": true,
+      "detail": "58 actual XML; 378 unique executions, 378 passed, no failure/error/skip. No re-run."
+    },
+    {
+      "check": "portableAndMacDiagnosticsSeparateScopes",
+      "passed": true,
+      "detail": "Portable 100 passed + one Windows-only skipped; full-signing portable4 included. macOS Package diagnostics17 separately scoped, not SDK Package24 or Native JNI."
+    },
+    {
+      "check": "S3ActualRuntimeFailureNotCompilationOrTimeout",
+      "passed": true,
+      "detail": "Raw36896 and actual tree both identify missingSpecialSlot(1), tree source CodeDirectoryHashVerifier:181; 1 S3 case actually failed after47.817s during initial-input unpack, before Vault/resign. Unique compiler diagnostics0; summary/tree exports succeeded."
+    },
+    {
+      "check": "producerSuccessDoesNotUpgradeS3OrJNI",
+      "passed": true,
+      "detail": "Device build/controlled Apple producer succeeded, 50 commands/8 components/28 outputs; IPA287383849/hash remains metadata. Production signing acceptance false; MainJS/Original/cold0."
+    },
+    {
+      "check": "historicalSourceF330282AndOwnerScope",
+      "passed": true,
+      "detail": "Existing one-batch historical bytebinding reviewed against actual cloud282 and independent f330 Git tree OIDs; 56 signing owners +8 producer paths bound. Current e67/followups excluded; no current440 substitution."
+    },
+    {
+      "check": "ordinaryJarFourRawMetadataCopiesOnly",
+      "passed": true,
+      "detail": "Inspect/nativeRestore/nativeReuse/fullOwned metadata agree; producer manifest repeats owned fact. No raw ordinary Jar/IPA acceptance or binary rehash claimed."
+    },
+    {
+      "check": "NativeOnlyTerminalClosureAndFalseAcceptanceFlags",
+      "passed": true,
+      "detail": "Terminal run39578204500/job119148927121 failure; original Root ZIP818412/98members verified once and retained. Native-only close, no SDK handle rewrite; fourflagsfalse/90null."
+    }
+  ],
+  "fileScope": {
+    "publicFiles": 104,
+    "publicBytes": 536441,
+    "filemapReferencedRawFacts": 95,
+    "problems": []
+  },
+  "scopeLimits": [
+    "The full producer and S3 input/code metadata are not independent acceptance of raw App/JAR/IPA bytes absent from the artifact.",
+    "The actual S3 case failed. No successful Swift package signing, independent output verification, JNI/MainJS/Original/cold result or device/Apple-account renewal was inferred.",
+    "Source binding is historical f330. This review does not upgrade current followup source bytes or alter the independently archived SDK status."
+  ],
+  "reviewPreparation": "A read-only inspection helper initially looked for a Jar field in prepared.resources; its schema differs. The four actual metadata locations were then read directly. No functional execution or source change occurred.",
+  "reviewActions": {
+    "testExecutions": 0,
+    "compilerOrSourceParserExecutions": 0,
+    "cloudQueriesOrDownloads": 0,
+    "canonicalSourcePlanOrGitMutation": 0,
+    "existingZIPVerificationReusedNotRepeated": true
+  },
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "measuredCompatibilityPercent": null
+}
