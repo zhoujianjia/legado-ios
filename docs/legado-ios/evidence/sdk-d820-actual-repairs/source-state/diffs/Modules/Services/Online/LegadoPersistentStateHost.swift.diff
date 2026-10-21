@@ -1,0 +1,23 @@
+--- a/Modules/Services/Online/LegadoPersistentStateHost.swift
++++ b/Modules/Services/Online/LegadoPersistentStateHost.swift
+@@ -1567,7 +1567,10 @@
+             // Replaying its relative value here would start a second clock.
+             properties.removeValue(forKey: .maximumAge)
+             properties[.version] = "0"
+-            properties[.discard] = persistent ? "FALSE" : "TRUE"
++            // Use the Boolean discard representation from WebKit's Cocoa
++            // Cookie constructor. The strict native attribute checks below
++            // still reject a platform that cannot preserve this exact flag.
++            properties[.discard] = NSNumber(value: !persistent)
+             let nativeExpiry = expiresAt == Int64.min ? Date(timeIntervalSince1970: 0)
+                 : Date(timeIntervalSince1970: Double(expiresAt) / 1000)
+             if persistent { properties[.expires] = nativeExpiry }
+@@ -1587,7 +1590,7 @@
+             if native.isSessionOnly != !persistent { mismatches.append("session") }
+             if native.expiresDate != (persistent ? nativeExpiry : nil) { mismatches.append("expiry") }
+             guard mismatches.isEmpty else {
+-                throw failure("UNSUPPORTED_CAPABILITY", "Parsed original Cookie cannot be represented by the existing native owner [\(mismatches.joined(separator: ","))]")
++                throw failure("UNSUPPORTED_CAPABILITY", "Parsed original Cookie cannot be represented by the existing native owner [\(mismatches.joined(separator: ","))] persistent=\(persistent) seedSession=\(seed.isSessionOnly) seedExpiry=\(seed.expiresDate != nil) nativeSession=\(native.isSessionOnly) nativeExpiry=\(native.expiresDate != nil)")
+             }
+             records.append(try CookiePersistenceOwner.Record(cookie: native, provenance: .httpResponse,
+                 originURL: url, hostOnly: hostOnly, originalExpiresAtMs: expiresAt,

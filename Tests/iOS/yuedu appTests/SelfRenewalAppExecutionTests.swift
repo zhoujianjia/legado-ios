@@ -49,6 +49,7 @@ struct SelfRenewalAppExecutionTests {
                     #expect(status.0?.automaticRenewalVerified == false && status.0?.coldLaunchVerified == false)
                     let completed = try Self.record(root)
                     let handoff = try #require(completed.userDataHandoff)
+                    #expect(handoff.capturedAt == f.date)
                     #expect(handoff.files.map(\.role) == ["shelf", "reading", "sources"])
                     #expect(handoff.positions.count == 1 && handoff.positions.first?.position == Self.position)
                     #expect(!handoff.allUserDataPreservationVerified && !completed.renewalVerified)

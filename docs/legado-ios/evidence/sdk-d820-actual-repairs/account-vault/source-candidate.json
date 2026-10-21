@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "status": "frozen repair source candidate; Swift SDK validation pending",
+  "sourceRoot": ".build/sdk-d820-account-material-repair-step/snapshot-v1/work",
+  "files": [
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "baseline": {
+        "path": ".build/sdk-d820-account-material-repair-step/rawbaseline/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+        "bytes": 73150,
+        "sha256": "fabd94c5e54d3f18dcf119cda6b8279a28001476f17284821a016d1227ec040a"
+      },
+      "candidate": {
+        "path": ".build/sdk-d820-account-material-repair-step/snapshot-v1/work/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+        "bytes": 74559,
+        "sha256": "f7d2fe7ab5df5cb82cd37294481c044f59eb889f055bbc2ad8eb1fd659b225ad"
+      },
+      "diff": {
+        "path": ".build/sdk-d820-account-material-repair-step/diffs/SelfRenewalAccountSessionTests.swift.diff",
+        "bytes": 7535,
+        "sha256": "3c69349e01b9901776a06ce96267122aedab927cfe69b3ce3ebeec22ea40f99e"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+      "baseline": {
+        "path": ".build/sdk-d820-account-material-repair-step/rawbaseline/Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+        "bytes": 36075,
+        "sha256": "8c39d1102b80c6e115d41ee78355c9b45f9d2577f2c6c19489554444913fc401"
+      },
+      "candidate": {
+        "path": ".build/sdk-d820-account-material-repair-step/snapshot-v1/work/Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+        "bytes": 36376,
+        "sha256": "0a1fd361c2512c20aa4ef5b44c4033d22d0c33c798726a56e705ff401c643d60"
+      },
+      "diff": {
+        "path": ".build/sdk-d820-account-material-repair-step/diffs/SelfRenewalSigningMaterialVaultTests.swift.diff",
+        "bytes": 3152,
+        "sha256": "e64519423f5446db790dae8269aad817cc57900c4c750b86998e1a08fb0857f0"
+      }
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "baseline": {
+        "path": ".build/sdk-d820-account-material-repair-step/rawbaseline/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+        "bytes": 61427,
+        "sha256": "eacba522c47a405fd8d47f9547b6a9f2f2286f2f2fb9183242be0c3dbcd99380"
+      },
+      "candidate": {
+        "path": ".build/sdk-d820-account-material-repair-step/snapshot-v1/work/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+        "bytes": 61525,
+        "sha256": "c07cdf6276e31fe10b758e8eb454ca1754bdd8319426bd2751e5b49b04e6b603"
+      },
+      "diff": {
+        "path": ".build/sdk-d820-account-material-repair-step/diffs/SelfRenewalSigningMaterialVault.swift.diff",
+        "bytes": 868,
+        "sha256": "60f5e9064d718b0eaa277123065c7b786ff4a337b6cbf181f18e1ffa5880f03a"
+      }
+    }
+  ],
+  "sourceCount": 3,
+  "productionSourceCount": 1,
+  "testSourceCount": 2,
+  "newDefinitions": 0,
+  "rootCausesAndFixes": [
+    {
+      "cause": "Exact valid published certificate is in the current controlled remote list, so S2 correctly reuses it; old fixtures returned identical profile expiry or expected CSR mutations which never happened.",
+      "fix": "Two positive App refresh cases return genuinely extended signed profiles and strictly require zero CSR; three CSR cancel/lost-ACK cases explicitly omit the old leaf from the remote account list, exercising real existing issuance/reconciliation. Critical lost-ACK intent prerequisites now use require before later remote actions."
+    },
+    {
+      "cause": "Two actual unknown-context expectations in the expired-profile success case still demanded CSR1 while the correctly reused certificate produced CSR0.",
+      "fix": "Same existing case now strictly requires zero CSR and three profile requests, including the reopened account observation; old expiry/no-signing/config/data guards remain."
+    },
+    {
+      "cause": "Malformed stored manifest JSON escaped the Vault as a raw DecodingError instead of its existing malformedManifest contract.",
+      "fix": "Only DecodingError from the bounded JSON decode maps to malformedManifest. No storage/status/clock/profile/key/generation error is caught or weakened; all post-decode semantic checks are unchanged."
+    },
+    {
+      "cause": "Actual unknown-context Vault helper assertions expected database applicationTag inside SecKeyCopyAttributes, which returned no such attribute.",
+      "fix": "Construct the exact fixture-owned query tag from the real returned namespace/keyID, then retain actual SecItemCopyMatching attributes/protection/status/delete/other-namespace checks and the existing public-key/signature binding checks. Constructing a query tag is not reported as reading it from SecKey."
+    }
+  ],
+  "rawDiagnostics": {
+    "path": ".build/sdk-d820-account-material-repair-step/actual-diagnostics-v1.json",
+    "bytes": 6997,
+    "sha256": "c121d608c4bb501458b1b3390fd8f23bbe98276e4f8c6707509dc4f1060aa2a0"
+  },
+  "sourceChecks": {
+    "path": ".build/sdk-d820-account-material-repair-step/source-checks-v1.json",
+    "bytes": 2008,
+    "sha256": "aa4d6bc8da8306b7a1898d50c577848e9b7fcd4c5d360ea11142b74cd65217e2"
+  },
+  "readonlyCurrentReferences": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "bytes": 72084,
+      "sha256": "d823257c940243a379d8e051b3c860aa6e0c463750804b471535ffbf28bef5f4"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 123848,
+      "sha256": "bcee884738fccd7f6a758a277bba63f8a28a267b3dfdfc1196ceadf9383d5391"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "bytes": 83067,
+      "sha256": "db01acd0a4c39ff08dd74d11cacafd268944cfe4a6f3bf995179033990de0d9d"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift",
+      "bytes": 9819,
+      "sha256": "e97757b283bf11a5c6041506e6c2118aef198318299109440c9e56958182bc3e"
+    }
+  ],
+  "primaryReference": {
+    "url": "https://developer.apple.com/documentation/security/seckeycopyattributes(_:)",
+    "snapshot": {
+      "path": ".build/sdk-d820-account-material-repair-step/primary/seckeycopyattributes.json",
+      "bytes": 10240,
+      "sha256": "fccba22a97b5b27033757e2799a7484debe91a6bc28f38f1da07483c32c55d5e"
+    },
+    "scope": "API reference only; actual missing applicationTag is established by the d820 raw failure, not asserted as universally absent"
+  },
+  "actualValidation": {
+    "swiftCompiler": 0,
+    "swiftSDKTests": 0,
+    "simulatorTests": 0,
+    "parser": 0,
+    "portableFunctionalTests": 0,
+    "cloudQueries": 0
+  },
+  "preserved": [
+    "all existing test identities/selector order/definitions and budgets",
+    "strict profile DER/team/App+extensions/certificate/current trust/expiry advancement validation",
+    "pending CSR reconciliation and logout denial/retirement barriers",
+    "Keychain permanent-key protection, exact namespace ownership, actual signatures and public-key bindings",
+    "corrupt storage refusal and existing bounded manifest validation"
+  ],
+  "outsideScope": "AppExecution unknown issues at47/48/51 etc were reported to Root, who owns the Handoff/Automatic batch. They remain actual failures; this candidate does not close them.",
+  "limits": [
+    "No local Swift compiler/SDK/Apple account/device execution. Source checks do not prove the candidate compiles or passes.",
+    "The original d820 failure and all unknown/orphan issues remain historical failures. No old passed scope is upgraded.",
+    "No canonical/Git mutation, new Store/Host/Route, tag or cloud query."
+  ]
+}

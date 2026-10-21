@@ -72,7 +72,7 @@ struct SelfRenewalSigningMaterialVaultTests {
         try await Self.fixture { f in
             let namespace = try await f.namespace()
             let pending = try await f.generate(namespace)
-            let protection = try Self.attributes(Self.tag(pending.privateKey))
+            let protection = try Self.attributes(Self.tag(namespace: namespace, keyID: pending.id))
             #expect(protection[kSecAttrAccessible as String] as? String == kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly as String)
             #expect(protection[kSecAttrSynchronizable as String] as? Bool != true)
             let candidate = try f.candidate(pending)
@@ -91,8 +91,8 @@ struct SelfRenewalSigningMaterialVaultTests {
             try await f.vault.validate(reopened)
             let other = try await f.namespace()
             let otherKey = try await f.generate(other)
-            let otherTag = try Self.tag(otherKey.privateKey)
-            let tag = try Self.tag(pending.privateKey)
+            let otherTag = Self.tag(namespace: other, keyID: otherKey.id)
+            let tag = Self.tag(namespace: namespace, keyID: pending.id)
             try await f.vault.revoke(pending.id, in: namespace, expectedGeneration: reopened.generation)
             #expect(Self.status(tag) == errSecItemNotFound)
             #expect(Self.status(otherTag) == errSecSuccess)
@@ -354,7 +354,7 @@ struct SelfRenewalSigningMaterialVaultTests {
                 _ = try await f.vault.certificateSigningRequest(in: namespace, keyID: first.id,
                     expectedGeneration: generation, commonName: "Owned", emailAddress: "owned@example.invalid")
             }
-            let secondTag = try Self.tag(second.privateKey)
+            let secondTag = Self.tag(namespace: namespace, keyID: second.id)
             let delete: [String: Any] = [kSecClass as String: kSecClassKey,
                 kSecAttrKeyClass as String: kSecAttrKeyClassPrivate, kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
                 kSecAttrApplicationTag as String: secondTag, kSecAttrSynchronizable as String: false]
@@ -414,9 +414,12 @@ struct SelfRenewalSigningMaterialVaultTests {
         if let error { _ = error.takeRetainedValue() }
         #expect(verified)
     }
-    nonisolated private static func tag(_ key: SecKey) throws -> Data {
-        let attributes = try #require(SecKeyCopyAttributes(key) as? [String: Any])
-        return try #require(attributes[kSecAttrApplicationTag as String] as? Data)
+    nonisolated private static func tag(namespace: Vault.Namespace, keyID: UUID) -> Data {
+        // SecKeyCopyAttributes need not include database application tags.
+        // Address this exact fixture-owned permanent item; attributes/status
+        // below still query its real Keychain protection/existence/removal.
+        Data(("com.yuedu.selfRenewal.signingKey.v1." + namespace.id.uuidString.lowercased()
+            + "." + keyID.uuidString.lowercased()).utf8)
     }
     nonisolated private static func status(_ tag: Data) -> OSStatus {
         let query: [String: Any] = [kSecClass as String: kSecClassKey, kSecAttrKeyClass as String: kSecAttrKeyClassPrivate,

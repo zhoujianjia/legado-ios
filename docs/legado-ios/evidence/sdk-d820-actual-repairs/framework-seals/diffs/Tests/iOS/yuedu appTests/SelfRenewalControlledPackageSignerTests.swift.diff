@@ -1,0 +1,76 @@
+--- a/Tests/iOS/yuedu appTests/SelfRenewalControlledPackageSignerTests.swift
++++ b/Tests/iOS/yuedu appTests/SelfRenewalControlledPackageSignerTests.swift
+@@ -191,8 +191,19 @@
+                 let original = try #require(PropertyListSerialization.propertyList(from: old, options: [], format: nil) as? [String: Any])
+                 let profile = try #require(f.lease.profileInputs.first { $0.componentRelativePath == "." })
+                 let hints = Dictionary(uniqueKeysWithValues: proof.resources.verifiedNestedResources.map { ($0.relativePath, Data(repeating: 0x31, count: 20)) })
++                // The real SDK fixture seals its child framework executable
++                // as an ordinary file. Exercise the same authenticated seal
++                // update without adding paths/rules or changing requirements.
++                let resourcePath = "chapter.txt"
++                _ = try #require(proof.resources.verifiedFileDigests[resourcePath])
++                let replacement = Data("changed controlled resource".utf8)
++                var replacements: [UInt8: Data] = [:]
++                for type: UInt8 in [1, 2, 3, 4] {
++                    replacements[type] = try SelfRenewalCodeDirectoryHashVerifier.digest(replacement, hashType: type)
++                }
+                 let result = try SelfRenewalPackageResourceUpdater.update(old, component: proof,
+-                    freshProfiles: ["embedded.mobileprovision": profile.bytes], nestedCDHashes: hints)
++                    freshProfiles: ["embedded.mobileprovision": profile.bytes], nestedCDHashes: hints,
++                    changedResources: [resourcePath: replacements])
+                 let updated = try #require(PropertyListSerialization.propertyList(from: result.bytes, options: [], format: nil) as? [String: Any])
+                 let oldRules = try #require(original["rules2"] as? NSDictionary)
+                 let newRules = try #require(updated["rules2"] as? NSDictionary)
+@@ -208,6 +219,52 @@
+                 let seal = try #require(newSeals["embedded.mobileprovision"] as? [String: Any])
+                 #expect(seal["hash2"] as? Data == Data(SHA256.hash(data: profile.bytes)))
+                 #expect(result.changedNestedHints == 2 && result.changedProfileSeals == 1)
++                let ordinary = try #require(newSeals[resourcePath] as? [String: Any])
++                #expect(ordinary["hash2"] as? Data == Data(SHA256.hash(data: replacement)))
++                #expect(result.changedResourceSeals > 0 && Set(oldSeals.keys) == Set(newSeals.keys))
++                // Unknown or requirement-only paths never acquire an ordinary
++                // file-write admission by supplying hashes to this helper.
++                let nestedPath = try #require(proof.resources.verifiedNestedResources.first?.relativePath)
++                for rejected in ["unowned-new-file.bin", nestedPath] {
++                    do {
++                        _ = try SelfRenewalPackageResourceUpdater.update(old, component: proof,
++                            freshProfiles: [:], nestedCDHashes: hints, changedResources: [rejected: replacements])
++                        Issue.record("Unverified ordinary resource path accepted")
++                    } catch SelfRenewalPackageResourceUpdater.Failure.missingSeal(let path) {
++                        #expect(path == rejected)
++                    }
++                }
++                let inventory = scope.original.resources.executableMaterials.inventory
++                let main = try #require(inventory.components.first { $0.relativePath == "." })
++                let executable = try #require(main.executable?.file.relativePath)
++                let files = inventory.files.map { file in
++                    let count = file.relativePath == resourcePath ? replacement.count
++                        : (file.relativePath == "embedded.mobileprovision" ? profile.bytes.count : Int(file.byteCount))
++                    return SelfRenewalMaterialInventory.FileFact(relativePath: file.relativePath, byteCount: Int64(count))
++                }
++                var actual = proof.resources.verifiedFileDigests
++                actual[resourcePath] = replacements
++                actual["embedded.mobileprovision"] = [2: Data(SHA256.hash(data: profile.bytes))]
++                let verified = try SelfRenewalResourceSealVerifier.verifyEnvelope(result.bytes, files: files,
++                    directories: inventory.directories.filter { $0 != "." }, executablePath: executable,
++                    hashTypes: [2]) { file, _ in try #require(actual[file.relativePath]) }
++                #expect(verified.verifiedFileDigests[resourcePath]?[2] == Data(SHA256.hash(data: replacement)))
++                // The exact existing verifier must still reject changed file
++                // bytes after their fresh seal was selected. No digest gate is
++                // skipped to make the child-code case pass.
++                var tampered = replacement; tampered[0] ^= 1
++                let badDigest = Data(SHA256.hash(data: tampered))
++                do {
++                    _ = try SelfRenewalResourceSealVerifier.verifyEnvelope(result.bytes, files: files,
++                        directories: inventory.directories.filter { $0 != "." }, executablePath: executable,
++                        hashTypes: [2]) { file, _ in
++                        if file.relativePath == resourcePath { return [2: badDigest] }
++                        return try #require(actual[file.relativePath])
++                    }
++                    Issue.record("Tampered ordinary resource bytes passed their fresh seal")
++                } catch SelfRenewalResourceSealVerifier.Failure.digestMismatch(let path) {
++                    #expect(path == resourcePath)
++                }
+             }
+         }
+     }

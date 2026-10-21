@@ -1,0 +1,116 @@
+--- a/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift
++++ b/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift
+@@ -124,16 +124,26 @@
+         try await Self.withAccountAppSession { c in
+             let connected = try await c.session.connectDeveloperAccount(c.fixture.credentials)
+             #expect(connected.personalTeamMatched)
++            // The remote account still lists the exact valid leaf. Return
++            // genuinely extended profiles so this exercises certificate reuse.
++            await c.peer.issueNewMaterial(at: c.fixture.date.addingTimeInterval(60))
+             let published = try await c.session.refreshDeveloperMaterials(machineName: "Owned App Session")
+             #expect(published.keyID == c.originalLease.keyID)
+             #expect(published.namespaceID == c.fixture.namespace.id)
+             #expect(published.generation == c.originalLease.generation + 1)
++            let renewedNamespace = try await c.fixture.vault.resume(namespaceID: c.fixture.namespace.id, identity: c.fixture.material)
++            let renewed = try await c.fixture.vault.lease(in: renewedNamespace)
++            #expect(renewed.keyMaterial.certificateChainDER == c.originalLease.keyMaterial.certificateChainDER)
++            for profile in renewed.profiles {
++                let previous = try #require(c.originalLease.profiles.first { $0.file.relativePath == profile.file.relativePath })
++                #expect(profile.summary.expiresAt > previous.summary.expiresAt)
++            }
+             #expect(!published.appleAuthorizationEstablished)
+             #expect(!published.installedApplicationRenewed)
+             let retained = await c.session.developerMaterialObservation()
+             #expect(retained == published)
+             let facts = await c.peer.facts()
+-            #expect(facts.validCSRs == 1)
++            #expect(facts.validCSRs == 0)
+             #expect(facts.profileRequests == 3)
+             let raw = try Data(contentsOf: c.root.appendingPathComponent("configuration.json"))
+             #expect(!String(decoding: raw, as: UTF8.self).contains(c.fixture.credentials.xcodeToken))
+@@ -145,7 +155,7 @@
+                 let observation = try await reopened.observeDeveloperAccount()
+                 #expect(observation.personalTeamMatched)
+                 let after = await c.peer.facts()
+-                #expect(after.validCSRs == 1)
++                #expect(after.validCSRs == 0)
+                 try await reopened.close()
+             } catch { do { try await reopened.close() } catch { Issue.record(error) }; throw error }
+         }
+@@ -157,8 +167,11 @@
+             _ = try await c.session.connectDeveloperAccount(c.fixture.credentials)
+             let retired = await c.session.status()
+             #expect(retired?.phase == .retired)
++            await c.peer.issueNewMaterial(at: c.fixture.date.addingTimeInterval(60))
+             let refreshed = try await c.session.refreshDeveloperMaterials(machineName: "Owned Retired Session")
+             #expect(refreshed.generation > c.originalLease.generation)
++            let refreshFacts = await c.peer.facts()
++            #expect(refreshFacts.validCSRs == 0 && refreshFacts.profileRequests == 3)
+             let live = try await c.session.bootstrap(handoff: c.handoff)
+             #expect(live.access == .signing)
+             #expect(live.phase == .retired)
+@@ -211,6 +224,9 @@
+     func appSessionSerializesHeldEnrollmentAndPreservesCancelledRemoteIntent() async throws {
+         try await Self.withAccountAppSession { c in
+             _ = try await c.session.connectDeveloperAccount(c.fixture.credentials)
++            // No exact published leaf is authorized by this controlled
++            // account list, so the existing CSR path must actually run.
++            await c.peer.setCertificateList(.withoutPublished)
+             await c.peer.set(.holdCSR)
+             let operation = Task {
+                 do {
+@@ -258,17 +274,18 @@
+             let configurationURL = c.root.appendingPathComponent("configuration.json")
+             let originalConfiguration = try JSONDecoder().decode(AccountStoredConfiguration.self,
+                 from: Data(contentsOf: configurationURL)).configuration
++            await c.peer.setCertificateList(.withoutPublished)
+             await c.peer.set(.lostCSRACK)
+             do {
+                 _ = try await c.session.refreshDeveloperMaterials(machineName: "Owned lost ACK App session")
+                 Issue.record("Lost CSR acknowledgement was called a publication")
+             } catch let failure as Client.EnrollmentFailure {
+-                #expect(failure.remoteCertificateMayHaveBeenIssued && !failure.remoteProfilesMayHaveBeenRefreshed)
++                try #require(failure.remoteCertificateMayHaveBeenIssued && !failure.remoteProfilesMayHaveBeenRefreshed)
+             }
+             let failed = await c.session.developerMaterialObservation()
+             #expect(failed == nil)
+             let pendingBytes = try #require(try c.fixture.storage.load(namespace: c.fixture.namespace.id))
+-            #expect(pendingBytes.contains("certificateRequestIntent"))
++            try #require(pendingBytes.contains("certificateRequestIntent"))
+             try await c.session.close()
+             await c.peer.set(.normal)
+             let reopened = c.newSession()
+@@ -375,14 +392,14 @@
+                 let afterMarker = try Data(contentsOf: markerURL)
+                 #expect(afterMarker == marker)
+                 let facts = await c.peer.facts()
+-                #expect(facts.validCSRs == 1 && facts.profileRequests == 3)
++                #expect(facts.validCSRs == 0 && facts.profileRequests == 3)
+                 try await reopened.close()
+                 let again = c.newSession(at: now)
+                 do {
+                     let observation = try await again.observeDeveloperAccount()
+                     #expect(observation.personalTeamMatched)
+                     let after = await c.peer.facts()
+-                    #expect(after.validCSRs == 1)
++                    #expect(after.validCSRs == 0)
+                     try await again.close()
+                 } catch { do { try await again.close() } catch { Issue.record(error) }; throw error }
+             } catch { do { try await reopened.close() } catch { Issue.record(error) }; throw error }
+@@ -396,6 +413,7 @@
+             try await c.session.close()
+             let now = c.fixture.date.addingTimeInterval(7201)
+             await c.peer.issueNewMaterial(at: now)
++            await c.peer.setCertificateList(.withoutPublished)
+             await c.peer.set(.lostCSRACK)
+             let fresh = Client.Credentials(dsid: c.fixture.credentials.dsid, xcodeToken: c.fixture.credentials.xcodeToken,
+                 expiresAt: now.addingTimeInterval(3600))
+@@ -403,7 +421,7 @@
+             do {
+                 _ = try await interrupted.connectDeveloperAccount(fresh)
+                 do { _ = try await interrupted.refreshDeveloperMaterials(machineName: "Owned expired lost ACK"); Issue.record("Lost ACK became a publication") }
+-                catch let failure as Client.EnrollmentFailure { #expect(failure.remoteCertificateMayHaveBeenIssued) }
++                catch let failure as Client.EnrollmentFailure { try #require(failure.remoteCertificateMayHaveBeenIssued) }
+                 try await interrupted.close()
+             } catch { do { try await interrupted.close() } catch { Issue.record(error) }; throw error }
+             await c.peer.set(.normal)

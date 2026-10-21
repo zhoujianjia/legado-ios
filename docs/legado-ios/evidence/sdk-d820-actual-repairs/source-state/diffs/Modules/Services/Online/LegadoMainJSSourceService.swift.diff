@@ -1,0 +1,12 @@
+--- a/Modules/Services/Online/LegadoMainJSSourceService.swift
++++ b/Modules/Services/Online/LegadoMainJSSourceService.swift
+@@ -1387,6 +1387,9 @@
+     private func previewVariableMap(_ raw: String?) throws -> [String: String]? {
+         guard let raw else { return nil }
+         guard raw.utf8.count <= 1_048_576 else { throw failure("STATE_LIMIT", "Preview variables exceed their byte budget") }
++        // GSON's nullable original variable map treats a whole JSON null as
++        // absent. Keep all non-null values behind the strict String-map codec.
++        if raw.trimmingCharacters(in: CharacterSet(charactersIn: " \t\r\n")) == "null" { return nil }
+         let value = try LegadoPreviewVariableCodec.decodeMap(raw)
+         guard value.count <= 4_096, value[Self.originalPreviewContextKey] == nil else {
+             throw failure("STATE_LIMIT", "Preview variables exceed their key budget or contain the reserved context key")

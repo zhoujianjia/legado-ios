@@ -1,0 +1,18 @@
+--- baseline/Tests/iOS/yuedu appTests/CoreTextPagedScrollAppearanceTests.swift
++++ candidate/Tests/iOS/yuedu appTests/CoreTextPagedScrollAppearanceTests.swift
+@@ -32,8 +32,14 @@
+             #expect(abs(tallerRect.minY - nativeRect.minY - 48) < 0.01)
+             #expect(abs(tallerRect.width - nativeRect.width) < 0.01)
+             #expect(abs(tallerRect.height - nativeRect.height) < 0.01)
++            // CoreText resolves the midpoint to the nearest insertion caret;
++            // either edge of the first glyph is valid. Presentation must keep
++            // that exact native hit, not force the leading edge at a tie.
++            let nativeHit = try #require(nativeView.debugStringIndex(at:
++                CGPoint(x: nativeRect.midX, y: nativeRect.midY)))
++            #expect((range.location...NSMaxRange(range)).contains(nativeHit))
+             #expect(tallerView.debugStringIndex(at:
+-                CGPoint(x: tallerRect.midX, y: tallerRect.midY)) == 0)
++                CGPoint(x: tallerRect.midX, y: tallerRect.midY)) == nativeHit)
+             #expect(tallerView.debugStringIndex(at: CGPoint(x: 201, y: 8)) == nil)
+             let attachment = CGRect(x: 44, y: 64, width: 20, height: 20)
+             #expect(tallerView.viewRect(forRenderRect: attachment) ==

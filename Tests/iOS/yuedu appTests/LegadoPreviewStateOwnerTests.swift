@@ -763,13 +763,21 @@ struct LegadoPreviewStateOwnerTests {
         #expect(try await f.executor.oldGrantIsRejected())
         // A missing/null stored small map and the JVM's empty JSON map have
         // the same variable contents; neither can invent an authorization.
-        let empty = try fixture(); defer { cleanup(empty) }
-        await empty.executor.setSearchVariable("null")
-        let emptyBook = try await search(empty)
-        await empty.executor.setMode(.refreshIdentity)
-        let emptyMoved = try await empty.service.originalTOC(url: emptyBook.tocUrl, source: empty.source,
-            runtimeVariables: emptyBook.runtimeVariables, runPreUpdateJS: true)
-        #expect(emptyMoved.bookURL == emptyBook.bookUrl + "/moved")
+        for null in ["null", " \t\r\nnull\r\n"] {
+            let empty = try fixture(); defer { cleanup(empty) }
+            await empty.executor.setSearchVariable(null)
+            let emptyBook = try await search(empty)
+            await empty.executor.setMode(.refreshIdentity)
+            let emptyMoved = try await empty.service.originalTOC(url: emptyBook.tocUrl, source: empty.source,
+                runtimeVariables: emptyBook.runtimeVariables, runPreUpdateJS: true)
+            #expect(emptyMoved.bookURL == emptyBook.bookUrl + "/moved")
+        }
+        for malformed in ["[]", "false", "0", "\"null\""] {
+            let rejected = try fixture(); defer { cleanup(rejected) }
+            await rejected.executor.setSearchVariable(malformed)
+            await expectError("INVALID_RESULT") { _ = try await search(rejected) }
+            #expect(try FileManager.default.contentsOfDirectory(atPath: rejected.directory.path).isEmpty)
+        }
     }
 
     @Test("Accepted identity refresh invalidates both old entity and old TOC leases before any new-URL write")
@@ -839,8 +847,10 @@ struct LegadoPreviewStateOwnerTests {
                     source: f.source, runtimeVariables: detail.runtimeVariables, runPreUpdateJS: true) }
             }
             let record = try #require(try JSONSerialization.jsonObject(with: contextBytes(f)) as? [String: Any])
-            let storedBook = try #require(record["book"] as? [String: Any])
-            #expect(storedBook["bookURL"] as? String == book.bookUrl)
+            let storedObject = try #require(record["book"] as? [String: Any])
+            let storedBook = try JSONDecoder().decode(LegadoOriginalBook.self,
+                from: JSONSerialization.data(withJSONObject: storedObject))
+            #expect(storedBook.bookURL == book.bookUrl)
             #expect((record["bookLargeVariables"] as? [String: String])?["large"] == String(repeating: "L", count: 10_000))
             let states = try #require(record["alternateURLState"] as? [String: [String: Any]])
             let pendingState = try #require(states[Data((book.bookUrl + "/moved").utf8).base64EncodedString()])

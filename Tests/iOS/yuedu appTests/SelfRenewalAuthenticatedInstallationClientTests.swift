@@ -299,8 +299,13 @@ struct SelfRenewalAuthenticatedInstallationClientTests {
             try #require(received == true)
             operation.cancel()
             let error = await Self.rejected { try await operation.value }
-            let underlying = (error as? Client.OperationFailure)?.underlying as? Transport.Failure
-            #expect(underlying == .cancelled)
+            let failure = try #require(error as? Client.OperationFailure)
+            #expect(failure.stage == .session && !failure.upgradeMayHaveExecuted
+                && !failure.remoteCreationAttempted)
+            // Swift property decoding and the socket wakeup both propagate
+            // cancellation, while retaining the same owned operation wrapper.
+            #expect(failure.underlying is CancellationError
+                || failure.underlying as? Transport.Failure == .cancelled)
             #expect(context.observed.snapshot.upgradeRequests == 0)
             #expect(context.observed.snapshot.uploaded.isEmpty)
         }

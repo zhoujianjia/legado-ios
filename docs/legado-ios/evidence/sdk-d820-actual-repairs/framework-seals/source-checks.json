@@ -1,0 +1,55 @@
+{
+  "scope": "source-only assertions; no Swift parser/compiler/tests",
+  "checks": [
+    {
+      "check": "canonical unchanged for Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift",
+      "passed": true
+    },
+    {
+      "check": "canonical unchanged for Modules/Services/SelfRenewal/SelfRenewalPackageResourceUpdater.swift",
+      "passed": true
+    },
+    {
+      "check": "canonical unchanged for Tests/iOS/yuedu appTests/SelfRenewalControlledPackageSignerTests.swift",
+      "passed": true
+    },
+    {
+      "check": "all test source outside one existing updater regression exact",
+      "passed": true
+    },
+    {
+      "check": "test definitions unchanged",
+      "passed": true
+    },
+    {
+      "check": "Signer preflight/requirements/identity/unrelated-file compare suffix exact",
+      "passed": true
+    },
+    {
+      "check": "Signer final verification/archive/lease chain exact",
+      "passed": true
+    },
+    {
+      "check": "rule preservation and bounded XML scanner unchanged",
+      "passed": true
+    },
+    {
+      "check": "new ordinary paths require actual original verifiedFileDigests",
+      "passed": true
+    },
+    {
+      "check": "new helper does not read archive or change verifier files",
+      "passed": true
+    }
+  ],
+  "failedChecks": 0,
+  "changedTestDefinitions": 0,
+  "changedExistingTestBody": "SelfRenewalControlledPackageSignerTests.updatesVerifiedResourceSealsWithoutWideningRulesOrRequirements",
+  "existingSDKRegressionUnchanged": "SelfRenewalControlledPackageSignerTests.signsSDKProducedMainExtensionsAndFrameworkInSameJob",
+  "actualExecution": {
+    "Swift": 0,
+    "SDK": 0,
+    "tests": 0,
+    "cloud": 0
+  }
+}

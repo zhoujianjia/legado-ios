@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "status": "approved-source-candidate; Swift SDK pending",
+  "final": {
+    "path": ".build/sdk-d820-account-material-repair-step/final-v1.json",
+    "bytes": 7756,
+    "sha256": "3e97695bde0f4fafda01d62b5bc02560a4f4a4002b8d67f55857e25398640042"
+  },
+  "sourceRoot": ".build/sdk-d820-account-material-repair-step/snapshot-v1/work",
+  "approved": true,
+  "failedChecks": 0,
+  "findings": [],
+  "remainingConfirmedSourceBlockers": [],
+  "unresolvedFindings": [],
+  "checks": [
+    {
+      "check": "frozen final exact",
+      "passed": true
+    },
+    {
+      "check": "canonical exact baseline and complete diff: Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "passed": true
+    },
+    {
+      "check": "canonical exact baseline and complete diff: Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+      "passed": true
+    },
+    {
+      "check": "canonical exact baseline and complete diff: Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "passed": true
+    },
+    {
+      "check": "only production change is narrow DecodingError normalization",
+      "passed": true
+    },
+    {
+      "check": "manifest byte bound and postdecode semantic guards unchanged",
+      "passed": true
+    },
+    {
+      "check": "all test/helper identities and definition count retained: Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "passed": true
+    },
+    {
+      "check": "all test/helper identities and definition count retained: Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+      "passed": true
+    },
+    {
+      "check": "reuse authenticates actual remote exact DER and same key before profiles",
+      "passed": true
+    },
+    {
+      "check": "positive fixture profile advance60 stays not-yet-valid safe because creation subtracts60",
+      "passed": true
+    },
+    {
+      "check": "three CSR-only scenarios truly omit old DER and pending list later exposes newly issued leaf",
+      "passed": true
+    },
+    {
+      "check": "unknown CSR critical prerequisites tightened before later actions",
+      "passed": true
+    },
+    {
+      "check": "tag only constructs exact production query key",
+      "passed": true
+    },
+    {
+      "check": "real permanent Keychain protection/existence/delete/signature/foreign namespace remain",
+      "passed": true
+    },
+    {
+      "check": "six real qualified failures bound",
+      "passed": true
+    }
+  ],
+  "files": [
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "baseline": {
+        "path": ".build/sdk-d820-account-material-repair-step/rawbaseline/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+        "bytes": 73150,
+        "sha256": "fabd94c5e54d3f18dcf119cda6b8279a28001476f17284821a016d1227ec040a"
+      },
+      "candidate": {
+        "path": ".build/sdk-d820-account-material-repair-step/snapshot-v1/work/Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+        "bytes": 74559,
+        "sha256": "f7d2fe7ab5df5cb82cd37294481c044f59eb889f055bbc2ad8eb1fd659b225ad"
+      },
+      "diff": {
+        "path": ".build/sdk-d820-account-material-repair-step/diffs/SelfRenewalAccountSessionTests.swift.diff",
+        "bytes": 7535,
+        "sha256": "3c69349e01b9901776a06ce96267122aedab927cfe69b3ce3ebeec22ea40f99e"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+      "baseline": {
+        "path": ".build/sdk-d820-account-material-repair-step/rawbaseline/Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+        "bytes": 36075,
+        "sha256": "8c39d1102b80c6e115d41ee78355c9b45f9d2577f2c6c19489554444913fc401"
+      },
+      "candidate": {
+        "path": ".build/sdk-d820-account-material-repair-step/snapshot-v1/work/Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+        "bytes": 36376,
+        "sha256": "0a1fd361c2512c20aa4ef5b44c4033d22d0c33c798726a56e705ff401c643d60"
+      },
+      "diff": {
+        "path": ".build/sdk-d820-account-material-repair-step/diffs/SelfRenewalSigningMaterialVaultTests.swift.diff",
+        "bytes": 3152,
+        "sha256": "e64519423f5446db790dae8269aad817cc57900c4c750b86998e1a08fb0857f0"
+      }
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "baseline": {
+        "path": ".build/sdk-d820-account-material-repair-step/rawbaseline/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+        "bytes": 61427,
+        "sha256": "eacba522c47a405fd8d47f9547b6a9f2f2286f2f2fb9183242be0c3dbcd99380"
+      },
+      "candidate": {
+        "path": ".build/sdk-d820-account-material-repair-step/snapshot-v1/work/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+        "bytes": 61525,
+        "sha256": "c07cdf6276e31fe10b758e8eb454ca1754bdd8319426bd2751e5b49b04e6b603"
+      },
+      "diff": {
+        "path": ".build/sdk-d820-account-material-repair-step/diffs/SelfRenewalSigningMaterialVault.swift.diff",
+        "bytes": 868,
+        "sha256": "60f5e9064d718b0eaa277123065c7b786ff4a337b6cbf181f18e1ffa5880f03a"
+      }
+    }
+  ],
+  "closedSourceCauses": [
+    {
+      "scope": "five actual Account/AppSession selected failures and associated orphan assertions",
+      "fix": "Valid remotely listed certificate reuse serves truly advanced profiles and strictly0CSR. Issuance-specific cancel/lost-ACK fixtures omit old DER. Pending intent prerequisites now require rather than continue after failed expectations. Existing logout/config/data/generation and exact remote/key/CMS/expiry guards remain."
+    },
+    {
+      "scope": "actual Vault malformed stored manifest selected failure",
+      "fix": "Only bounded JSON DecodingError maps to existing malformedManifest; IO/status/key/trust/expiry/generation errors and postdecode validation unchanged."
+    },
+    {
+      "scope": "Vault applicationTag helper orphan",
+      "fix": "Construct namespace/key-specific fixture query tag only, retain real SecItem attributes/status/delete/protection and public-key/signature bindings. No fabricated SecKey attribute observation."
+    }
+  ],
+  "rawFailures": {
+    "qualified": [
+      "SelfRenewalDeveloperAccountClientTests/appSessionChecksDurableRetirementBeforeAcceptingNewMaterialGeneration()",
+      "SelfRenewalDeveloperAccountClientTests/appSessionReconcilesExpiredEnrollmentAndRetainsLogoutDenial()",
+      "SelfRenewalDeveloperAccountClientTests/appSessionReconcilesLostCSRAcknowledgementWithoutAnotherIssue()",
+      "SelfRenewalDeveloperAccountClientTests/appSessionRefreshesTheActualPublishedKeyAndReopensIt()",
+      "SelfRenewalDeveloperAccountClientTests/appSessionSerializesHeldEnrollmentAndPreservesCancelledRemoteIntent()",
+      "SelfRenewalSigningMaterialVaultTests/observesPublicationBaselineWithoutGrantingMaterialAuthority()"
+    ],
+    "failureTable": {
+      "path": ".build/sdk-d8200d3-terminal/analysis/actual-failures-by-owner-v1.json",
+      "bytes": 14959,
+      "sha256": "fad894ef0c10b75e0c930ea788e34a7c0684270156cddf0bc11a0e79801dbde5"
+    },
+    "orphanTable": {
+      "path": ".build/sdk-d8200d3-terminal/analysis/unassociated-issues-by-owner-v2.json",
+      "bytes": 16373,
+      "sha256": "2bf09068ee0f6a2febaa63756a4bf932f5d6a64c39abb2283f9171165c583583"
+    },
+    "relatedOrphanOwners": {
+      "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift": {
+        "rawOccurrences": 12,
+        "distinctLocations": 6
+      },
+      "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift": {
+        "rawOccurrences": 4,
+        "distinctLocations": 1
+      }
+    }
+  },
+  "limits": [
+    "Source review only: no Swift/compiler/Simulator/TLS execution. Historical failures remain failures until actual SDK regression.",
+    "No universal assertion about SecKeyCopyAttributes fields; this fixes actual absent database-tag observations using exact fixture-owned queries.",
+    "AppExecution/Automatic/Foreground/Handoff and other unrelated orphan issues stay open outside this candidate."
+  ],
+  "reviewerExecution": {
+    "tests": 0,
+    "Swift": 0,
+    "compiler": 0,
+    "cloud": 0,
+    "canonicalMutations": 0,
+    "GitMutations": 0
+  }
+}

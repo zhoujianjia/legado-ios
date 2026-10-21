@@ -124,7 +124,9 @@ struct SelfRenewalIPAUnpackerTests {
                 | UInt32(bytes[end + 18]) << 16 | UInt32(bytes[end + 19]) << 24)
             Fixture.set32(UInt32(Validator.Limits.compressedEntryBytes + 1), at: central + 20, in: &bytes)
             try Self.reject(Validator.Failure.expandedLimit) { _ = try Self.inspect(bytes) }
-            let placeholder = Data(repeating: 0, count: 1_048_576)
+            // Each 256 MiB declaration must pass the independent 200x ratio
+            // limit so this vector reaches the combined expanded-byte limit.
+            let placeholder = Data(repeating: 0, count: 2_097_152)
             let total = (0..<5).map { index in Fixture.Member(path: "Payload/Owned.app/\(index)", bytes: Data(),
                 method: 8, compressed: placeholder, expandedSize: UInt32(Validator.Limits.expandedEntryBytes)) }
             try Self.reject(Validator.Failure.expandedLimit) { _ = try Self.inspect(Fixture.archive(total)) }

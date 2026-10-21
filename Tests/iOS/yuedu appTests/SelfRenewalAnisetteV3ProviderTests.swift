@@ -322,10 +322,31 @@ struct SelfRenewalAnisetteV3ProviderTests {
         override class func canInit(with request: URLRequest) -> Bool { true }
         override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
         override func startLoading() {
-            Self.lock.withLock { Self.stored = request }
-            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: ["Content-Type": "application/json"])!
-            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-            client?.urlProtocol(self, didLoad: Data("{}".utf8)); client?.urlProtocolDidFinishLoading(self)
+            do {
+                var captured = request
+                // URLSession may deliver the actual data-task body as a stream
+                // to URLProtocol. Capture it here while it is live, bounded to
+                // this small fixture; nil body must not bypass payload checks.
+                if captured.httpBody == nil, let stream = captured.httpBodyStream {
+                    stream.open()
+                    defer { stream.close() }
+                    var bytes = Data()
+                    var buffer = [UInt8](repeating: 0, count: 1_024)
+                    while true {
+                        let count = stream.read(&buffer, maxLength: 1_024)
+                        guard count >= 0 else { throw stream.streamError ?? CocoaError(.fileReadUnknown) }
+                        if count == 0 { break }
+                        guard bytes.count + count <= 65_536 else { throw CocoaError(.fileReadTooLarge) }
+                        bytes.append(contentsOf: buffer.prefix(count))
+                    }
+                    captured.httpBodyStream = nil
+                    captured.httpBody = bytes
+                }
+                Self.lock.withLock { Self.stored = captured }
+                let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: ["Content-Type": "application/json"])!
+                client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+                client?.urlProtocol(self, didLoad: Data("{}".utf8)); client?.urlProtocolDidFinishLoading(self)
+            } catch { client?.urlProtocol(self, didFailWithError: error) }
         }
         override func stopLoading() { }
     }

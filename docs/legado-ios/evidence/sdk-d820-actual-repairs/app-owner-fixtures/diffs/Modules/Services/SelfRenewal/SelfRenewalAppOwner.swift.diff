@@ -1,0 +1,30 @@
+--- baseline/Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift
++++ candidate/Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift
+@@ -52,7 +52,7 @@
+
+     init(root: URL? = nil, developerServices: SelfRenewalAppSession.DeveloperServices? = nil,
+         clock: @escaping @Sendable () -> Date = { Date() }) {
+-        handoff = SelfRenewalUserDataHandoff()
++        handoff = SelfRenewalUserDataHandoff(clock: clock)
+         developerServicesConfigured = developerServices != nil
+         session = SelfRenewalAppSession(root: root, developerServices: developerServices, clock: clock)
+     }
+@@ -70,7 +70,7 @@
+         foregroundWaitObservation: (@MainActor () -> Void)? = nil,
+         developerAuthenticationRandom: @escaping @Sendable () throws -> Data = SelfRenewalGSASRP.randomExponent,
+         clock: @escaping @Sendable () -> Date = { Date() }) {
+-        handoff = SelfRenewalUserDataHandoff()
++        handoff = SelfRenewalUserDataHandoff(clock: clock)
+         developerServicesConfigured = developerServices != nil
+         self.bootstrapObservation = bootstrapObservation
+         self.automaticWorkerObservation = automaticWorkerObservation
+@@ -219,6 +219,9 @@
+         if case .foreground(let generation) = trigger {
+             guard acceptsForeground(generation) else { return false }
+         }
++        // Bootstrap already published the disabled observation. An inactive
++        // feature must not erase a real foreground material/storage failure.
++        if automaticRenewal?.isEnabled == false { return true }
+         isWorking = true
+         problem = nil
+         let id = UUID(), session = self.session, handoff = self.handoff

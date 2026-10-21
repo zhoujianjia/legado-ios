@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "status": "source approved; actual SDK pending",
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "parent": {
+    "path": ".build/sdk-d8200d3-framework-resource-seal-repair-step/final-v1.json",
+    "bytes": 6632,
+    "sha256": "a79daf02110aa4da7b64923409b3d9addd805c57e54bb168f1ac263e42feb4d0"
+  },
+  "sourceRoot": ".build/sdk-d8200d3-framework-resource-seal-repair-step/snapshot-v1/work",
+  "scope": "Independent read-only review of the3 frozen Signer/Updater/test sources and existing actual SDK ordinary framework seal counterexample",
+  "files": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift",
+      "baseline": {
+        "path": ".build/sdk-d8200d3-framework-resource-seal-repair-step/rawbaseline/Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift",
+        "bytes": 18839,
+        "sha256": "62a4c1d185253d5498f74a9875d18ac0b1f56ce0e8c5b1a08866f3097d4b715c"
+      },
+      "candidate": {
+        "path": ".build/sdk-d8200d3-framework-resource-seal-repair-step/snapshot-v1/work/Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift",
+        "bytes": 20980,
+        "sha256": "2fc11e30e8e6823c5aacde67d3e20a5a1c73a2c0b351cbcf3a57b04c238a46a1"
+      },
+      "diff": {
+        "path": ".build/sdk-d8200d3-framework-resource-seal-repair-step/diffs-v1/Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift.diff",
+        "bytes": 5022,
+        "sha256": "8605aee0f4ef5eb9f246c6797937029c460c9780c23341c8a10a03bf23d9b705"
+      }
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalPackageResourceUpdater.swift",
+      "baseline": {
+        "path": ".build/sdk-d8200d3-framework-resource-seal-repair-step/rawbaseline/Modules/Services/SelfRenewal/SelfRenewalPackageResourceUpdater.swift",
+        "bytes": 11996,
+        "sha256": "e6996f827b983ee99ee783e05a49231df7986f0f12743fbb74d368316c119bbe"
+      },
+      "candidate": {
+        "path": ".build/sdk-d8200d3-framework-resource-seal-repair-step/snapshot-v1/work/Modules/Services/SelfRenewal/SelfRenewalPackageResourceUpdater.swift",
+        "bytes": 14453,
+        "sha256": "c999008d5baaf3f52492f86cbca0960b0b7a0ccdad7a22f731bee8bed8478881"
+      },
+      "diff": {
+        "path": ".build/sdk-d8200d3-framework-resource-seal-repair-step/diffs-v1/Modules/Services/SelfRenewal/SelfRenewalPackageResourceUpdater.swift.diff",
+        "bytes": 4518,
+        "sha256": "9b665a28040961a13ce8c882016ab8080a608849266afa0c447558d8df84c2a8"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalControlledPackageSignerTests.swift",
+      "baseline": {
+        "path": ".build/sdk-d8200d3-framework-resource-seal-repair-step/rawbaseline/Tests/iOS/yuedu appTests/SelfRenewalControlledPackageSignerTests.swift",
+        "bytes": 27606,
+        "sha256": "4c7203df3802cb9280fe3652ceb41ef5f936db033b1a9ec9e7dcb65d5ae72abc"
+      },
+      "candidate": {
+        "path": ".build/sdk-d8200d3-framework-resource-seal-repair-step/snapshot-v1/work/Tests/iOS/yuedu appTests/SelfRenewalControlledPackageSignerTests.swift",
+        "bytes": 31835,
+        "sha256": "8e7e724c5b5b69311bcc1b755aa7dc797e77139cdccb5deaec5ddfe50ca4eaa6"
+      },
+      "diff": {
+        "path": ".build/sdk-d8200d3-framework-resource-seal-repair-step/diffs-v1/Tests/iOS/yuedu appTests/SelfRenewalControlledPackageSignerTests.swift.diff",
+        "bytes": 5824,
+        "sha256": "48968008e92fe1b29e1018878bc5444b28efc869d677520ef20d9b198030d949"
+      }
+    }
+  ],
+  "findings": [],
+  "review": [
+    "Actual d820 raw input seals framework executable and its CodeResources as ordinary SHA1/SHA256 files; current Signer replaces them while old parent hashes remain.",
+    "New fixed four-algorithm facts are recorded only after successful owned CAS; parent admission intersects actual replacements with original verified ordinary resource paths.",
+    "Updater authenticates original envelope hash and verified proof, rejects unknown/nested-only paths, wrong digest map/lengths/attribute shapes, and preserves all rule/requirement/path membership.",
+    "Final material verification, signed code authentication, unrelated-file comparison, lease validation and archive independent verification remain exact.",
+    "Only one existing updater test body changed. Real SDK signing test and all other test bodies/helpers remain exact; no test definition or selector added."
+  ],
+  "rawCounterexample": {
+    "path": ".build/sdk-d8200d3-framework-resource-seal-repair-step/actual-counterexample-v1.json",
+    "bytes": 1685,
+    "sha256": "9849942b291f2ddac9721e35127c6c7296ebaf2b48fc4fccdfbdb2aa5d644db7"
+  },
+  "sourceChecks": {
+    "path": ".build/sdk-d8200d3-framework-resource-seal-repair-step/source-checks-v1.json",
+    "bytes": 1688,
+    "sha256": "6f9e5383fba2fb0bf8c4fbd48c120a305971c5cb2bae85a60ce74b960d2fcaae"
+  },
+  "checkedPredicates": 36,
+  "actualReviewExecution": {
+    "Swift": 0,
+    "SDK": 0,
+    "tests": 0,
+    "parser": 0,
+    "cloud": 0,
+    "GitMutations": 0,
+    "canonicalMutations": 0
+  },
+  "limits": [
+    "Public byte/hash math verifies the existing input shape, not execution of the repaired Swift Signer.",
+    "Regression source uses the actual resource-envelope verifier but has not run on this Windows host; the retained real SDK package signing method is the next execution check.",
+    "Original d820 failure remains unchanged. No completed signing, real Apple authorization, device installation or renewal success is claimed."
+  ]
+}

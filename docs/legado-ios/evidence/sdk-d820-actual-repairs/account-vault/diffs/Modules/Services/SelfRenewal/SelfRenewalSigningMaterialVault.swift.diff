@@ -1,0 +1,13 @@
+--- a/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift
++++ b/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift
+@@ -922,7 +922,9 @@
+     }
+     private static func decode(_ text: String, namespace: UUID) throws -> Manifest {
+         guard text.utf8.count <= Limits.manifestBytes else { throw Failure.limit }
+-        let value = try JSONDecoder().decode(Manifest.self, from: Data(text.utf8))
++        let value: Manifest
++        do { value = try JSONDecoder().decode(Manifest.self, from: Data(text.utf8)) }
++        catch is DecodingError { throw Failure.malformedManifest }
+         guard value.schema == 1, value.namespace == namespace, !value.identity.isEmpty,
+               value.identity.count <= Limits.bundles, value.keys.count <= Limits.keysPerNamespace,
+               Set(value.keys.map(\.id)).count == value.keys.count,

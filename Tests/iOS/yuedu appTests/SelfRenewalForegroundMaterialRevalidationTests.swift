@@ -224,6 +224,8 @@ struct SelfRenewalForegroundMaterialRevalidationTests {
                 try await Peer.withPeer(bytes: bytes, bundle: ready.record.bundleIdentifier, version: ready.record.bundleVersion, at: f.date) { peer in
                     let completion = try await original.submit(pairing: peer.pairing, endpoint: peer.endpoint, timeoutSeconds: 12)
                     #expect(completion.snapshot.record.phase == .receiptObserved)
+                    let priorLookups = peer.observed.snapshot.lookupRequests
+                    #expect(priorLookups == 1 && peer.observed.snapshot.upgradeRequests == 1)
                     let before = try Self.recordBytes(root); try await journal.close()
                     let session = Session(root: root, currentApplicationRoot: application, clock: { f.date })
                     let handoff = await MainActor.run { SelfRenewalUserDataHandoff() }
@@ -241,7 +243,8 @@ struct SelfRenewalForegroundMaterialRevalidationTests {
                         }
                         let after = try Self.recordBytes(root); #expect(before == after)
                         let denied = await session.status(); #expect(denied?.access == nil)
-                        #expect(peer.observed.snapshot.lookupRequests == 0 && peer.observed.snapshot.upgradeRequests == 1)
+                        #expect(peer.observed.snapshot.lookupRequests == priorLookups
+                            && peer.observed.snapshot.upgradeRequests == 1)
                         try await session.close()
                     } catch { do { try await session.close() } catch { Issue.record(error) }; throw error }
                 }

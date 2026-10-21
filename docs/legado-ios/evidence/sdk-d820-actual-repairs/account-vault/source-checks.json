@@ -1,0 +1,54 @@
+{
+  "kind": "literal source and existing raw diagnostic checks; not Swift compilation or functional tests",
+  "failedChecks": 0,
+  "canonicalAndD820BaselinesExact": [
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+      "gitCommit": "d8200d32f881e1b09399110905d43545cfd0c9f9",
+      "exact": true
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+      "gitCommit": "d8200d32f881e1b09399110905d43545cfd0c9f9",
+      "exact": true
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "gitCommit": "d8200d32f881e1b09399110905d43545cfd0c9f9",
+      "exact": true
+    }
+  ],
+  "accountOnlySixExistingMethodBodiesChanged": [
+    "appSessionRefreshesTheActualPublishedKeyAndReopensIt",
+    "appSessionChecksDurableRetirementBeforeAcceptingNewMaterialGeneration",
+    "appSessionSerializesHeldEnrollmentAndPreservesCancelledRemoteIntent",
+    "appSessionReconcilesLostCSRAcknowledgementWithoutAnotherIssue",
+    "appSessionReconcilesExpiredEnrollmentAndRetainsLogoutDenial",
+    "appSessionEnrollsAfterRealInstalledAndPublishedProfileExpiry"
+  ],
+  "accountOtherMethodsAndAllHelpersByteExact": true,
+  "vaultOnlyManifestJSONDecodingErrorMappingChanges": true,
+  "vaultLimitsSemanticValidationStorageAndGenerationGuardsByteExact": true,
+  "vaultTestsOnlyTagQueryConstructionAndFourCallSitesChange": true,
+  "publicationBaselineTestBodyByteExact": true,
+  "testDefinitionsAndIdentityOrderBeforeAfter": {
+    "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift": {
+      "before": 20,
+      "after": 20
+    },
+    "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift": {
+      "before": 11,
+      "after": 11
+    }
+  },
+  "newDefinitions": 0,
+  "deletedIssueRecordAssertions": 0,
+  "actualExecution": {
+    "swiftCompiler": 0,
+    "swiftSDKTests": 0,
+    "simulatorTests": 0,
+    "parser": 0,
+    "portableFunctionalTests": 0,
+    "cloudQueries": 0
+  }
+}

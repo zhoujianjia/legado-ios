@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "d8200d32f881e1b09399110905d43545cfd0c9f9",
+  "conclusion": "Correct fail-closed rejection of an actual failed orphan Test Case; no controller repair required.",
+  "inputs": [
+    {
+      "path": ".build/sdk-d8200d3-terminal/artifact-12323004633/reader-renewal-probe/currentcore-extraction.json",
+      "bytes": 2688,
+      "sha256": "43f1ef0fdf68b88fac3afe3b3f5ce77b407a23eaabd1c33f0824603ac0de865b"
+    },
+    {
+      "path": ".build/sdk-d8200d3-terminal/artifact-12323004633/reader-renewal-probe/currentcore-tests.json",
+      "bytes": 323044,
+      "sha256": "e7a9bd7624fa722a3dac207779b740b7db910e8642294c44653746e471f2a383"
+    }
+  ],
+  "historicalController": {
+    "path": "scripts/reader-experience/renewal-probe-tools.py",
+    "bytes": 213238,
+    "sha256": "f45db39d62417ad2e2ce4f27d44537ec2ba2e37d36a1ab6919ed63d290dc02e2",
+    "diagnosticFunctionsASTExactToHistorical": [
+      "_test_nodes",
+      "_qualified_method",
+      "_argument_values",
+      "collect_xcresult",
+      "verify_transaction_cases",
+      "verify_cases"
+    ]
+  },
+  "counts": {
+    "rawTestCases": 480,
+    "qualifiedDefinitions": 479,
+    "uniqueQualifiedDefinitions": 479,
+    "qualifiedResults": {
+      "Passed": 463,
+      "Failed": 16
+    },
+    "failedOrphanCases": 1,
+    "parameterDefinitions": 3,
+    "parameterLeaves": 6,
+    "selectedExpectedDefinitions": 479,
+    "selectedExpectedLeaves": 482
+  },
+  "offendingNode": {
+    "indexInTestCases": 0,
+    "nodeType": "Test Case",
+    "name": "Issues recorded without an associated test or suite",
+    "nodeIdentifier": "Issues recorded without an associated test or suite",
+    "result": "Failed",
+    "failureMessageCount": 43,
+    "nodeSHA256": "90e43c859f34cf25574ae21f8732147d56b4f4d65c36866dcc240e3bd62f5739",
+    "error": "Ambiguous qualified test identifier"
+  },
+  "parameterParents": [
+    {
+      "method": "AozoraTXTTests/storedV6LocationsMigrateOnce",
+      "nodeIdentifier": "AozoraTXTTests/storedV6LocationsMigrateOnce(interrupt:)",
+      "result": "Passed",
+      "parameter": "interrupt",
+      "values": [
+        "false",
+        "true"
+      ],
+      "matchingQualifiedParents": 1,
+      "childrenTypes": [
+        "Arguments",
+        "Arguments"
+      ]
+    },
+    {
+      "method": "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll",
+      "nodeIdentifier": "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll(nestedBackdrop:)",
+      "result": "Passed",
+      "parameter": "nestedBackdrop",
+      "values": [
+        "false",
+        "true"
+      ],
+      "matchingQualifiedParents": 1,
+      "childrenTypes": [
+        "Arguments",
+        "Arguments"
+      ]
+    },
+    {
+      "method": "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit",
+      "nodeIdentifier": "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit(interrupt:)",
+      "result": "Passed",
+      "parameter": "interrupt",
+      "values": [
+        "false",
+        "true"
+      ],
+      "matchingQualifiedParents": 1,
+      "childrenTypes": [
+        "Arguments",
+        "Arguments"
+      ]
+    }
+  ],
+  "reproduction": {
+    "collectorMatchingError": "Ambiguous qualified test identifier",
+    "unalteredCaseGateError": "Ambiguous qualified test identifier",
+    "rawParameterDetailExports": 0,
+    "reason": "The collector strictly qualifies every Test Case while searching each parameter parent; the unqualified orphan raises before test-details capture. Normal Arguments children are not separate Test Case matches."
+  },
+  "controllerBindings": {
+    "qualificationReject": "scripts/reader-experience/renewal-probe-tools.py:1525",
+    "collectorAllNodeMatch": "scripts/reader-experience/renewal-probe-tools.py:1676",
+    "collectorStoresFailure": "scripts/reader-experience/renewal-probe-tools.py:1684",
+    "caseGate": "scripts/reader-experience/renewal-probe-tools.py:1580"
+  },
+  "limits": [
+    "This does not remove the orphan, sixteen failed qualified definitions, or the nonzero XCTest exit.",
+    "The three passed parameter parents and six passed Arguments are raw-tree facts, not independently exported test-details acceptance.",
+    "No source changes, portable tests, SDK, parser, cloud access or new xcresult commands were executed."
+  ],
+  "fourCompletionFlags": {
+    "sourceCompatibilityComplete": false,
+    "selfRenewalComplete": false,
+    "deviceInstallationVerified": false,
+    "unattendedRenewalVerified": false
+  }
+}

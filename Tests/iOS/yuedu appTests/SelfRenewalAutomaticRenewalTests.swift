@@ -116,6 +116,7 @@ struct SelfRenewalAutomaticRenewalTests {
                     #expect(observed.0?.automaticRenewalVerified == false && observed.1?.coldLaunchVerified == false)
                     let record = try App.record(root)
                     #expect(record.originalArchiveSHA256 != Data(SHA256.hash(data: f.originalBytes)))
+                    #expect(record.userDataHandoff?.capturedAt == f.date)
                     #expect(record.userDataHandoff?.files.map(\.role) == ["shelf", "reading", "sources"])
                     #expect(record.userDataHandoff?.positions.first?.position == App.position)
                     let candidate = try App.candidate(root, record: record)

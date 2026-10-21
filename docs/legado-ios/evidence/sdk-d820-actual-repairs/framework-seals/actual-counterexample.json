@@ -1,0 +1,34 @@
+{
+  "sourceCommit": "d8200d32f881e1b09399110905d43545cfd0c9f9",
+  "actualFailure": "SelfRenewalControlledPackageSignerTests/signsSDKProducedMainExtensionsAndFrameworkInSameJob: digestMismatch Frameworks/OwnedFramework.framework/OwnedFramework",
+  "rawArchive": {
+    "bytes": 306892,
+    "sha256": "16a0d88720940a81a14596bfb7ff3ca3685c8050bcbccddfbfcf889dd3d02c4d"
+  },
+  "rawParentEnvelope": {
+    "bytes": 6088,
+    "sha256": "6dce50f170dd7c3b426d295ea592abca41f1ff779787bdf6812b17ef0d5dc5c8"
+  },
+  "actualSeals": [
+    {
+      "path": "Frameworks/OwnedFramework.framework/OwnedFramework",
+      "kind": "ordinary file hashes, not nested requirement/cdhash",
+      "bytes": 68112,
+      "sha256": "6cf76f39db3084515e37334ebcd1e9d5aea9cd0284828b6aebdb8f2983a97711",
+      "legacySHA1": "9371a51baf4ebb153c63b3516b2a6797d1286ad3",
+      "ordinarySealsMatchOriginalInput": true,
+      "changedByActualPackageSigner": true
+    },
+    {
+      "path": "Frameworks/OwnedFramework.framework/_CodeSignature/CodeResources",
+      "kind": "ordinary file hashes, not nested requirement/cdhash",
+      "bytes": 2014,
+      "sha256": "7de9888706564ce32929abeed8f75da22213a0c458b3e7818dddbeb28edd5a61",
+      "legacySHA1": "070b7c06d48d46222acf78e52b86457e0f781666",
+      "ordinarySealsMatchOriginalInput": true,
+      "changedByActualPackageSigner": true
+    }
+  ],
+  "sourceCause": "Current PackageResourceUpdater only rewrites profile file hashes and verified nested cdhash hints. Actual framework binary/CodeResources are ordinary parent resources, so parent still binds pre-resign bytes after signer rewrites those files.",
+  "scope": "raw input/source math evidence, not Swift execution"
+}

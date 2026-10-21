@@ -1,0 +1,69 @@
+--- a/Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift
++++ b/Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift
+@@ -92,12 +92,17 @@
+                 allowedChanges.formUnion([executable.file.relativePath, resources.relativePath])
+             }
+             try await vault.validate(lease)
++            // A containing bundle can seal child code as ordinary file hashes
++            // rather than a nested requirement/cdhash (actual SDK frameworks do
++            // both). Keep only fixed-size hashes of files this signer replaces.
++            var changedResourceDigests: [String: [UInt8: Data]] = [:]
+             for component in inventory.components where component.kind != .framework {
+                 guard let profile = component.embeddedProvisioningProfile,
+                       let bytes = profileInputs[component.relativePath], let oldHash = originals[profile.relativePath] else {
+                     throw Failure.missingMaterial(component.relativePath)
+                 }
+                 try await scope.replace(profile.relativePath, with: bytes, expectedSHA256: oldHash, maximumBytes: Vault.Limits.profileBytes)
++                changedResourceDigests[profile.relativePath] = try resourceDigests(bytes)
+             }
+             var hashes: [String: Data] = [:]
+             var changes: [ComponentChange] = []
+@@ -128,8 +133,19 @@
+                     let profilePath = key == "." ? profile.relativePath : String(profile.relativePath.dropFirst(key.count + 1))
+                     freshProfiles[profilePath] = fresh; oldProfileHash = old; freshProfileHash = Data(SHA256.hash(data: fresh))
+                 }
++                let prefix = key == "." ? "" : key + "/"
++                var ordinary: [String: [UInt8: Data]] = [:]
++                for (absolutePath, digests) in changedResourceDigests where absolutePath.hasPrefix(prefix) {
++                    let relative = String(absolutePath.dropFirst(prefix.count))
++                    // This component's own profile uses the existing profile
++                    // path above. Descendant ordinary seals must already have
++                    // been authenticated in the original resource proof.
++                    if freshProfiles[relative] == nil, resourceProof.resources.verifiedFileDigests[relative] != nil {
++                        ordinary[relative] = digests
++                    }
++                }
+                 let updated = try SelfRenewalPackageResourceUpdater.update(resources, component: resourceProof,
+-                    freshProfiles: freshProfiles, nestedCDHashes: nested)
++                    freshProfiles: freshProfiles, nestedCDHashes: nested, changedResources: ordinary)
+                 try await scope.replace(resource.relativePath, with: updated.bytes, expectedSHA256: oldResourceHash,
+                     maximumBytes: SelfRenewalResourceSealVerifier.Limits.envelopeBytes)
+                 try await vault.validate(lease)
+@@ -141,6 +157,8 @@
+                       directory.signerAuthenticated, directory.cdHash.count == 20 else { throw Failure.missingSelectedSignature(key) }
+                 try await scope.replace(executable.file.relativePath, with: signed.signedMachO, expectedSHA256: oldCodeHash,
+                     maximumBytes: SelfRenewalControlledMachOSigner.Limits.fileBytes)
++                changedResourceDigests[resource.relativePath] = try resourceDigests(updated.bytes)
++                changedResourceDigests[executable.file.relativePath] = try resourceDigests(signed.signedMachO)
+                 hashes[key] = directory.cdHash
+                 changes.append(ComponentChange(relativePath: key, originalExecutableSHA256: oldCodeHash,
+                     signedExecutableSHA256: Data(SHA256.hash(data: signed.signedMachO)), originalProfileSHA256: oldProfileHash,
+@@ -162,6 +180,18 @@
+             try Task.checkCancellation()
+             return Result(archive: archive, original: original, signed: archive.verification.application, changes: changes,
+                 originalArchiveSHA256: scope.originalArchiveSHA256, originalArchiveBytes: scope.originalArchiveBytes)
++        }
++    }
++    /// Reuses actual in-memory replacement bytes; never loads the whole IPA or
++    /// hashes an arbitrary archive path supplied by a caller.
++    private static func resourceDigests(_ bytes: Data) throws -> [UInt8: Data] {
++        try Task.checkCancellation()
++        return try SourcePerfTrace.span("renewal.package.changed-resource-hashes",
++            "main=\(Thread.isMainThread) bytes=\(bytes.count)") {
++            let sha256 = try SelfRenewalCodeDirectoryHashVerifier.digest(bytes, hashType: 2)
++            return [1: try SelfRenewalCodeDirectoryHashVerifier.digest(bytes, hashType: 1),
++                2: sha256, 3: Data(sha256.prefix(20)),
++                4: try SelfRenewalCodeDirectoryHashVerifier.digest(bytes, hashType: 4)]
+         }
+     }
+     private static func preflight(_ original: App.Materials, lease: Vault.Lease) throws {

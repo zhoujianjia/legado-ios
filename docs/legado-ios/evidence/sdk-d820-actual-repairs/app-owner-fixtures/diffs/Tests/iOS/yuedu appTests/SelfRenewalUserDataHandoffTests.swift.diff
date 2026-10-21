@@ -1,0 +1,16 @@
+--- baseline/Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift
++++ candidate/Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift
+@@ -97,7 +97,12 @@
+                             endpoint: peer.endpoint, handoff: handoff, timeoutSeconds: 12)
+                         Issue.record("Failed source write allowed Upgrade")
+                     } catch let error as Coordinator.Interrupted {
+-                        guard error.underlying is BookSourcePersistenceFailure else { throw error }
++                        guard let operation = error.underlying as? SelfRenewalAuthenticatedInstallationClient.OperationFailure,
++                              let persistence = operation.underlying as? BookSourcePersistenceFailure,
++                              case .writeFailed(.replace, _) = persistence else { throw error }
++                        #expect(operation.stage == .upload)
++                        #expect(operation.remoteCreationAttempted && operation.cleanupAttempted
++                            && operation.remoteStagingRemovalVerified && operation.cleanupErrors.isEmpty)
+                         #expect(!error.mayHaveSubmittedUpgrade)
+                         #expect(error.persistedUpload?.record.phase == .uploadIntent)
+                     }

@@ -1,0 +1,80 @@
+--- a/Modules/Services/SelfRenewal/SelfRenewalPackageResourceUpdater.swift
++++ b/Modules/Services/SelfRenewal/SelfRenewalPackageResourceUpdater.swift
+@@ -13,13 +13,16 @@
+         let bytes: Data
+         let changedProfileSeals: Int
+         let changedNestedHints: Int
+-        fileprivate init(bytes: Data, profiles: Int, nested: Int) {
++        let changedResourceSeals: Int
++        fileprivate init(bytes: Data, profiles: Int, nested: Int, resources: Int) {
+             self.bytes = bytes; changedProfileSeals = profiles; changedNestedHints = nested
++            changedResourceSeals = resources
+         }
+     }
+
+     static func update(_ original: Data, component: Resources.ComponentVerification,
+-        freshProfiles: [String: Data], nestedCDHashes: [String: Data]) throws -> Result {
++        freshProfiles: [String: Data], nestedCDHashes: [String: Data],
++        changedResources: [String: [UInt8: Data]] = [:]) throws -> Result {
+         precondition(!Thread.isMainThread, "Package resource updates must stay off main")
+         try Task.checkCancellation()
+         let started = SourcePerfTrace.now
+@@ -42,6 +45,16 @@
+         let preservedRules = [parsed["rules"], parsed["rules2"]]
+         var profileChanges = 0
+         var nestedChanges = 0
++        var resourceChanges = 0
++        // Only the containing component's genuinely verified ordinary seals
++        // may be refreshed. Omitted/new/nested-requirement paths are not an
++        // alternative admission route for arbitrary archive content.
++        for (path, digests) in changedResources {
++            guard component.resources.verifiedFileDigests[path] != nil else { throw Failure.missingSeal(path) }
++            guard freshProfiles[path] == nil, Set(digests.keys) == Set<UInt8>([1, 2, 3, 4]),
++                  digests[1]?.count == 20, digests[2]?.count == 32,
++                  digests[3]?.count == 20, digests[4]?.count == 48 else { throw Failure.unsupportedSeal }
++        }
+         for table in ["files", "files2"] {
+             guard let value = root[table] else { continue }
+             guard var seals = value as? [String: Any] else { throw Failure.malformedEnvelope }
+@@ -70,6 +83,32 @@
+                 } else { throw Failure.unsupportedSeal }
+                 profileChanges += 1
+             }
++            for (path, digests) in changedResources {
++                try Task.checkCancellation()
++                guard let raw = seals[path] else {
++                    if table == (component.resources.version == 2 ? "files2" : "files") { throw Failure.missingSeal(path) }
++                    continue
++                }
++                if let previous = raw as? Data {
++                    guard previous.count == 20, let fresh = digests[1] else { throw Failure.unsupportedSeal }
++                    seals[path] = fresh
++                } else if var attributes = raw as? [String: Any] {
++                    guard attributes["requirement"] == nil, attributes["symlink"] == nil,
++                          Set(attributes.keys).isSubset(of: ["hash", "hash2", "hash3", "hash4", "optional"]) else {
++                        throw Failure.unsupportedSeal
++                    }
++                    var changed = false
++                    for (name, type) in [("hash", UInt8(1)), ("hash2", 2), ("hash3", 3), ("hash4", 4)] where attributes[name] != nil {
++                        guard let previous = attributes[name] as? Data, let fresh = digests[type],
++                              previous.count == fresh.count else { throw Failure.unsupportedSeal }
++                        attributes[name] = fresh
++                        changed = true
++                    }
++                    guard changed else { throw Failure.unsupportedSeal }
++                    seals[path] = attributes
++                } else { throw Failure.unsupportedSeal }
++                resourceChanges += 1
++            }
+             for nested in component.resources.verifiedNestedResources {
+                 try Task.checkCancellation()
+                 guard let raw = seals[nested.relativePath] else {
+@@ -106,7 +145,7 @@
+             default: throw Failure.changedRules
+             }
+         }
+-        return Result(bytes: encoded, profiles: profileChanges, nested: nestedChanges)
++        return Result(bytes: encoded, profiles: profileChanges, nested: nestedChanges, resources: resourceChanges)
+     }
+     private static func orderedKeys(_ dictionary: NSDictionary) throws -> [String] {
+         var keys: [String] = []

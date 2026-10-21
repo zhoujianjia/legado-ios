@@ -407,6 +407,7 @@ struct LegadoCookieOwnerTests {
     @MainActor
     @Test("a late Cookie response success or failure cannot stop the next real pooled WebView lease", .timeLimit(.minutes(1)))
     func staleWebViewCookieDecisionCannotEndReusedLease() async throws {
+        try await cancelledResponsePolicyCompletesOnlyOnce()
         for failOldDecision in [false, true] {
             let f = try fixture(); defer { cleanup(f) }
             let server = try CookieOwnerHTTPServer()
@@ -429,6 +430,26 @@ struct LegadoCookieOwnerTests {
             #expect(server.requests.map(\.path) == ["/private/final", "/held"])
             #expect(fetcher.performanceSnapshot().peakActiveCount == 1)
         }
+    }
+
+    @MainActor private func cancelledResponsePolicyCompletesOnlyOnce() async throws {
+        let wait = WebViewNavigationWait()
+        var policies: [WKNavigationResponsePolicy] = []
+        do {
+            _ = try await wait.value {
+                let token = wait.registerResponseDecision { policies.append($0) }
+                #expect(token != nil)
+                wait.cancel()
+                #expect(policies == [.cancel])
+                if let token {
+                    wait.completeResponseDecision(token, policy: .allow)
+                    wait.completeResponseDecision(token, policy: .cancel)
+                }
+                #expect(policies == [.cancel])
+            }
+            Issue.record("The cancelled real navigation wait must throw")
+        } catch is CancellationError { }
+        #expect(policies == [.cancel])
     }
 
     @Test("native browser preparation carries the typed owner error through its actual async source worker")
