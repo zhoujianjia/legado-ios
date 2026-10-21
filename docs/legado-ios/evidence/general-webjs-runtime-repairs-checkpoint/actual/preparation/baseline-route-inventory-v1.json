@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "preparedUTC": "2026-10-20T23:55:12.257201+00:00",
+  "status": "Baseline/route inventory only; future production composition and counts intentionally pending root exact source manifest",
+  "files": [
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "baseline": {
+        "bytes": 11036,
+        "sha256": "478f90b663163d50c5de8154ae1c0e967146934c7da5589973c40e9d00a59b6b"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/native-smoke-tools.py",
+      "baseline": {
+        "bytes": 53171,
+        "sha256": "db2b4c3ecaede2365ced06173afea22b52272b34eb410cadec4a82bc429b5821"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "baseline": {
+        "bytes": 195760,
+        "sha256": "7ae8b74a786e400be8aaaae96051459a684d3594382bc66991e9d1152cb50c95"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "baseline": {
+        "bytes": 26262,
+        "sha256": "5058432cdf154557aa831a37003e517209eccdb58a881135f695311dced99109"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "baseline": {
+        "bytes": 189568,
+        "sha256": "942eb2d700461bd2d08c0e569af4827bfe56bc805e0678ca3748579089c753cb"
+      }
+    }
+  ],
+  "baselineCounts": {
+    "core": 343,
+    "native": 148,
+    "coreNativeUnion": 359,
+    "AppDefinitions": 463,
+    "AppExecutions": 466,
+    "originalNative": 27,
+    "separateMainJS": 1,
+    "coldHosts": 2
+  },
+  "futureCounts": null,
+  "scope": "Only 5 existing controls. Keep old modes, existing method order/framework selectors, 3Boolpairs, required same-job SDK fixture, original1800/mainjs2700/currentcore3600 wrapper and3720 parentbudget, phases and fail-closed evidence. Package24/23 remains independent. C5 producer and consumer hosts/nonce/PID/container gate unchanged.",
+  "minimalAffectedGuards": [
+    {
+      "script": "test-renewal-probe-tools.py",
+      "selection": "DeltaReuseCheckpointSelectionTests",
+      "methods": 2
+    },
+    {
+      "script": "test-native-smoke-tools.py",
+      "selection": [
+        "NativeSmokeProvenanceTests.test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging",
+        "NativeSmokeProvenanceTests.test_result_requires_exact_built_app_source_stamp"
+      ],
+      "methods": 2
+    }
+  ],
+  "executionsNow": 0,
+  "mutations": {
+    "canonical": false,
+    "Git": false,
+    "cloud": false,
+    "peerFrozenStages": false
+  }
+}

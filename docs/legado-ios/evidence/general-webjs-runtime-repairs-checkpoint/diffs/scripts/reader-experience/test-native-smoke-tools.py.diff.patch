@@ -1,0 +1,43 @@
+--- a/scripts/reader-experience/test-native-smoke-tools.py
++++ b/scripts/reader-experience/test-native-smoke-tools.py
+@@ -80,7 +80,7 @@
+             result = native.result(self.root)
+             self.assertEqual(result["sourceCommitStamped"], SOURCE)
+             self.assertEqual(result["sourceOverlays"]["infoOverlay"]["sourceCommitStamped"], SOURCE)
+-            self.assertEqual(result["originalReaderTests"]["expectedTests"], 27)
++            self.assertEqual(result["originalReaderTests"]["expectedTests"], 28)
+             self.assertFalse(result["deviceValidationPassed"])
+             for key, value in (("YueduExperienceSourceCommit", "b" * 40), ("GitCommitSHA", "b" * 7),
+                                ("YueduExperienceSourceCommit", None)):
+@@ -263,10 +263,10 @@
+     def test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging(self):
+         repo = Path(__file__).resolve().parents[2]
+         workflow = (repo / ".github/workflows/legado-native-reader-test.yml").read_text(encoding="utf-8")
+-        self.assertEqual(len(native.SOURCE_INPUTS), 148)
++        self.assertEqual(len(native.SOURCE_INPUTS), 158)
+         self.assertEqual(len(native.ORIGINAL_LOGIN_ACTION_MATERIAL_INPUTS), 23)
+         self.assertTrue(set(native.ORIGINAL_LOGIN_ACTION_MATERIAL_INPUTS) <= set(native.SOURCE_INPUTS))
+-        self.assertIn("Execute1 MainJS and27 original methods in separate required hosts", workflow)
++        self.assertIn("Execute1 MainJS and28 original methods in separate required hosts", workflow)
+         self.assertEqual(len(native.NATIVE_CORETEXT_COMPILE_INPUTS), 6)
+         self.assertTrue(set(native.NATIVE_CORETEXT_COMPILE_INPUTS) <= set(native.SOURCE_INPUTS))
+         for relative in native.NATIVE_CORETEXT_COMPILE_INPUTS:
+@@ -275,6 +275,9 @@
+         self.assertEqual(len(native.ORIGINAL_LOGIN_HEADER_V2_BROWSER_INPUTS), 10)
+         self.assertTrue(set(native.ORIGINAL_LOGIN_HEADER_V2_BROWSER_INPUTS) <= set(native.SOURCE_INPUTS))
+         self.assertTrue(set(native.ORIGINAL_SPD_WEBJS_COLD_INPUTS) <= set(native.SOURCE_INPUTS))
++        self.assertEqual(len(native.ORIGINAL_GENERAL_WEBJS_RUNTIME_REPAIR_INPUTS), 30)
++        self.assertTrue(set(native.ORIGINAL_GENERAL_WEBJS_RUNTIME_REPAIR_INPUTS) <= set(native.SOURCE_INPUTS))
++        self.assertIn('LegadoNativeOriginalReaderTests/testNativeOriginalGeneralWebJSUsesPreviewBatchAndBookCallbackOwners', native.NATIVE_GROUPS["original"]["methods"])
+         self.assertIn('LegadoNativeOriginalLoginInfoTests/testNativeOriginalLocalHTMLWebJSKeepsSameSessionAfterProducerAndDrainsAwaitCancellation', native.NATIVE_GROUPS["original"]["methods"])
+         self.assertIn('LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginHeaderUsesExistingOwnersAndKeepsPartialCancellationFacts', native.NATIVE_GROUPS["original"]["methods"])
+         self.assertIn('LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2BrowserUsesProductServiceAndExistingPageOwner', native.NATIVE_GROUPS["original"]["methods"])
+@@ -310,7 +313,7 @@
+         self.assertTrue(set(native.ORIGINAL_LOGIN_MAP_INPUTS) <= set(native.SOURCE_INPUTS))
+         self.assertEqual(native.NATIVE_GROUPS["mainjs"]["seconds"], 2700)
+         self.assertEqual(len(native.NATIVE_GROUPS["mainjs"]["methods"]), 1)
+-        self.assertEqual(len(native.NATIVE_GROUPS["original"]["methods"]), 27)
++        self.assertEqual(len(native.NATIVE_GROUPS["original"]["methods"]), 28)
+         self.assertIn("unset LEGADO_RUNTIME_SOURCE_ONLY", workflow)
+         self.assertIn("LEGADO_REQUIRE_NATIVE_MAINJS", workflow)
+         self.assertIn("verify-native-exports.py", workflow)

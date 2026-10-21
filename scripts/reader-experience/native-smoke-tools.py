@@ -56,7 +56,8 @@ NATIVE_GROUPS = {
             'LegadoNativeOriginalLoginInfoTests/testNativeOriginalPostBrowserDisplaysPrefetchedHtmlAndReusesSingleHttpBody',
             'LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginHeaderUsesExistingOwnersAndKeepsPartialCancellationFacts',
             'LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2BrowserUsesProductServiceAndExistingPageOwner',
-            'LegadoNativeOriginalLoginInfoTests/testNativeOriginalLocalHTMLWebJSKeepsSameSessionAfterProducerAndDrainsAwaitCancellation')},
+            'LegadoNativeOriginalLoginInfoTests/testNativeOriginalLocalHTMLWebJSKeepsSameSessionAfterProducerAndDrainsAwaitCancellation',
+            'LegadoNativeOriginalReaderTests/testNativeOriginalGeneralWebJSUsesPreviewBatchAndBookCallbackOwners')},
 }
 SOURCE_INPUTS = (
     ".github/workflows/legado-native-reader-test.yml", "scripts/reader-experience/native-smoke-tools.py",
@@ -405,6 +406,41 @@ assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 140
 ORIGINAL_SPD_WEBJS_COLD_INPUTS = ('Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift', 'Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift', 'Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift', '.github/workflows/legado-native-reader-test.yml', 'scripts/reader-experience/original-cold-process-tools.py', 'scripts/reader-experience/test-native-smoke-tools.py', 'scripts/reader-experience/test-original-cold-process-tools.py', 'scripts/xctest.sh', 'Tests/iOS/LegadoNativeOriginalReaderTests.swift', 'Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift', 'Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift', 'Modules/Core/BookSource/BookSourceStore.swift', 'Modules/Features/BookSource/JsBridgeBrowserView.swift', 'Modules/Features/BookSource/SourceBrowserPresenter.swift', 'Modules/Services/Online/LegadoMainJSSourceService.swift', 'Modules/Services/Online/LegadoPersistentStateHost.swift', 'Modules/Services/Online/LegadoPreviewStateOwner.swift', 'Tests/iOS/LegadoNativeOriginalLoginInfoTests.swift', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt', 'Packages/LegadoRuntime/vendor/original-rule/manifest.json')
 SOURCE_INPUTS += tuple(path for path in ORIGINAL_SPD_WEBJS_COLD_INPUTS if path not in SOURCE_INPUTS)
 assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 148
+
+ORIGINAL_GENERAL_WEBJS_RUNTIME_REPAIR_INPUTS = (
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/BaseSource.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalGeneralWebJsRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleBase64.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt',
+    'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalGeneralWebJsTest.kt',
+    'Packages/LegadoRuntime/vendor/original-rule/manifest.json',
+    'Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift',
+    'Modules/Services/Online/LegadoPersistentStateHost.swift',
+    'Modules/Services/Online/LegadoPreviewStateOwner.swift',
+    'Modules/Services/Online/LegadoContentBatchOwner.swift',
+    'Modules/Services/Online/SourceCallBackService.swift',
+    'Tests/iOS/LegadoNativeOriginalReaderTests.swift',
+    'Modules/Services/SelfRenewal/SelfRenewalAuthenticatedDeviceStream.swift',
+    'Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift',
+    'Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift',
+    'Tests/iOS/yuedu appTests/SelfRenewalInstallationRecoveryTests.swift',
+    'Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift',
+    'Tests/iOS/yuedu appTests/SelfRenewalAnisetteV3ProviderTests.swift',
+    'Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift',
+    'Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift',
+    'Tests/iOS/yuedu appTests/SelfRenewalCMSVerifierTests.swift',
+    'Tests/iOS/yuedu appTests/LegadoCookieTextHostTests.swift',
+)
+SOURCE_INPUTS += tuple(path for path in ORIGINAL_GENERAL_WEBJS_RUNTIME_REPAIR_INPUTS if path not in SOURCE_INPUTS)
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 158
 
 CACHE_CASES = {
     'ChapterCacheMigrationTests': ('packageLoaderUpgradesDownloadedLegacyChapter()',
