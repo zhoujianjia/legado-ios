@@ -169,8 +169,8 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Submit exactly one coherent349/161/365 SDK and Native pair after reviewed control integration. Both88 terminal failures are archived and must never be queried again. No IPA tag.",
-      "alreadyRunningTasks": "No live SDK handles. Both immutable88c runs are terminal and archived. Native failed five JVM expectations; SDK App executed0 tests because two production API errors blocked compilation. Do not query either handle again.",
+      "nextPlannedCheckpoint": "Preserve real terminal artifacts for these two handles only; repair actual failures before another coherent pair. Continue independent work without changing this source snapshot.",
+      "alreadyRunningTasks": "Exactly this newly observed SDK/Native pair; no IPA. Both88 terminal failures remain archived and must not be queried again.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
         "sourceTag": "reader-renewal-8d934dd",
@@ -211,7 +211,26 @@
         "producerPublicOutputs": 43,
         "producerMachOs": 4
       },
-      "onlyLiveSDKHandles": [],
+      "onlyLiveSDKHandles": [
+        {
+          "workflow": "Local Reader Renewal Probe Tests",
+          "runID": 39524696933,
+          "jobID": 118976499912,
+          "tag": "reader-renewal-f233826",
+          "sourceCommit": "f23382618c747c97c23a1c345664cffd589a5359",
+          "statusAtObservation": "in_progress",
+          "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39524696933"
+        },
+        {
+          "workflow": "Legado Native Main-App Product Chain",
+          "runID": 39524697051,
+          "jobID": 118976500962,
+          "tag": "legado-native-reader-test-f233826",
+          "sourceCommit": "f23382618c747c97c23a1c345664cffd589a5359",
+          "statusAtObservation": "in_progress",
+          "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39524697051"
+        }
+      ],
       "latestDevicePackageTerminal": {
         "sourceCommit": "44f125b73c06bf95637765ab58e65f41d0651b44",
         "runID": 39457883604,
@@ -240,60 +259,29 @@
         "failure": "Gradle:test five old expectation failures; later native phases skipped"
       },
       "currentUnifiedCheckpoint": {
-        "sourceCommit": "88c61ee4b80889a617d344fda668d077f73fa95b",
-        "requestRecord": "docs/legado-ios/core-sdk-88c61ee-request.json",
-        "observedUTC": "2026-10-21 00:16:05 UTC",
+        "sourceCommit": "f23382618c747c97c23a1c345664cffd589a5359",
+        "requestRecord": "docs/legado-ios/core-sdk-f233826-request.json",
+        "observedUTC": "2026-10-21 01:01:03 UTC",
         "counts": {
           "AppDefinitions": 463,
           "AppLeaves": 466,
           "BoolParameterPairs": 3,
-          "coreInputs": 346,
-          "NativeOriginalDefinitions": 28,
+          "coreInputs": 349,
+          "nativeInputs": 161,
+          "uniqueInputUnion": 365,
+          "unchangedCanonicalNoncandidateInputs": 360,
+          "NativeOriginalDefinitions": 30,
+          "NativeProductDefinitions": 28,
+          "NativePlatformCharacterizations": 2,
           "NativeLoginInfoDefinitions": 16,
           "NativeMainJSDefinitions": 1,
           "NativeIndependentColdHosts": 2,
-          "nativeInputs": 158,
           "PackageMethods": 24,
           "PackageCompilationInputs": 16,
           "PackageControls": 7,
-          "PackageAllInputs": 23,
-          "uniqueInputUnion": 362,
-          "unchangedCanonicalNoncandidateInputs": 357
+          "PackageAllInputs": 23
         },
-        "actualResultAccepted": false,
-        "nativeTerminal": {
-          "sourceCommit": "88c61ee4b80889a617d344fda668d077f73fa95b",
-          "runID": 39520240533,
-          "jobID": 118962039359,
-          "status": "completed",
-          "conclusion": "failure",
-          "queryAgain": false,
-          "record": "docs/legado-ios/core-native-88c61ee-terminal-result.json",
-          "actualOrdinaryJVMPassed": 348,
-          "actualOrdinaryJVMFailed": 5,
-          "actualOrdinaryJVMSkipped": 0,
-          "actualNativeSelectedMethodsExecuted": 0,
-          "actualColdHostsExecuted": 0,
-          "failure": "Gradle:test five old expectation failures; later native phases skipped"
-        },
-        "sdkTerminal": {
-          "sourceCommit": "88c61ee4b80889a617d344fda668d077f73fa95b",
-          "runID": 39520239925,
-          "jobID": 118962037971,
-          "status": "completed",
-          "conclusion": "failure",
-          "queryAgain": false,
-          "record": "docs/legado-ios/core-sdk-88c61ee-terminal-result.json",
-          "failure": "Two unique production WebKit Swift API-shape compiler errors (50 repeated diagnostics); App executed0, no native timeout.",
-          "AppDefinitionsExecuted": 0,
-          "AppLeavesExecuted": 0,
-          "AppSuitePassed": false,
-          "uniqueCompilerErrors": 2,
-          "PackageMethodsPassed": 24,
-          "producerCommandsPassed": 48,
-          "producerPublicOutputs": 43,
-          "producerMachOs": 4
-        }
+        "actualResultAccepted": false
       },
       "live8dPortableFailureRepair": {
         "record": "docs/legado-ios/core-sdk-8d-portable-expectations-repair.json",
@@ -899,7 +887,8 @@
             "docs/legado-ios/core-renewal-controlled-ipa-step.json",
             "docs/legado-ios/core-owned-sdk-producer-check-step.json"
           ],
-          "nextActionZh": "7576独立Package24通过且生产模块与链接输出已越过旧阻断，但测试目标编译失败使App用例执行0。当前fc3统一SDK重新验证真实Bundle/IPA及材料读取；真实Apple材料与设备安装授权仍待实证。"
+          "nextActionZh": "88轮SDK因两处生产API编译错误执行App0项；对应修复已合入，当前统一源码重新验证真实Bundle/IPA及材料读取。独立Package24通过不代表App验收；真实Apple材料与设备授权仍未验证。",
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-f233826-request.json"
         },
         {
           "id": "S2",
@@ -959,7 +948,8 @@
             "GSA 登录、可信设备二次认证、真实任务取消和退出已接入同一 AppSession/AppOwner；Task 覆盖材料 owner 打开到认证完成，退出先取消并等实际任务结束，再清内存挑战和原凭据。Session epoch 与 UI 操作 UUID 防止旧结果/旧 defer 影响新状态，确认保存的账号事实不伪装撤回。修正首次登录取消后凭据应为空的测试断言；3 项新回归仍仅定义，SDK 执行 0；默认真实 anisette 和登录界面尚不可用。",
             "已接真实Anisette v3及同owner账号网络/Keychain；设置可选服务、观察注册及确认恢复未知注册。认证/配对/界面共15源已合入，11项有行为回归仍待SDK执行，真实Apple授权未验证。"
           ],
-          "nextActionZh": "已补M2与协商MAC验证后的加密SPD二次认证分支；验证码已触发时不重复请求，可信设备模式沿固定路由，冲突与未知模式拒绝。22份公开重封向量离线校验通过，原11个回归新增场景仍待下一统一SDK实际执行；真实Apple授权、材料及到期延长尚未验收。"
+          "nextActionZh": "账号与材料生命周期及SPD二次认证分支已接线，当前统一SDK验证公开受控认证场景。真实Apple账号授权、证书/profile签发和有效期延长仍未验证。",
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-f233826-request.json"
         },
         {
           "id": "S3",
@@ -1003,7 +993,8 @@
             "受控整包已接同一IPA提取器、实际namespace身份/材料租约、由内到外profile/资源/nested hint及Mach-O重签、原始XML规则字节保留和新IPA重新提取全链复验；只导出只读FD。补常见DYSYMTAB/MH_DYLIB布局及同job真实clang/codesign生成器；11项原生方法待SDK，Windows独立38个CMS及自有ZIP/摘要校验不等于Swift通过。",
             "已补充受控临时 Keychain 的新进程重开、显式解锁及精确身份诊断，并实现独立有限 Mac producer 检查入口；20+9 项便携守卫通过，含实际复现并修复工具退出零但源码校验失败时误报成功的问题。实际 codesign 修复尚未验证，完整原生验收未改变。"
           ],
-          "nextActionZh": "已按真实SDK产物3080反例补有界CMS BER包络解析，保持signedAttrs DER、签名与证书链门禁；4份公开CMS及恶意边界26项离线校验通过。原同job整包签名回归须下一统一SDK实际通过，仍未验收真实Apple材料/覆盖安装。"
+          "nextActionZh": "CMS BER包络修复与严格signedAttrs/签名证书门禁已合入；当前统一SDK要求同job真实产物重签及独立验签用例实际通过。旧88仅producer成功，App签名用例执行0，真实设备续签未验证。",
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-f233826-request.json"
         },
         {
           "id": "S4",
@@ -1060,7 +1051,8 @@
             "新认证cleanup-only已接真实journal grant；复用原会话/服务/Stop实现，只删严格所属UUID路径。已删除/不存在ACK、Stop/关闭/持久失败事实分离，取消不阻止grant释放。未知Upgrade连Lookup未找到也不删除；独立OpenSSL10场景已执行，6项Swift清理方法SDK未执行。",
             "已接显式受保护P12与严格公开JSON导入，验证真实SecIdentity私钥、证书链与persistent-ref后绑定原namespace；拒绝活动/未知安装事务，旧身份不删除。真实同机可达性及安装权限仍未验证。"
           ],
-          "nextActionZh": "已补Lookup终态Complete，并按官方主源修TLS服务端状态判定候选；保留客户端Sent、强制双向认证和完整CA/DER/date门禁。测试peer事件退出与恢复前置已修，实际SDK握手与安装客户端仍待复验。"
+          "nextActionZh": "Lookup终态Complete、双向TLS服务端状态判定和peer事件退出修复已合入，当前统一SDK复验认证传输与安装客户端。已导入配对身份和显式可达安装服务仍为前提；免费团队单App无VPN/无伴侣/电脑关闭的同机安装通道仍未实现和验收。",
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-f233826-request.json"
         },
         {
           "id": "S5",
@@ -1110,7 +1102,8 @@
             "已实接材料缺失/过期时仅恢复既有事务的权限：同锁定journal真实绑定事务/namespace/候选/所属路径/对端pin，prepare与submit先拒；显式实际Keychain认证Lookup/清理保留材料失败和独立恢复/落盘错误。修复真实Lookup后最终状态提交未知丢完成事实；同一Keychain读核严格区别缺项与存储/UTF8/迁移错误。6新增方法仍SDK0，五语各1footer；同process缓存不代表每次前台全量检测到期。",
             "同一App前台链路已在nil事务、uploadIntent及同进程缓存早退之前真实复验Vault租约；已连接App只保留并检查原已验profile的两个日期界，失败立即撤销签名上下文。真实既有事务才可保留显式恢复，状态写失败仅内存降权且不伪造持久ACK；独立材料、正常读和恢复上下文错误保留。新增6个真实owned回归定义，SDK执行0。"
           ],
-          "nextActionZh": "真实SDK暴露的恢复测试事件等待环、缺失uploadIntent后继续恢复、强解包崩溃已修；持久事务/恢复/覆盖后数据交接须统一SDK与随后设备证据确认。"
+          "nextActionZh": "事务恢复等待环、uploadIntent前置和强解包修复已合入，当前统一SDK验证真实受控重签到安装事务及恢复；覆盖安装后冷启动与用户数据保留仍需设备证据。",
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-f233826-request.json"
         },
         {
           "id": "S6",
@@ -1157,7 +1150,8 @@
               "scope": "Real SDK runtime failures and timeout are now known. Repair typed TLS/signing/fixture prerequisites and rerun a coherent selected suite; no automatic renewal acceptance."
             }
           ],
-          "nextActionZh": "前台及系统允许的后台触发已有生产接线与持久节流；下一批实际回归后仍需设备调度和长期无人值守证据。"
+          "nextActionZh": "前台及系统允许的后台触发已有生产接线和持久节流，当前统一SDK复验触发与事务衔接；设备调度、到期恢复及长期无人值守仍未验证。",
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-f233826-request.json"
         }
       ],
       "integrationCheckpoint": {
@@ -2043,7 +2037,10 @@
         "PackageControls": 7,
         "PackageAllInputs": 23,
         "actualAcceptancePending": true,
-        "priorPairTerminalAndArchived": true
+        "priorPairTerminalAndArchived": true,
+        "submittedRequest": "docs/legado-ios/core-sdk-f233826-request.json",
+        "submittedSourceCommit": "f23382618c747c97c23a1c345664cffd589a5359",
+        "pendingUnifiedSDK": true
       }
     }
   },
