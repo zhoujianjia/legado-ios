@@ -1,0 +1,247 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-21T01:14:58.088067+00:00",
+  "purpose": "Four-primary-source Android callback boundary and prior MAIN-files route reassessment; no production candidate",
+  "status": "Single-ExpressionStatement plus original JSON.stringify is not an established Android-compatible serializer and was stopped before production edits",
+  "primaryBinding": {
+    "path": ".build/original-general-webjs-expression-result-step/primary-binding-v3.json",
+    "bytes": 4118,
+    "sha256": "46f8ab360d8cfcbcdbc46a9fb0f086d4e2e672ad29b3283c66b017edd1c28a27"
+  },
+  "sourceScope": {
+    "chromiumCommit": "1b10defa68c2f01621bc3795169817d777aa714a",
+    "fourSources": [
+      {
+        "path": "content/browser/web_contents/web_contents_android.cc",
+        "local": ".build/original-general-webjs-expression-result-step/primary/web_contents_android.cc",
+        "bytes": 39307,
+        "sha256": "709b9c43cd31b81013ac4390d82caefbe3fd1114dffefdf9edd88ee9fa3a63fc",
+        "gitBlobOID": "d92682d27d67d6d82a1f4f2a22924c72397f6bd8",
+        "directoryListingId": "1d9abf1dbfc8c565ec4dc9ad67502d1c38e07fb9",
+        "url": "https://chromium.googlesource.com/chromium/src/+/1b10defa68c2f01621bc3795169817d777aa714a/content/browser/web_contents/web_contents_android.cc",
+        "actualFetchedURL": "https://chromium.googlesource.com/chromium/src/+/main/content/browser/web_contents/web_contents_android.cc?format=TEXT",
+        "rawGitBlobMatchesDirectoryEntry": true,
+        "verifiedExactCommitURL": "https://chromium.googlesource.com/chromium/src/+show/1b10defa68c2f01621bc3795169817d777aa714a/content/browser/web_contents/web_contents_android.cc?format=TEXT"
+      },
+      {
+        "path": "content/renderer/v8_value_converter_impl.cc",
+        "local": ".build/original-general-webjs-expression-result-step/primary/v8_value_converter_impl.cc",
+        "bytes": 21427,
+        "sha256": "2d94e6de66d98052be1d3a0fb42b88aea51a16957d0f4f5d73fc9f6ee45657cd",
+        "gitBlobOID": "734df121243a8f3a7332a216894f0c0531755338",
+        "directoryListingId": "eab4fe5ff20c358f358fa01c022ea3280afc28a5",
+        "url": "https://chromium.googlesource.com/chromium/src/+/1b10defa68c2f01621bc3795169817d777aa714a/content/renderer/v8_value_converter_impl.cc",
+        "actualFetchedURL": "https://chromium.googlesource.com/chromium/src/+/main/content/renderer/v8_value_converter_impl.cc?format=TEXT",
+        "rawGitBlobMatchesDirectoryEntry": true,
+        "verifiedExactCommitURL": "https://chromium.googlesource.com/chromium/src/+show/1b10defa68c2f01621bc3795169817d777aa714a/content/renderer/v8_value_converter_impl.cc?format=TEXT"
+      },
+      {
+        "path": "base/json/json_writer.cc",
+        "local": ".build/original-general-webjs-expression-result-step/primary/json_writer.cc",
+        "bytes": 6472,
+        "sha256": "820a9c6671b3beaafa2dd0e672b4a4e7202d96c6a56271473ed5c0608542ea99",
+        "gitBlobOID": "9b3e8fc38d3b1242466de85aff8ac79645b04d5a",
+        "directoryListingId": "dbbfdf53e45b6a41a72c697b122e16ab59443a70",
+        "url": "https://chromium.googlesource.com/chromium/src/+/1b10defa68c2f01621bc3795169817d777aa714a/base/json/json_writer.cc",
+        "actualFetchedURL": "https://chromium.googlesource.com/chromium/src/+/main/base/json/json_writer.cc?format=TEXT",
+        "rawGitBlobMatchesDirectoryEntry": true,
+        "verifiedExactCommitURL": "https://chromium.googlesource.com/chromium/src/+show/1b10defa68c2f01621bc3795169817d777aa714a/base/json/json_writer.cc?format=TEXT"
+      },
+      {
+        "path": "base/values.h",
+        "local": ".build/original-general-webjs-expression-result-step/primary/values.h",
+        "bytes": 46411,
+        "sha256": "096a4362bbea0965cc8e42cd69f27447be45834581755f54d80d4c41cf04c499",
+        "gitBlobOID": "79e58cc0c25683e78ada12b65bf428da941b687a",
+        "directoryListingId": "5e546a71aaf14c257578c75e5ac14aa93bf3a1d9",
+        "url": "https://chromium.googlesource.com/chromium/src/+/1b10defa68c2f01621bc3795169817d777aa714a/base/values.h",
+        "actualFetchedURL": "https://chromium.googlesource.com/chromium/src/+/main/base/values.h?format=TEXT",
+        "rawGitBlobMatchesDirectoryEntry": true,
+        "verifiedExactCommitURL": "https://chromium.googlesource.com/chromium/src/+show/1b10defa68c2f01621bc3795169817d777aa714a/base/values.h?format=TEXT"
+      }
+    ],
+    "exactCommitRawBytesMatchDirectoryGitBlobs": true,
+    "notPinnedToInstalledAndroidWebView": true,
+    "converterCallingSiteAndNondefaultFlagsNotInFourSourceScope": true
+  },
+  "facts": [
+    {
+      "id": "callback",
+      "source": "content/browser/web_contents/web_contents_android.cc",
+      "lines": [
+        87,
+        93
+      ],
+      "fact": "Android Java callback receives base::WriteJson(base::Value).value_or(\"\"). It is not page JSON.stringify or preservation of page property insertion order."
+    },
+    {
+      "id": "write-defaults",
+      "source": "base/json/json_writer.cc",
+      "lines": [
+        31,
+        33
+      ],
+      "fact": "WriteJson calls JSONWriter::Write, which calls WriteWithOptions with options=0. No pretty print, no omit-binary or omit-double-type-preservation flags are set."
+    },
+    {
+      "id": "sorted-dictionary",
+      "source": "base/values.h",
+      "lines": [
+        259,
+        572
+      ],
+      "fact": "DictValue owns flat_map<string, unique_ptr<Value>>, and its bulk constructor explicitly describes sorting. JSONWriter iterates this dictionary directly. Source-derived result order is sorted string-key order, not ECMAScript own-property insertion order. UTF8 string comparison is relevant; no Swift canonical Unicode key merging is permitted."
+    },
+    {
+      "id": "int32-before-double",
+      "source": "content/renderer/v8_value_converter_impl.cc",
+      "lines": [
+        381,
+        395
+      ],
+      "fact": "The converter tests IsInt32 before generic Number. Values represented as Int32 serialize as integer; ordinary 1.0 is not generally forced to 1.0. Finite values outside that representation enter the double branch; nonfinite numbers return nullptr."
+    },
+    {
+      "id": "double-format",
+      "source": "base/json/json_writer.cc",
+      "lines": [
+        85,
+        110
+      ],
+      "fact": "With default flags, NumberToString(double) receives a .0 suffix only if no decimal/exponent occurs in its output. For example an integral double outside Int32 such as 2147483648 has a serialization boundary different from JavaScript JSON.stringify. Full shortest-double, escaping and negative-zero parity are not established by a Foundation JSON implementation."
+    },
+    {
+      "id": "object-unsupported-values",
+      "source": "content/renderer/v8_value_converter_impl.cc",
+      "lines": [
+        401,
+        607
+      ],
+      "fact": "Under the shown default converter, undefined/function/nonfinite produce nullptr and object properties with nullptr children are omitted. Arrays substitute null instead. Function-allowed and other converter flags are configurable and the actual rendering caller flags remain outside this four-file scope."
+    },
+    {
+      "id": "toJSON-is-not-invoked",
+      "source": "content/renderer/v8_value_converter_impl.cc",
+      "lines": [
+        576,
+        636
+      ],
+      "fact": "Object conversion enumerates own property names and reads each member. A member named toJSON is an ordinary member; no toJSON protocol is called by this algorithm. A function-valued member is skipped under default function_allowed=false."
+    },
+    {
+      "id": "getter-failure",
+      "source": "content/renderer/v8_value_converter_impl.cc",
+      "lines": [
+        600,
+        604
+      ],
+      "fact": "A throwing object getter is caught and its child becomes V8 null; JSON.stringify instead propagates the exception. Prewalking followed by stringify would read observable getters twice and remains rejected."
+    },
+    {
+      "id": "cycles-and-host-objects",
+      "source": "content/renderer/v8_value_converter_impl.cc",
+      "lines": [
+        534,
+        573
+      ],
+      "fact": "A cycle detected by ScopedUniquenessGuard becomes base null. An API wrapper/DOM object becomes an empty dictionary in this converter. Date, RegExp, function, ArrayBuffer and strategy switches differ; Promise behavior and actual caller settings are not guessed."
+    },
+    {
+      "id": "binary-default-rejection",
+      "source": "base/json/json_writer.cc",
+      "lines": [
+        117,
+        121
+      ],
+      "fact": "Default JSONWriter refuses a binary value instead of JSON.stringify-style object conversion. WriteJson failure becomes empty callback text at the shown Android callback. A page typed-array/ArrayBuffer path therefore cannot be approved merely because stringify returns a string."
+    }
+  ],
+  "actualJavaScriptCounterexamples": {
+    "scope": "Only real Node JSON.stringify results; Chromium converter outcomes below are source-derived, not executed Android or Apple results",
+    "command": {
+      "path": ".build/original-general-webjs-expression-result-step/evidence/stringify-command-facts.json",
+      "bytes": 443,
+      "sha256": "5a743ad331244a47764dde1fba3adf2e05e979e2e09e2579883521cf0d5de6ea"
+    },
+    "source": {
+      "path": ".build/original-general-webjs-expression-result-step/evidence/stringify-counterexamples.js",
+      "bytes": 937,
+      "sha256": "06f2e596d47ae621c5f31dfb93f03be1f0d9d8b3eec60edbecdf378895208534"
+    },
+    "stdout": {
+      "path": ".build/original-general-webjs-expression-result-step/evidence/stringify-counterexamples.stdout.json",
+      "bytes": 879,
+      "sha256": "e9a6d637da7dec5e3dad1b577e56b4fc25c32cece93d1a661f0f38f637e1ca02"
+    },
+    "executions": 1,
+    "vectors": 6,
+    "exit": 0,
+    "cases": [
+      {
+        "id": "ordinary-key-order",
+        "actualStringify": "{\"b\":2,\"a\":1}",
+        "sourceDerivedBaseDictionary": "{\"a\":1,\"b\":2}"
+      },
+      {
+        "id": "object-nonfinite-vs-array",
+        "actualStringify": "{\"b\":null,\"c\":null,\"a\":[null,null,null]}",
+        "sourceDerivedDefaultConverter": "{\"a\":[null,null,null]}"
+      },
+      {
+        "id": "toJSON-is-observable",
+        "actualStringify": "7; counter=1",
+        "sourceDerivedDefaultConverter": "{\"a\":1}; counter=0"
+      },
+      {
+        "id": "throwing-getter",
+        "actualStringify": "Error; counter=1",
+        "sourceDerivedDefaultConverter": "{\"a\":null,\"b\":2}; counter=1"
+      },
+      {
+        "id": "cycle",
+        "actualStringify": "TypeError",
+        "sourceDerivedDefaultConverter": "{\"self\":null}"
+      },
+      {
+        "id": "outside-int32-integral",
+        "actualStringify": "2147483648",
+        "sourceDerivedDefaultConverter": "2147483648.0 if converted as finite double"
+      }
+    ]
+  },
+  "priorMAINFilesReassessment": {
+    "priorFrozenReview": {
+      "path": ".build/original-scripting-ordered-result-primary-step/review-v1.json",
+      "bytes": 9313,
+      "sha256": "07f75ae2119c02390bfab7d69a4b633d015fd1010841bb4fec5051efb140d729"
+    },
+    "priorRawUnchanged": true,
+    "priorNarrowFactStillValid": "The WebKit scripting MAIN-files route executes a native page Program but completion has already crossed Foundation id, is JSON-encoded and reparsed before extension result delivery. It cannot promise retention of JavaScript insertion order.",
+    "priorExclusionNowInsufficient": "Insertion-order retention is not the demonstrated Android callback target. Consequently that exclusion must not be used as proof that MAIN-files, or existing native Program evaluateJavaScript, cannot implement the required result contract.",
+    "smallerNextProductionRoute": "Reassess the existing native evaluateJavaScript Program callback before adding extension machinery. If its native object projection can supply the required information, construct a bounded explicit Android-compatible value tree and deterministic base-dictionary JSON writer off main, then feed the existing JVM raw callback policy once. Preserve Program, global bindings, task ownership and cancellation.",
+    "remainingRequiredCharacterization": [
+      "Does WK native NSDictionary/NSArray projection omit or conflate undefined/function/nonfinite values?",
+      "Are getter exceptions/cycles/Date/RegExp/API wrappers/typed arrays observable or already irreversibly converted?",
+      "Can native key enumeration retain both raw UTF16-distinct canonically equivalent names? Avoid bridging to Swift Dictionary<String,...> before testing.",
+      "Can Int32 vs double, negative zero, large finite doubles and exact escaping be reproduced?",
+      "Does current pending ordered characterization pass only prove captured JSON behavior rather than Android conversion parity? Yes: it must not be used as Android approval."
+    ],
+    "noClaimOfCompleteNativeDictionaryRoute": true
+  },
+  "executionLimits": {
+    "productionEdits": 0,
+    "newProductionVMs": 0,
+    "KotlinCompiles": 0,
+    "JUnitExecutions": 0,
+    "AppleSDKExecutions": 0,
+    "WKExecutions": 0,
+    "cloudQueries": 0,
+    "canonicalOrGitMutations": 0,
+    "NodeOnly": true
+  },
+  "preparationHistory": {
+    "unboundPreliminaryRendererRead": "history/unbound-preliminary-render_frame_impl.cc retained, not one of the four bound facts",
+    "fetchErrors": "Initial obsolete child/converter paths and ordinary /+/commit raw fetch attempts returned 404; corrected renderer path and +show exact commit route succeeded. Failed fetches were not execution tests and were not evidence of platform absence."
+  },
+  "conclusion": "Do not implement or enable the proposed generic single-expression captured-stringify result route as Android-compatible. C1 object/Program result compatibility remains unfinished; target the actual value-converter/default-writer contract and characterize information loss before choosing an encoder."
+}

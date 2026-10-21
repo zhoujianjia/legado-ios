@@ -1,0 +1,40 @@
+{
+  "runtime": "v20.18.0",
+  "scope": "Actual JavaScript JSON.stringify counterexamples only; not Android/V8ValueConverter or Apple execution",
+  "records": [
+    {
+      "id": "ordinary-key-order",
+      "raw": "{\"b\":2,\"a\":1}",
+      "rawWasUndefined": false,
+      "effects": 0
+    },
+    {
+      "id": "object-nonfinite-vs-array",
+      "raw": "{\"b\":null,\"c\":null,\"a\":[null,null,null]}",
+      "rawWasUndefined": false,
+      "effects": 0
+    },
+    {
+      "id": "toJSON-is-observable",
+      "raw": "7",
+      "rawWasUndefined": false,
+      "effects": 1
+    },
+    {
+      "id": "throwing-getter",
+      "error": "Error",
+      "effects": 1
+    },
+    {
+      "id": "cycle",
+      "error": "TypeError",
+      "effects": 0
+    },
+    {
+      "id": "outside-int32-integral",
+      "raw": "2147483648",
+      "rawWasUndefined": false,
+      "effects": 0
+    }
+  ]
+}

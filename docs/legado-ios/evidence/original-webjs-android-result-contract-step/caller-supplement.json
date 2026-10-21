@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-21T01:19:16.866263+00:00",
+  "purpose": "Same-commit ordinary native JavaScript caller supplement; frozen v1 unchanged",
+  "parent": {
+    "path": ".build/original-general-webjs-expression-result-step/review-v1.json",
+    "bytes": 14120,
+    "sha256": "dcd6c3a84679f0cf7bccb7ea70904a956d5de47cef353415342d0d07ca354514"
+  },
+  "primary": {
+    "path": ".build/original-general-webjs-expression-result-step/caller-primary-binding-v1.json",
+    "bytes": 642,
+    "sha256": "20c49cb72e1abf040af9cd207bd8f1a1ddca843e6d4cf952c8969ad5cc99a0d4"
+  },
+  "actualCallerSource": {
+    "path": ".build/original-general-webjs-expression-result-step/primary/local_frame_mojo_handler.cc",
+    "bytes": 64475,
+    "sha256": "a25ae2fdb9a8fda9e31c2d2c50dc40d6436f40a51b2653934101c50a707aa6a3"
+  },
+  "actualCallerFlagsProven": true,
+  "facts": [
+    {
+      "lines": [
+        873,
+        898
+      ],
+      "fact": "The ordinary JavaScriptExecuteRequest executes the authored native ClassicScript Program in the document main world and, when a result is requested, creates the platform WebV8ValueConverter, sets DateAllowed=true and RegExpAllowed=true, then calls GetJavaScriptExecutionResult."
+    },
+    {
+      "lines": [
+        125,
+        137
+      ],
+      "fact": "GetJavaScriptExecutionResult calls converter.FromV8Value exactly once for a nonempty completion. If conversion yields nullptr, the ordinary return is base::Value() (null), which the shown Android callback serializes to raw null text."
+    },
+    {
+      "fact": "This ordinary caller does not set FunctionAllowed, StripNullFromObjects, ConvertNegativeZeroToInt or Strategy. Under the bound converter constructor these remain false/false/false/null; Date and RegExp must not be treated as constructor defaults."
+    },
+    {
+      "fact": "With the explicitly requested DateAllowed=true, the bound converter turns Date into ValueOf()/1000.0 (seconds as a double), not JSON.stringify ISO text. RegExpAllowed=true returns its string representation, not an empty object. Both belong in WK native information-preservation characterization."
+    },
+    {
+      "fact": "Plain ordinary execution does not use the ForTests resolve_promises setting or an async-function wrapper. No Promise-resolution contract is inferred from the neighboring test-only method."
+    }
+  ],
+  "remainingBindingLimits": [
+    "The concrete Platform::CreateWebV8ValueConverter factory adapter is outside the one-source supplement; the exact caller setters are proven and converter implementation behavior is separately bound. This is source-contract evidence, not runtime Android verification.",
+    "The Chromium commit is fixed, but no particular installed Android WebView release or source app device result is claimed."
+  ],
+  "characterizationImpact": "Test Date/RegExp alongside the original ten information-loss groups. Distinguish ordinary caller flags from defaults in source-derived expectations; never mark existing captured JSON.stringify characterization as Android-compatible.",
+  "operations": {
+    "productionEdits": 0,
+    "AndroidRuns": 0,
+    "AppleSDKRuns": 0,
+    "WKExecutions": 0,
+    "KotlinCompiles": 0,
+    "cloudQueries": 0
+  }
+}
