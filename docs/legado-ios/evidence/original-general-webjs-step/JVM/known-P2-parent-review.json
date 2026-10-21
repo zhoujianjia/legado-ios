@@ -1,0 +1,293 @@
+{
+  "schema": 1,
+  "scope": "Independent final backend-v1 read-only source/runtime evidence review; requires successor for confirmed P2",
+  "final": {
+    "path": ".build/original-general-webjs-step/implementation-v1/backend-final-v1.json",
+    "bytes": 31116,
+    "sha256": "3bb2e06aef642f5bead0b922c8222a0a92f229ed6163ea2849a055c15f15a2d7"
+  },
+  "verification": {
+    "path": ".build/original-general-webjs-backend-independent-review/verification-v1.json",
+    "bytes": 284818,
+    "sha256": "5598880c7eae3209df564a435da9eb6a683a3cfe1a0314d9e8ff0e69caa04a11"
+  },
+  "status": "changes-required",
+  "approved": false,
+  "actualReadOnlyChecks": 2245,
+  "failedChecks": 0,
+  "sourceChecks": [
+    {
+      "topic": "Actual public production consumers",
+      "result": "AnalyzeRule now passes same requester to webJs; RuleJsExtensions three/four-argument and source/navigation overloads route through original platform; AnalyzeUrl uses URL option AND per-call flag. Existing source/model/default-delegate roots recompiled for changed String return ABI.",
+      "evidence": [
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+          "line": 288,
+          "fact": "override fun executeUrl(analyzed: AnalyzeUrl, js:"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+          "line": 323,
+          "fact": "override fun webJs(baseUrl:"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+          "line": 40,
+          "fact": "if (operation == \"generalWebPolicy\")"
+        }
+      ]
+    },
+    {
+      "topic": "Original HTTP and POST redirect boundary",
+      "result": "Same JVM HTTP owner. Browser POST prepares original form/JSON content type, does not call XML/bodyJs transform, records MaySend before execute and ResponseReceived only afterward. followRedirects=false plus300..399 returns actual fetched response/status/headers before creating a page. Disabled WebView retains transform path. Ordinary actual server records POST form/JSON/302 and four GETs; no redirect-target request occurred.",
+      "evidence": [
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+          "line": 293,
+          "fact": "val browser = analyzed.shouldUseWebView"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+          "line": 303,
+          "fact": "sourceWebViewPostMaySend"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+          "line": 306,
+          "fact": "if (fetched != null && analyzed.returnRedirectBeforeWebView"
+        }
+      ]
+    },
+    {
+      "topic": "Native policy and page trust boundary",
+      "result": "Native-only generalWebPolicy operation is distinct from webJsRequest. Page lane explicitly denies policy.* method/function and bare leaves. Request(function) has only old run/ajax/connect/getString dispatch, so bare configure/evaluate function cannot route policy. Ordinary external Java deliberately acts as trusted native embedding; it does not prove native attestation.",
+      "evidence": [
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+          "line": 58,
+          "fact": "fun generalPolicy("
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+          "line": 52,
+          "fact": "if (method.startsWith(\"policy.\")"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+          "line": 271,
+          "fact": "when (function)"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+          "line": 223,
+          "fact": "private fun executePolicy("
+        }
+      ]
+    },
+    {
+      "topic": "Source and cache interfaces",
+      "result": "Configure once. Basic pages never receive cache/java/source. Rule+nonempty actual HTML enables existing cache; java/source additionally require native indexed registered flag and nonnull source tag. getInjectionString is original general form, not JS2. Previous result is the locked pretty GSON string stored in existing webview_result cache; circular DOM result is explicitly unsupported. Finite source methods do not establish full BaseSource parity.",
+      "evidence": [
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalGeneralWebJsRuntime.kt",
+          "line": 30,
+          "fact": "val cacheInstalled"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalGeneralWebJsRuntime.kt",
+          "line": 31,
+          "fact": "val javaInstalled"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+          "line": 121,
+          "fact": "fun ruleInjectionString"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+          "line": 326,
+          "fact": "GSON.toJson(result)"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+          "line": 363,
+          "fact": "environment().cache.put(\"webview_result\""
+        }
+      ]
+    },
+    {
+      "topic": "Raw result/backoff and response identity",
+      "result": "null/empty/literal raw null retry; quoted empty/null string accepted through locked Apache unescape then quote strip. Intervals200,400,600,800,1000 and retry>30 preserved. Parent accepts only policy-approved exact body. Sniffer keeps initial request identity. HTML result constructs original synthetic200/OK/HTTP1.1 empty headers; actual redirect needs prior302 original URL. WK object-result representation is a separate explicit unimplemented Swift branch.",
+      "evidence": [
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalGeneralWebJsRuntime.kt",
+          "line": 61,
+          "fact": "if (!raw.isNullOrEmpty()"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalGeneralWebJsRuntime.kt",
+          "line": 69,
+          "fact": "if (retry > 30)"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalGeneralWebJsRuntime.kt",
+          "line": 91,
+          "fact": "fun validateTerminal"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+          "line": 379,
+          "fact": "val body = policy.validateTerminal"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+          "line": 385,
+          "fact": "Response.Builder().code(200)"
+        }
+      ]
+    },
+    {
+      "topic": "Same session, cancellation, source effects and drain",
+      "result": "General registration uses same RuntimeSession.originalPages, original-traditional/JVM HTTP/stateOwner; does not borrow login sourceBrowserAllowed. Page request uses existing independent child task, one page mutex and current-task environment; never borrows live parent Rhino Context. Parent general budget caps60s/rule10s by existing deadline. finally seals, cancels native children, waits actual child completion then closes original parser/env. Existing child effects merge only still-registered same-session parent; cancellation keeps accepted facts and never rewrites completed receipts.",
+      "evidence": [
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+          "line": 34,
+          "fact": "fun registerGeneral"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+          "line": 164,
+          "fact": "suspend fun drainAndClose"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+          "line": 218,
+          "fact": "LegadoRuntime.mergeOriginalPageEffects"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+          "line": 356,
+          "fact": "val deadline = minOf"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+          "line": 130,
+          "fact": "task.session.originalPages.close(page)"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+          "line": 324,
+          "fact": "internal fun originalPageEnvironment"
+        }
+      ]
+    },
+    {
+      "topic": "Cookie and explicit owner discipline",
+      "result": "Private native cookie policy takes observed URL only as metadata and writes actual nullable raw header to original source getKey tag using same platform.cookie owner. It never substitutes target URL or changes immutable cookieAccess. Actual ordinary consumer checks tag versus source and exact one cookie mutation. Swift source-revision/UI/WK proof is Root joint-review responsibility, not established by external Java Host.",
+      "evidence": [
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+          "line": 242,
+          "fact": "\"cookie\" -> {"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+          "line": 245,
+          "fact": "policy.cookieTag?.let"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+          "line": 368,
+          "fact": "\"cookieAccess\" to task.session.options.cookieAccess"
+        }
+      ]
+    },
+    {
+      "topic": "Sensitive errors and finite capability",
+      "result": "generalWebPolicy included in both post-task sensitivity and pre-task operation fallback. General presentation promotes privacy only at use; no browser authority follows from sensitive flag. Unsupported resources, cyclic prior DOM, and finite source methods remain typed limitations. No second JS engine/store/network owner introduced.",
+      "evidence": [
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+          "line": 80,
+          "fact": "\"webJsPageClose\", \"generalWebPolicy\")"
+        },
+        {
+          "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+          "line": 49,
+          "fact": "task.sensitiveSourceOperation = true"
+        }
+      ]
+    }
+  ],
+  "remainingConfirmedFindings": [
+    {
+      "id": "P2-NEGATIVE-URL-WEBVIEW-DELAY",
+      "severity": "P2",
+      "lockedSource": ".build/original-general-webjs-step/primary/app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeUrl.kt:298",
+      "candidate": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt:134",
+      "fact": "Locked URL options max(0,delay) before Backstage defaults. Candidate keeps negative. URL webViewDelayTime=-1 and nil JS yields99ms instead of original1000ms.",
+      "requiredFix": "Clamp only AnalyzeUrl parsed URL option with maxOf(0L,...); preserve direct java.webView delay contract.",
+      "state": "author confirmed; independent successor actual compile/consumer pending"
+    }
+  ],
+  "counts": {
+    "candidateFiles": 13,
+    "changedFiles": 10,
+    "unchangedABIInputs": 3,
+    "compiledRoots": 11,
+    "PlatformFollowupRoots": 1,
+    "ordinaryProjectClasses": 412,
+    "freshClasses": 83,
+    "retainedClasses": 329,
+    "actualInputRoster": 129,
+    "mainInputs": 126,
+    "portedRows": 60,
+    "JUnitPassedRead": 4,
+    "ordinaryJavaSessionsRead": 3,
+    "ordinaryPublicCallsRead": 43,
+    "actualJVMHTTPRead": 7,
+    "packagingPassedRead": 6
+  },
+  "actualEvidenceRead": [
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/policy-tests-v1/actual-tests.xml",
+      "bytes": 678,
+      "sha256": "80fd983eaff8abf9101cb0f97479347514a9bbf1c2a9a7a331fa6a2c373df6bd"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/ordinary-v6/production-binding.json",
+      "bytes": 176025,
+      "sha256": "392b20c8f599fa02798bbc45bfa5cb3fd02742127f21af5b9c83d908a5f0f4b6"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/ordinary-v6/ordinary-final-commands.json",
+      "bytes": 2401,
+      "sha256": "a22f0240dc9198136f4c59aa51eabc969dc8e8aed01f0cca12f9e7e39baa998f"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/attempt-history.json",
+      "bytes": 4798,
+      "sha256": "37eb191cbce9556b0f1be74635e301df3c64e9d2b8a5a0c05e1384c8b6f4606d"
+    }
+  ],
+  "limits": [
+    "Full public WK HTTP(S) resource-load interception unavailable; sourceRegex remains typed unsupported at actual host, Java predicate retained only for genuine callbacks.",
+    "GSON cannot serialize circular DOM result; explicit unsupported instead of stack-overflow escape or invented toString replacement. Actual String predecessor tag.a@text@webjs:document.title is proved.",
+    "Original raw object/array eval reply needs existing representable Android-equivalent JSON; Swift companion explicitly refuses unrepresentable objects rather than fake conversion.",
+    "Public WK default TLS policy retained, no Android insecure proceed. CacheFirst platform equivalence and complete BaseSource/native methods are not claimed.",
+    "Swift companion Native v1 direct Element predecessor is not a passing fixture; Root is preparing successor using String predecessor. New native method remains unexecuted.",
+    "Canonical Base64 now differs from independent89f baseline. RulePlatform two hunks+RuleBase64 ABI default-delegate roots must be compiled together; this JAR cannot be relabeled combined acceptance.",
+    "This review did not execute any JVM, JUnit, packaging, Node, Swift, JNI, WK or device tests; exact existing logs/artifacts were read.",
+    "Root Base64f067 integration is not in this parent JAR. Future source union and actual joint ABI compilation are required; do not overwrite current RuleBase64.",
+    "Swift Native direct Element predecessor v1 is known invalid. Root owns String-predecessor successor, not approved by this backend review.",
+    "Negative URL delay P2 is pending smallest successor; other parent evidence may be reused where exact source and claim remain unchanged."
+  ],
+  "mutations": {
+    "canonical": false,
+    "Git": false,
+    "cloud": false,
+    "peerStage": false,
+    "newTests": false
+  }
+}

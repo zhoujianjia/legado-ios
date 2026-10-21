@@ -26,6 +26,7 @@ internal fun rethrowRuleControlFailure(error: Exception) {
             is CancellationException -> throw failure
             is RuntimeFailure -> {
                 if (failure.code == "UNSUPPORTED_CAPABILITY") throw UnsupportedRuleCapability(failure.message.orEmpty())
+                if (failure.code in setOf("WEBJS_TIMEOUT", "INVALID_WEBVIEW_RESULT", "INVALID_WEBVIEW_POLICY")) throw failure
                 return
             }
             is ScriptException -> failure.cause ?: return
@@ -40,6 +41,7 @@ open class RulePlatform {
     open suspend fun <T> runWebBook(context: CoroutineContext, action: suspend () -> T): T =
         unsupportedRule("original WebBook execution owner")
     open fun executeUrl(analyzed: AnalyzeUrl): StrResponse = unsupportedRule("original AnalyzeUrl execution")
+    open fun executeUrl(analyzed: AnalyzeUrl, js: String?, sourceRegex: String?, useWebView: Boolean): StrResponse = executeUrl(analyzed)
     open fun exploreOwnerScope(source: BaseSource): String = unsupportedRule("original explore owner scope")
     /** Existing task deadline; no fresh rate-wait budget or scheduling owner. */
     open fun originalRateDelayBudgetMillis(source: BaseSource): Long =
@@ -89,6 +91,11 @@ open class RulePlatform {
                         key: String? = null, page: Int? = null): StrResponse = unsupportedRule("original WebBook URL request")
     open fun webJs(baseUrl: String?, html: String, js: String, result: Any, context: CoroutineContext): String =
         unsupportedRule("original-rule WebJS/browser")
+    open fun webJs(baseUrl: String?, html: String, js: String, result: Any, context: CoroutineContext,
+                   requester: RuleJsExtensions): String = webJs(baseUrl, html, js, result, context)
+    open fun webView(requester: RuleJsExtensions, html: String?, url: String?, js: String?, cacheFirst: Boolean,
+                     sourceRegex: String? = null, overrideUrlRegex: String? = null, delayTime: Long = 0): StrResponse =
+        unsupportedRule("original general WebView")
     open fun refreshBookInfo(book: BaseBook?, source: BaseSource?, context: CoroutineContext): Nothing =
         unsupportedRule("original-rule WebBook refresh")
     open fun refreshToc(book: BaseBook?, source: BaseSource?, context: CoroutineContext): Nothing =
@@ -124,7 +131,21 @@ interface RuleJsExtensions {
         getRuleEnvironment().ensureOpen()
         return getRuleEnvironment().platform.request(url, header, callTimeout, getRuleCoroutineContext(), this)
     }
-    fun webView(html: String?, url: String?, js: String?): Nothing = unsupportedRule("original-rule browser")
+    fun webView(html: String?, url: String?, js: String?): String? = webView(html, url, js, false)
+    fun webView(html: String?, url: String?, js: String?, cacheFirst: Boolean): String? =
+        getRuleEnvironment().platform.webView(this, html, url, js, cacheFirst).body()
+    fun webViewGetSource(html: String?, url: String?, js: String?, sourceRegex: String): String? =
+        webViewGetSource(html, url, js, sourceRegex, false, 0)
+    fun webViewGetSource(html: String?, url: String?, js: String?, sourceRegex: String, cacheFirst: Boolean): String? =
+        webViewGetSource(html, url, js, sourceRegex, cacheFirst, 0)
+    fun webViewGetSource(html: String?, url: String?, js: String?, sourceRegex: String, cacheFirst: Boolean, delayTime: Long): String? =
+        getRuleEnvironment().platform.webView(this, html, url, js, cacheFirst, sourceRegex = sourceRegex, delayTime = delayTime).body()
+    fun webViewGetOverrideUrl(html: String?, url: String?, js: String?, overrideUrlRegex: String): String? =
+        webViewGetOverrideUrl(html, url, js, overrideUrlRegex, false, 0)
+    fun webViewGetOverrideUrl(html: String?, url: String?, js: String?, overrideUrlRegex: String, cacheFirst: Boolean): String? =
+        webViewGetOverrideUrl(html, url, js, overrideUrlRegex, cacheFirst, 0)
+    fun webViewGetOverrideUrl(html: String?, url: String?, js: String?, overrideUrlRegex: String, cacheFirst: Boolean, delayTime: Long): String? =
+        getRuleEnvironment().platform.webView(this, html, url, js, cacheFirst, overrideUrlRegex = overrideUrlRegex, delayTime = delayTime).body()
     fun cacheContent(chapter: Any?, content: String): Boolean {
         com.script.rhino.rhinoContextOrNull?.ensureActive()
         getRuleEnvironment().ensureOpen()

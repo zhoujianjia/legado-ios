@@ -173,7 +173,7 @@ class AnalyzeRule(
      */
     private fun getWebJsResult(jsStr: String, result: Any): String {
         runtime.ensureOpen()
-        return runtime.platform.webJs(baseUrl, content.toString(), jsStr, result, coroutineContext)
+        return runtime.platform.webJs(baseUrl, content.toString(), jsStr, result, coroutineContext, this)
     }
 
     /**

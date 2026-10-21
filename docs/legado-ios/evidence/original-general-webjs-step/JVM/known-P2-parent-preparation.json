@@ -1,0 +1,664 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-20T23:46:30.446249+00:00",
+  "scope": "Actual JVM general WebView and @webjs request/HTTP/page policy implementation with public ordinary-JAR and new targeted JUnit; not full Gradle/JNI/SwiftSDK/WK/native compatibility",
+  "candidateRoot": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work",
+  "baselineRoot": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/rawbaseline",
+  "baseline": {
+    "localHTMLBackend": {
+      "path": ".build/original-local-html-webjs-step/implementation-v1/backend-final-v2.json",
+      "bytes": 34731,
+      "sha256": "3ce8c092ce65acf3e38e136cf6b81070a7e1df96ebc8184a4d1266fd4e816854"
+    },
+    "ordinaryJar": {
+      "path": "F:\\yuedu-reader\\.build\\original-local-html-webjs-step\\implementation-v1\\snapshot-v2\\legado-runtime.jar",
+      "bytes": 10890165,
+      "sha256": "89f77040ea6a0f4592ca00a059c25da76cece9d1520b541e144588e6b4c5003b"
+    },
+    "note": "Independent general stage started from approved08d/0ac JVM bytes. Current Root Base64 integration is NOT included; union RulePlatform+newRuleBase64+manifest and actual ABI recompile is required before integration."
+  },
+  "files": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/BaseSource.kt",
+      "baseline": {
+        "bytes": 672,
+        "sha256": "5c274fbfc28ca8879cb8d1fad2b19ce936eab501e252bd440fbe4c06a6bb749b"
+      },
+      "candidate": {
+        "bytes": 672,
+        "sha256": "5c274fbfc28ca8879cb8d1fad2b19ce936eab501e252bd440fbe4c06a6bb749b"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/BaseSource.kt.diff",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "changed": false
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+      "baseline": {
+        "bytes": 18583,
+        "sha256": "7c8378dc5c04073d84f2c0ce33aab7df9cb8b288a07fb12a6f30a041a1e69564"
+      },
+      "candidate": {
+        "bytes": 18583,
+        "sha256": "7c8378dc5c04073d84f2c0ce33aab7df9cb8b288a07fb12a6f30a041a1e69564"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt.diff",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "changed": false
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+      "baseline": {
+        "bytes": 37278,
+        "sha256": "6305cdf731e554bf9d5cf481b635a4746ceb4b753596ea359fbba2011238748a"
+      },
+      "candidate": {
+        "bytes": 37284,
+        "sha256": "dcacc71e720c0ee4924e00b544172ee49fd704d8dd6d052574b90167bf2ee234"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt.diff",
+        "bytes": 547,
+        "sha256": "170e2d5a7087ffd671446a2ee26b979db6c365323355183749b3b835f1aed21b"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "baseline": {
+        "bytes": 21030,
+        "sha256": "d4bbb59df06a966fac9e903eb3429a3522cc07ae831d49622b2756252607ed0f"
+      },
+      "candidate": {
+        "bytes": 22440,
+        "sha256": "f53553fae13c3e465c28eeafe7afb943f4ffbe1f34ad000ae6cd087a6e80db17"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt.diff",
+        "bytes": 5026,
+        "sha256": "1cac4d9025fed3fd8d7a1aa0d3862e70a12891e19fba2a4f76e7a0d3b991019d"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+      "baseline": {
+        "bytes": 34297,
+        "sha256": "55396e74b91a00936d75fedfc9942d68b02bb5e3909339b05d3a49377e1c9553"
+      },
+      "candidate": {
+        "bytes": 34337,
+        "sha256": "5e7cf37da707f2589f4077bb2c532984b9ae44602ee17ed542546dfefe4c8f8b"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt.diff",
+        "bytes": 2482,
+        "sha256": "6ff37ee8857f6ff4c29878245e01de2e479a4d7ff664f02e1cb288ecd1113f32"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalGeneralWebJsRuntime.kt",
+      "baseline": null,
+      "candidate": {
+        "bytes": 5812,
+        "sha256": "fb2873279354ad8aaf7fd26006b02c4aa65deeb962d9a4d6d3a33d83198ad7fd"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalGeneralWebJsRuntime.kt.diff",
+        "bytes": 6143,
+        "sha256": "2f1c69ad1fe7011690caca8d7300a8c4b51a1ab472e224197c25bba7fdae1e5d"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt",
+      "baseline": {
+        "bytes": 3276,
+        "sha256": "cf117e2c81949513fe94389c05bfeddd106478151f46380d4401ad00e3f2c5f4"
+      },
+      "candidate": {
+        "bytes": 3276,
+        "sha256": "cf117e2c81949513fe94389c05bfeddd106478151f46380d4401ad00e3f2c5f4"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt.diff",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "changed": false
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "baseline": {
+        "bytes": 34025,
+        "sha256": "20495b81b6ff6708e76ce9a9230fe438f982e3e4a29bb5c55b4ee640b83e264e"
+      },
+      "candidate": {
+        "bytes": 42210,
+        "sha256": "1e4e373d8aba208f96263c67bd4b77c6c1fe0ebf593c3c24452ae9ff04e145fe"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt.diff",
+        "bytes": 9970,
+        "sha256": "2ac7472ee3f1255c3e6dc0a8222711fba23be0d408225ace58141fdfe5a0d450"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "baseline": {
+        "bytes": 10534,
+        "sha256": "8df920540f68138245452ab365d90ea619b447948c72653787861baa041af78a"
+      },
+      "candidate": {
+        "bytes": 12757,
+        "sha256": "6633ed978122831178cf4c7e0f9b6107d181d932761867eb15ff884df03ac76d"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt.diff",
+        "bytes": 4467,
+        "sha256": "f2f88d5f8e8c5172d69789af209e226af84811b0eeaa16c4d0fd800b85cad966"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+      "baseline": {
+        "bytes": 21499,
+        "sha256": "1e92134bd8d3cf3074c6616f2662894c7e63954d82babf1ffa2a346d3a483a4e"
+      },
+      "candidate": {
+        "bytes": 21605,
+        "sha256": "3e98ed93da515fe29cd641cb75cc223dd8d3e2758b8ee677903e7e2533952813"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt.diff",
+        "bytes": 735,
+        "sha256": "8e59480d787175dd04556536cb867dc38ad0fb47499f73cf5d414a70e715b8ca"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+      "baseline": {
+        "bytes": 14151,
+        "sha256": "7e02f85a7f891eee0a0d67a7a1114620a9ded0990eacb4bc3757090f1b1ed022"
+      },
+      "candidate": {
+        "bytes": 18738,
+        "sha256": "865d79c391ac79f04376d80609803168be924ea2606c7591c1cbda6ebbb005cc"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt.diff",
+        "bytes": 11217,
+        "sha256": "f330212f9af00a126e7caeef2d1ccc9a9fda065ce293e2998ddc0da1ec36a7a0"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalGeneralWebJsTest.kt",
+      "baseline": null,
+      "candidate": {
+        "bytes": 4564,
+        "sha256": "8c1a8fdaade7221b16904f059977d16809bf20931054b12c30a85a5c32aab172"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalGeneralWebJsTest.kt.diff",
+        "bytes": 4830,
+        "sha256": "f943116d24f07bb158f299f0d733798de593a191483994bd6c7a9b6f570ef2a3"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "baseline": {
+        "bytes": 134943,
+        "sha256": "132f345c5deb2ebba852b4ba867d7d3022bf092c821422333025e0ed50ebb5b3"
+      },
+      "candidate": {
+        "bytes": 135167,
+        "sha256": "e393a72eecb7a9ca2286a1640f9765246c2991eedc3e687ba88162f8f854f73d"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/vendor/original-rule/manifest.json.diff",
+        "bytes": 3506,
+        "sha256": "1d7735e616e6cbf40d1d944d97848afb38f7420487910bbd0aa9d4a7656cf498"
+      },
+      "changed": true
+    }
+  ],
+  "wire": {
+    "path": ".build/original-general-webjs-step/implementation-v1/wire-v1.json",
+    "bytes": 14814,
+    "sha256": "f97829fa356ef3ab1f3c07543fd831883f90d842ae64b644925609e754ed40a8"
+  },
+  "swiftCounterpart": {
+    "path": ".build/original-general-webjs-swift-implementation-step/final-v1.json",
+    "bytes": 15553,
+    "sha256": "656c4edb243ed86bf8091c0e41835bb7e023eeada257cb05a0ef9dc398faf2bc"
+  },
+  "mainSourceChanges": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+      "baseline": {
+        "bytes": 37278,
+        "sha256": "6305cdf731e554bf9d5cf481b635a4746ceb4b753596ea359fbba2011238748a"
+      },
+      "candidate": {
+        "bytes": 37284,
+        "sha256": "dcacc71e720c0ee4924e00b544172ee49fd704d8dd6d052574b90167bf2ee234"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt.diff",
+        "bytes": 547,
+        "sha256": "170e2d5a7087ffd671446a2ee26b979db6c365323355183749b3b835f1aed21b"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "baseline": {
+        "bytes": 21030,
+        "sha256": "d4bbb59df06a966fac9e903eb3429a3522cc07ae831d49622b2756252607ed0f"
+      },
+      "candidate": {
+        "bytes": 22440,
+        "sha256": "f53553fae13c3e465c28eeafe7afb943f4ffbe1f34ad000ae6cd087a6e80db17"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt.diff",
+        "bytes": 5026,
+        "sha256": "1cac4d9025fed3fd8d7a1aa0d3862e70a12891e19fba2a4f76e7a0d3b991019d"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+      "baseline": {
+        "bytes": 34297,
+        "sha256": "55396e74b91a00936d75fedfc9942d68b02bb5e3909339b05d3a49377e1c9553"
+      },
+      "candidate": {
+        "bytes": 34337,
+        "sha256": "5e7cf37da707f2589f4077bb2c532984b9ae44602ee17ed542546dfefe4c8f8b"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt.diff",
+        "bytes": 2482,
+        "sha256": "6ff37ee8857f6ff4c29878245e01de2e479a4d7ff664f02e1cb288ecd1113f32"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalGeneralWebJsRuntime.kt",
+      "baseline": null,
+      "candidate": {
+        "bytes": 5812,
+        "sha256": "fb2873279354ad8aaf7fd26006b02c4aa65deeb962d9a4d6d3a33d83198ad7fd"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalGeneralWebJsRuntime.kt.diff",
+        "bytes": 6143,
+        "sha256": "2f1c69ad1fe7011690caca8d7300a8c4b51a1ab472e224197c25bba7fdae1e5d"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "baseline": {
+        "bytes": 34025,
+        "sha256": "20495b81b6ff6708e76ce9a9230fe438f982e3e4a29bb5c55b4ee640b83e264e"
+      },
+      "candidate": {
+        "bytes": 42210,
+        "sha256": "1e4e373d8aba208f96263c67bd4b77c6c1fe0ebf593c3c24452ae9ff04e145fe"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt.diff",
+        "bytes": 9970,
+        "sha256": "2ac7472ee3f1255c3e6dc0a8222711fba23be0d408225ace58141fdfe5a0d450"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "baseline": {
+        "bytes": 10534,
+        "sha256": "8df920540f68138245452ab365d90ea619b447948c72653787861baa041af78a"
+      },
+      "candidate": {
+        "bytes": 12757,
+        "sha256": "6633ed978122831178cf4c7e0f9b6107d181d932761867eb15ff884df03ac76d"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt.diff",
+        "bytes": 4467,
+        "sha256": "f2f88d5f8e8c5172d69789af209e226af84811b0eeaa16c4d0fd800b85cad966"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+      "baseline": {
+        "bytes": 21499,
+        "sha256": "1e92134bd8d3cf3074c6616f2662894c7e63954d82babf1ffa2a346d3a483a4e"
+      },
+      "candidate": {
+        "bytes": 21605,
+        "sha256": "3e98ed93da515fe29cd641cb75cc223dd8d3e2758b8ee677903e7e2533952813"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt.diff",
+        "bytes": 735,
+        "sha256": "8e59480d787175dd04556536cb867dc38ad0fb47499f73cf5d414a70e715b8ca"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+      "baseline": {
+        "bytes": 14151,
+        "sha256": "7e02f85a7f891eee0a0d67a7a1114620a9ded0990eacb4bc3757090f1b1ed022"
+      },
+      "candidate": {
+        "bytes": 18738,
+        "sha256": "865d79c391ac79f04376d80609803168be924ea2606c7591c1cbda6ebbb005cc"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt.diff",
+        "bytes": 11217,
+        "sha256": "f330212f9af00a126e7caeef2d1ccc9a9fda065ce293e2998ddc0da1ec36a7a0"
+      },
+      "changed": true
+    }
+  ],
+  "counts": {
+    "sourceFiles": 13,
+    "changedFiles": 10,
+    "changedExistingMain": 7,
+    "newMain": 1,
+    "unchangedAbiMain": 3,
+    "newJVMTestSource": 1,
+    "newJUnitDefinitions": 4,
+    "compiledMainRoots": 11,
+    "platformFollowupRoots": 1,
+    "mainInputs": 126,
+    "retainedMainInputs": 115,
+    "totalMainAndBuildInputs": 129,
+    "portedSources": 60,
+    "recompiledProductionClasses": 83,
+    "retainedProductionClasses": 329,
+    "totalProductionClasses": 412,
+    "unchangedResources": 391,
+    "JVMJUnit": 4,
+    "JVMFailures": 0,
+    "finalOrdinaryJavaSessions": 3,
+    "finalOrdinaryPublicCalls": 43,
+    "finalSyntheticBrowserHostCalls": 10,
+    "finalRealHTTP": 7,
+    "finalPOST": 3,
+    "finalGET": 4,
+    "finalNativeTagCookieMutations": 1,
+    "finalStateACKs": 2,
+    "finalPackagingGuards": 6,
+    "SwiftSDK": 0,
+    "JNI": 0,
+    "WK": 0,
+    "UIKit": 0,
+    "device": 0
+  },
+  "ordinaryJar": {
+    "path": ".build/original-general-webjs-step/implementation-v1/ordinary-v6/legado-runtime-general-webjs.jar",
+    "bytes": 10913553,
+    "sha256": "1a2e0e52415734c4f7708eb0360369996435d2f2d64db35abb2d21c337ba9d4b",
+    "kind": "bounded K2 precise overlay on89f, NOT full Gradle",
+    "binding": {
+      "path": ".build/original-general-webjs-step/implementation-v1/ordinary-v6/production-binding.json",
+      "bytes": 176025,
+      "sha256": "392b20c8f599fa02798bbc45bfa5cb3fd02742127f21af5b9c83d908a5f0f4b6"
+    }
+  },
+  "consumer": {
+    "source": {
+      "path": ".build/original-general-webjs-step/implementation-v1/OrdinaryGeneralWebJs.java",
+      "bytes": 16146,
+      "sha256": "c3cba81d348af6e8fd15508b6f4211ff7cc57fb3402aaa6bdb29f8d861a1d116"
+    },
+    "commands": {
+      "path": ".build/original-general-webjs-step/implementation-v1/ordinary-v6/ordinary-final-commands.json",
+      "bytes": 2401,
+      "sha256": "a22f0240dc9198136f4c59aa51eabc969dc8e8aed01f0cca12f9e7e39baa998f"
+    },
+    "actualOutput": "GENERAL_WEBJS_PUBLIC_OK sessions=3 publicCalls=43 syntheticBrowserHostCalls=10 realHTTP=7 POST=3 GET=4 cookieTagMutations=1 sameOwnerStateACKs=2 JUnit=0 WK=0 SDK=0",
+    "classpath": "Only candidate ordinary JAR plus independently javac-compiled consumer classes; no JUnit/test classes/WK"
+  },
+  "newDefinitions": {
+    "JVM": [
+      "rawNullRetriesButQuotedEmptyAndNullStringsAreAccepted",
+      "javaFullMatchesRetainSnifferIdentityAndGuardBacktracking",
+      "actualRuleHtmlAndRegisteredSourceControlInterfacesWithoutGrantingBasicPages",
+      "noPresentationOrFabricatedBodyCanReplaceAnAcceptedPolicyTerminal"
+    ],
+    "App": 0,
+    "Native": "Swift companion adds1 actual method, awaiting Root fixture successor that uses String predecessor; Native execution0",
+    "PackageSwift": 0
+  },
+  "implementation": {
+    "routing": "RuleJsExtensions webView3/4 String? + original GetSource/OverrideUrl4/5/6, AnalyzeRule requester-aware webJs preserves old5arg override ABI, AnalyzeUrl explicit URL options+executeUrl4 are actual production consumers",
+    "http": "Same existing AnalyzeUrl/JVM HTTP/Cookie owner. Browser only option.useWebView && call.useWebView. POST once original postForm/postJson content type, rawnoXML/bodyJs; followRedirectsfalse300..399 returns actual response/headers before Host. Ordinary HTTP behavior kept.",
+    "policy": "Native-only independent generalWebPolicy; WK webJsRequest denies policy.* both method/function plus bare policy leaves. Configure once accepts basic without bridges; rule nonemptyHTML cache always, source/java only registered actualsource. Java Pattern full matches with guarded backtracking; original rawnull retry/backoff/quotedempty discipline.",
+    "lifetime": "Existing RuntimeSession.originalPages registry/mutex, same source/task/owner. No login/browser permission borrowed, no parent live RhinoContext reused. General budget60s/@rule10s capped parent. Parent validates policy-accepted body before finally seal/cancel/drain/close; sole deadline timer never joins.",
+    "cookie": "Observed actualWK Cookie header through native-only cookie policy calls same platform.cookie.setCookie(original tag), not targetURL; read-only mode unchanged. Accepted effects merge active parent, no rollback fiction.",
+    "result": "Synthetic200/OK/HTTP1.1/emptyheaders, true actualredirect prior302 originalURL, sniffer response identity initialURL. UserAgent exact nonblank wins, strip UA/CookieJar/proxy additionalheaders."
+  },
+  "actualVectors": [
+    "Public nonlogin exploreContext java.webView3/4 actual default delegate ABI",
+    "Basic registered=true still refuses native cache/java/source; policy methods/functions unavailable on WK lane",
+    "Rawnull nil/empty/literalnull retry and quotedempty accepted with original100/1000 startup timings",
+    "POST form/JSON body and originalGSON pretty integer exact bytes; bodyJs not called",
+    "POST followRedirectsfalse302 actual header kept and noHost/GETredirect",
+    "Option webViewfalse ignores webJs and retains ordinary XML transform",
+    "Override URL Javafullmatch returns actual matchedURL under original request identity",
+    "Resource sniff has explicit unsupported Host response; no fake fullresource discovery",
+    "Native plain ACK/unconfigured body rejected",
+    "Actual WebBook @webjs search String predecessor, previous result GSON String in samecache, registeredsource access",
+    "Unregistered rule retains cache but nojava/source grant",
+    "Cookie actual observed URL remains metadata while raw write targets source tag",
+    "Cyclic DOM predecessor explicit unsupported, does not produce altered string/JSON",
+    "Held synchronous browser Host after cancellation cannot publish successful body; page revoked",
+    "NewJUnit4: original31retrylimit, quotednull/empty, registered/basic/finalHTML bridge matrix, regex cancellation/fullmatch/snifferidentity, missing/fake terminal/deadline"
+  ],
+  "limits": [
+    "Full public WK HTTP(S) resource-load interception unavailable; sourceRegex remains typed unsupported at actual host, Java predicate retained only for genuine callbacks.",
+    "GSON cannot serialize circular DOM result; explicit unsupported instead of stack-overflow escape or invented toString replacement. Actual String predecessor tag.a@text@webjs:document.title is proved.",
+    "Original raw object/array eval reply needs existing representable Android-equivalent JSON; Swift companion explicitly refuses unrepresentable objects rather than fake conversion.",
+    "Public WK default TLS policy retained, no Android insecure proceed. CacheFirst platform equivalence and complete BaseSource/native methods are not claimed.",
+    "Swift companion Native v1 direct Element predecessor is not a passing fixture; Root is preparing successor using String predecessor. New native method remains unexecuted.",
+    "Canonical Base64 now differs from independent89f baseline. RulePlatform two hunks+RuleBase64 ABI default-delegate roots must be compiled together; this JAR cannot be relabeled combined acceptance."
+  ],
+  "history": {
+    "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/attempt-history.json",
+    "bytes": 4798,
+    "sha256": "37eb191cbce9556b0f1be74635e301df3c64e9d2b8a5a0c05e1384c8b6f4606d"
+  },
+  "evidence": [
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/wire-v1.json",
+      "bytes": 14814,
+      "sha256": "f97829fa356ef3ab1f3c07543fd831883f90d842ae64b644925609e754ed40a8"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/extra-primary-binding-v2.json",
+      "bytes": 1633,
+      "sha256": "6562a37f361e00c9290191c8ba39e0f3feb57d574d685cf06095832b27130196"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/compile-attempt1/commands.json",
+      "bytes": 11298,
+      "sha256": "868b4a37ba25c643ce7f2a8ed4904bf0280f2a308e1421b0a0d95c5cd2501a59"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/compile-attempt1/compile.log",
+      "bytes": 300,
+      "sha256": "4df7631487f959627f0224d3af7c51172fb12ed0fbfb1374226c3f15f5bf19b6"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/compile-attempt2/commands.json",
+      "bytes": 6363,
+      "sha256": "cf76a9d318f56b2946c4dfcc60afa3130670a36a79dd52f3691151220ae729b3"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/compile-attempt2/compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/actual-jvm-compilation-inputs.json",
+      "bytes": 28618,
+      "sha256": "571182e961b4e72977ba5c0bdca7fae0e2a66ddaaceb672c433c28a115de367d"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/ordinary-v6/production-binding.json",
+      "bytes": 176025,
+      "sha256": "392b20c8f599fa02798bbc45bfa5cb3fd02742127f21af5b9c83d908a5f0f4b6"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/ordinary-v6/ordinary-final-commands.json",
+      "bytes": 2401,
+      "sha256": "a22f0240dc9198136f4c59aa51eabc969dc8e8aed01f0cca12f9e7e39baa998f"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/ordinary-v6/final-compile-consumer.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/ordinary-v6/final-execute-consumer.log",
+      "bytes": 165,
+      "sha256": "acacff0f286ad793c8ccfdbb32f8b4ff4d5959b21726feb9c610215797dc3491"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/OrdinaryGeneralWebJs.java",
+      "bytes": 16146,
+      "sha256": "c3cba81d348af6e8fd15508b6f4211ff7cc57fb3402aaa6bdb29f8d861a1d116"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/PolicyJUnitRunner.java",
+      "bytes": 1328,
+      "sha256": "86e8885b1fcb6b50ae7bbaae307a48e106d15c1bbead4dec392c90cc080bdcf5"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/policy-tests-v1/commands.json",
+      "bytes": 6323,
+      "sha256": "792a135890079fd80243c736fe6c1a66465f56963f05399f7b5c8541c160a743"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/policy-tests-v1/actual-tests.xml",
+      "bytes": 678,
+      "sha256": "80fd983eaff8abf9101cb0f97479347514a9bbf1c2a9a7a331fa6a2c373df6bd"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/policy-tests-v1/actual-tests.log",
+      "bytes": 43,
+      "sha256": "f02aa8049046064763929259e9d127c33a476963062fff7ec092ebece09144d2"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/policy-tests-v1/compile-test.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/policy-tests-v1/compile-runner.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/ordinary-jar-inspected.json",
+      "bytes": 81074,
+      "sha256": "0e4a8c8e5b834620273f4762d9b07ad36626f046f6034dad1ab2df6c7cdaa5f6"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/packaging-tests.log",
+      "bytes": 1243,
+      "sha256": "b773a34c77be5513ad57cb0f091e498826cdf8b28fe3ba2be18b3f9651731998"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/actual-compiled-source-bindings.json",
+      "bytes": 6588,
+      "sha256": "e43dee9943c6681a43f598017128e0ece682417a3aa8e789b8871a16b0ea75e6"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/locked-gson-result-contract.json",
+      "bytes": 629,
+      "sha256": "ff4548ccdc4d86483164b5a520798e1bf5c9dc29d13cc9a51836b7ed3837a7d3"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/attempt-history.json",
+      "bytes": 4798,
+      "sha256": "37eb191cbce9556b0f1be74635e301df3c64e9d2b8a5a0c05e1384c8b6f4606d"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/ordinary-v3/attempt2-compile-consumer.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/ordinary-v3/attempt2-execute-consumer.log",
+      "bytes": 13626,
+      "sha256": "d2fb30f9feb03c101797e76ed77393b330ba03c75b1f521e24f90b03fdf46a59"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/ordinary-v3/attempt3-compile-consumer.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/ordinary-v3/attempt3-execute-consumer.log",
+      "bytes": 13626,
+      "sha256": "be5cc221d0477e3e91c6df8efe42848b33bcb954e90eb0dd05e178cca3d038bc"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/ordinary-v3/attempt4-compile-consumer.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/ordinary-v3/attempt4-execute-consumer.log",
+      "bytes": 115643,
+      "sha256": "d9cb65f0b0ce0119db4e9a0d1e4a54298f0e9083f33facb4510a1544966929c4"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/ordinary-v3/compile-consumer.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/ordinary-v3/execute-consumer.log",
+      "bytes": 197,
+      "sha256": "842f3219731f2f324156b12396008f7b44935cb147a24f117ba4eb9ee2661df7"
+    }
+  ],
+  "claims": {
+    "freshFullGradle": false,
+    "SDKCompiled": false,
+    "JNIExecuted": false,
+    "WKExecuted": false,
+    "fullBookSourceCompatibility": false,
+    "fullCoreComplete": false,
+    "deviceRenewalProven": false
+  },
+  "mutations": {
+    "canonical": false,
+    "Git": false,
+    "cloud": false,
+    "tags": false,
+    "realCredentialsRead": false
+  }
+}

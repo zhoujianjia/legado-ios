@@ -1,0 +1,729 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-20T23:55:55.370787+00:00",
+  "scope": "Actual joint general-WebJS + canonical Base64 source ABI compile and fresh minimum public regressions; successor to known-P2 independent general backend",
+  "candidateRoot": ".build/original-general-webjs-base64-union-step/snapshot-v1/work",
+  "baselineRoot": ".build/original-general-webjs-base64-union-step/snapshot-v1/rawbaseline",
+  "baselineCanonical": "f0671fe plus unchanged JVM root; no Git command executed",
+  "parents": {
+    "generalKnownP2": {
+      "path": ".build/original-general-webjs-step/implementation-v1/backend-final-v1.json",
+      "bytes": 31116,
+      "sha256": "3bb2e06aef642f5bead0b922c8222a0a92f229ed6163ea2849a055c15f15a2d7"
+    },
+    "Base64Approved": {
+      "path": ".build/original-base64-flags-step/final-v1.json",
+      "bytes": 28240,
+      "sha256": "27b823893c1989359f754d11e2fc80def917ed55cd8cd6eec23da21b6f4e7df4"
+    },
+    "SwiftCompanion": {
+      "path": ".build/original-general-webjs-swift-implementation-step/final-v1.json",
+      "bytes": 15553,
+      "sha256": "656c4edb243ed86bf8091c0e41835bb7e023eeada257cb05a0ef9dc398faf2bc"
+    },
+    "SwiftIndependentReview": {
+      "path": ".build/original-general-webjs-swift-independent-review/review-v1.json",
+      "bytes": 41730,
+      "sha256": "57114e009ae59810f863ba44131c47cf12280b0f223b0c13c1eeca324bab96e5"
+    }
+  },
+  "files": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/BaseSource.kt",
+      "baseline": {
+        "bytes": 672,
+        "sha256": "5c274fbfc28ca8879cb8d1fad2b19ce936eab501e252bd440fbe4c06a6bb749b"
+      },
+      "candidate": {
+        "bytes": 672,
+        "sha256": "5c274fbfc28ca8879cb8d1fad2b19ce936eab501e252bd440fbe4c06a6bb749b"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/BaseSource.kt.diff",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "changed": false
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+      "baseline": {
+        "bytes": 18583,
+        "sha256": "7c8378dc5c04073d84f2c0ce33aab7df9cb8b288a07fb12a6f30a041a1e69564"
+      },
+      "candidate": {
+        "bytes": 18583,
+        "sha256": "7c8378dc5c04073d84f2c0ce33aab7df9cb8b288a07fb12a6f30a041a1e69564"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt.diff",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "changed": false
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+      "baseline": {
+        "bytes": 37278,
+        "sha256": "6305cdf731e554bf9d5cf481b635a4746ceb4b753596ea359fbba2011238748a"
+      },
+      "candidate": {
+        "bytes": 37284,
+        "sha256": "dcacc71e720c0ee4924e00b544172ee49fd704d8dd6d052574b90167bf2ee234"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt.diff",
+        "bytes": 547,
+        "sha256": "170e2d5a7087ffd671446a2ee26b979db6c365323355183749b3b835f1aed21b"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "baseline": {
+        "bytes": 21030,
+        "sha256": "d4bbb59df06a966fac9e903eb3429a3522cc07ae831d49622b2756252607ed0f"
+      },
+      "candidate": {
+        "bytes": 22451,
+        "sha256": "f8bda0fa1d7240220b4bc6499cfc393e8eb0378c6a67cd78e6c7b9ce0b8bf84b"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt.diff",
+        "bytes": 5037,
+        "sha256": "e9fa08fbcda7efe9ee0e55530a39122d565c124b56c01942e2964e092cdfe05b"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+      "baseline": {
+        "bytes": 34297,
+        "sha256": "55396e74b91a00936d75fedfc9942d68b02bb5e3909339b05d3a49377e1c9553"
+      },
+      "candidate": {
+        "bytes": 34337,
+        "sha256": "5e7cf37da707f2589f4077bb2c532984b9ae44602ee17ed542546dfefe4c8f8b"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt.diff",
+        "bytes": 2482,
+        "sha256": "6ff37ee8857f6ff4c29878245e01de2e479a4d7ff664f02e1cb288ecd1113f32"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalGeneralWebJsRuntime.kt",
+      "baseline": null,
+      "candidate": {
+        "bytes": 5812,
+        "sha256": "fb2873279354ad8aaf7fd26006b02c4aa65deeb962d9a4d6d3a33d83198ad7fd"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalGeneralWebJsRuntime.kt.diff",
+        "bytes": 6143,
+        "sha256": "2f1c69ad1fe7011690caca8d7300a8c4b51a1ab472e224197c25bba7fdae1e5d"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt",
+      "baseline": {
+        "bytes": 3276,
+        "sha256": "cf117e2c81949513fe94389c05bfeddd106478151f46380d4401ad00e3f2c5f4"
+      },
+      "candidate": {
+        "bytes": 3276,
+        "sha256": "cf117e2c81949513fe94389c05bfeddd106478151f46380d4401ad00e3f2c5f4"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt.diff",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "changed": false
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "baseline": {
+        "bytes": 34025,
+        "sha256": "20495b81b6ff6708e76ce9a9230fe438f982e3e4a29bb5c55b4ee640b83e264e"
+      },
+      "candidate": {
+        "bytes": 42210,
+        "sha256": "1e4e373d8aba208f96263c67bd4b77c6c1fe0ebf593c3c24452ae9ff04e145fe"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt.diff",
+        "bytes": 9970,
+        "sha256": "2ac7472ee3f1255c3e6dc0a8222711fba23be0d408225ace58141fdfe5a0d450"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleBase64.kt",
+      "baseline": {
+        "bytes": 6096,
+        "sha256": "f554f74e3ea3823e09cecdde738fa4a36f7300145092049135ed445cf18b9cb0"
+      },
+      "candidate": {
+        "bytes": 6096,
+        "sha256": "f554f74e3ea3823e09cecdde738fa4a36f7300145092049135ed445cf18b9cb0"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleBase64.kt.diff",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "changed": false
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "baseline": {
+        "bytes": 10438,
+        "sha256": "2cd2431f0e805aca309b1899cdb9d3a267c4de8d688a50be76c8426b63d31a11"
+      },
+      "candidate": {
+        "bytes": 12661,
+        "sha256": "84d01619895487d2e0f0ff1c62b0bfd04d9e8113c5a517ea6c320cf569766451"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt.diff",
+        "bytes": 4467,
+        "sha256": "f2f88d5f8e8c5172d69789af209e226af84811b0eeaa16c4d0fd800b85cad966"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+      "baseline": {
+        "bytes": 21499,
+        "sha256": "1e92134bd8d3cf3074c6616f2662894c7e63954d82babf1ffa2a346d3a483a4e"
+      },
+      "candidate": {
+        "bytes": 21605,
+        "sha256": "3e98ed93da515fe29cd641cb75cc223dd8d3e2758b8ee677903e7e2533952813"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt.diff",
+        "bytes": 735,
+        "sha256": "8e59480d787175dd04556536cb867dc38ad0fb47499f73cf5d414a70e715b8ca"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+      "baseline": {
+        "bytes": 14151,
+        "sha256": "7e02f85a7f891eee0a0d67a7a1114620a9ded0990eacb4bc3757090f1b1ed022"
+      },
+      "candidate": {
+        "bytes": 18738,
+        "sha256": "865d79c391ac79f04376d80609803168be924ea2606c7591c1cbda6ebbb005cc"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt.diff",
+        "bytes": 11217,
+        "sha256": "f330212f9af00a126e7caeef2d1ccc9a9fda065ce293e2998ddc0da1ec36a7a0"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalGeneralWebJsTest.kt",
+      "baseline": null,
+      "candidate": {
+        "bytes": 4564,
+        "sha256": "8c1a8fdaade7221b16904f059977d16809bf20931054b12c30a85a5c32aab172"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalGeneralWebJsTest.kt.diff",
+        "bytes": 4830,
+        "sha256": "f943116d24f07bb158f299f0d733798de593a191483994bd6c7a9b6f570ef2a3"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "baseline": {
+        "bytes": 136612,
+        "sha256": "01222d94f95f0360265bf18c536701eba1019a010b79dfacdb2a7fb6cffda334"
+      },
+      "candidate": {
+        "bytes": 136836,
+        "sha256": "2b96be6b9f480b89ff17a9973b14b2fa658b880bb7f0738558fe73cc60568681"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/vendor/original-rule/manifest.json.diff",
+        "bytes": 3506,
+        "sha256": "4f9d05b79c1c4d00fa855a5afdc199bd45453d81b6f0b5b40c641ba85687391b"
+      },
+      "changed": true
+    }
+  ],
+  "sourceComposition": {
+    "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/source-composition-checks.json",
+    "bytes": 631,
+    "sha256": "e9b255c9066cca6c5aea34a0e959dba6f395bac612a5251b8945b3bd9b1edb5a"
+  },
+  "P2": {
+    "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/P2-negative-delay-closure.json",
+    "bytes": 824,
+    "sha256": "e20c2490168c1a0bcb63fee15ec682bb171fed1c2ff5a377d1d0f1e3e1d46cbc"
+  },
+  "wire": {
+    "path": ".build/original-general-webjs-step/implementation-v1/wire-v1.json",
+    "bytes": 14814,
+    "sha256": "f97829fa356ef3ab1f3c07543fd831883f90d842ae64b644925609e754ed40a8"
+  },
+  "productionSources": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/BaseSource.kt",
+      "baseline": {
+        "bytes": 672,
+        "sha256": "5c274fbfc28ca8879cb8d1fad2b19ce936eab501e252bd440fbe4c06a6bb749b"
+      },
+      "candidate": {
+        "bytes": 672,
+        "sha256": "5c274fbfc28ca8879cb8d1fad2b19ce936eab501e252bd440fbe4c06a6bb749b"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/BaseSource.kt.diff",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "changed": false
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+      "baseline": {
+        "bytes": 18583,
+        "sha256": "7c8378dc5c04073d84f2c0ce33aab7df9cb8b288a07fb12a6f30a041a1e69564"
+      },
+      "candidate": {
+        "bytes": 18583,
+        "sha256": "7c8378dc5c04073d84f2c0ce33aab7df9cb8b288a07fb12a6f30a041a1e69564"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt.diff",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "changed": false
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+      "baseline": {
+        "bytes": 37278,
+        "sha256": "6305cdf731e554bf9d5cf481b635a4746ceb4b753596ea359fbba2011238748a"
+      },
+      "candidate": {
+        "bytes": 37284,
+        "sha256": "dcacc71e720c0ee4924e00b544172ee49fd704d8dd6d052574b90167bf2ee234"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt.diff",
+        "bytes": 547,
+        "sha256": "170e2d5a7087ffd671446a2ee26b979db6c365323355183749b3b835f1aed21b"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "baseline": {
+        "bytes": 21030,
+        "sha256": "d4bbb59df06a966fac9e903eb3429a3522cc07ae831d49622b2756252607ed0f"
+      },
+      "candidate": {
+        "bytes": 22451,
+        "sha256": "f8bda0fa1d7240220b4bc6499cfc393e8eb0378c6a67cd78e6c7b9ce0b8bf84b"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt.diff",
+        "bytes": 5037,
+        "sha256": "e9fa08fbcda7efe9ee0e55530a39122d565c124b56c01942e2964e092cdfe05b"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+      "baseline": {
+        "bytes": 34297,
+        "sha256": "55396e74b91a00936d75fedfc9942d68b02bb5e3909339b05d3a49377e1c9553"
+      },
+      "candidate": {
+        "bytes": 34337,
+        "sha256": "5e7cf37da707f2589f4077bb2c532984b9ae44602ee17ed542546dfefe4c8f8b"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt.diff",
+        "bytes": 2482,
+        "sha256": "6ff37ee8857f6ff4c29878245e01de2e479a4d7ff664f02e1cb288ecd1113f32"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalGeneralWebJsRuntime.kt",
+      "baseline": null,
+      "candidate": {
+        "bytes": 5812,
+        "sha256": "fb2873279354ad8aaf7fd26006b02c4aa65deeb962d9a4d6d3a33d83198ad7fd"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalGeneralWebJsRuntime.kt.diff",
+        "bytes": 6143,
+        "sha256": "2f1c69ad1fe7011690caca8d7300a8c4b51a1ab472e224197c25bba7fdae1e5d"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt",
+      "baseline": {
+        "bytes": 3276,
+        "sha256": "cf117e2c81949513fe94389c05bfeddd106478151f46380d4401ad00e3f2c5f4"
+      },
+      "candidate": {
+        "bytes": 3276,
+        "sha256": "cf117e2c81949513fe94389c05bfeddd106478151f46380d4401ad00e3f2c5f4"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt.diff",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "changed": false
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "baseline": {
+        "bytes": 34025,
+        "sha256": "20495b81b6ff6708e76ce9a9230fe438f982e3e4a29bb5c55b4ee640b83e264e"
+      },
+      "candidate": {
+        "bytes": 42210,
+        "sha256": "1e4e373d8aba208f96263c67bd4b77c6c1fe0ebf593c3c24452ae9ff04e145fe"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt.diff",
+        "bytes": 9970,
+        "sha256": "2ac7472ee3f1255c3e6dc0a8222711fba23be0d408225ace58141fdfe5a0d450"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleBase64.kt",
+      "baseline": {
+        "bytes": 6096,
+        "sha256": "f554f74e3ea3823e09cecdde738fa4a36f7300145092049135ed445cf18b9cb0"
+      },
+      "candidate": {
+        "bytes": 6096,
+        "sha256": "f554f74e3ea3823e09cecdde738fa4a36f7300145092049135ed445cf18b9cb0"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleBase64.kt.diff",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "changed": false
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "baseline": {
+        "bytes": 10438,
+        "sha256": "2cd2431f0e805aca309b1899cdb9d3a267c4de8d688a50be76c8426b63d31a11"
+      },
+      "candidate": {
+        "bytes": 12661,
+        "sha256": "84d01619895487d2e0f0ff1c62b0bfd04d9e8113c5a517ea6c320cf569766451"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt.diff",
+        "bytes": 4467,
+        "sha256": "f2f88d5f8e8c5172d69789af209e226af84811b0eeaa16c4d0fd800b85cad966"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+      "baseline": {
+        "bytes": 21499,
+        "sha256": "1e92134bd8d3cf3074c6616f2662894c7e63954d82babf1ffa2a346d3a483a4e"
+      },
+      "candidate": {
+        "bytes": 21605,
+        "sha256": "3e98ed93da515fe29cd641cb75cc223dd8d3e2758b8ee677903e7e2533952813"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt.diff",
+        "bytes": 735,
+        "sha256": "8e59480d787175dd04556536cb867dc38ad0fb47499f73cf5d414a70e715b8ca"
+      },
+      "changed": true
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+      "baseline": {
+        "bytes": 14151,
+        "sha256": "7e02f85a7f891eee0a0d67a7a1114620a9ded0990eacb4bc3757090f1b1ed022"
+      },
+      "candidate": {
+        "bytes": 18738,
+        "sha256": "865d79c391ac79f04376d80609803168be924ea2606c7591c1cbda6ebbb005cc"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt.diff",
+        "bytes": 11217,
+        "sha256": "f330212f9af00a126e7caeef2d1ccc9a9fda065ce293e2998ddc0da1ec36a7a0"
+      },
+      "changed": true
+    }
+  ],
+  "counts": {
+    "sourceFiles": 14,
+    "changedAgainstCanonical": 10,
+    "mainRoots": 12,
+    "existingMainChangedAgainstCanonical": 7,
+    "newMain": 1,
+    "unchangedABICompileRoots": 4,
+    "mainInputs": 126,
+    "totalMainAndBuildInputs": 129,
+    "retainedMainInputs": 114,
+    "portedSources": 60,
+    "newJUnitDefinitions": 4,
+    "JUnitExecuted": 4,
+    "JUnitFailures": 0,
+    "generalPublicExecuteCalls": 46,
+    "generalSessions": 3,
+    "syntheticBrowserHostCalls": 11,
+    "realHTTP": 7,
+    "POST": 3,
+    "GET": 4,
+    "CookieTagMutations": 1,
+    "stateACKs": 2,
+    "base64PublicExecuteCalls": 78,
+    "base64NestedAnalyzeRulePaths": 39,
+    "base64OracleChecks": 5108,
+    "base64ABIClasses": 6,
+    "packagingGuards": 6,
+    "recompiledProductionClasses": 84,
+    "retainedProductionClasses": 328,
+    "totalProductionClasses": 412,
+    "resourcesRetained": 391,
+    "SwiftSDK": 0,
+    "JNI": 0,
+    "WK": 0,
+    "device": 0
+  },
+  "ordinaryJar": {
+    "path": ".build/original-general-webjs-base64-union-step/ordinary-jar/legado-runtime-general-base64.jar",
+    "bytes": 10915789,
+    "sha256": "d1c0b7757361c71b9974dbc84611575d6ae0cab6ffcea214830fb5b2a22e7de4",
+    "kind": "Precise12source bounded K2 overlay on general1a2e JAR, no sharedclass splice, NOT freshfullGradle",
+    "binding": {
+      "path": ".build/original-general-webjs-base64-union-step/ordinary-jar/production-binding.json",
+      "bytes": 174992,
+      "sha256": "9253c2ecb681b7f8357dcdd04e040aa5dd6c983128d5126bd4ec6f96942153e9"
+    }
+  },
+  "actualResults": {
+    "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/actual-results.json",
+    "bytes": 909,
+    "sha256": "8f30c54c258d590a2f06dd0f8950e8f6dd7b041cee9be00b51a8b0af7a48ff27"
+  },
+  "actualPortableGuards": {
+    "JUnit": {
+      "path": ".build/original-general-webjs-base64-union-step/policy-tests-v1/commands.json",
+      "bytes": 6243,
+      "sha256": "3aea8c7949b18254664642d09542891ddfe0865178d388b91417e5df853be6b8"
+    },
+    "generalConsumer": {
+      "path": ".build/original-general-webjs-base64-union-step/ordinary-jar/ordinary-commands.json",
+      "bytes": 2334,
+      "sha256": "89ce95d0971b76c5514829ef28a05d796be59c23b94b1a29e7d7499124d2653a"
+    },
+    "Base64Consumer": {
+      "path": ".build/original-general-webjs-base64-union-step/ordinary-base64/commands.json",
+      "bytes": 1616,
+      "sha256": "bb34eb2b10cf2dba6e3d8c1412d85aa81be8d0b1d06fdf172393142e81b2d6d9"
+    },
+    "packaging": {
+      "path": ".build/original-general-webjs-base64-union-step/packaging-tests.log",
+      "bytes": 1243,
+      "sha256": "87fb278464ff2d47919164b6a175f58fd5c9b3090b4599a2a4e36176520d207d"
+    }
+  },
+  "history": {
+    "parentFailureHistoryRetained": {
+      "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/attempt-history.json",
+      "bytes": 4798,
+      "sha256": "37eb191cbce9556b0f1be74635e301df3c64e9d2b8a5a0c05e1384c8b6f4606d"
+    },
+    "parentGeneralV1IsNotApproved": true,
+    "currentJointAttempts": "Single joint production compile, all requested final validations passed first attempt; no cloud/Gradle/old suite repeated"
+  },
+  "limits": [
+    "Full public WK HTTP(S) resource-load interception unavailable; sourceRegex remains typed unsupported at actual host, Java predicate retained only for genuine callbacks.",
+    "GSON cannot serialize circular DOM result; explicit unsupported instead of stack-overflow escape or invented toString replacement. Actual String predecessor tag.a@text@webjs:document.title is proved.",
+    "Original raw object/array eval reply needs existing representable Android-equivalent JSON; Swift companion explicitly refuses unrepresentable objects rather than fake conversion.",
+    "Public WK default TLS policy retained, no Android insecure proceed. CacheFirst platform equivalence and complete BaseSource/native methods are not claimed.",
+    "Swift companion Native v1 direct Element predecessor is not a passing fixture; Root is preparing successor using String predecessor. New native method remains unexecuted.",
+    "This joint JAR replaces the independent Base64/general ABI boundary only. Root must separately compose reviewed Swift Host/general Native fixture/Cookie repair; no SDK/JNI/WK acceptance is supplied here.",
+    "39 nested AnalyzeRule paths are part of78 Base64 public executes; do not misstate117 independent public execute calls."
+  ],
+  "invariants": {
+    "Base64CurrentCanonicalPreserved": true,
+    "oldGeneralFrozen": true,
+    "onlyURLNegativeDelayFixed": true,
+    "directWebViewDelayUnchanged": true,
+    "sameHTTPAndStateOwners": true,
+    "sharedPlatformFreshlyCompiled": true,
+    "oldUntouchedClassesExact": true,
+    "oldResourcesAndLicenseArchiveExact": true,
+    "AppSelectors463Definitions466LeavesUnchanged": true,
+    "Package24And23InputsUnchanged": true
+  },
+  "evidence": [
+    {
+      "path": ".build/original-general-webjs-base64-union-step/preparation-v1.json",
+      "bytes": 2691,
+      "sha256": "3faeb67b912cf7b24f96054598853297cb69bfb9ce2ffe5f3525ce33a23f6705"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/compile-v1/commands.json",
+      "bytes": 11681,
+      "sha256": "121cb9663d758eb8d2023bd744e7892df1089e0b36742e3ad8b94f430a7ced8b"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/compile-v1/compile.log",
+      "bytes": 295,
+      "sha256": "609dcd227af62c6bde406f60eb0c257f5091c9257eb9e08c2b33dc8fc2ad9e0d"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/actual-jvm-compilation-inputs.json",
+      "bytes": 75899,
+      "sha256": "dbfb6158a9e1523f386f212b53fe3027c537482d53f6babc31fd9606f4fef5e7"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/ordinary-jar/production-binding.json",
+      "bytes": 174992,
+      "sha256": "9253c2ecb681b7f8357dcdd04e040aa5dd6c983128d5126bd4ec6f96942153e9"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/ordinary-jar/ordinary-commands.json",
+      "bytes": 2334,
+      "sha256": "89ce95d0971b76c5514829ef28a05d796be59c23b94b1a29e7d7499124d2653a"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/ordinary-jar/compile-consumer.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/ordinary-jar/execute-consumer.log",
+      "bytes": 165,
+      "sha256": "8115aa4201f9ea4408feda1b710b81bc9f4ff2f5cd25f5acfde98675a62da2e1"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/OrdinaryGeneralWebJs.java",
+      "bytes": 16526,
+      "sha256": "c337c5a6c01b16906a4f367bf1dc662e9d2a472f2a0e32fb894ad33901e889a1"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/ordinary-base64/commands.json",
+      "bytes": 1616,
+      "sha256": "bb34eb2b10cf2dba6e3d8c1412d85aa81be8d0b1d06fdf172393142e81b2d6d9"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/ordinary-base64/compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/ordinary-base64/candidate-public.log",
+      "bytes": 262,
+      "sha256": "7724490dad0e5a657858d299ed9e15152b0641c5d316050c1b8b1f92086ace63"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/OrdinaryBase64Flags.java",
+      "bytes": 9011,
+      "sha256": "ddb920dcdc56117f78e17533dc675fd41fea8ddf97c313e808d044db8398c5f0"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/PolicyJUnitRunner.java",
+      "bytes": 1328,
+      "sha256": "86e8885b1fcb6b50ae7bbaae307a48e106d15c1bbead4dec392c90cc080bdcf5"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/policy-tests-v1/commands.json",
+      "bytes": 6243,
+      "sha256": "3aea8c7949b18254664642d09542891ddfe0865178d388b91417e5df853be6b8"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/policy-tests-v1/actual-tests.xml",
+      "bytes": 678,
+      "sha256": "80fd983eaff8abf9101cb0f97479347514a9bbf1c2a9a7a331fa6a2c373df6bd"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/policy-tests-v1/actual-tests.log",
+      "bytes": 43,
+      "sha256": "f02aa8049046064763929259e9d127c33a476963062fff7ec092ebece09144d2"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/policy-tests-v1/compile-test.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/policy-tests-v1/compile-runner.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/packaging-tests.log",
+      "bytes": 1243,
+      "sha256": "87fb278464ff2d47919164b6a175f58fd5c9b3090b4599a2a4e36176520d207d"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/ordinary-jar-inspected.json",
+      "bytes": 81074,
+      "sha256": "25bdc2e9a2ea4f98a13235375a8fd48cce77db77258cc6655ddadf20e204193b"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/source-composition-checks.json",
+      "bytes": 631,
+      "sha256": "e9b255c9066cca6c5aea34a0e959dba6f395bac612a5251b8945b3bd9b1edb5a"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/actual-results.json",
+      "bytes": 909,
+      "sha256": "8f30c54c258d590a2f06dd0f8950e8f6dd7b041cee9be00b51a8b0af7a48ff27"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/oracle-source/android/util/Base64.java",
+      "bytes": 28600,
+      "sha256": "69634dee744412c643d1715dda72672ed137c0fe0faa694ff45db37c3b9884e7"
+    },
+    {
+      "path": ".build/original-general-webjs-base64-union-step/snapshot-v1/P2-negative-delay-closure.json",
+      "bytes": 824,
+      "sha256": "e20c2490168c1a0bcb63fee15ec682bb171fed1c2ff5a377d1d0f1e3e1d46cbc"
+    }
+  ],
+  "claims": {
+    "fullGradle": false,
+    "SDK": false,
+    "JNI": false,
+    "WK": false,
+    "fullSourceCompatibility": false,
+    "fullCoreComplete": false,
+    "renewalProven": false
+  },
+  "mutations": {
+    "canonical": false,
+    "Git": false,
+    "cloud": false,
+    "tags": false,
+    "privateCredentialsRead": false
+  }
+}

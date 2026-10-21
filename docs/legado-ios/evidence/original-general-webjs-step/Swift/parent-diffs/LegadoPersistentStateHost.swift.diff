@@ -1,0 +1,263 @@
+--- a/Modules/Services/Online/LegadoPersistentStateHost.swift
++++ b/Modules/Services/Online/LegadoPersistentStateHost.swift
+@@ -343,6 +343,7 @@
+     }
+     private var originalInvocations: [String: OriginalInvocation] = [:]
+     private var originalChildInvocations: [String: (owner: String, pageID: String)] = [:]
++    private var originalHeadlessOperations: [String: (taskID: String, work: Task<LegadoOriginalHeadlessResult, Error>)] = [:]
+     private var originalInvalidations: [String: Task<Void, Never>] = [:]
+
+     private var bindings: [String: Binding] = [:]
+@@ -537,6 +538,7 @@
+             try await validateOriginalChildHost(owner: child.owner, pageID: child.pageID)
+         }
+         if request.operation == "source.browser" { return try await presentSourceBrowser(request) }
++        if request.operation == "source.webview" { return try await runOriginalHeadless(request) }
+         if request.operation == "source.login-info" { return try sourceLoginInfo(request) }
+         if request.operation == "source.login-header" { return try sourceLoginHeader(request) }
+         if request.operation == "content.batch.authorize" { return try authorizeContentBatch(request) }
+@@ -665,6 +667,7 @@
+             invocation.invalidated = true
+             for page in invocation.pages.values { page.cancellation.cancel() }
+             await SourceBrowserPresenter.cancelOriginal(taskID: taskID)
++            await cancelOriginalHeadless(taskID: taskID)
+             for pageID in Array(invocation.pages.keys) {
+                 try await closeOriginalWebPage(owner: owner, pageID: pageID)
+             }
+@@ -779,7 +782,8 @@
+     }
+
+     private func requestOriginalWebPage(owner: String, pageID: String,
+-                                      call: LegadoOriginalWebJSCall) async throws -> LegadoOriginalWebJSReply {
++                                       call: LegadoOriginalWebJSCall,
++                                       nativePolicy: Bool = false) async throws -> LegadoOriginalWebJSReply {
+         let requestDeadline = Date().addingTimeInterval(30)
+         guard let invocation = originalInvocations[owner], !invocation.invalidated,
+               let page = invocation.pages[pageID], page.closing == nil,
+@@ -811,7 +815,7 @@
+         let child = Task { () throws -> LegadoOriginalWebJSReply in
+             try await SourcePerfTrace.spanAsync("legado.original.webjs.request",
+                 "main=\(Thread.isMainThread) bytes=\(requestJSON.utf8.count)") {
+-                let raw = try await runtime.execute(session: session, operation: "webJsRequest",
++                let raw = try await runtime.execute(session: session, operation: nativePolicy ? "generalWebPolicy" : "webJsRequest",
+                     requestJSON: requestJSON, taskID: taskID)
+                 guard raw.utf8.count <= 8 * 1024 * 1024 + 65_536 else {
+                     throw LegadoRuntimeError(code: "STATE_LIMIT", message: "Original page response exceeds its budget")
+@@ -857,6 +861,210 @@
+             throw CancellationError()
+         }
+         return reply
++    }
++
++    private struct OriginalHeadlessWire: Decodable {
++        let owner: String
++        let sourceURL: String
++        let sessionId: String
++        let taskId: String
++        let cookieAccess: String
++        let url: String?
++        let html: String?
++        let js: String?
++        let headers: [String: String]
++        let userAgent: String?
++        let additionalHeaders: [String: String]
++        let cookieTag: String?
++        let isRule: Bool
++        let cacheFirst: Bool
++        let delayTime: Int64
++        let initialDelayMs: Int
++        let browserDeadlineEpochMs: Int64
++        let timeoutMs: Int
++        let sourceRegex: String?
++        let overrideUrlRegex: String?
++        let resultJSON: String?
++        let injectionString: String?
++        let page: [String: String]
++    }
++
++    /// This path is original parser authority, independent of the finite login
++    /// browser flag. Native policy uses its own JVM operation; page JS can only
++    /// reach webJsRequest through the separately bounded WK lease closure.
++    private func runOriginalHeadless(_ request: LegadoHostRequest) async throws -> String {
++        try await SourcePerfTrace.spanAsync("legado.original.webview.host",
++            "main=\(Thread.isMainThread) bytes=\(request.requestJSON.utf8.count)") {
++            try await runOriginalHeadlessRequest(request)
++        }
++    }
++
++    private func runOriginalHeadlessRequest(_ request: LegadoHostRequest) async throws -> String {
++        guard request.requestJSON.utf8.count <= 6 * 4 * 1024 * 1024 + 262_144 else {
++            throw failure("STATE_LIMIT", "Original WebView packet exceeds its budget")
++        }
++        let input: OriginalHeadlessWire
++        do { input = try JSONDecoder().decode(OriginalHeadlessWire.self, from: Data(request.requestJSON.utf8)) }
++        catch { throw failure("INVALID_STATE_REQUEST", "Original WebView packet is incompatible") }
++        guard input.taskId.utf8.elementsEqual(request.taskID.utf8),
++              let binding = bindings[input.owner], input.sourceURL.utf8.elementsEqual(binding.sourceURL.utf8),
++              revisions[binding.sourceURL] == binding.sourceRevision,
++              let invocation = originalInvocations[input.owner], !invocation.producerEnded, !invocation.invalidated,
++              invocation.taskID == request.taskID, invocation.session.id == input.sessionId,
++              invocation.session.sourceMode == .originalTraditional else {
++            throw failure("INVALID_STATE_OWNER", "Original WebView needs its current source/task/session")
++        }
++        guard input.cookieAccess == "app-owner-text" else {
++            // All three actual App executors explicitly grant this existing
++            // mode. Read-only callers cannot acquire Cookie writes by opening WK.
++            throw failure("UNSUPPORTED_CAPABILITY", "Original WebView Cookie capture requires its explicit text owner")
++        }
++        guard input.cookieTag == nil || input.cookieTag?.utf8.elementsEqual(binding.sourceURL.utf8) == true,
++              input.headers.count <= 256, input.additionalHeaders.count <= 256,
++              input.headers.allSatisfy({ $0.key.utf8.count <= 8192 && $0.value.utf8.count <= 65_536 }),
++              input.additionalHeaders.allSatisfy({ $0.key.utf8.count <= 8192 && $0.value.utf8.count <= 65_536 }),
++              (input.html?.utf8.count ?? 0) <= 4 * 1024 * 1024,
++              (input.js?.utf8.count ?? 0) <= 4 * 1024 * 1024,
++              (input.resultJSON?.utf8.count ?? 0) <= 4 * 1024 * 1024,
++              (input.url?.utf8.count ?? 0) < 65_536,
++              (input.userAgent?.utf8.count ?? 0) <= 65_536,
++              input.isRule == (input.injectionString != nil),
++              input.initialDelayMs >= 0, input.initialDelayMs <= 300_000,
++              input.timeoutMs > 0, input.timeoutMs <= (input.isRule ? 10_000 : 60_000) else {
++            throw failure("STATE_LIMIT", "Original WebView fields exceed their native budgets")
++        }
++        guard input.sourceRegex?.isEmpty != false else {
++            throw failure("UNSUPPORTED_CAPABILITY", "Public WebKit cannot report every original HTTP resource load")
++        }
++        if let url = input.url, let scheme = URL(string: url)?.scheme?.lowercased(), !["http", "https"].contains(scheme) {
++            throw failure("UNSUPPORTED_CAPABILITY", "Original WebView has no local-file or custom-scheme loading grant")
++        }
++        let deadline = min(Date(timeIntervalSince1970: Double(input.browserDeadlineEpochMs) / 1000),
++            Date().addingTimeInterval(Double(input.timeoutMs) / 1000))
++        try checkCookieRead(request, deadline: deadline)
++        try binding.cookieCancellation.check(deadline: deadline)
++        let keys: Set<String> = ["pageId", "sessionId", "parentTaskId", "javaName", "cacheName", "resultName", "sourceName"]
++        guard Set(input.page.keys) == keys, let sourceName = input.page["sourceName"] else {
++            throw failure("INVALID_STATE_REQUEST", "Original WebView page metadata is incompatible")
++        }
++        let first = Set("_$abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".utf8)
++        let rest = first.union(Set("0123456789".utf8))
++        guard sourceName.utf8.count <= 128, let leading = sourceName.utf8.first,
++              first.contains(leading), sourceName.utf8.allSatisfy({ rest.contains($0) }),
++              ![input.page["javaName"], input.page["cacheName"], input.page["resultName"]].contains(sourceName) else {
++            throw failure("INVALID_STATE_REQUEST", "Original source interface name is not a distinct bounded identifier")
++        }
++        var pageFields = input.page
++        pageFields.removeValue(forKey: "sourceName")
++        let page = try await makeOriginalWebPage(pageFields, request: request, owner: input.owner, parentDeadline: deadline)
++        let pageID = page.descriptor.pageId
++        do {
++            guard let sourceID = invocation.sourceID else {
++                throw failure("INVALID_STATE_OWNER", "Original WebView has no admitted source identity")
++            }
++            let registered = await MainActor.run {
++                guard let snapshot = BookSourceStore.shared.runtimeIndexedSnapshot(id: sourceID),
++                      let source = snapshot.source else { return false }
++                return source.bookSourceUrl.utf8.elementsEqual(binding.sourceURL.utf8)
++            }
++            let configured = try await originalHeadlessPolicy(owner: input.owner, pageID: pageID,
++                method: "configure", params: [registered ? "true" : "false"])
++            guard configured.kind == "string", configured.value == "configured" else {
++                throw failure("INVALID_RESULT", "Original WebView policy did not acknowledge its actual source registration")
++            }
++            let cancellation = originalInvocations[input.owner]?.pages[pageID]?.cancellation
++            guard let cancellation else { throw CancellationError() }
++            let owner = input.owner
++            let packet = LegadoOriginalHeadlessRequest(html: input.html, url: input.url,
++                javaScript: input.js, headers: input.headers, userAgent: input.userAgent,
++                additionalHeaders: input.additionalHeaders, cacheFirst: input.cacheFirst,
++                navigationCapture: input.overrideUrlRegex != nil,
++                delayMilliseconds: input.delayTime, initialDelayMilliseconds: input.initialDelayMs,
++                resultJSON: input.resultJSON, injectionString: input.isRule ? input.injectionString : nil,
++                sourceName: sourceName, registeredSource: registered, page: page, deadline: deadline,
++                authorize: { [weak self] in
++                    guard let self else { throw CancellationError() }
++                    try await self.validateOriginalChildHost(owner: owner, pageID: pageID)
++                }, validateCommit: {
++                    try cancellation.check(deadline: deadline)
++                    try binding.cookieCancellation.check(deadline: deadline)
++                }, recordEffect: { request.recordPossibleEffect($0) },
++                evaluate: { [weak self] raw in
++                    guard let self else { throw CancellationError() }
++                    let reply = try await self.originalHeadlessPolicy(owner: owner, pageID: pageID, method: "evaluate", params: [raw])
++                    guard reply.kind == "string", let value = reply.value else {
++                        throw LegadoRuntimeError(code: "INVALID_RESULT", message: "Original evaluation policy omitted its result")
++                    }
++                    return try JSONDecoder().decode(LegadoOriginalHeadlessEvaluation.self, from: Data(value.utf8))
++                }, navigation: { [weak self] url in
++                    guard let self else { throw CancellationError() }
++                    let reply = try await self.originalHeadlessPolicy(owner: owner, pageID: pageID, method: "navigation", params: [url])
++                    guard reply.kind == "string", let value = reply.value, ["true", "false"].contains(value) else {
++                        throw LegadoRuntimeError(code: "INVALID_RESULT", message: "Original navigation policy omitted its decision")
++                    }
++                    return value == "true"
++                }, publishCookies: { [weak self] url, text in
++                    guard let self else { throw CancellationError() }
++                    let reply = try await self.originalHeadlessPolicy(owner: owner, pageID: pageID, method: "cookie", params: [url, text])
++                    guard reply.kind == "void" else {
++                        throw LegadoRuntimeError(code: "INVALID_RESULT", message: "Original Cookie owner did not acknowledge its accepted operation")
++                    }
++                })
++            guard request.recordPossibleEffect("sourceWebViewMayStart") else { throw CancellationError() }
++            let work = Task { try await LegadoHeadlessWebView.runOriginal(packet) }
++            originalHeadlessOperations[pageID] = (request.taskID, work)
++            defer { originalHeadlessOperations.removeValue(forKey: pageID) }
++            let result = try await withTaskCancellationHandler(operation: { try await work.value }, onCancel: { work.cancel() })
++            try Task.checkCancellation()
++            try await validateOriginalChildHost(owner: owner, pageID: pageID)
++            // The parent still owns terminal policy validation. Drain/remove
++            // the Swift lease now; its JVM finally closes the same Page only
++            // after validating this exact accepted body.
++            try await releaseOriginalHeadlessPage(owner: owner, pageID: pageID)
++            var output: [String: Any] = ["url": result.url, "body": result.body, "redirected": result.redirected]
++            if let origin = result.originURL { output["originURL"] = origin }
++            return try encoded(output)
++        } catch let primary {
++            do { try await page.close() }
++            catch {
++                let typed = primary as? LegadoRuntimeError
++                let secondary = LegadoRuntimeFailureDetail(code: (error as? LegadoRuntimeError)?.code ?? "STATE_IO",
++                    message: "Original WebView page cleanup did not complete")
++                let effects = Array(Set((typed?.completedEffects ?? []) + ((error as? LegadoRuntimeError)?.completedEffects ?? []))).sorted()
++                throw LegadoRuntimeError(code: typed?.code ?? (primary is CancellationError ? "CANCELLED" : "STATE_IO"),
++                    message: "Original WebView did not complete", completedEffects: effects,
++                    loginUIEvents: typed?.loginUIEvents, secondaryFailures: (typed?.secondaryFailures ?? []) + [secondary])
++            }
++            let typed = primary as? LegadoRuntimeError
++            throw LegadoRuntimeError(code: typed?.code ?? (primary is CancellationError ? "CANCELLED" : "STATE_IO"),
++                message: "Original WebView did not complete", completedEffects: typed?.completedEffects,
++                loginUIEvents: typed?.loginUIEvents, secondaryFailures: typed?.secondaryFailures)
++        }
++    }
++
++    private func originalHeadlessPolicy(owner: String, pageID: String, method: String,
++                                        params: [String?]) async throws -> LegadoOriginalWebJSReply {
++        guard ["configure", "evaluate", "navigation", "cookie"].contains(method) else {
++            throw failure("UNSUPPORTED_CAPABILITY", "Original native policy method is not admitted")
++        }
++        return try await requestOriginalWebPage(owner: owner, pageID: pageID,
++            call: .init(method: method, params: params, function: nil, requestId: nil), nativePolicy: true)
++    }
++
++    private func releaseOriginalHeadlessPage(owner: String, pageID: String) async throws {
++        guard let invocation = originalInvocations[owner], let page = invocation.pages[pageID] else { return }
++        page.cancellation.cancel()
++        let children = Array(page.children.values)
++        for child in children { child.cancel() }
++        for child in children { _ = await child.result }
++        invocation.pages.removeValue(forKey: pageID)
++        try await cleanupOriginalInvocationIfIdle(owner: owner)
++    }
++
++    private func cancelOriginalHeadless(taskID: String) async {
++        let work = originalHeadlessOperations.values.filter { $0.taskID == taskID }.map(\.work)
++        for item in work { item.cancel() }
++        for item in work { _ = await item.result }
+     }
+
+     private func closeOriginalWebPage(owner: String, pageID: String) async throws {
+@@ -1425,6 +1633,7 @@
+         }
+         if let pending = pendingWebCookieOperations[taskID] { for operation in pending.values { operation.task.cancel() } }
+         await SourceBrowserPresenter.cancelOriginal(taskID: taskID)
++        await cancelOriginalHeadless(taskID: taskID)
+         await fallback.cancel(taskID: taskID)
+     }

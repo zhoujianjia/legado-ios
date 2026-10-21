@@ -1,0 +1,41 @@
+{
+  "status": "passed",
+  "cases": 7,
+  "names": [
+    "actual null and undefined retry sentinels remain distinct from quoted strings",
+    "native global completion and var state survive retries",
+    "page eval and JSON overrides cannot select native execution or isolated encoder",
+    "captured eval is not proof against an external eval restriction",
+    "WebKit style intrinsic JSON contract covers nonfinite and special numbers",
+    "original object key order and nested object arrays remain explicit pending cases",
+    "raw string escapes and array slots are encoded by the intrinsic encoder"
+  ],
+  "source": {
+    "path": "F:\\yuedu-reader\\.build\\original-general-webjs-swift-implementation-step\\work\\Modules\\Core\\RuleEngine\\ModernParser\\JS\\LegadoHeadlessWebView.swift",
+    "bytes": 37240,
+    "sha256": "165dceddf36fe0c659a0270defd33d02c52f07217d04af21e5b27c4a9387fb09"
+  },
+  "objectCounterexamples": [
+    {
+      "script": "({b:2,a:1})",
+      "originalRaw": "{\"b\":2,\"a\":1}",
+      "candidate": "typed UNSUPPORTED_CAPABILITY; object-order route pending"
+    },
+    {
+      "script": "({10:\"ten\",2:\"two\",z:3,a:4})",
+      "originalRaw": "{\"2\":\"two\",\"10\":\"ten\",\"z\":3,\"a\":4}",
+      "candidate": "typed UNSUPPORTED_CAPABILITY; object-order route pending"
+    },
+    {
+      "script": "[{b:2,a:1}]",
+      "originalRaw": "[{\"b\":2,\"a\":1}]",
+      "candidate": "typed UNSUPPORTED_CAPABILITY; object-order route pending"
+    }
+  ],
+  "actualNode": true,
+  "SwiftSDK": 0,
+  "WK": 0,
+  "JNI": 0,
+  "actualCSP": 0,
+  "scope": "New focused JavaScript completion/isolated intrinsic contract and explicit object-order gaps only. Node VM restrictions are not WK CSP or native serialization acceptance."
+}

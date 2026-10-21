@@ -1,0 +1,938 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-20T23:53:31.075728+00:00",
+  "status": "Source-scoped independent review complete; no unresolved definite P1/P2 in the reviewed Swift delta. Suitable for root integration with the exact Native successor, pending actual Apple SDK execution.",
+  "reviewer": "/root/consolidated_core_sdk_delta",
+  "scope": "Independent bounded review of General WebJS Host/Headless and all three App original consumers; exact six-source parent plus root-authored Native single-line successor. JVM protocol sources read for trust and lifecycle boundary, without repeating their tests.",
+  "parent": {
+    "path": ".build/original-general-webjs-swift-implementation-step/final-v1.json",
+    "bytes": 15553,
+    "sha256": "656c4edb243ed86bf8091c0e41835bb7e023eeada257cb05a0ef9dc398faf2bc"
+  },
+  "nativeSuccessor": {
+    "path": ".build/original-general-webjs-swift-native-successor/candidate-v1.json",
+    "bytes": 1342,
+    "sha256": "34219436c3e376e8063bafa207b52665ac5e65c0c4d58400d80832e9a39b1080"
+  },
+  "wire": {
+    "path": ".build/original-general-webjs-step/implementation-v1/wire-v1.json",
+    "bytes": 14814,
+    "sha256": "f97829fa356ef3ab1f3c07543fd831883f90d842ae64b644925609e754ed40a8"
+  },
+  "backendParent": {
+    "path": ".build/original-general-webjs-step/implementation-v1/backend-final-v1.json",
+    "bytes": 31116,
+    "sha256": "3bb2e06aef642f5bead0b922c8222a0a92f229ed6163ea2849a055c15f15a2d7"
+  },
+  "sources": [
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+      "baseline": {
+        "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/rawbaseline/Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+        "bytes": 9291,
+        "sha256": "e0934fb37b1085b5af79911c6696d910258c155d53726da70c06b31de3a634af"
+      },
+      "parentCandidate": {
+        "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/work/Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+        "bytes": 39823,
+        "sha256": "3547326bc935cdbb84c61fe3d3f63dbcc71ea44666022c2e546211d7fe452469"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/diffs/Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift.diff",
+        "bytes": 32713,
+        "sha256": "24043782068759aaa9778a71ec2ed9b6654699519c156a0c7a0b0dc7d75a3898"
+      }
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "baseline": {
+        "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/rawbaseline/Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 108492,
+        "sha256": "a382856a9c09c08e1974b81e768320381556fba4cbaea053c4df637652914712"
+      },
+      "parentCandidate": {
+        "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/work/Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 122364,
+        "sha256": "9c515b2a6bc0c58d2cbac5f9ac9fceb4f7a1d409d262f6dc6e2bf4e48da96a46"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/diffs/Modules/Services/Online/LegadoPersistentStateHost.swift.diff",
+        "bytes": 17131,
+        "sha256": "aecc9fea9a0b161e848960eb05e9cd7577a82ad418ddb88266eb553c824ba2a0"
+      }
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPreviewStateOwner.swift",
+      "baseline": {
+        "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/rawbaseline/Modules/Services/Online/LegadoPreviewStateOwner.swift",
+        "bytes": 32176,
+        "sha256": "721b509906b166f5ad79f98124464862fb6d6699b9c16906772c9c2e8a1d18b1"
+      },
+      "parentCandidate": {
+        "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/work/Modules/Services/Online/LegadoPreviewStateOwner.swift",
+        "bytes": 32127,
+        "sha256": "f7c251cb9c85370b461f6ef588f331cf9c4defb01164ed824c44fd94498b078f"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/diffs/Modules/Services/Online/LegadoPreviewStateOwner.swift.diff",
+        "bytes": 1596,
+        "sha256": "eddc3273197ec921f19ab010440ed0c5862f0ae8ecf334d68764f0b34bc3d7f7"
+      }
+    },
+    {
+      "path": "Modules/Services/Online/LegadoContentBatchOwner.swift",
+      "baseline": {
+        "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/rawbaseline/Modules/Services/Online/LegadoContentBatchOwner.swift",
+        "bytes": 36295,
+        "sha256": "db0aa536df48729f76bbfced09409a808b7dfb0a81e99f2d4824d249a27d3483"
+      },
+      "parentCandidate": {
+        "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/work/Modules/Services/Online/LegadoContentBatchOwner.swift",
+        "bytes": 37278,
+        "sha256": "29084641908ea765d1793ed6ba6945dc33d0735d9244df1932543f8f3b45798d"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/diffs/Modules/Services/Online/LegadoContentBatchOwner.swift.diff",
+        "bytes": 3173,
+        "sha256": "f0e5891ef297ecd08d3f3a80ad532d3d35dd5dd383311ed3578c21ff3ecbed2b"
+      }
+    },
+    {
+      "path": "Modules/Services/Online/SourceCallBackService.swift",
+      "baseline": {
+        "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/rawbaseline/Modules/Services/Online/SourceCallBackService.swift",
+        "bytes": 16578,
+        "sha256": "2babad9f6dd5d7280eda3c448d05391f9073f744889d98fd931c61ea4d952f16"
+      },
+      "parentCandidate": {
+        "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/work/Modules/Services/Online/SourceCallBackService.swift",
+        "bytes": 17549,
+        "sha256": "4cae2c88a27755f29490cd5bb9923c542a8a2b70a08d0e2de1e6fbc88adfd074"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/diffs/Modules/Services/Online/SourceCallBackService.swift.diff",
+        "bytes": 3413,
+        "sha256": "4df9493c98d0261ec84ff4c10f5f992a454334ced0f495e39a60cf97015d1afb"
+      }
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "baseline": {
+        "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/rawbaseline/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+        "bytes": 93923,
+        "sha256": "538bac2a31ca90e06fe34067f12b12702543ff1675de408eaaf7ce36d66b7de7"
+      },
+      "parentCandidate": {
+        "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/work/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+        "bytes": 97977,
+        "sha256": "36b9272028eb888d82931acb50a0f3d5c582fff254fc9aa45e2ed6a1e799102f"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/diffs/Tests/iOS/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 4645,
+        "sha256": "5530b7a704b73724f0dd3577b88a642e04eaf3424d544900ab65a88991e3fa80"
+      },
+      "effectiveCandidate": {
+        "path": ".build/original-general-webjs-swift-native-successor/work/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+        "bytes": 97973,
+        "sha256": "5173e331662f9dd4aa59ce3d70ca42efbed85fdfbb7f4f26925f49bfadbeb797"
+      }
+    }
+  ],
+  "backendSourceBindings": [
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/BaseSource.kt",
+      "bytes": 672,
+      "sha256": "5c274fbfc28ca8879cb8d1fad2b19ce936eab501e252bd440fbe4c06a6bb749b"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+      "bytes": 18583,
+      "sha256": "7c8378dc5c04073d84f2c0ce33aab7df9cb8b288a07fb12a6f30a041a1e69564"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+      "bytes": 37284,
+      "sha256": "dcacc71e720c0ee4924e00b544172ee49fd704d8dd6d052574b90167bf2ee234"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "bytes": 22440,
+      "sha256": "f53553fae13c3e465c28eeafe7afb943f4ffbe1f34ad000ae6cd087a6e80db17"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+      "bytes": 34337,
+      "sha256": "5e7cf37da707f2589f4077bb2c532984b9ae44602ee17ed542546dfefe4c8f8b"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalGeneralWebJsRuntime.kt",
+      "bytes": 5812,
+      "sha256": "fb2873279354ad8aaf7fd26006b02c4aa65deeb962d9a4d6d3a33d83198ad7fd"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt",
+      "bytes": 3276,
+      "sha256": "cf117e2c81949513fe94389c05bfeddd106478151f46380d4401ad00e3f2c5f4"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "bytes": 42210,
+      "sha256": "1e4e373d8aba208f96263c67bd4b77c6c1fe0ebf593c3c24452ae9ff04e145fe"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "bytes": 12757,
+      "sha256": "6633ed978122831178cf4c7e0f9b6107d181d932761867eb15ff884df03ac76d"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+      "bytes": 21605,
+      "sha256": "3e98ed93da515fe29cd641cb75cc223dd8d3e2758b8ee677903e7e2533952813"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+      "bytes": 18738,
+      "sha256": "865d79c391ac79f04376d80609803168be924ea2606c7591c1cbda6ebbb005cc"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalGeneralWebJsTest.kt",
+      "bytes": 4564,
+      "sha256": "8c1a8fdaade7221b16904f059977d16809bf20931054b12c30a85a5c32aab172"
+    },
+    {
+      "path": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "bytes": 135167,
+      "sha256": "e393a72eecb7a9ca2286a1640f9765246c2991eedc3e687ba88162f8f854f73d"
+    }
+  ],
+  "native": {
+    "retainedDeclarations": [
+      {
+        "method": "testNativeOriginalColdProducerPersistsPublicReaderBeforeProcessExit",
+        "baselineBytes": 8409,
+        "sha256": "33cb5dbd8c55b9fd08b7d18403777946963b79676504f0ea78ce14aad71bb88e"
+      },
+      {
+        "method": "testNativeOriginalColdConsumerRestoresOwnedReaderWithoutNetwork",
+        "baselineBytes": 6144,
+        "sha256": "b68d511f6892960470955e8ceb07659a0285317648760eaee8c9787f67bc9406"
+      },
+      {
+        "method": "testNativeOriginalWebBookPreviewTransferAndReopen",
+        "baselineBytes": 4491,
+        "sha256": "fb0fc6d23a34e590cf039757a4b00a1324227744955f6c1f2cfb96cde3796732"
+      },
+      {
+        "method": "testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+        "baselineBytes": 5518,
+        "sha256": "d51eda30bc59743a334b3279c8b31479be973099e1d6246e44ff4f666465f5a1"
+      },
+      {
+        "method": "testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+        "baselineBytes": 1834,
+        "sha256": "8dad69cb2255f2481f707e8e24c74c0af3c9ad59d4f5515fc4c1d911e67205eb"
+      },
+      {
+        "method": "testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+        "baselineBytes": 4881,
+        "sha256": "a95317b2bdbdf45bd2afe5a4bbb6331fb025713db679407f3415e3919417b460"
+      },
+      {
+        "method": "testNativeOriginalCachedExplorePageOpensAndSavesOnLeave",
+        "baselineBytes": 3947,
+        "sha256": "9540387916f61e41218b43e51e212fb0d20622801b22f79f652ac367be8e0669"
+      },
+      {
+        "method": "testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+        "baselineBytes": 3584,
+        "sha256": "aa584afbd5db4bf8b14208c36bf3bfb67c8462bcfb86959e96b56e3f921effd2"
+      },
+      {
+        "method": "testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix",
+        "baselineBytes": 3300,
+        "sha256": "207f801f79789f0df93e5a3dff46d0fd12bf64c53d306b233bf3f3c9a8fdc21f"
+      },
+      {
+        "method": "testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+        "baselineBytes": 10312,
+        "sha256": "b21ed4a618fe669cfcab3e15a06d1ea5038b10bdad254ac97cdc2bd09459662a"
+      },
+      {
+        "method": "testNativeOriginalBookNotificationCancellationDrains",
+        "baselineBytes": 2629,
+        "sha256": "0367ad5bb1a2ebc98747146483da0299b2301148475e10fea90728f48133dd6b"
+      },
+      {
+        "method": "testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners",
+        "baselineBytes": 4184,
+        "sha256": "191486a66ae69e1836373f5853922a00e5d0657864f423aa4c9b275063cb6e97"
+      },
+      {
+        "method": "testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority",
+        "baselineBytes": 3071,
+        "sha256": "f5a1c1f5da538fd2d8c22e1dfc46b452c5df9538e790ad793936ed6b4f34a0c7"
+      }
+    ],
+    "old13ByteExact": true,
+    "newDefinition": "LegadoNativeOriginalReaderTests/testNativeOriginalGeneralWebJSUsesPreviewBatchAndBookCallbackOwners",
+    "totalReaderIncludingIndependentCold": 14,
+    "newDeclarations": 1,
+    "newAppDefinitions": 0,
+    "newPackageDefinitions": 0
+  },
+  "closedFinding": {
+    "severity": "P2",
+    "area": "New Native raw-element predecessor",
+    "before": "preview.ruleSearch.name = \"@webjs:if(typeof cache!=='object')throw new Error('missing original cache');document.querySelector('a').textContent\"",
+    "after": "preview.ruleSearch.name = \"tag.a@text@webjs:if(typeof cache!=='object')throw new Error('missing original cache');document.body.textContent\"",
+    "reason": "AnalyzeRule prior item is a parent-linked Jsoup Element. Actual ordinary JVM found GSON cyclic serialization unsupported before WK; select original tag.a@text first to supply an original String result/HTML. The actual browser body text remains pending Native SDK execution.",
+    "closure": "Successor exactly substitutes one source literal; all existing 13 method AST byte slices unchanged. Runtime acceptance still requires SDK/JNI/WK."
+  },
+  "observations": [
+    {
+      "area": "Same source/session and private native policy",
+      "conclusion": "The Host checks actual owner, source revision, original session/task and cookie access. Native generalWebPolicy and page webJsRequest are separate execute operations; page script cannot choose configure/evaluate/navigation/cookie policy.",
+      "anchors": [
+        {
+          "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+          "line": 902,
+          "text": "private func runOriginalHeadlessRequest"
+        },
+        {
+          "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+          "line": 1045,
+          "text": "private func originalHeadlessPolicy"
+        },
+        {
+          "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+          "line": 818,
+          "text": "operation: nativePolicy ? \"generalWebPolicy\" : \"webJsRequest\""
+        },
+        {
+          "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+          "line": 462,
+          "text": "!call.method.hasPrefix(\"policy.\")"
+        }
+      ]
+    },
+    {
+      "area": "Admission remains live after suspension",
+      "conclusion": "The existing page lease and source admission are reused. Source registration comes from the existing indexed store; child work checks current source and cancellation before and after execution, preserving accepted effects before DTO decoding.",
+      "anchors": [
+        {
+          "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+          "line": 721,
+          "text": "private func makeOriginalWebPage"
+        },
+        {
+          "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+          "line": 794,
+          "text": "try await invocation.sourceAdmission?.validate()"
+        },
+        {
+          "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+          "line": 827,
+          "text": "for effect in facts.completedEffects"
+        },
+        {
+          "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+          "line": 858,
+          "text": "try await invocation.sourceAdmission?.validate()"
+        }
+      ]
+    },
+    {
+      "area": "All actual App original executors",
+      "conclusion": "Preview, content batch and book callbacks attach and finish the existing invocation using the existing runtime/session and owned grant. There is no new JVM, store, Cookie owner or legacy JSC fallback in this delta.",
+      "anchors": [
+        {
+          "path": "Modules/Services/Online/LegadoPreviewStateOwner.swift",
+          "line": 382,
+          "text": "attachOriginalInvocation"
+        },
+        {
+          "path": "Modules/Services/Online/LegadoContentBatchOwner.swift",
+          "line": 488,
+          "text": "attachOriginalInvocation"
+        },
+        {
+          "path": "Modules/Services/Online/SourceCallBackService.swift",
+          "line": 276,
+          "text": "attachOriginalInvocation"
+        }
+      ]
+    },
+    {
+      "area": "Cancellation and owned callback drain",
+      "conclusion": "Runner seals generation, stops loading and cancels initial/evaluation/child work. A separate finishing task drains them and issued Cookie callbacks before resuming the caller, then removes only its own rule list. Caller cancellation and source invalidation cancel the retained headless operation. No definite self-await cycle was found in this bounded source review.",
+      "anchors": [
+        {
+          "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+          "line": 486,
+          "text": "private func finishOriginal"
+        },
+        {
+          "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+          "line": 500,
+          "text": "if let initial { await initial.value }"
+        },
+        {
+          "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+          "line": 245,
+          "text": "group.notify(queue: .main)"
+        },
+        {
+          "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+          "line": 1064,
+          "text": "private func cancelOriginalHeadless"
+        }
+      ]
+    },
+    {
+      "area": "Cookie and trust boundary",
+      "conclusion": "Cookie seed/capture uses the existing owners with real callback drain and admitted commit checks. System WebKit trust remains in force; this delta does not install an authentication-challenge trust bypass or Android invalid-TLS proceed behavior.",
+      "anchors": [
+        {
+          "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+          "line": 236,
+          "text": "try original.validateCommit()"
+        },
+        {
+          "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+          "line": 238,
+          "text": "sourceWebViewCookieSeedIssued"
+        },
+        {
+          "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+          "line": 247,
+          "text": "sourceWebViewCookieSeedCompleted"
+        }
+      ]
+    },
+    {
+      "area": "Original raw completion and policy",
+      "conclusion": "Actual authored JavaScript is evaluated natively. Bounded native scalar/array projection is encoded with fixed isolated-world JSON intrinsics; original JVM policy decides null/empty retry, navigation and terminal result. Object/object-array ordering and complete HTTP resource sniffing remain explicit unsupported gaps.",
+      "anchors": [
+        {
+          "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+          "line": 363,
+          "text": "view.evaluateJavaScript(script)"
+        },
+        {
+          "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+          "line": 376,
+          "text": "contentWorld: .defaultClient"
+        },
+        {
+          "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+          "line": 392,
+          "text": "nonisolated private static func validateOriginalCompletion"
+        }
+      ]
+    }
+  ],
+  "reusedEvidence": [
+    {
+      "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/validation/function-ast-final-v1.json",
+      "bytes": 10733,
+      "sha256": "67322119714515af7a7d78ece48351ded8a6b04d5e03d96fa99a5a838dbb5f9e"
+    },
+    {
+      "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/validation/grammar-final-v1.json",
+      "bytes": 3623,
+      "sha256": "0cf50a9c52bbdc4e4bb6f92a938f28f0259567fd90ceb6f00bfb4bb57f1eded0"
+    },
+    {
+      "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/validation/native-completion-actual-source.swift",
+      "bytes": 37240,
+      "sha256": "165dceddf36fe0c659a0270defd33d02c52f07217d04af21e5b27c4a9387fb09"
+    },
+    {
+      "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/validation/native-completion-command.json",
+      "bytes": 735,
+      "sha256": "4ac3b35dedaaf0f7ff4e4ae06877a255caaaf8f4bc0212ebb0b9402a19d4fff8"
+    },
+    {
+      "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/validation/native-completion-contract.cjs",
+      "bytes": 5566,
+      "sha256": "14ee60ef2235313396894eb25098032ac9a696d20203ecf51e268237e18ae6e4"
+    },
+    {
+      "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/validation/native-completion-contract.json",
+      "bytes": 1741,
+      "sha256": "0b127cd0f03e4261b7f5531ec823a273ec9d8afba6ff18ba772eff22e3dabc33"
+    },
+    {
+      "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/validation/native-completion-contract.log",
+      "bytes": 98,
+      "sha256": "067a4ee130211d91502da02428912cbbf1b76a3329c036ca221d71b9c1307150"
+    },
+    {
+      "path": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/validation/native-completion-final-reuse.json",
+      "bytes": 864,
+      "sha256": "631c0d5ff4409bd018b46c91be27fb02cd8240b42294bfeddf24880d1da015fd"
+    },
+    {
+      "path": ".build/original-general-webjs-swift-step/review-v1.json",
+      "bytes": 20259,
+      "sha256": "3037984bb3e0cfb38f85a4bfc84c1f9c84d5019fc1ca042f980f304654583ad4"
+    },
+    {
+      "path": ".build/original-general-webjs-step/counterexamples-v1.json",
+      "bytes": 2465,
+      "sha256": "25d5e4581fe9b45e8cf03159b4cf770b64ab5cb60250ebaefa20f5549ba05692"
+    }
+  ],
+  "checks": [
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/final-v1.json",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Native successor binds exact Swift parent",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/rawbaseline/Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/work/Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/diffs/Modules/Core/RuleEngine/ModernParser/JS/LegadoHeadlessWebView.swift.diff",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/rawbaseline/Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/work/Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/diffs/Modules/Services/Online/LegadoPersistentStateHost.swift.diff",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/rawbaseline/Modules/Services/Online/LegadoPreviewStateOwner.swift",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/work/Modules/Services/Online/LegadoPreviewStateOwner.swift",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/diffs/Modules/Services/Online/LegadoPreviewStateOwner.swift.diff",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/rawbaseline/Modules/Services/Online/LegadoContentBatchOwner.swift",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/work/Modules/Services/Online/LegadoContentBatchOwner.swift",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/diffs/Modules/Services/Online/LegadoContentBatchOwner.swift.diff",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/rawbaseline/Modules/Services/Online/SourceCallBackService.swift",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/work/Modules/Services/Online/SourceCallBackService.swift",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/diffs/Modules/Services/Online/SourceCallBackService.swift.diff",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/rawbaseline/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/work/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/diffs/Tests/iOS/LegadoNativeOriginalReaderTests.swift.diff",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-native-successor/work/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "One root-authored Native literal replacement only",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Native is last roster row",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalColdProducerPersistsPublicReaderBeforeProcessExit",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalColdConsumerRestoresOwnedReaderWithoutNetwork",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalWebBookPreviewTransferAndReopen",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalCachedExplorePageOpensAndSavesOnLeave",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalBookNotificationCancellationDrains",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalGeneralWebJSUsesPreviewBatchAndBookCallbackOwners",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalColdProducerPersistsPublicReaderBeforeProcessExit",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalColdConsumerRestoresOwnedReaderWithoutNetwork",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalWebBookPreviewTransferAndReopen",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalPublicReaderCancellationDrainsWithoutCache",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalExplorePauseUsesEveryOpenedSourceAndRealCacheOwner",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalCachedExplorePageOpensAndSavesOnLeave",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalBatchUsesRealGrantsArtifactsAndMissingIdentities",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalBatchCancellationDrainsAndPreservesSavedPrefix",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalBookNotificationsUseActualStateAndKeepCacheIdentity",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalBookNotificationCancellationDrains",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalShelfRefreshUsesNullEntitiesAndSameSourceOwners",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unique Native method testNativeOriginalShelfRefreshCancellationDrainsWithoutBookAuthority",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "All original 13 Native declarations retained exactly",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Exactly one new Native declaration",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-step/implementation-v1/wire-v1.json",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/validation/function-ast-final-v1.json",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/validation/grammar-final-v1.json",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/validation/native-completion-actual-source.swift",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/validation/native-completion-command.json",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/validation/native-completion-contract.cjs",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/validation/native-completion-contract.json",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/validation/native-completion-contract.log",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-implementation-step/snapshot-v1/validation/native-completion-final-reuse.json",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-swift-step/review-v1.json",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-step/counterexamples-v1.json",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Existing Node evidence is explicitly bounded and not Apple execution",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-step/implementation-v1/backend-final-v1.json",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Both sides bind same general wire",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/BaseSource.kt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/LegadoRuntime.kt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalGeneralWebJsRuntime.kt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalSourceLoginHost.kt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalTraditionalRuntime.kt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalGeneralWebJsTest.kt",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": ".build/original-general-webjs-step/implementation-v1/snapshot-v1/work/Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "passed": true,
+      "detail": null
+    }
+  ],
+  "checkCounts": {
+    "total": 80,
+    "passed": 80,
+    "failed": 0
+  },
+  "remainingGaps": [
+    {
+      "area": "Ordered object/object-array completion",
+      "status": "Unfinished, currently explicit UNSUPPORTED_CAPABILITY",
+      "evidence": "Three Node raw-order examples preserve b-before-a and numeric-property ordering; actual WK object/captured-eval/CSP alternatives not executed. Native primitive/array route is bounded, not overall general-WebJS completeness."
+    },
+    {
+      "area": "Complete HTTP(S) resource sourceRegex sniff",
+      "status": "Unfinished, currently explicit UNSUPPORTED_CAPABILITY",
+      "evidence": "Existing public WK navigation delegate does not supply every HTTP resource-load callback. No DOM/performance scan substitution; Root separately researches official public alternatives."
+    },
+    {
+      "area": "Platform trust/cache equivalence",
+      "status": "Unfinished compatibility differences retained",
+      "evidence": "Uses system WK trust, never Android proceed-on-invalid-TLS. cacheFirst uses WK policy; full Android cache/image scheduling/database equivalence is not claimed. Public image content blocker is authored but unexecuted on WK."
+    },
+    {
+      "area": "Additional original BaseSource/WebJs APIs",
+      "status": "Finite JVM allowlist only; unported functions remain typed unsupported"
+    },
+    {
+      "area": "Actual WK/CSP/deadline callbacks",
+      "status": "SDK execution pending",
+      "evidence": "Native getCompletion/defaultClient encoding, Cookie seed/capture, content rule lifecycle, synchronous prompt, network navigation, infinite page JavaScript interruption and actual callback drain require Apple execution; no Node/grammar promotion."
+    }
+  ],
+  "integrationBoundaries": [
+    "General JVM backend predates the canonical Base64 repair. Root must compose separate RulePlatform hunks and manifest rows and compile the coherent ABI; whole-file replacement or mixed parent Platform classes would discard one change.",
+    "The old completed fc3 native results do not cover these candidate sources. This review gives no App, JNI, WK, device, signing or renewal acceptance.",
+    "Actual WK native completion/CSP, Cookie callback termination, content rule list lifecycle, synchronous prompt nesting, network redirect behavior and interruption of infinite page JavaScript remain Apple SDK/runtime verification items."
+  ],
+  "actualWork": {
+    "sourceHashAndASTBinding": true,
+    "testSuitesRerun": 0,
+    "newGrammarRuns": 0,
+    "SwiftTypecheck": 0,
+    "SwiftSDK": 0,
+    "JNI": 0,
+    "WK": 0,
+    "cloudQueries": 0,
+    "canonicalWrites": 0,
+    "peerWrites": 0,
+    "GitMutations": 0
+  }
+}

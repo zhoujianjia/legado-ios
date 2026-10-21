@@ -1,0 +1,60 @@
+--- a/Tests/iOS/LegadoNativeOriginalReaderTests.swift
++++ b/Tests/iOS/LegadoNativeOriginalReaderTests.swift
+@@ -9,6 +9,57 @@
+ /// All service/executor/Host/client/cache implementations below are production defaults.
+ /// The loopback peer supplies bytes only; it is never a runtime transport substitute.
+ final class LegadoNativeOriginalReaderTests: XCTestCase {
++    func testNativeOriginalGeneralWebJSUsesPreviewBatchAndBookCallbackOwners() async throws {
++        executionTimeAllowance = 240
++        try await withFixture { fixture in
++            var preview = fixture.source
++            preview.searchUrl = "@js:if(java.webView('<html><body>native</body></html>',null,\"'basic-ready'\")!=='basic-ready')throw new Error('basic WebJS failed');'"
++                + fixture.baseURL + "/search?key=native-original&page=2'"
++            // An unsaved source has cache-only rule interfaces. This exercises
++            // the actual @webjs parser and the same JVM/native page lease.
++            preview.ruleSearch.name = "@webjs:if(typeof cache!=='object')throw new Error('missing original cache');document.querySelector('a').textContent"
++            let first = try await fixture.service.originalSearch(query: "native-original", page: 2, source: preview)
++            XCTAssertEqual(first.map(\.name), ["Original JNI"])
++            var urlMode = fixture.source
++            urlMode.searchUrl = fixture.baseURL + "/search?key=native-original&page=2,{\"webView\":true,\"webJs\":\"document.documentElement.outerHTML\"}"
++            let loaded = try await fixture.service.originalSearch(query: "native-original", page: 2, source: urlMode)
++            XCTAssertEqual(loaded.map(\.name), ["Original JNI"])
++
++            let owned = try await self.ownedBatchBook(fixture)
++            var authored = fixture.source
++            authored.ruleContent.contentBatch = "if(java.webView('<html>batch</html>',null,\"'batch-ready'\")!=='batch-ready')throw new Error('batch WebJS failed');\n"
++                + authored.ruleContent.contentBatch
++            authored.eventListener = true
++            authored.ruleContent.callBackJs = "if(java.webView('<html>callback</html>',null,\"'callback-ready'\")!=='callback-ready')throw new Error('callback WebJS failed');book.putVariable('nativeGeneralCallback','accepted')"
++            let source = authored
++            let fetcher = BookSourceFetcher(mainJSService: fixture.service)
++            let webViewFetcher = await MainActor.run { WebViewFetcher.shared }
++            let manager = ChapterFetchManager(bookSourceFetcher: fetcher, webViewFetcher: webViewFetcher,
++                sourceResolver: { id in id == source.id ? source : nil })
++            let result = try await manager.fetchOriginalContentBatch(bookID: owned.book.id, sourceID: source.id,
++                book: owned.dto, chapterIndexes: [0, 1, 2], store: owned.store, timeout: 90, cache: fixture.cache)
++            XCTAssertEqual(result.missingChapters.map(\.index), [2])
++            let currentValue = await MainActor.run { owned.store.readingBook(id: owned.book.id) }
++            let current = try XCTUnwrap(currentValue)
++            let positions = JSONFileReadingPositionStore(baseURL: fixture.root.appendingPathComponent("general-positions"), onSave: { _, _ in })
++            let callback = await MainActor.run { SourceCallBackService.notify(.addBookShelf, book: current,
++                positionStore: positions, store: owned.store, fetcher: fetcher, source: source) }
++            let pending = try XCTUnwrap(callback)
++            let terminal = await pending.value
++            XCTAssertFalse(terminal.failed, terminal.errorCode ?? "")
++            let after = await MainActor.run { owned.store.readingBook(id: owned.book.id) }
++            XCTAssertEqual(after?.runtimeVariables?["nativeGeneralCallback"], "accepted")
++            XCTAssertTrue(terminal.completedEffects.contains("bookVariablesCommitted"))
++            // The public producer still owns the actual chapter/cache commit;
++            // headless success itself has no grant to create these files.
++            let saved = try await BookStore.chapterCachePersistence {
++                fixture.cache.loadChapterPackageSync(bookId: owned.book.id, chapterIndex: 0,
++                    expectedSourceURL: owned.chapters[0].url, expectedTOCTitle: owned.chapters[0].title)
++            }
++            XCTAssertTrue(saved?.content.contains("INDEX_0") == true)
++        }
++    }
++
+     func testNativeOriginalColdProducerPersistsPublicReaderBeforeProcessExit() async throws {
+         executionTimeAllowance = 180
+         let cold = try await coldContext()

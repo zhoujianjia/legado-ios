@@ -1,0 +1,17 @@
+{
+  "finding": "General-v1 URL webViewDelayTime negative values were not clamped before Backstage default900ms; original URL option did clamp.",
+  "original": {
+    "path": ".build/original-general-webjs-step/primary/app/src/main/java/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+    "bytes": 35401,
+    "sha256": "f7ba074137c8e3a847dc7bbf9465c7fd9318646c5670c144300e7959fb931a9b",
+    "line": 298
+  },
+  "fixed": {
+    "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt",
+    "bytes": 22451,
+    "sha256": "f8bda0fa1d7240220b4bc6499cfc393e8eb0378c6a67cd78e6c7b9ce0b8bf84b"
+  },
+  "actualPublicVector": "webViewtrue,webViewDelayTime-1,jsnull -> delayTime0/initialDelay1000; same actual joint ordinaryJAR",
+  "directMethodsUntouched": true,
+  "oldV1RemainsImmutable": true
+}

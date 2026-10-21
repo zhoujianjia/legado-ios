@@ -1,0 +1,45 @@
+[
+  {
+    "name": "compile",
+    "argv": [
+      "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\javac.exe",
+      "-J-Xmx64m",
+      "-encoding",
+      "UTF-8",
+      "-classpath",
+      "F:\\yuedu-reader\\.build\\original-general-webjs-base64-union-step\\ordinary-jar\\legado-runtime-general-base64.jar",
+      "-d",
+      "F:\\yuedu-reader\\.build\\original-general-webjs-base64-union-step\\ordinary-base64",
+      "F:\\yuedu-reader\\.build\\original-general-webjs-base64-union-step\\oracle-source\\android\\util\\Base64.java",
+      "F:\\yuedu-reader\\.build\\original-general-webjs-base64-union-step\\OrdinaryBase64Flags.java"
+    ],
+    "exitCode": 0,
+    "seconds": 0.782,
+    "log": {
+      "path": "ordinary-base64\\compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  {
+    "name": "candidate-public",
+    "argv": [
+      "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\java.exe",
+      "-Xmx160m",
+      "-XX:MaxMetaspaceSize=128m",
+      "-XX:ActiveProcessorCount=2",
+      "-XX:+UseSerialGC",
+      "-Dfile.encoding=UTF-8",
+      "-classpath",
+      "F:\\yuedu-reader\\.build\\original-general-webjs-base64-union-step\\ordinary-jar\\legado-runtime-general-base64.jar;F:\\yuedu-reader\\.build\\original-general-webjs-base64-union-step\\ordinary-base64",
+      "OrdinaryBase64Flags"
+    ],
+    "exitCode": 0,
+    "seconds": 2.109,
+    "log": {
+      "path": "ordinary-base64\\candidate-public.log",
+      "bytes": 262,
+      "sha256": "7724490dad0e5a657858d299ed9e15152b0641c5d316050c1b8b1f92086ace63"
+    }
+  }
+]

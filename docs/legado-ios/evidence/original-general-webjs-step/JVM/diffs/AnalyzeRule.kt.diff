@@ -1,0 +1,11 @@
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt
+@@ -173,7 +173,7 @@
+      */
+     private fun getWebJsResult(jsStr: String, result: Any): String {
+         runtime.ensureOpen()
+-        return runtime.platform.webJs(baseUrl, content.toString(), jsStr, result, coroutineContext)
++        return runtime.platform.webJs(baseUrl, content.toString(), jsStr, result, coroutineContext, this)
+     }
+
+     /**

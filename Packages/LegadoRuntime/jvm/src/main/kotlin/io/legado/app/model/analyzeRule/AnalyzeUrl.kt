@@ -48,10 +48,9 @@ class AnalyzeUrl(
     private val context = coroutineContext.minusKey(ContinuationInterceptor)
     private val concurrentRateLimiter = ConcurrentRateLimiter(source)
     suspend fun getStrResponseAwait(jsStr: String? = null, sourceRegex: String? = null, useWebView: Boolean = true, isTest: Boolean = false, skipRateLimit: Boolean = false): io.yuedu.legado.StrResponse {
-        if (!jsStr.isNullOrBlank() || !sourceRegex.isNullOrBlank()) unsupportedRule("original WebBook browser/webJs/sourceRegex")
         if (isTest) unsupportedRule("original AnalyzeUrl isTest timing/error probes")
         if (!skipRateLimit) concurrentRateLimiter.getConcurrentRecord()
-        return environment.platform.executeUrl(this)
+        return environment.platform.executeUrl(this, jsStr, sourceRegex, useWebView)
     }
     fun getErrStrResponse(error: Throwable): io.yuedu.legado.StrResponse {
         val request = okhttp3.Request.Builder().url(url).build()
@@ -76,6 +75,9 @@ class AnalyzeUrl(
     private var followRedirects: Boolean? = null
     private var dnsIp: String? = null
     private var bodyJs: String? = null
+    private var useWebView = false
+    private var webJs: String? = null
+    private var webViewDelayTime = 0L
 
     init {
         environment.ensureOpen()
@@ -127,11 +129,11 @@ class AnalyzeUrl(
                 followRedirects = option.getFollowRedirects()
                 dnsIp = option.getDnsIp()
                 bodyJs = option.getBodyJs()
-                if (option.useWebView()) unsupportedRule("URL option 'webView'")
+                useWebView = option.useWebView()
+                webJs = option.getWebJs()
+                webViewDelayTime = maxOf(0L, option.getWebViewDelayTime() ?: 0L)
                 if (option.getType() != null) unsupportedRule("URL option 'type'")
-                if (option.getWebJs() != null) unsupportedRule("URL option 'webJs'")
                 if (option.getServerID() != null) unsupportedRule("URL option 'serverID'")
-                if ((option.getWebViewDelayTime() ?: 0) > 0) unsupportedRule("URL option 'webViewDelayTime'")
                 option.getJs()?.let { script -> evalJS(script, url)?.toString()?.let { url = it } }
             }
         }
@@ -150,8 +152,17 @@ class AnalyzeUrl(
     /** Original WebViewModel branches only POST before presenting its page. */
     fun isPost(): Boolean = method == "POST"
 
-    internal fun prepareRequest(cookieForUrl: (String) -> String): JsonObject {
-        val requestUrl = if (method == "POST") urlNoQuery else urlNoQuery + (encodedQuery?.let { "?$it" } ?: "")
+    internal fun shouldUseWebView(allowed: Boolean): Boolean = useWebView && allowed
+    internal fun webViewScript(fallback: String?): String? = webJs ?: fallback
+    internal fun webViewDelayMillis(): Long = webViewDelayTime
+    internal fun returnRedirectBeforeWebView(code: Int): Boolean = shouldReturnRedirectBeforeWebView(followRedirects, code)
+
+    /** Locked executeStrRequest calls setCookie before either request branch. */
+    internal fun webViewHeaders(cookieForUrl: (String) -> String): Map<String, String> = requestHeaders(url, cookieForUrl).apply {
+        if (source?.enabledCookieJar == true) put("CookieJar", "1") else remove("CookieJar")
+    }
+
+    private fun requestHeaders(requestUrl: String, cookieForUrl: (String) -> String): LinkedHashMap<String, String> {
         val savedCookie = cookieForUrl(requestUrl)
         val headers = LinkedHashMap(headerMap)
         if (savedCookie.isNotEmpty()) {
@@ -161,6 +172,20 @@ class AnalyzeUrl(
                 if (parts.size == 2 && parts[1].isNotBlank()) cookies[parts[0].trim()] = parts[1].trim()
             } }
             headers["Cookie"] = cookies.entries.joinToString("; ") { "${it.key}=${it.value}" }
+        }
+        return headers
+    }
+
+    internal fun prepareRequest(cookieForUrl: (String) -> String): JsonObject = prepareRequest(cookieForUrl, false)
+    internal fun prepareRequest(cookieForUrl: (String) -> String, forWebView: Boolean): JsonObject {
+        val requestUrl = if (method == "POST") urlNoQuery else urlNoQuery + (encodedQuery?.let { "?$it" } ?: "")
+        val headers = requestHeaders(requestUrl, cookieForUrl)
+        // Locked browser POST uses postForm/postJson, ignoring an authored
+        // Content-Type for this branch. Ordinary requests retain their type.
+        if (forWebView && method == "POST") {
+            headers.keys.filter { it.equals("Content-Type", true) }.toList().forEach(headers::remove)
+            headers["Content-Type"] = if (!encodedForm.isNullOrEmpty() || body.isNullOrBlank())
+                "application/x-www-form-urlencoded" else "application/json; charset=UTF-8"
         }
         return LegadoHttpRequestPreprocessor.prepare(requestUrl, method, headers, body, charset,
             materializeBridgeHeaders = false, encodedFormOverride = encodedForm).apply {

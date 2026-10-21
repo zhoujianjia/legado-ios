@@ -473,6 +473,7 @@ struct NativeLegadoOriginalContentBatchExecutor: LegadoOriginalContentBatchExecu
         let process = LegadoRuntimeProcess.shared
         let owner = try await process.bindPersistentContentBatch(request)
         var finalBookCommitted = false
+        var attached = false
         let reportedEffects = OSAllocatedUnfairLock(initialState: [String]())
         let observeEffects: @Sendable ([String]) -> Void = { effects in
             reportedEffects.withLock { $0 = Array(Set($0 + effects)).sorted() }
@@ -483,6 +484,17 @@ struct NativeLegadoOriginalContentBatchExecutor: LegadoOriginalContentBatchExecu
             try check(request.deadline)
             let session = try await runtime.createSession(sourceJSON: request.sourceJSON,
                 options: NativeLegadoOriginalPreviewExecutor.embeddingOptions(owner: owner))
+            do {
+                try await process.attachOriginalInvocation(owner: owner, runtime: runtime, session: session,
+                    taskID: request.taskID, sourceID: request.sourceID)
+                attached = true
+            } catch {
+                do { try await runtime.close(session: session) }
+                catch { AppLogger.error("Unattached original session cleanup failed", error:
+                    LegadoRuntimeError(code: (error as? LegadoRuntimeError)?.code ?? "STATE_IO",
+                        message: "Unattached original session did not close")) }
+                throw error
+            }
             let result: LegadoOriginalContentBatchResult
             do {
                 try check(request.deadline)
@@ -517,16 +529,18 @@ struct NativeLegadoOriginalContentBatchExecutor: LegadoOriginalContentBatchExecu
                     if finalBookCommitted { observeEffects(["bookVariablesCommitted"]) }
                 }
             } catch {
-                do { try await runtime.close(session: session) }
-                catch { AppLogger.error("Original batch session cleanup failed after execution error", error: error) }
+                do { try await process.finishOriginalInvocation(owner: owner, taskID: request.taskID, cancelPages: true) }
+                catch { AppLogger.error("Original page/session cleanup failed after execution error", error:
+                    LegadoRuntimeError(code: (error as? LegadoRuntimeError)?.code ?? "STATE_IO",
+                        message: "Original page/session cleanup did not complete")) }
                 throw error
             }
-            try await runtime.close(session: session)
+            try await process.finishOriginalInvocation(owner: owner, taskID: request.taskID, cancelPages: false)
             try check(request.deadline)
-            await process.revokePersistentSource(owner: owner)
+            if !attached { await process.revokePersistentSource(owner: owner) }
             return result
         } catch {
-            await process.revokePersistentSource(owner: owner)
+            if !attached { await process.revokePersistentSource(owner: owner) }
             let failure = error as? LegadoRuntimeError
             let effects = Array(Set(reportedEffects.withLock { $0 } + (failure?.completedEffects ?? []) +
                 (finalBookCommitted ? ["bookVariablesCommitted"] : []))).sorted()

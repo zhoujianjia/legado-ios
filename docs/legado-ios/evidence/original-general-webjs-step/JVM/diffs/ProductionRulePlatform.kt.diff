@@ -1,0 +1,129 @@
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt
+@@ -284,20 +284,121 @@
+         } finally { cancellation?.dispose() }
+     }
+
+-    override fun executeUrl(analyzed: AnalyzeUrl): StrResponse {
++    override fun executeUrl(analyzed: AnalyzeUrl): StrResponse = executeUrl(analyzed, null, null, true)
++    override fun executeUrl(analyzed: AnalyzeUrl, js: String?, sourceRegex: String?, useWebView: Boolean): StrResponse {
+         check(analyzed.getRuleEnvironment() === environment()) { "AnalyzeUrl belongs to another environment" }
+         val context = analyzed.getRuleCoroutineContext()
+         ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+         return try {
+-            val request = analyzed.prepareRequest { target -> requestCookieHeader(target.toHttpUrl().toString()) }
+-            checkRequestCookieCapability(request)
+-            val result = http.execute(request, recoverIoFailure = false, transform = analyzed::transformResponse)
+-            ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+-            result
++            val browser = analyzed.shouldUseWebView(useWebView)
++            if (!browser) {
++                val request = analyzed.prepareRequest { target -> requestCookieHeader(target.toHttpUrl().toString()) }
++                checkRequestCookieCapability(request)
++                http.execute(request, recoverIoFailure = false, transform = analyzed::transformResponse)
++            } else {
++                val headers = analyzed.webViewHeaders { target -> requestCookieHeader(target.toHttpUrl().toString()) }
++                val fetched = if (analyzed.isPost()) {
++                    val request = analyzed.prepareRequest({ target -> requestCookieHeader(target.toHttpUrl().toString()) }, forWebView = true)
++                    checkRequestCookieCapability(request)
++                    task.recordHostEffect("sourceWebViewPostMaySend")
++                    http.execute(request, recoverIoFailure = false).also { task.recordHostEffect("sourceWebViewPostResponseReceived") }
++                } else null
++                if (fetched != null && analyzed.returnRedirectBeforeWebView(fetched.code())) fetched
++                else generalWebView(analyzed, fetched?.body(), fetched?.url() ?: analyzed.url,
++                    analyzed.webViewScript(js), false, sourceRegex, null, analyzed.webViewDelayMillis(),
++                    isRule = false, resultJSON = null, headers = headers)
++            }.also { ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime() }
+         } catch (error: Exception) {
+             ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+             rethrowRuleControlFailure(error)
+             throw error
++        }
++    }
++
++    override fun webView(requester: RuleJsExtensions, html: String?, url: String?, js: String?, cacheFirst: Boolean,
++                         sourceRegex: String?, overrideUrlRegex: String?, delayTime: Long): StrResponse =
++        generalWebView(requester, html, url, js, cacheFirst, sourceRegex, overrideUrlRegex, delayTime,
++            isRule = false, resultJSON = null, headers = generalHeaders(requester))
++
++    override fun webJs(baseUrl: String?, html: String, js: String, result: Any, context: CoroutineContext,
++                       requester: RuleJsExtensions): String {
++        context.ensureActive()
++        val serialized = try { GSON.toJson(result) } catch (_: StackOverflowError) {
++            unsupportedRule("original WebJS previous result is not serializable by the locked Gson contract")
++        }
++        return generalWebView(requester, html, baseUrl, js, true, null, null, 0L,
++            isRule = true, resultJSON = serialized, headers = generalHeaders(requester)).body()
++    }
++
++    private fun generalHeaders(requester: RuleJsExtensions): Map<String, String> {
++        ensureOwnerOpen(); task.ensureActiveForRuntime()
++        check(requester.getRuleEnvironment() === environment()) { "WebView requester belongs to another environment" }
++        return com.script.rhino.runScriptWithContext(requester.getRuleCoroutineContext()) {
++            requester.getSource()?.getHeaderMap(true)?.let(::LinkedHashMap) ?: emptyMap()
++        }
++    }
++
++    private fun generalWebView(requester: RuleJsExtensions, html: String?, url: String?, js: String?, cacheFirst: Boolean,
++                               sourceRegex: String?, overrideUrlRegex: String?, delayTime: Long, isRule: Boolean,
++                               resultJSON: String?, headers: Map<String, String>): StrResponse {
++        ensureOwnerOpen(); task.ensureActiveForRuntime()
++        check(requester.getRuleEnvironment() === environment()) { "WebView requester belongs to another environment" }
++        requester.getRuleCoroutineContext().ensureActive()
++        val owner = task.session.options.stateOwner ?: unsupportedRule("general WebView needs its existing source owner")
++        val sourceKey = task.session.source["bookSourceUrl"].asString
++        val tag = requester.getSource()?.getKey()
++        require((url?.length ?: 0) < 65_536 && (sourceRegex?.length ?: 0) < 32_768 && (overrideUrlRegex?.length ?: 0) < 32_768)
++        if ((html?.toByteArray(Charsets.UTF_8)?.size ?: 0) > 4 * 1024 * 1024 ||
++            (js?.toByteArray(Charsets.UTF_8)?.size ?: 0) > 512 * 1024 ||
++            GSON.toJson(headers).toByteArray(Charsets.UTF_8).size > 65_536)
++            throw io.yuedu.legado.RuntimeFailure("STATE_LIMIT", "Original WebView input exceeds its byte budget")
++        val now = System.currentTimeMillis()
++        val deadline = minOf(task.deadlineEpochMs, now + if (isRule) 10_000L else 60_000L)
++        val policy = io.yuedu.legado.OriginalGeneralWebPolicy(url, html, js, isRule, tag, deadline, sourceRegex, overrideUrlRegex, delayTime)
++        val page = task.session.originalPages.registerGeneral(task, policy)
++        try {
++            // Privacy promotion is not browser admission. This operation is
++            // available to ordinary original-rule requests in the same owner.
++            task.sensitiveSourceOperation = true
++            if (!html.isNullOrEmpty() && resultJSON != null) environment().cache.put("webview_result", resultJSON)
++            val userAgent = headers.entries.firstOrNull { it.key == "User-Agent" && it.value.isNotBlank() }?.value
++                ?: headers.entries.firstOrNull { it.key.equals("User-Agent", true) && it.value.isNotBlank() }?.value ?: this.userAgent
++            val additional = headers.filterKeys { !it.equals("User-Agent", true) && !it.equals("CookieJar", true) && !it.equals("proxy", true) }
++            val input = io.yuedu.legado.jsonObject("owner" to owner, "sourceURL" to sourceKey,
++                "sessionId" to task.session.id, "taskId" to task.id, "cookieAccess" to task.session.options.cookieAccess,
++                "url" to url, "html" to html, "js" to js, "headers" to headers,
++                "userAgent" to userAgent, "additionalHeaders" to additional, "cookieTag" to tag,
++                "isRule" to isRule, "cacheFirst" to cacheFirst, "delayTime" to delayTime,
++                "initialDelayMs" to policy.initialDelayMs, "timeoutMs" to (deadline - now).coerceAtLeast(1),
++                "browserDeadlineEpochMs" to deadline, "sourceRegex" to sourceRegex, "overrideUrlRegex" to overrideUrlRegex,
++                "resultJSON" to resultJSON, "injectionString" to if (isRule) page.ruleInjectionString() else null,
++                "page" to page.metadata())
++            ensureOwnerOpen(); task.ensureActiveForRuntime(); policy.ensureDeadline()
++            val reply = hostDispatch(task, "source.webview", input)
++            ensureOwnerOpen(); task.ensureActiveForRuntime(); requester.getRuleCoroutineContext().ensureActive()
++            val body = policy.validateTerminal(reply)
++            val responseURL = reply["url"]?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString
++                ?: throw io.yuedu.legado.RuntimeFailure("INVALID_WEBVIEW_RESULT", "Original WebView omitted its actual response URL")
++            val redirect = reply["redirected"]?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isBoolean }?.asBoolean
++                ?: throw io.yuedu.legado.RuntimeFailure("INVALID_WEBVIEW_RESULT", "Original WebView omitted its redirect observation")
++            if (responseURL.length >= 65_536) throw io.yuedu.legado.RuntimeFailure("STATE_LIMIT", "Original WebView URL exceeds its budget")
++            val builder = Response.Builder().code(200).message("OK").protocol(Protocol.HTTP_1_1)
++            val request = if (redirect) Request.Builder().url(responseURL).build() else try {
++                Request.Builder().url(responseURL).build()
++            } catch (_: IllegalArgumentException) { Request.Builder().url("http://localhost/").build() }
++            builder.request(request)
++            if (redirect) {
++                val origin = reply["originURL"]?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString
++                if (origin != (url ?: responseURL)) throw io.yuedu.legado.RuntimeFailure("INVALID_WEBVIEW_RESULT", "Original WebView redirect origin changed")
++                builder.priorResponse(Response.Builder().request(Request.Builder().url(origin).build()).code(302)
++                    .message("Found").protocol(Protocol.HTTP_1_1).build())
++            }
++            val raw = builder.build()
++            return StrResponse(raw.request.url.toString(), 200, body, emptyMap(), raw)
++        } finally {
++            // The Host must finish actual native work before returning. The
++            // existing same-session page close then seals/drains every child.
++            task.session.originalPages.close(page)
+         }
+     }

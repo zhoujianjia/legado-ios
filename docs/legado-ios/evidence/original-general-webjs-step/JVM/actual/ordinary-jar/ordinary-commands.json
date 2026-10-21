@@ -1,0 +1,56 @@
+{
+  "scope": "Ordinary JAR plus independent Java consumer only, no JUnit/test classes or UIKit",
+  "jar": {
+    "path": "F:\\yuedu-reader\\.build\\original-general-webjs-base64-union-step\\ordinary-jar\\legado-runtime-general-base64.jar",
+    "bytes": 10915789,
+    "sha256": "d1c0b7757361c71b9974dbc84611575d6ae0cab6ffcea214830fb5b2a22e7de4"
+  },
+  "source": {
+    "path": "F:\\yuedu-reader\\.build\\original-general-webjs-base64-union-step\\OrdinaryGeneralWebJs.java",
+    "bytes": 16526,
+    "sha256": "c337c5a6c01b16906a4f367bf1dc662e9d2a472f2a0e32fb894ad33901e889a1"
+  },
+  "commands": [
+    {
+      "argv": [
+        "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\javac.exe",
+        "-J-Xmx64m",
+        "-classpath",
+        "F:\\yuedu-reader\\.build\\original-general-webjs-base64-union-step\\ordinary-jar\\legado-runtime-general-base64.jar",
+        "-d",
+        "F:\\yuedu-reader\\.build\\original-general-webjs-base64-union-step\\ordinary-jar\\consumer-classes",
+        "F:\\yuedu-reader\\.build\\original-general-webjs-base64-union-step\\OrdinaryGeneralWebJs.java"
+      ],
+      "exitCode": 0,
+      "seconds": 0.766,
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\original-general-webjs-base64-union-step\\ordinary-jar\\compile-consumer.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\java.exe",
+        "-Xms16m",
+        "-Xmx160m",
+        "-XX:MaxMetaspaceSize=128m",
+        "-XX:CompressedClassSpaceSize=32m",
+        "-XX:ReservedCodeCacheSize=32m",
+        "-XX:ActiveProcessorCount=2",
+        "-Xss512k",
+        "-XX:+UseSerialGC",
+        "-cp",
+        "F:\\yuedu-reader\\.build\\original-general-webjs-base64-union-step\\ordinary-jar\\legado-runtime-general-base64.jar;F:\\yuedu-reader\\.build\\original-general-webjs-base64-union-step\\ordinary-jar\\consumer-classes",
+        "OrdinaryGeneralWebJs"
+      ],
+      "exitCode": 0,
+      "seconds": 1.515,
+      "log": {
+        "path": "F:\\yuedu-reader\\.build\\original-general-webjs-base64-union-step\\ordinary-jar\\execute-consumer.log",
+        "bytes": 165,
+        "sha256": "8115aa4201f9ea4408feda1b710b81bc9f4ff2f5cd25f5acfde98675a62da2e1"
+      }
+    }
+  ]
+}

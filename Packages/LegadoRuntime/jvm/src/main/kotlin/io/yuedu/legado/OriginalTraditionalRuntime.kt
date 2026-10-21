@@ -37,6 +37,7 @@ internal object OriginalTraditionalRuntime {
     }
     fun execute(task: RuntimeTask, operation: String, input: JsonObject): JsonElement {
         if (operation == "webJsRequest") return task.session.originalPages.request(task, input)
+        if (operation == "generalWebPolicy") return task.session.originalPages.generalPolicy(task, input)
         if (operation == "webJsPageClose") return task.session.originalPages.close(task, input)
         val fields = when (operation) {
             "loginUi" -> setOf("values", "evaluationValues", "reuseState", "timeoutMs")

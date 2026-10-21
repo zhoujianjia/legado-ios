@@ -1,0 +1,172 @@
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/OriginalWebJsPageRuntime.kt
+@@ -29,18 +29,40 @@
+     fun register(parent: RuntimeTask): Page {
+         parent.ensureActiveForRuntime()
+         check(parent.session === session && parent.sourceBrowserAllowed)
++        return registerOwned(parent, null)
++    }
++    fun registerGeneral(parent: RuntimeTask, policy: OriginalGeneralWebPolicy): Page {
++        parent.ensureActiveForRuntime()
++        check(parent.session === session && session.options.usesOriginalTraditional && session.options.usesJvmHttp)
++        requireNotNull(session.options.stateOwner)
++        return registerOwned(parent, policy)
++    }
++    private fun registerOwned(parent: RuntimeTask, policy: OriginalGeneralWebPolicy?): Page {
+         synchronized(pages) {
+             if (pages.size >= 8) throw RuntimeFailure("STATE_LIMIT", "Too many local source pages")
+-            return Page(parent).also { pages[it.id] = it }
++            return Page(parent, policy).also { pages[it.id] = it }
+         }
+     }
+     fun request(task: RuntimeTask, input: JsonObject): JsonObject {
+         require(input.keySet().all { it in setOf("pageId", "method", "params", "function", "requestId", "timeoutMs") })
+         require((input["timeoutMs"]?.asLong ?: 30_000) in 1..30_000)
+         val page = resolve(task, input)
++        val method = input["method"]?.asString.orEmpty()
++        val function = input["function"]?.takeUnless { it.isJsonNull }?.asString.orEmpty()
++        if (method.startsWith("policy.") || method in setOf("configure", "evaluate", "navigation", "resource", "cookie") || function.startsWith("policy."))
++            unsupportedRule("native-only original WebView policy")
+         if (org.htmlunit.corejs.javascript.Context.getCurrentContext() != null)
+             throw RuntimeFailure("INVALID_BROWSER_REENTRY", "A local source page child requires an independent worker context")
+         return runBlocking(task.job) { page.request(task, input) }
++    }
++    fun generalPolicy(task: RuntimeTask, input: JsonObject): JsonObject {
++        require(input.keySet().all { it in setOf("pageId", "method", "params", "timeoutMs") })
++        require((input["timeoutMs"]?.asLong ?: 30_000) in 1..30_000)
++        val page = resolve(task, input)
++        if (page.general == null) unsupportedRule("general WebView policy on a login page")
++        if (org.htmlunit.corejs.javascript.Context.getCurrentContext() != null)
++            throw RuntimeFailure("INVALID_BROWSER_REENTRY", "A WebView policy requires an independent worker context")
++        return runBlocking(task.job) { page.request(task, input, policyLane = true) }
+     }
+     fun close(task: RuntimeTask, input: JsonObject): JsonObject {
+         require(input.keySet().all { it in setOf("pageId", "timeoutMs") })
+@@ -71,12 +93,13 @@
+         return pages[id] ?: throw RuntimeFailure("INVALID_BROWSER_PAGE", "The local source page is closed or unknown")
+     }
+
+-    inner class Page internal constructor(parent: RuntimeTask) {
++    inner class Page internal constructor(parent: RuntimeTask, internal val general: OriginalGeneralWebPolicy? = null) {
+         val id = UUID.randomUUID().toString()
+         internal val parentTaskId = parent.id
+         private val javaName = "lgrj" + UUID.randomUUID().toString().replace("-", "")
+         private val cacheName = "lgrc" + UUID.randomUUID().toString().replace("-", "")
+         private val resultName = "lgrr" + UUID.randomUUID().toString().replace("-", "")
++        private val sourceName = "lgrs" + UUID.randomUUID().toString().replace("-", "")
+         private val lifetime = Any()
+         private val mutex = Mutex()
+         private var admissionClosed = false
+@@ -92,7 +115,10 @@
+             if (cause != null) seal()
+         }
+         fun metadata() = jsonObject("pageId" to id, "sessionId" to session.id,
+-            "parentTaskId" to parentTaskId, "javaName" to javaName, "cacheName" to cacheName, "resultName" to resultName)
++            "parentTaskId" to parentTaskId, "javaName" to javaName, "cacheName" to cacheName, "resultName" to resultName).apply {
++                if (general != null) addProperty("sourceName", sourceName)
++            }
++        fun ruleInjectionString(): String = "try{var cache=$cacheName,source=$sourceName,java=$javaName;}catch(e){}"
+         fun prepareHTML(html: String): String {
+             val injection = "<script>${injection()}</script>"
+             val head = html.indexOf("<head", ignoreCase = true)
+@@ -149,31 +175,40 @@
+                 }
+             }
+         }
+-        suspend fun request(task: RuntimeTask, input: JsonObject): JsonObject {
++        private fun ensureRequestActive(task: RuntimeTask) {
++            task.ensureActiveForRuntime()
++            synchronized(lifetime) { if (admissionClosed) throw CancellationException("Local source page closed") }
++            general?.ensureDeadline()
++        }
++        private fun environment(): RuleEnvironment = environment ?: LegadoRuntime.originalPageEnvironment(active!!) {
++            active ?: throw CancellationException("No active source page request")
++        }.also { environment = it }
++        private fun initializeAnalysis() {
++            if (analysis == null) {
++                source = LegadoRuntime.originalBookSource(active!!, environment())
++                analysis = AnalyzeRule(source = source)
++            }
++        }
++        suspend fun request(task: RuntimeTask, input: JsonObject, policyLane: Boolean = false): JsonObject {
+             val done = CompletableDeferred<Unit>()
+             synchronized(lifetime) {
+                 if (admissionClosed || session.closed.get()) throw CancellationException("Local source page closed")
+-                if (!bridgeEnabled) unsupportedRule("original empty POST page has no WebJS bridge")
++                if (!policyLane) {
++                    if (general == null && !bridgeEnabled) unsupportedRule("original empty POST page has no WebJS bridge")
++                }
+                 if (children.size >= 32 || ++requests > 4096) throw RuntimeFailure("STATE_LIMIT", "Local source page request budget exceeded")
+                 children[task] = done
+             }
+             try {
+                 return mutex.withLock {
+-                    task.ensureActiveForRuntime()
+-                    synchronized(lifetime) { if (admissionClosed) throw CancellationException("Local source page closed") }
++                    ensureRequestActive(task)
+                     active = task
+                     try {
+-                        if (environment == null) {
+-                            val env = LegadoRuntime.originalPageEnvironment(task) {
+-                                active ?: throw CancellationException("No active local source page request")
+-                            }
+-                            environment = env
+-                            source = LegadoRuntime.originalBookSource(task, env)
+-                            analysis = AnalyzeRule(source = source)
+-                        }
++                        if (policyLane) return@withLock executePolicy(input) { ensureRequestActive(task) }
++                        general?.checkBridge(input["method"]?.asString.orEmpty())
++                        initializeAnalysis()
+                         val context = currentCoroutineContext() + ScriptExecutionGuard {
+-                            task.ensureActiveForRuntime()
+-                            synchronized(lifetime) { if (admissionClosed) throw CancellationException("Local source page closed") }
++                            ensureRequestActive(task)
+                         }
+                         analysis!!.setCoroutineContext(context)
+                         runScriptWithContext(context) { execute(input) }
+@@ -184,6 +219,34 @@
+                 synchronized(lifetime) { children.remove(task) }
+                 done.complete(Unit)
+             }
++        }
++        private fun executePolicy(input: JsonObject, guard: () -> Unit): JsonObject {
++            val policy = general ?: unsupportedRule("general WebView policy")
++            val method = input["method"]?.asString ?: throw IllegalArgumentException("Missing policy method")
++            val raw = input["params"]
++            require(raw != null && raw.isJsonArray && raw.asJsonArray.size() <= 2)
++            val params = raw.asJsonArray.map { value ->
++                require(value.isJsonNull || value.isJsonPrimitive && value.asJsonPrimitive.isString)
++                if (value.isJsonNull) null else value.asString
++            }
++            fun required(index: Int): String = params.getOrNull(index) ?: throw IllegalArgumentException("Missing policy parameter")
++            guard()
++            return when (method) {
++                "configure" -> {
++                    require(params.size == 1 && params[0] in setOf("true", "false"))
++                    policy.configure(params[0] == "true")
++                }
++                "evaluate" -> { require(params.size == 1); policy.evaluate(params[0]) }
++                "navigation" -> { require(params.size == 1); policy.matchNavigation(required(0), guard) }
++                "resource" -> { require(params.size == 1); policy.matchResource(required(0), guard) }
++                "cookie" -> {
++                    policy.ensureConfigured()
++                    require(params.size == 2 && required(0).length < 65_536 && (params[1]?.toByteArray(Charsets.UTF_8)?.size ?: 0) <= 65_536)
++                    policy.cookieTag?.let { environment().platform.cookie.setCookie(it, params[1]) }
++                    jsonObject("kind" to "void")
++                }
++                else -> unsupportedRule("original WebView policy method $method")
++            }.also { guard() }
+         }
+         private fun execute(input: JsonObject): JsonObject {
+             val method = input["method"]?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString
+@@ -239,6 +302,10 @@
+                 "java.getString" -> string(analysis!!.getString(params.getOrNull(0), params.getOrNull(1) as Any?, params.getOrNull(2)?.toBoolean() ?: false))
+                 "java.getStringList" -> jsonObject("kind" to "stringList", "values" to analysis!!.getStringList(params.getOrNull(0), params.getOrNull(1), params.getOrNull(2)?.toBoolean() ?: false))
+                 "java.upConfig" -> nothing() // Activity has no Callback, unlike showBrowser.
++                "source.getKey" -> { if (general == null) unsupportedRule("login page source interface"); string(source!!.getKey()) }
++                "source.getTag" -> { if (general == null) unsupportedRule("login page source interface"); string(source!!.getTag()) }
++                "source.get" -> { if (general == null) unsupportedRule("login page source interface"); string(source!!.get(required(0))) }
++                "source.put" -> { if (general == null) unsupportedRule("login page source interface"); string(source!!.put(required(0), required(1))) }
+                 else -> unsupportedRule("original WebJS direct method $method")
+             }
+         }

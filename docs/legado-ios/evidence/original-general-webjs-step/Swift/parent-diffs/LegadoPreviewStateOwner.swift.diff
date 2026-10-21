@@ -1,0 +1,24 @@
+--- a/Modules/Services/Online/LegadoPreviewStateOwner.swift
++++ b/Modules/Services/Online/LegadoPreviewStateOwner.swift
+@@ -372,15 +372,12 @@
+             try check(deadline)
+             let session = try await runtime.createSession(sourceJSON: sourceJSON, options: Self.embeddingOptions(owner: owner))
+             do {
+-                let sourceID: UUID?
+-                switch operation {
+-                case .loginAction, .formLogin, .loginUI, .loginV2UI, .loginV2Action:
+-                    struct Identity: Decodable { let id: UUID }
+-                    sourceID = try SourcePerfTrace.span("legado.original.invocation.identity",
+-                        "main=\(Thread.isMainThread) bytes=\(sourceJSON.utf8.count)") {
+-                        try JSONDecoder().decode(Identity.self, from: Data(sourceJSON.utf8)).id
+-                    }
+-                default: sourceID = nil
++                // All original operations borrow the same admitted source identity,
++                // including parser WebJS. This does not grant login/browser or Book authority.
++                struct Identity: Decodable { let id: UUID }
++                let sourceID = try SourcePerfTrace.span("legado.original.invocation.identity",
++                    "main=\(Thread.isMainThread) bytes=\(sourceJSON.utf8.count)") {
++                    try JSONDecoder().decode(Identity.self, from: Data(sourceJSON.utf8)).id
+                 }
+                 try await process.attachOriginalInvocation(owner: owner, runtime: runtime, session: session,
+                     taskID: taskID, sourceID: sourceID)
