@@ -1,0 +1,952 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T00:28:45.986284+00:00",
+  "status": "actual-Native88-terminal-failure-Gradle-JUnit-five-no-iOS-execution",
+  "sourceCommit": "88c61ee4b80889a617d344fda668d077f73fa95b",
+  "sourceTag": "legado-native-reader-test-88c61ee",
+  "runID": 39520240533,
+  "jobID": 118962039359,
+  "workflowURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39520240533",
+  "workflowStatus": "completed",
+  "conclusion": "failure",
+  "queryAgain": false,
+  "earliestFailure": {
+    "step": {
+      "name": "Build and audit this checkout's ordinary production runtime",
+      "status": "completed",
+      "conclusion": "failure",
+      "number": 5
+    },
+    "task": ":test",
+    "processExitCode": 1,
+    "GradleBuildElapsed": "2m17s",
+    "tests": 353,
+    "passed": 348,
+    "failed": 5,
+    "errors": 0,
+    "skipped": 0
+  },
+  "ordinaryJUnit": {
+    "XMLSuites": 53,
+    "uniqueCaseIdentities": 353,
+    "passed": 348,
+    "failed": 5,
+    "errors": 0,
+    "skipped": 0
+  },
+  "failedCases": [
+    {
+      "identity": "io.yuedu.legado.OriginalAnalyzeRuleTest/hutoolStringBase64OverloadsKeepWhitespaceUrlSafeAndCharsetBehavior",
+      "message": "java.lang.AssertionError: expected java.lang.Exception to be thrown, but nothing was thrown",
+      "stack": "java.lang.AssertionError: expected java.lang.Exception to be thrown, but nothing was thrown\n\tat org.junit.Assert.assertThrows(Assert.java:1028)\n\tat org.junit.Assert.assertThrows(Assert.java:981)\n\tat io.yuedu.legado.OriginalAnalyzeRuleTest.hutoolStringBase64OverloadsKeepWhitespaceUrlSafeAndCharsetBehavior(OriginalAnalyzeRuleTest.kt:297)\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)\n\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)\n\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n\tat org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)\n\tat org.junit.runners.BlockJUnit4ClassRunner$1.evaluate(BlockJUnit4ClassRunner.java:100)\n\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:366)\n\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:103)\n\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:63)\n\tat org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)\n\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)\n\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)\n\tat org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)\n\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)\n\tat org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)\n\tat org.junit.runners.ParentRunner.run(ParentRunner.java:413)\n\tat org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.runTestClass(JUnitTestClassExecutor.java:112)\n\tat org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:58)\n\tat org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:40)\n\tat org.gradle.api.internal.tasks.testing.junit.AbstractJUnitTestClassProcessor.processTestClass(AbstractJUnitTestClassProcessor.java:54)\n\tat org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.processTestClass(SuiteTestClassProcessor.java:53)\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\tat org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)\n\tat org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)\n\tat org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:33)\n\tat org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:92)\n\tat jdk.proxy1/jdk.proxy1.$Proxy4.processTestClass(Unknown Source)\n\tat org.gradle.api.internal.tasks.testing.worker.TestWorker$2.run(TestWorker.java:183)\n\tat org.gradle.api.internal.tasks.testing.worker.TestWorker.executeAndMaintainThreadName(TestWorker.java:132)\n\tat org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:103)\n\tat org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:63)\n\tat org.gradle.process.internal.worker.child.ActionExecutionWorker.execute(ActionExecutionWorker.java:56)\n\tat org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:122)\n\tat org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:72)\n\tat worker.org.gradle.process.internal.worker.GradleWorkerMain.run(GradleWorkerMain.java:69)\n\tat worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)\n",
+      "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalAnalyzeRuleTest.xml"
+    },
+    {
+      "identity": "io.yuedu.legado.OriginalSourceLoginBrowserAwaitTest/presentationEmptyWrongModeAndExplicitUnsupportedNeverBecomeSuccessfulAwait",
+      "message": "org.junit.ComparisonFailure: expected:<[UNSUPPORTED_CAPABILITY]> but was:<[INVALID_BROWSER_RESULT]>",
+      "stack": "org.junit.ComparisonFailure: expected:<[UNSUPPORTED_CAPABILITY]> but was:<[INVALID_BROWSER_RESULT]>\n\tat org.junit.Assert.assertEquals(Assert.java:117)\n\tat org.junit.Assert.assertEquals(Assert.java:146)\n\tat io.yuedu.legado.OriginalSourceLoginBrowserAwaitTest.presentationEmptyWrongModeAndExplicitUnsupportedNeverBecomeSuccessfulAwait(OriginalSourceLoginBrowserAwaitTest.kt:58)\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)\n\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)\n\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n\tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)\n\tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\n",
+      "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginBrowserAwaitTest.xml"
+    },
+    {
+      "identity": "io.yuedu.legado.OriginalSourceLoginBrowserTest/unsupportedHtmlPostAndNonWebSchemesDoNotFakePresentation",
+      "message": "java.lang.AssertionError: {\"ok\":true,\"taskId\":\"browser-aee90b62-a2fc-41d6-b7e9-310e2329617f\",\"result\":{\"executed\":true},\"metrics\":{\"elapsedMs\":23.420958},\"completedEffects\":[\"sourceBrowserMayPresent\",\"sourceBrowserPresented\"]} expected:<false> but was:<true>",
+      "stack": "java.lang.AssertionError: {\"ok\":true,\"taskId\":\"browser-aee90b62-a2fc-41d6-b7e9-310e2329617f\",\"result\":{\"executed\":true},\"metrics\":{\"elapsedMs\":23.420958},\"completedEffects\":[\"sourceBrowserMayPresent\",\"sourceBrowserPresented\"]} expected:<false> but was:<true>\n\tat org.junit.Assert.fail(Assert.java:89)\n\tat org.junit.Assert.failNotEquals(Assert.java:835)\n\tat org.junit.Assert.assertEquals(Assert.java:120)\n\tat io.yuedu.legado.OriginalSourceLoginBrowserTest$Owned.call(OriginalSourceLoginBrowserTest.kt:99)\n\tat io.yuedu.legado.OriginalSourceLoginBrowserTest$Owned.call$default(OriginalSourceLoginBrowserTest.kt:95)\n\tat io.yuedu.legado.OriginalSourceLoginBrowserTest.unsupportedHtmlPostAndNonWebSchemesDoNotFakePresentation(OriginalSourceLoginBrowserTest.kt:39)\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)\n\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)\n\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n\tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)\n\tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\n",
+      "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginBrowserTest.xml"
+    },
+    {
+      "identity": "io.yuedu.legado.OriginalSourceLoginV2BrowserTest/acceptedBrowserEffectsSurviveScriptFailureAndHtmlRemainsUnsupported",
+      "message": "java.lang.AssertionError: {\"ok\":true,\"taskId\":\"v2-be526bbd-71ce-4648-9806-6e82a4c937c7\",\"result\":{\"stateJSON\":\"{\\\"done\\\":true}\",\"errors\":null,\"close\":false,\"loginStored\":false,\"unknownKeys\":[]},\"metrics\":{\"elapsedMs\":23.179583},\"completedEffects\":[\"sourceBrowserMayPresent\",\"sourceBrowserPresented\"]} expected:<false> but was:<true>",
+      "stack": "java.lang.AssertionError: {\"ok\":true,\"taskId\":\"v2-be526bbd-71ce-4648-9806-6e82a4c937c7\",\"result\":{\"stateJSON\":\"{\\\"done\\\":true}\",\"errors\":null,\"close\":false,\"loginStored\":false,\"unknownKeys\":[]},\"metrics\":{\"elapsedMs\":23.179583},\"completedEffects\":[\"sourceBrowserMayPresent\",\"sourceBrowserPresented\"]} expected:<false> but was:<true>\n\tat org.junit.Assert.fail(Assert.java:89)\n\tat org.junit.Assert.failNotEquals(Assert.java:835)\n\tat org.junit.Assert.assertEquals(Assert.java:120)\n\tat io.yuedu.legado.OriginalSourceLoginV2BrowserTest$Owned.call(OriginalSourceLoginV2BrowserTest.kt:121)\n\tat io.yuedu.legado.OriginalSourceLoginV2BrowserTest$Owned.action(OriginalSourceLoginV2BrowserTest.kt:118)\n\tat io.yuedu.legado.OriginalSourceLoginV2BrowserTest$Owned.action$default(OriginalSourceLoginV2BrowserTest.kt:118)\n\tat io.yuedu.legado.OriginalSourceLoginV2BrowserTest.acceptedBrowserEffectsSurviveScriptFailureAndHtmlRemainsUnsupported(OriginalSourceLoginV2BrowserTest.kt:54)\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)\n\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)\n\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n\tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)\n\tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\n",
+      "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginV2BrowserTest.xml"
+    },
+    {
+      "identity": "io.yuedu.legado.OriginalUrlExecutionTest/unsupportedOptionsHeadersAndUnmigratedMainJsStayTypedBeforeHttp",
+      "message": "java.lang.AssertionError: expected io.yuedu.legado.originalrule.UnsupportedRuleCapability to be thrown, but nothing was thrown",
+      "stack": "java.lang.AssertionError: expected io.yuedu.legado.originalrule.UnsupportedRuleCapability to be thrown, but nothing was thrown\n\tat org.junit.Assert.assertThrows(Assert.java:1028)\n\tat org.junit.Assert.assertThrows(Assert.java:981)\n\tat io.yuedu.legado.OriginalUrlExecutionTest.unsupportedOptionsHeadersAndUnmigratedMainJsStayTypedBeforeHttp(OriginalUrlExecutionTest.kt:134)\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)\n\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)\n\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n\tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)\n\tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\n",
+      "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalUrlExecutionTest.xml"
+    }
+  ],
+  "actualGeneralFourPassed": [
+    "io.yuedu.legado.OriginalGeneralWebJsTest/rawNullRetriesButQuotedEmptyAndNullStringsAreAccepted",
+    "io.yuedu.legado.OriginalGeneralWebJsTest/javaFullMatchesRetainSnifferIdentityAndGuardBacktracking",
+    "io.yuedu.legado.OriginalGeneralWebJsTest/actualRuleHtmlAndRegisteredSourceControlInterfacesWithoutGrantingBasicPages",
+    "io.yuedu.legado.OriginalGeneralWebJsTest/noPresentationOrFabricatedBodyCanReplaceAnAcceptedPolicyTerminal"
+  ],
+  "actualNativeOriginalMethodsExecuted": 0,
+  "actualMainJSMethodsExecuted": 0,
+  "actualColdHostsExecuted": 0,
+  "actualSDK_JNI_UIKitAccepted": false,
+  "artifact": {
+    "artifactID": 12310602908,
+    "path": ".build/native-88c61ee-terminal/artifact.zip",
+    "bytes": 74979,
+    "sha256": "5b54954af02fed635b042367d5403b26551ed13ac1f9423aa49af7a235ca41de",
+    "members": 64,
+    "CRCVerified": true,
+    "GitHubDigestVerified": true,
+    "downloadCount": 1
+  },
+  "historicalNative158Binding": {
+    "count": 158,
+    "canonicalRoster": {
+      "path": "docs/legado-ios/evidence/general-webjs-runtime-repairs-checkpoint/actual/Native-source-inputs-v1.json",
+      "bytes": 30084,
+      "sha256": "986cdb600a965d2a7b1bd6ea8f8dde67ab8787991cfa7548ae14f3bc829b4ff4",
+      "original": {
+        "path": ".build/consolidated-sdk-general-webjs-runtime-repairs-checkpoint/Native-source-inputs-v1.json",
+        "bytes": 30876,
+        "sha256": "161f5b9cad76b3b39ebdce36f82d0955784f870084f9646e609bc046c87b4d01"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; frozen raw facts retained"
+    },
+    "gitCommit": "88c61ee4b80889a617d344fda668d077f73fa95b",
+    "allGitBlobBytesMatched": true,
+    "nativeSourceBeforeAfterWasNotProduced": true,
+    "doesNotClaimCompleteGradleTransitiveClosure": true
+  },
+  "binaryResultFilesRetainedInOriginalZIP": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/build/test-results/test/binary/output.bin.idx",
+      "bytes": 215,
+      "sha256": "5ff6fa0c876dda11670d9fe261791d4936c047acf558f27f937a04649865f4a5"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/build/test-results/test/binary/results.bin",
+      "bytes": 66261,
+      "sha256": "1c7bffb3d8841696fc12b66db8e6e0f4316db55b86a0e253c1112cfa2df09406"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/build/test-results/test/binary/output.bin",
+      "bytes": 1769,
+      "sha256": "822bf0ca6ec144f6f85f6ff94e99a102fb6bd592a345f6a3f546bc90789568f9"
+    }
+  ],
+  "archivePreparationHistory": "Initial text-only archive preflight refused three Gradle binary result files before canonical writes. Resume preserves them in the original ZIP/member hashes; archives complete authoritative53 XML and text logs. No test/cloud rerun. Initial Git staging also refused53 XML paths under the repository build-directory ignore; resume moved only those new exact XML bytes to jvm-test-results and updated archive references. No force add, code change, test or cloud replay.",
+  "preservedEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/factual-review.json",
+      "bytes": 17060,
+      "sha256": "350dfd71166b733c79abc98b48f7df03046c182f87b0f279c594486fde8053aa",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/factual-review-v1.json",
+        "bytes": 17060,
+        "sha256": "350dfd71166b733c79abc98b48f7df03046c182f87b0f279c594486fde8053aa"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/scripts/archive-native-88c61ee-terminal.py",
+      "bytes": 8742,
+      "sha256": "717c4ec15bf1d9fcd134f5af546b88143483e81285505863a019ff1cce1b2a0f",
+      "original": {
+        "path": ".build/archive-native-88c61ee-terminal.py",
+        "bytes": 8742,
+        "sha256": "717c4ec15bf1d9fcd134f5af546b88143483e81285505863a019ff1cce1b2a0f"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/scripts/freeze-facts.py",
+      "bytes": 5763,
+      "sha256": "90535ba363b8bcc8d60bc19a1bb38b6642cd6ae9cd99e781637303fa12850dfd",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/freeze-facts.py",
+        "bytes": 5763,
+        "sha256": "90535ba363b8bcc8d60bc19a1bb38b6642cd6ae9cd99e781637303fa12850dfd"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/facts/terminal-jobs.json",
+      "bytes": 2858,
+      "sha256": "903f6430cce25c526c2321125f8fc25c23eb3f22ce3a1f65aec25af7e454e3f7",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/terminal-jobs.json",
+        "bytes": 2858,
+        "sha256": "903f6430cce25c526c2321125f8fc25c23eb3f22ce3a1f65aec25af7e454e3f7"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/facts/artifacts.json",
+      "bytes": 871,
+      "sha256": "06265d2536667bf7f2c8a1a83a4aa8fbf0759fccb03020d344f4fe3fd29b5030",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/artifacts.json",
+        "bytes": 871,
+        "sha256": "06265d2536667bf7f2c8a1a83a4aa8fbf0759fccb03020d344f4fe3fd29b5030"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/facts/native-job.log",
+      "bytes": 62981,
+      "sha256": "642a11bc121e2b39332dc60b8c3aa61f5a06b15910d1d9e0b6ee01aaa427bc92",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/native-job.log",
+        "bytes": 63027,
+        "sha256": "948c3ca3401a3fcc10c0d36046030f14398c5748f265322c52d1b79dbf549298"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/facts/artifact-member-facts.json",
+      "bytes": 14014,
+      "sha256": "f7842dc9480268d41234c8c9333ef65493811d9f8fea38bc68fe2bbc1a2659ea",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/artifact-member-facts.json",
+        "bytes": 14014,
+        "sha256": "f7842dc9480268d41234c8c9333ef65493811d9f8fea38bc68fe2bbc1a2659ea"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/facts/junit-source-facts.json",
+      "bytes": 66736,
+      "sha256": "e93010421063f4614fb13da3c8696490ee8e6b95711741c4d526d2e7acd25956",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/junit-source-facts.json",
+        "bytes": 66736,
+        "sha256": "e93010421063f4614fb13da3c8696490ee8e6b95711741c4d526d2e7acd25956"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/facts/historical-native158-source-binding.json",
+      "bytes": 39406,
+      "sha256": "20d84930bb1f2607ad0d888ca5a8438ff8f037af054f0a895bdd6c6691f1df26",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/historical-native158-source-binding.json",
+        "bytes": 39406,
+        "sha256": "20d84930bb1f2607ad0d888ca5a8438ff8f037af054f0a895bdd6c6691f1df26"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/facts/failure-excerpts.json",
+      "bytes": 1371,
+      "sha256": "598776e5c863aa9c3de0ec0fdce10f7b01c419316809e394d8bae2ee4342613f",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/failure-excerpts.json",
+        "bytes": 1371,
+        "sha256": "598776e5c863aa9c3de0ec0fdce10f7b01c419316809e394d8bae2ee4342613f"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/facts/actual-test-failures.json",
+      "bytes": 24101,
+      "sha256": "4720b5871829c870b213064d95017a73f7265236222b74dbcd4af7e4c7581a35",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/actual-test-failures.json",
+        "bytes": 24101,
+        "sha256": "4720b5871829c870b213064d95017a73f7265236222b74dbcd4af7e4c7581a35"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/ci-logs/native-reader-cold-protocol-guards.log",
+      "bytes": 995,
+      "sha256": "1d125f377e89701126ca12252c9772d31cf46d7b2f017b66b90040d61cbb12a5",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/.build/ci-logs/native-reader-cold-protocol-guards.log",
+        "bytes": 995,
+        "sha256": "1d125f377e89701126ca12252c9772d31cf46d7b2f017b66b90040d61cbb12a5"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/ci-logs/native-reader-diagnostics-guards.log",
+      "bytes": 1861,
+      "sha256": "b9ac272481173f073c79f738e45539864ee81d85b0aa7582d6b6d8d4e37ff77a",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/.build/ci-logs/native-reader-diagnostics-guards.log",
+        "bytes": 1861,
+        "sha256": "b9ac272481173f073c79f738e45539864ee81d85b0aa7582d6b6d8d4e37ff77a"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/ci-logs/native-reader-jvm.log",
+      "bytes": 11098,
+      "sha256": "0ce330916081b89ba67103b1a2599e688930a38c18f73904f1db04c02452dd27",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/.build/ci-logs/native-reader-jvm.log",
+        "bytes": 11099,
+        "sha256": "3032b6c3d3a32aeb936ba3aafa8c23e69a22635d61e98e8b7a25e8ee322eb592"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/ci-logs/native-reader-notice-guards.log",
+      "bytes": 2453,
+      "sha256": "86995a2a3bdd14bb4f03fa1c5513a47072e39996c32ab0d2a1122b9f829273ee",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/.build/ci-logs/native-reader-notice-guards.log",
+        "bytes": 2453,
+        "sha256": "86995a2a3bdd14bb4f03fa1c5513a47072e39996c32ab0d2a1122b9f829273ee"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/ci-logs/native-reader-overlays.log",
+      "bytes": 4221,
+      "sha256": "c97f32e09a5cb7a3d3659a43ff999aabbf6bcba64ab11cfd072c5d3c023afa59",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/.build/ci-logs/native-reader-overlays.log",
+        "bytes": 4221,
+        "sha256": "c97f32e09a5cb7a3d3659a43ff999aabbf6bcba64ab11cfd072c5d3c023afa59"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/ci-logs/native-reader-package-guards.log",
+      "bytes": 1154,
+      "sha256": "1d1da641f757cb02344de74831da3636198e156f97495985efbce63160aac13d",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/.build/ci-logs/native-reader-package-guards.log",
+        "bytes": 1154,
+        "sha256": "1d1da641f757cb02344de74831da3636198e156f97495985efbce63160aac13d"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/ci-logs/native-reader-source-stamps.log",
+      "bytes": 1759,
+      "sha256": "7c253fe85d97762c272c5f6e097fa2c6fcec9620ee05928b9fe3d24bc48ab411",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/.build/ci-logs/native-reader-source-stamps.log",
+        "bytes": 1759,
+        "sha256": "7c253fe85d97762c272c5f6e097fa2c6fcec9620ee05928b9fe3d24bc48ab411"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/ci-logs/native-reader-staging-guards.log",
+      "bytes": 2819,
+      "sha256": "46cae299570642425c2adba81083f824ecfa7dc673d51f12e99da8cade4cd89e",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/.build/ci-logs/native-reader-staging-guards.log",
+        "bytes": 2819,
+        "sha256": "46cae299570642425c2adba81083f824ecfa7dc673d51f12e99da8cade4cd89e"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.legado.app.JsEngineCapabilitiesTest.xml",
+      "bytes": 3636,
+      "sha256": "5aaaa9db0744c0c52c9ff8b42688587a2965c75a712db1f043d257eb17c0f6e6",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.legado.app.JsEngineCapabilitiesTest.xml",
+        "bytes": 3636,
+        "sha256": "5aaaa9db0744c0c52c9ff8b42688587a2965c75a712db1f043d257eb17c0f6e6"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.legado.app.model.analyzeRule.AnalyzeByJSonPathErrorPolicyTest.xml",
+      "bytes": 1472,
+      "sha256": "a5edce395b57a7b15c5867e6eb1c05549d629173be2a8a79d83ba357594df382",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.legado.app.model.analyzeRule.AnalyzeByJSonPathErrorPolicyTest.xml",
+        "bytes": 1472,
+        "sha256": "a5edce395b57a7b15c5867e6eb1c05549d629173be2a8a79d83ba357594df382"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.legado.app.model.analyzeRule.AnalyzeByJSoupDomTest.xml",
+      "bytes": 1542,
+      "sha256": "dd54ae4ceb9d704b2b7fad02903b6da169c64cc373f129369eda91aada1c0743",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.legado.app.model.analyzeRule.AnalyzeByJSoupDomTest.xml",
+        "bytes": 1542,
+        "sha256": "dd54ae4ceb9d704b2b7fad02903b6da169c64cc373f129369eda91aada1c0743"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.AppCookieOwnerBrowserTest.xml",
+      "bytes": 845,
+      "sha256": "31c902490d09b107759d49352485673fb8af4da73578aeb843971f16e4417067",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.AppCookieOwnerBrowserTest.xml",
+        "bytes": 845,
+        "sha256": "31c902490d09b107759d49352485673fb8af4da73578aeb843971f16e4417067"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.AppCookieOwnerReadTest.xml",
+      "bytes": 988,
+      "sha256": "b557d1df25b0bf32a8aaacf6a1154869c1790805815ab39f690ab5ee87dc442e",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.AppCookieOwnerReadTest.xml",
+        "bytes": 988,
+        "sha256": "b557d1df25b0bf32a8aaacf6a1154869c1790805815ab39f690ab5ee87dc442e"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.AppCookieOwnerTextTest.xml",
+      "bytes": 1138,
+      "sha256": "51e412afe8ce26f61259bb38a5c6347693763084bd0e962b96ce4738715b689b",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.AppCookieOwnerTextTest.xml",
+        "bytes": 1138,
+        "sha256": "51e412afe8ce26f61259bb38a5c6347693763084bd0e962b96ce4738715b689b"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.CpuLoopCapabilityProbeTest.xml",
+      "bytes": 994,
+      "sha256": "c35fa737b35ae6f4f9652f1488b0623b61227a103d4605826a0e2aba5bb6ef55",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.CpuLoopCapabilityProbeTest.xml",
+        "bytes": 994,
+        "sha256": "c35fa737b35ae6f4f9652f1488b0623b61227a103d4605826a0e2aba5bb6ef55"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.DeclarativeScalarSelectorTest.xml",
+      "bytes": 862,
+      "sha256": "50b4c6176f0507664b363a1defad7e12e112c942a37d36ba3d1b857c2ae95c7a",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.DeclarativeScalarSelectorTest.xml",
+        "bytes": 862,
+        "sha256": "50b4c6176f0507664b363a1defad7e12e112c942a37d36ba3d1b857c2ae95c7a"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.DeclarativeSourceTest.xml",
+      "bytes": 792,
+      "sha256": "c5f1574f401d6c376be6cd445c9240ec14cd8e7dc769b61f922f5cf4db1e3824",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.DeclarativeSourceTest.xml",
+        "bytes": 792,
+        "sha256": "c5f1574f401d6c376be6cd445c9240ec14cd8e7dc769b61f922f5cf4db1e3824"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.InteropSemanticSuiteTest.xml",
+      "bytes": 917,
+      "sha256": "b6304594ceeb748fd7b4129aec9f287e757c6faf136015e58404297d9950cad0",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.InteropSemanticSuiteTest.xml",
+        "bytes": 917,
+        "sha256": "b6304594ceeb748fd7b4129aec9f287e757c6faf136015e58404297d9950cad0"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.LegadoRuntimeTest.xml",
+      "bytes": 1898,
+      "sha256": "e887269fce840c407d7806b07d428f03ffed4c2cd3c75cddc72afc55454cf09a",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.LegadoRuntimeTest.xml",
+        "bytes": 1898,
+        "sha256": "e887269fce840c407d7806b07d428f03ffed4c2cd3c75cddc72afc55454cf09a"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.MainJsFacadeTest.xml",
+      "bytes": 1082,
+      "sha256": "5d92c1c90f898d2abbcb777133d63fcadc94907573b76d1acce5b96efaf4ea2c",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.MainJsFacadeTest.xml",
+        "bytes": 1082,
+        "sha256": "5d92c1c90f898d2abbcb777133d63fcadc94907573b76d1acce5b96efaf4ea2c"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.MainJsScopeTest.xml",
+      "bytes": 928,
+      "sha256": "318fa139d9caff0369ec03cccf19a7dc1b61f485f87deb593e10864c39bdef03",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.MainJsScopeTest.xml",
+        "bytes": 928,
+        "sha256": "318fa139d9caff0369ec03cccf19a7dc1b61f485f87deb593e10864c39bdef03"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.MainJsResultMarshallerTest.xml",
+      "bytes": 3552,
+      "sha256": "265253a60688881e1152dfb42c77ebf63f23d294520d1c574fc3313fef4609aa",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.MainJsResultMarshallerTest.xml",
+        "bytes": 3552,
+        "sha256": "265253a60688881e1152dfb42c77ebf63f23d294520d1c574fc3313fef4609aa"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OkHttpWireCapabilityProbeTest.xml",
+      "bytes": 1574,
+      "sha256": "978894294196ca9adc1f4dfc1f0b4a485947097ece24f47f0bdc84d85b8693a4",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OkHttpWireCapabilityProbeTest.xml",
+        "bytes": 1574,
+        "sha256": "978894294196ca9adc1f4dfc1f0b4a485947097ece24f47f0bdc84d85b8693a4"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalAnalyzeRuleTest.xml",
+      "bytes": 7057,
+      "sha256": "8f13ad0b56570fac8342ebfe84abef97a328d937d4e78601650adf96a4703a46",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalAnalyzeRuleTest.xml",
+        "bytes": 7057,
+        "sha256": "8f13ad0b56570fac8342ebfe84abef97a328d937d4e78601650adf96a4703a46"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalBookCallbackTest.xml",
+      "bytes": 848,
+      "sha256": "3eb04823a63f74914ce93aa6bd3c7f20ea53c0b4623941815557e0c434d29f4a",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalBookCallbackTest.xml",
+        "bytes": 848,
+        "sha256": "3eb04823a63f74914ce93aa6bd3c7f20ea53c0b4623941815557e0c434d29f4a"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalConcurrentRateTest.xml",
+      "bytes": 1520,
+      "sha256": "62c051149bcf314d064044a1d7311cbb1eed61397d565627128c9813beaa0b69",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalConcurrentRateTest.xml",
+        "bytes": 1520,
+        "sha256": "62c051149bcf314d064044a1d7311cbb1eed61397d565627128c9813beaa0b69"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalContentBatchPublicTest.xml",
+      "bytes": 1380,
+      "sha256": "67e2f8339e72bb3984e3fd35d3039547baa1a4fe7d0f861486e35151f94dae08",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalContentBatchPublicTest.xml",
+        "bytes": 1380,
+        "sha256": "67e2f8339e72bb3984e3fd35d3039547baa1a4fe7d0f861486e35151f94dae08"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalContentBatchTest.xml",
+      "bytes": 1938,
+      "sha256": "7b593bf8b56b8e624fe50440ac7f46092d58e151f45f4ed6819ac048483351ac",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalContentBatchTest.xml",
+        "bytes": 1938,
+        "sha256": "7b593bf8b56b8e624fe50440ac7f46092d58e151f45f4ed6819ac048483351ac"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalExploreRuntimeTest.xml",
+      "bytes": 1193,
+      "sha256": "cadc63fdcb260a2353cdde62ddfa0a9c8f7e36f3a3ceba7df11fed4fb3e472b0",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalExploreRuntimeTest.xml",
+        "bytes": 1193,
+        "sha256": "cadc63fdcb260a2353cdde62ddfa0a9c8f7e36f3a3ceba7df11fed4fb3e472b0"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalGeneralWebJsTest.xml",
+      "bytes": 981,
+      "sha256": "97b0755be83531e137a8de07bd937c568a9775a20f0b2d798c98f43ec1ca8569",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalGeneralWebJsTest.xml",
+        "bytes": 981,
+        "sha256": "97b0755be83531e137a8de07bd937c568a9775a20f0b2d798c98f43ec1ca8569"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalRuleCookiePlatformTest.xml",
+      "bytes": 1331,
+      "sha256": "1141a1342c443217574647f33228292627aab2a1620d68dace6309f807ddde0c",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalRuleCookiePlatformTest.xml",
+        "bytes": 1331,
+        "sha256": "1141a1342c443217574647f33228292627aab2a1620d68dace6309f807ddde0c"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalRuleHttpPlatformTest.xml",
+      "bytes": 1579,
+      "sha256": "6075e42de65f051bd5cf239c455e4c22073af9a250103058caa25599e9a2b2ba",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalRuleHttpPlatformTest.xml",
+        "bytes": 1579,
+        "sha256": "6075e42de65f051bd5cf239c455e4c22073af9a250103058caa25599e9a2b2ba"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalRuleScopesConcurrencyTest.xml",
+      "bytes": 2166,
+      "sha256": "03f89ae87e42fd7f333558039678fa10a57ed5a9e07ea2eae233e4ed222bc8d8",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalRuleScopesConcurrencyTest.xml",
+        "bytes": 2166,
+        "sha256": "03f89ae87e42fd7f333558039678fa10a57ed5a9e07ea2eae233e4ed222bc8d8"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalSourceCallbackTest.xml",
+      "bytes": 862,
+      "sha256": "2c39e28b4d478a1c1fe8160759c0e9b1562b09016d30de2acbe0f4ec2ed56871",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceCallbackTest.xml",
+        "bytes": 862,
+        "sha256": "2c39e28b4d478a1c1fe8160759c0e9b1562b09016d30de2acbe0f4ec2ed56871"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalSourceFormLoginTest.xml",
+      "bytes": 1028,
+      "sha256": "40ae27e466c8a5b95e85e8ffd56e5a817eba39cf1c2a6129c7ca9b34c63257b8",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceFormLoginTest.xml",
+        "bytes": 1028,
+        "sha256": "40ae27e466c8a5b95e85e8ffd56e5a817eba39cf1c2a6129c7ca9b34c63257b8"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalSourceLoginActionTest.xml",
+      "bytes": 1030,
+      "sha256": "480a37758b606da24dba346843652c1cf3d13f36e06d101ee7fab0a90fb4734b",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginActionTest.xml",
+        "bytes": 1030,
+        "sha256": "480a37758b606da24dba346843652c1cf3d13f36e06d101ee7fab0a90fb4734b"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalSourceLoginBrowserAwaitTest.xml",
+      "bytes": 2521,
+      "sha256": "9bdd04fc89c121f7d3c702d4d856c779e5d2911f2c3802883b859db07a475574",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginBrowserAwaitTest.xml",
+        "bytes": 2521,
+        "sha256": "9bdd04fc89c121f7d3c702d4d856c779e5d2911f2c3802883b859db07a475574"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalSourceLoginBrowserPostTest.xml",
+      "bytes": 1054,
+      "sha256": "4ffc3b124f700ef42879f1329cb767859027e33782ce37e0174431653a8f5987",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginBrowserPostTest.xml",
+        "bytes": 1054,
+        "sha256": "4ffc3b124f700ef42879f1329cb767859027e33782ce37e0174431653a8f5987"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalSourceLoginBrowserTest.xml",
+      "bytes": 3196,
+      "sha256": "31f90169959619db841f55188eac4146ba411edec762d50fa1464416dc80cefd",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginBrowserTest.xml",
+        "bytes": 3196,
+        "sha256": "31f90169959619db841f55188eac4146ba411edec762d50fa1464416dc80cefd"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalSourceLoginDeltaTest.xml",
+      "bytes": 1113,
+      "sha256": "b4bfaaf65818eb99405909f46ecf8402a429ff8bdbaaeec4ec7d520eb3c8b878",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginDeltaTest.xml",
+        "bytes": 1113,
+        "sha256": "b4bfaaf65818eb99405909f46ecf8402a429ff8bdbaaeec4ec7d520eb3c8b878"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalSourceLoginHeaderTest.xml",
+      "bytes": 1048,
+      "sha256": "d9ed8463a76bf04e050038487d14714cf5ddc38ebb6342cd0cf444aea9a0391d",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginHeaderTest.xml",
+        "bytes": 1048,
+        "sha256": "d9ed8463a76bf04e050038487d14714cf5ddc38ebb6342cd0cf444aea9a0391d"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalSourceLoginMapTest.xml",
+      "bytes": 1030,
+      "sha256": "953bef0fd06efa4d865144a9410d201efd6b14d5cb4e78764bc5006ec4b5ab6b",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginMapTest.xml",
+        "bytes": 1030,
+        "sha256": "953bef0fd06efa4d865144a9410d201efd6b14d5cb4e78764bc5006ec4b5ab6b"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalSourceLoginUIEventsTest.xml",
+      "bytes": 1087,
+      "sha256": "0acad1c28b2c220b7f2a37d6c64c8fa96efa993f70c1cd4e58fe2a55eda3697b",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginUIEventsTest.xml",
+        "bytes": 1087,
+        "sha256": "0acad1c28b2c220b7f2a37d6c64c8fa96efa993f70c1cd4e58fe2a55eda3697b"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalSourceLoginInfoTest.xml",
+      "bytes": 862,
+      "sha256": "d4454d68a2e24ca8da51b855cf55be426396e93aa7b825b9e8b443bd56a7a1c9",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginInfoTest.xml",
+        "bytes": 862,
+        "sha256": "d4454d68a2e24ca8da51b855cf55be426396e93aa7b825b9e8b443bd56a7a1c9"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalSourceLoginUITest.xml",
+      "bytes": 1039,
+      "sha256": "98a2cd77cc198d2eb22a6e30db855c30c07f367bc11bd86f340f5f62db380765",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginUITest.xml",
+        "bytes": 1039,
+        "sha256": "98a2cd77cc198d2eb22a6e30db855c30c07f367bc11bd86f340f5f62db380765"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalSourceLoginV2BrowserTest.xml",
+      "bytes": 3857,
+      "sha256": "79667c14172fc6c85e77b719027c3fda8655f345ad2ee54ee6853d831e2d2315",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginV2BrowserTest.xml",
+        "bytes": 3857,
+        "sha256": "79667c14172fc6c85e77b719027c3fda8655f345ad2ee54ee6853d831e2d2315"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalSourceLoginV2Test.xml",
+      "bytes": 1036,
+      "sha256": "a96abffd1499ecfd76d8a8982dec9b3a81d94b4957e2aa393b31b032d33837ce",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginV2Test.xml",
+        "bytes": 1036,
+        "sha256": "a96abffd1499ecfd76d8a8982dec9b3a81d94b4957e2aa393b31b032d33837ce"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalSourcePersistLoginInfoTest.xml",
+      "bytes": 1053,
+      "sha256": "b0b6e9fd4455b5ef6fcd7875b18fc1cb24a393ea4997c53732560709d601d856",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourcePersistLoginInfoTest.xml",
+        "bytes": 1053,
+        "sha256": "b0b6e9fd4455b5ef6fcd7875b18fc1cb24a393ea4997c53732560709d601d856"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalStatePersistenceTest.xml",
+      "bytes": 2256,
+      "sha256": "861dd6b1d79b9c6f26e21795a393f7630996e97693241a5f86c9e0c979400a87",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalStatePersistenceTest.xml",
+        "bytes": 2256,
+        "sha256": "861dd6b1d79b9c6f26e21795a393f7630996e97693241a5f86c9e0c979400a87"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalStatefulReferenceTest.xml",
+      "bytes": 562,
+      "sha256": "705dde29cad2105713979988b5dfcaf2c8213c27798341834765568761864909",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalStatefulReferenceTest.xml",
+        "bytes": 562,
+        "sha256": "705dde29cad2105713979988b5dfcaf2c8213c27798341834765568761864909"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalSubContentTest.xml",
+      "bytes": 1009,
+      "sha256": "4e460c51abc72b8a07bae8173bab986b3d5d9c2509803396c950468ed84a019f",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSubContentTest.xml",
+        "bytes": 1009,
+        "sha256": "4e460c51abc72b8a07bae8173bab986b3d5d9c2509803396c950468ed84a019f"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalTraditionalRuntimeTest.xml",
+      "bytes": 1493,
+      "sha256": "2eac74fb4589613d6c7df73943332f0702df3bd6fc90b77010afe3a0e2453907",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalTraditionalRuntimeTest.xml",
+        "bytes": 1493,
+        "sha256": "2eac74fb4589613d6c7df73943332f0702df3bd6fc90b77010afe3a0e2453907"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalUrlExecutionTest.xml",
+      "bytes": 3153,
+      "sha256": "c898e825e23503ba8a5a6353e1082d0826433c5cf6767bc207466475fb19db73",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalUrlExecutionTest.xml",
+        "bytes": 3153,
+        "sha256": "c898e825e23503ba8a5a6353e1082d0826433c5cf6767bc207466475fb19db73"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalWebBookExecutionTest.xml",
+      "bytes": 2780,
+      "sha256": "5b4b3810b12bceeefa78c79a7cf60baf85a30f49b72c79033d8ad003d6f33aa1",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalWebBookExecutionTest.xml",
+        "bytes": 2780,
+        "sha256": "5b4b3810b12bceeefa78c79a7cf60baf85a30f49b72c79033d8ad003d6f33aa1"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.ProductionHttpTransportTest.xml",
+      "bytes": 2304,
+      "sha256": "5dd1185909ab28c3ebaf3aab660e400088841762c44861b4bbf72b42bb4e4148",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.ProductionHttpTransportTest.xml",
+        "bytes": 2304,
+        "sha256": "5dd1185909ab28c3ebaf3aab660e400088841762c44861b4bbf72b42bb4e4148"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.OriginalUrlRequestOptionsTest.xml",
+      "bytes": 3190,
+      "sha256": "47b25032cd10cf2d1adf8b5da96d5b48e447f8b7e9f4a68c819b658e7e3f5e4a",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalUrlRequestOptionsTest.xml",
+        "bytes": 3190,
+        "sha256": "47b25032cd10cf2d1adf8b5da96d5b48e447f8b7e9f4a68c819b658e7e3f5e4a"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.RuntimeTaskTraceTest.xml",
+      "bytes": 982,
+      "sha256": "81dbe57be05549a8c84b25a80860d47a10cbf9435e9f5f441f128d474740a561",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.RuntimeTaskTraceTest.xml",
+        "bytes": 982,
+        "sha256": "81dbe57be05549a8c84b25a80860d47a10cbf9435e9f5f441f128d474740a561"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.SourceHttpSemanticsTest.xml",
+      "bytes": 1684,
+      "sha256": "8d8adb4b1381928c4c52001e51cae8bc3e6ede4f556ddf822e3ea354ecf8ecfb",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.SourceHttpSemanticsTest.xml",
+        "bytes": 1684,
+        "sha256": "8d8adb4b1381928c4c52001e51cae8bc3e6ede4f556ddf822e3ea354ecf8ecfb"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.StaticScalarSelectorRuleTest.xml",
+      "bytes": 1317,
+      "sha256": "c8aad2ff3e6f0983f85fba58810e888651ef7f574d23569cd5a124b2664e3652",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.StaticScalarSelectorRuleTest.xml",
+        "bytes": 1317,
+        "sha256": "c8aad2ff3e6f0983f85fba58810e888651ef7f574d23569cd5a124b2664e3652"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.StaticRuleReplacementTest.xml",
+      "bytes": 1145,
+      "sha256": "6252dfae9f5c59e91e8bbb8be26011615bba6c47153278bbb9b75207a4daab2a",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.StaticRuleReplacementTest.xml",
+        "bytes": 1145,
+        "sha256": "6252dfae9f5c59e91e8bbb8be26011615bba6c47153278bbb9b75207a4daab2a"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/raw-artifact/jvm-test-results/TEST-io.yuedu.legado.TlsCapabilityProbeTest.xml",
+      "bytes": 1947,
+      "sha256": "9eb61c587ed392172ce9e29f715659dda2ca85bd89a7eff98346865a7405721b",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/extracted/Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.TlsCapabilityProbeTest.xml",
+        "bytes": 1947,
+        "sha256": "9eb61c587ed392172ce9e29f715659dda2ca85bd89a7eff98346865a7405721b"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/root-archive-check.json",
+      "bytes": 678,
+      "sha256": "da65051fa2deddf01b3a63988aafe695c72b5bbf0b4df50e6bf9cde95ccc5794",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/root-archive-check.json",
+        "bytes": 678,
+        "sha256": "da65051fa2deddf01b3a63988aafe695c72b5bbf0b4df50e6bf9cde95ccc5794"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; exact original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-88c61ee-terminal/scripts/archive-layout-resume.py",
+      "bytes": 2940,
+      "sha256": "31b1f47912c66423c01128b2fb18eef99bf4752c6379f867d9fd8798a1412085",
+      "original": {
+        "path": ".build/native-88c61ee-terminal/archive-layout-resume.py",
+        "bytes": 2940,
+        "sha256": "31b1f47912c66423c01128b2fb18eef99bf4752c6379f867d9fd8798a1412085"
+      },
+      "normalization": "Exact UTF8 source"
+    }
+  ],
+  "laterRepairDoesNotChangeThisFailure": true,
+  "limits": [
+    "353 is actual JVM JUnit only; 348 passing cases do not validate5 failed cases or later repairs.",
+    "Restore native interpreter, simulator payload, original28/MainJS1 and cold2 phases were skipped after Gradle:test failure.",
+    "A separate later5-method repair has no effect on this terminal conclusion.",
+    "SDK39520239925 remains a separate live workflow managed by root; this review neither queried it nor states its result."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

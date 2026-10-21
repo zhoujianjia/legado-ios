@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-21T00:26:37.254152+00:00",
+  "status": "Actual terminal failure; earliest failing workflow step built/tested ordinary JVM but no Simulator/native host executed. Immutable old-run facts only.",
+  "sourceCommit": "88c61ee4b80889a617d344fda668d077f73fa95b",
+  "runID": 39520240533,
+  "jobID": 118962039359,
+  "tag": "legado-native-reader-test-88c61ee",
+  "queryAgain": false,
+  "jobStatus": "completed",
+  "conclusion": "failure",
+  "earliestFailure": {
+    "step": {
+      "name": "Build and audit this checkout's ordinary production runtime",
+      "status": "completed",
+      "conclusion": "failure",
+      "number": 5
+    },
+    "task": ":test",
+    "processExitCode": 1,
+    "GradleBuildElapsed": "2m17s",
+    "tests": 353,
+    "passed": 348,
+    "failed": 5,
+    "errors": 0,
+    "skipped": 0
+  },
+  "NativeSelectedMethodsExecuted": 0,
+  "MainJSMethodsExecuted": 0,
+  "SimulatorPayloadPrepared": false,
+  "coldHostsExecuted": 0,
+  "AppOrJNIResultAccepted": false,
+  "failedCases": [
+    {
+      "identity": "io.yuedu.legado.OriginalAnalyzeRuleTest/hutoolStringBase64OverloadsKeepWhitespaceUrlSafeAndCharsetBehavior",
+      "message": "java.lang.AssertionError: expected java.lang.Exception to be thrown, but nothing was thrown",
+      "stack": "java.lang.AssertionError: expected java.lang.Exception to be thrown, but nothing was thrown\n\tat org.junit.Assert.assertThrows(Assert.java:1028)\n\tat org.junit.Assert.assertThrows(Assert.java:981)\n\tat io.yuedu.legado.OriginalAnalyzeRuleTest.hutoolStringBase64OverloadsKeepWhitespaceUrlSafeAndCharsetBehavior(OriginalAnalyzeRuleTest.kt:297)\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)\n\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)\n\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n\tat org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)\n\tat org.junit.runners.BlockJUnit4ClassRunner$1.evaluate(BlockJUnit4ClassRunner.java:100)\n\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:366)\n\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:103)\n\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:63)\n\tat org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)\n\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)\n\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)\n\tat org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)\n\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)\n\tat org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)\n\tat org.junit.runners.ParentRunner.run(ParentRunner.java:413)\n\tat org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.runTestClass(JUnitTestClassExecutor.java:112)\n\tat org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:58)\n\tat org.gradle.api.internal.tasks.testing.junit.JUnitTestClassExecutor.execute(JUnitTestClassExecutor.java:40)\n\tat org.gradle.api.internal.tasks.testing.junit.AbstractJUnitTestClassProcessor.processTestClass(AbstractJUnitTestClassProcessor.java:54)\n\tat org.gradle.api.internal.tasks.testing.SuiteTestClassProcessor.processTestClass(SuiteTestClassProcessor.java:53)\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\tat org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:36)\n\tat org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:24)\n\tat org.gradle.internal.dispatch.ContextClassLoaderDispatch.dispatch(ContextClassLoaderDispatch.java:33)\n\tat org.gradle.internal.dispatch.ProxyDispatchAdapter$DispatchingInvocationHandler.invoke(ProxyDispatchAdapter.java:92)\n\tat jdk.proxy1/jdk.proxy1.$Proxy4.processTestClass(Unknown Source)\n\tat org.gradle.api.internal.tasks.testing.worker.TestWorker$2.run(TestWorker.java:183)\n\tat org.gradle.api.internal.tasks.testing.worker.TestWorker.executeAndMaintainThreadName(TestWorker.java:132)\n\tat org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:103)\n\tat org.gradle.api.internal.tasks.testing.worker.TestWorker.execute(TestWorker.java:63)\n\tat org.gradle.process.internal.worker.child.ActionExecutionWorker.execute(ActionExecutionWorker.java:56)\n\tat org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:122)\n\tat org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:72)\n\tat worker.org.gradle.process.internal.worker.GradleWorkerMain.run(GradleWorkerMain.java:69)\n\tat worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)\n",
+      "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalAnalyzeRuleTest.xml"
+    },
+    {
+      "identity": "io.yuedu.legado.OriginalSourceLoginBrowserAwaitTest/presentationEmptyWrongModeAndExplicitUnsupportedNeverBecomeSuccessfulAwait",
+      "message": "org.junit.ComparisonFailure: expected:<[UNSUPPORTED_CAPABILITY]> but was:<[INVALID_BROWSER_RESULT]>",
+      "stack": "org.junit.ComparisonFailure: expected:<[UNSUPPORTED_CAPABILITY]> but was:<[INVALID_BROWSER_RESULT]>\n\tat org.junit.Assert.assertEquals(Assert.java:117)\n\tat org.junit.Assert.assertEquals(Assert.java:146)\n\tat io.yuedu.legado.OriginalSourceLoginBrowserAwaitTest.presentationEmptyWrongModeAndExplicitUnsupportedNeverBecomeSuccessfulAwait(OriginalSourceLoginBrowserAwaitTest.kt:58)\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)\n\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)\n\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n\tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)\n\tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\n",
+      "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginBrowserAwaitTest.xml"
+    },
+    {
+      "identity": "io.yuedu.legado.OriginalSourceLoginBrowserTest/unsupportedHtmlPostAndNonWebSchemesDoNotFakePresentation",
+      "message": "java.lang.AssertionError: {\"ok\":true,\"taskId\":\"browser-aee90b62-a2fc-41d6-b7e9-310e2329617f\",\"result\":{\"executed\":true},\"metrics\":{\"elapsedMs\":23.420958},\"completedEffects\":[\"sourceBrowserMayPresent\",\"sourceBrowserPresented\"]} expected:<false> but was:<true>",
+      "stack": "java.lang.AssertionError: {\"ok\":true,\"taskId\":\"browser-aee90b62-a2fc-41d6-b7e9-310e2329617f\",\"result\":{\"executed\":true},\"metrics\":{\"elapsedMs\":23.420958},\"completedEffects\":[\"sourceBrowserMayPresent\",\"sourceBrowserPresented\"]} expected:<false> but was:<true>\n\tat org.junit.Assert.fail(Assert.java:89)\n\tat org.junit.Assert.failNotEquals(Assert.java:835)\n\tat org.junit.Assert.assertEquals(Assert.java:120)\n\tat io.yuedu.legado.OriginalSourceLoginBrowserTest$Owned.call(OriginalSourceLoginBrowserTest.kt:99)\n\tat io.yuedu.legado.OriginalSourceLoginBrowserTest$Owned.call$default(OriginalSourceLoginBrowserTest.kt:95)\n\tat io.yuedu.legado.OriginalSourceLoginBrowserTest.unsupportedHtmlPostAndNonWebSchemesDoNotFakePresentation(OriginalSourceLoginBrowserTest.kt:39)\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)\n\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)\n\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n\tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)\n\tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\n",
+      "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginBrowserTest.xml"
+    },
+    {
+      "identity": "io.yuedu.legado.OriginalSourceLoginV2BrowserTest/acceptedBrowserEffectsSurviveScriptFailureAndHtmlRemainsUnsupported",
+      "message": "java.lang.AssertionError: {\"ok\":true,\"taskId\":\"v2-be526bbd-71ce-4648-9806-6e82a4c937c7\",\"result\":{\"stateJSON\":\"{\\\"done\\\":true}\",\"errors\":null,\"close\":false,\"loginStored\":false,\"unknownKeys\":[]},\"metrics\":{\"elapsedMs\":23.179583},\"completedEffects\":[\"sourceBrowserMayPresent\",\"sourceBrowserPresented\"]} expected:<false> but was:<true>",
+      "stack": "java.lang.AssertionError: {\"ok\":true,\"taskId\":\"v2-be526bbd-71ce-4648-9806-6e82a4c937c7\",\"result\":{\"stateJSON\":\"{\\\"done\\\":true}\",\"errors\":null,\"close\":false,\"loginStored\":false,\"unknownKeys\":[]},\"metrics\":{\"elapsedMs\":23.179583},\"completedEffects\":[\"sourceBrowserMayPresent\",\"sourceBrowserPresented\"]} expected:<false> but was:<true>\n\tat org.junit.Assert.fail(Assert.java:89)\n\tat org.junit.Assert.failNotEquals(Assert.java:835)\n\tat org.junit.Assert.assertEquals(Assert.java:120)\n\tat io.yuedu.legado.OriginalSourceLoginV2BrowserTest$Owned.call(OriginalSourceLoginV2BrowserTest.kt:121)\n\tat io.yuedu.legado.OriginalSourceLoginV2BrowserTest$Owned.action(OriginalSourceLoginV2BrowserTest.kt:118)\n\tat io.yuedu.legado.OriginalSourceLoginV2BrowserTest$Owned.action$default(OriginalSourceLoginV2BrowserTest.kt:118)\n\tat io.yuedu.legado.OriginalSourceLoginV2BrowserTest.acceptedBrowserEffectsSurviveScriptFailureAndHtmlRemainsUnsupported(OriginalSourceLoginV2BrowserTest.kt:54)\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)\n\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)\n\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n\tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)\n\tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\n",
+      "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalSourceLoginV2BrowserTest.xml"
+    },
+    {
+      "identity": "io.yuedu.legado.OriginalUrlExecutionTest/unsupportedOptionsHeadersAndUnmigratedMainJsStayTypedBeforeHttp",
+      "message": "java.lang.AssertionError: expected io.yuedu.legado.originalrule.UnsupportedRuleCapability to be thrown, but nothing was thrown",
+      "stack": "java.lang.AssertionError: expected io.yuedu.legado.originalrule.UnsupportedRuleCapability to be thrown, but nothing was thrown\n\tat org.junit.Assert.assertThrows(Assert.java:1028)\n\tat org.junit.Assert.assertThrows(Assert.java:981)\n\tat io.yuedu.legado.OriginalUrlExecutionTest.unsupportedOptionsHeadersAndUnmigratedMainJsStayTypedBeforeHttp(OriginalUrlExecutionTest.kt:134)\n\tat java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)\n\tat java.base/java.lang.reflect.Method.invoke(Method.java:580)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)\n\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)\n\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n\tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)\n\tat org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\n",
+      "member": "Packages/LegadoRuntime/jvm/build/test-results/test/TEST-io.yuedu.legado.OriginalUrlExecutionTest.xml"
+    }
+  ],
+  "ordinaryJUnit": {
+    "XMLSuites": 53,
+    "uniqueCaseIdentities": 353,
+    "passed": 348,
+    "failed": 5,
+    "errors": 0,
+    "skipped": 0
+  },
+  "artifact": {
+    "artifactID": 12310602908,
+    "path": ".build/native-88c61ee-terminal/artifact.zip",
+    "bytes": 74979,
+    "sha256": "5b54954af02fed635b042367d5403b26551ed13ac1f9423aa49af7a235ca41de",
+    "members": 64,
+    "CRCVerified": true,
+    "GitHubDigestVerified": true,
+    "downloadCount": 1
+  },
+  "historicalExpectedNativeSourceClosure": {
+    "count": 158,
+    "canonicalRoster": {
+      "path": "docs/legado-ios/evidence/general-webjs-runtime-repairs-checkpoint/actual/Native-source-inputs-v1.json",
+      "bytes": 30084,
+      "sha256": "986cdb600a965d2a7b1bd6ea8f8dde67ab8787991cfa7548ae14f3bc829b4ff4",
+      "original": {
+        "path": ".build/consolidated-sdk-general-webjs-runtime-repairs-checkpoint/Native-source-inputs-v1.json",
+        "bytes": 30876,
+        "sha256": "161f5b9cad76b3b39ebdce36f82d0955784f870084f9646e609bc046c87b4d01"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; frozen raw facts retained"
+    },
+    "gitCommit": "88c61ee4b80889a617d344fda668d077f73fa95b",
+    "allGitBlobBytesMatched": true,
+    "nativeSourceBeforeAfterWasNotProduced": true,
+    "doesNotClaimCompleteGradleTransitiveClosure": true
+  },
+  "evidence": [
+    {
+      "path": ".build/native-88c61ee-terminal/terminal-jobs.json",
+      "bytes": 2858,
+      "sha256": "903f6430cce25c526c2321125f8fc25c23eb3f22ce3a1f65aec25af7e454e3f7"
+    },
+    {
+      "path": ".build/native-88c61ee-terminal/artifacts.json",
+      "bytes": 871,
+      "sha256": "06265d2536667bf7f2c8a1a83a4aa8fbf0759fccb03020d344f4fe3fd29b5030"
+    },
+    {
+      "path": ".build/native-88c61ee-terminal/native-job.log",
+      "bytes": 63027,
+      "sha256": "948c3ca3401a3fcc10c0d36046030f14398c5748f265322c52d1b79dbf549298"
+    },
+    {
+      "path": ".build/native-88c61ee-terminal/artifact-member-facts.json",
+      "bytes": 14014,
+      "sha256": "f7842dc9480268d41234c8c9333ef65493811d9f8fea38bc68fe2bbc1a2659ea"
+    },
+    {
+      "path": ".build/native-88c61ee-terminal/junit-source-facts.json",
+      "bytes": 66736,
+      "sha256": "e93010421063f4614fb13da3c8696490ee8e6b95711741c4d526d2e7acd25956"
+    },
+    {
+      "path": ".build/native-88c61ee-terminal/historical-native158-source-binding.json",
+      "bytes": 39406,
+      "sha256": "20d84930bb1f2607ad0d888ca5a8438ff8f037af054f0a895bdd6c6691f1df26"
+    },
+    {
+      "path": ".build/native-88c61ee-terminal/failure-excerpts.json",
+      "bytes": 1371,
+      "sha256": "598776e5c863aa9c3de0ec0fdce10f7b01c419316809e394d8bae2ee4342613f"
+    },
+    {
+      "path": ".build/native-88c61ee-terminal/actual-test-failures.json",
+      "bytes": 24101,
+      "sha256": "4720b5871829c870b213064d95017a73f7265236222b74dbcd4af7e4c7581a35"
+    }
+  ],
+  "limits": [
+    "353 is actual JVM JUnit only; 348 passing cases do not validate5 failed cases or later repairs.",
+    "Restore native interpreter, simulator payload, original28/MainJS1 and cold2 phases were skipped after Gradle:test failure.",
+    "A separate later5-method repair has no effect on this terminal conclusion.",
+    "SDK39520239925 remains a separate live workflow managed by root; this review neither queried it nor states its result."
+  ],
+  "operations": {
+    "newTags": false,
+    "reruns": false,
+    "productionWrites": false,
+    "canonicalWrites": false,
+    "oldFc3Queries": false,
+    "SDKQueries": false
+  }
+}
