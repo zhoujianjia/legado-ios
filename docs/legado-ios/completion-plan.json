@@ -169,8 +169,8 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "The exact fb6 SDK and Native pair are both closed/archived. Eight reviewed existing source changes plus previously queued worker/CoreText are composed at the followup checkpoint. Commit this batch, then submit one necessary exact SDK/full-Native pair with full S3/MainJS/Original/cold retained. No extra focused-cold or IPA run.",
-      "alreadyRunningTasks": "No live SDK or Native handle. Exact fb6 pair closed failure; do not requery. Later reviewed repairs do not change historical results.",
+      "nextPlannedCheckpoint": "Collect each exact new terminal once. Require actual SDK479/482 and FULL Native S3/MainJS1/Original32/cold2 results; preserve all previous failures and do not replace full validation with focused cold.",
+      "alreadyRunningTasks": "Only this exact source SDK and FULL Native pair is live at initial admission; all previous archived terminals remain closed. No focused-cold extra.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "7ef3c7ec1b0d37ce2b395bb897f6806f5acbafa8",
         "sourceTag": "reader-renewal-7ef3c7e",
@@ -307,7 +307,18 @@
           "sha256": "f79e834cbb98ea098a01ae1967fbe3da610c8b28e818fbe3a53d9e52310e2966"
         }
       },
-      "onlyLiveSDKHandles": [],
+      "onlyLiveSDKHandles": [
+        {
+          "runID": 39564545834,
+          "jobID": 119103568353,
+          "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
+          "sourceTag": "reader-renewal-630c1b3",
+          "workflow": ".github/workflows/reader-renewal-probe.yml",
+          "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39564545834",
+          "initialStatus": "queued",
+          "status": "queued"
+        }
+      ],
       "latestDevicePackageTerminal": {
         "sourceCommit": "44f125b73c06bf95637765ab58e65f41d0651b44",
         "runID": 39457883604,
@@ -392,12 +403,12 @@
         "sourceRepairStatus": "reviewed-source-integrated-actual-SDK-and-full-Native-pending"
       },
       "currentUnifiedCheckpoint": {
-        "sourceCommit": "fb6aa7a14680135f5e7271f10b61ad9561801c19",
-        "requestRecord": "docs/legado-ios/core-sdk-fb6aa7a-request.json",
+        "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
+        "requestRecord": "docs/legado-ios/core-sdk-630c1b3-request.json",
         "counts": {
           "core": 418,
-          "native": 263,
-          "union": 427,
+          "native": 282,
+          "union": 440,
           "currentcoreDefinitions": 479,
           "currentcoreLeaves": 482,
           "originalMethods": 32,
@@ -413,10 +424,8 @@
           "PackageInputs": 23,
           "boolPairs": 3
         },
-        "status": "both-actual-failures-archived-current-source-unaccepted",
-        "actualResultAccepted": false,
-        "NativeTerminalRecord": "docs/legado-ios/core-native-fb6aa7a-terminal-result.json",
-        "SDKTerminalRecord": "docs/legado-ios/core-sdk-fb6aa7a-terminal-result.json"
+        "status": "both-source-runs-confirmed-live-at-initial-admission",
+        "actualResultAccepted": false
       },
       "live8dPortableFailureRepair": {
         "record": "docs/legado-ios/core-sdk-8d-portable-expectations-repair.json",
@@ -723,26 +732,26 @@
         "subsequentSourceRepairsDoNotChangeHistoricalResults": true
       },
       "latestSubmittedCorePair": {
-        "sourceCommit": "fb6aa7a14680135f5e7271f10b61ad9561801c19",
-        "record": "docs/legado-ios/core-sdk-fb6aa7a-request.json",
+        "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
+        "record": "docs/legado-ios/core-sdk-630c1b3-request.json",
         "handles": [
           {
-            "runID": 39553639652,
-            "jobID": 119068228859,
-            "sourceCommit": "fb6aa7a14680135f5e7271f10b61ad9561801c19",
-            "sourceTag": "reader-renewal-fb6aa7a",
+            "runID": 39564545834,
+            "jobID": 119103568353,
+            "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
+            "sourceTag": "reader-renewal-630c1b3",
             "workflow": ".github/workflows/reader-renewal-probe.yml",
-            "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39553639652",
+            "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39564545834",
             "initialStatus": "queued",
             "status": "queued"
           },
           {
-            "runID": 39553639579,
-            "jobID": 119068228619,
-            "sourceCommit": "fb6aa7a14680135f5e7271f10b61ad9561801c19",
-            "sourceTag": "legado-native-reader-test-fb6aa7a",
+            "runID": 39564545728,
+            "jobID": 119103568067,
+            "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
+            "sourceTag": "legado-native-reader-test-630c1b3",
             "workflow": ".github/workflows/legado-native-reader-test.yml",
-            "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39553639579",
+            "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39564545728",
             "initialStatus": "queued",
             "status": "queued"
           }
@@ -831,8 +840,40 @@
         },
         "actualNewTestsAccepted": 0
       },
-      "onlyLiveNativeHandles": [],
-      "activeSourceBoundRunHandles": [],
+      "onlyLiveNativeHandles": [
+        {
+          "runID": 39564545728,
+          "jobID": 119103568067,
+          "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
+          "sourceTag": "legado-native-reader-test-630c1b3",
+          "workflow": ".github/workflows/legado-native-reader-test.yml",
+          "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39564545728",
+          "initialStatus": "queued",
+          "status": "queued"
+        }
+      ],
+      "activeSourceBoundRunHandles": [
+        {
+          "runID": 39564545834,
+          "jobID": 119103568353,
+          "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
+          "sourceTag": "reader-renewal-630c1b3",
+          "workflow": ".github/workflows/reader-renewal-probe.yml",
+          "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39564545834",
+          "initialStatus": "queued",
+          "status": "queued"
+        },
+        {
+          "runID": 39564545728,
+          "jobID": 119103568067,
+          "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
+          "sourceTag": "legado-native-reader-test-630c1b3",
+          "workflow": ".github/workflows/legado-native-reader-test.yml",
+          "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39564545728",
+          "initialStatus": "queued",
+          "status": "queued"
+        }
+      ],
       "queuedOriginalColdRenewalDataHandoff": {
         "record": "docs/legado-ios/core-renewal-cold-process-handoff-step.json",
         "status": "included-in-submitted-full-Native-actual-execution-pending",
@@ -1306,7 +1347,7 @@
           },
           "lastClosedSDKRequest": "docs/legado-ios/core-sdk-7ef3c7e-request.json",
           "lastSDKTerminalRecord": "docs/legado-ios/core-sdk-7ef3c7e-terminal-result.json",
-          "pendingSDKRequest": "docs/legado-ios/core-sdk-fb6aa7a-request.json"
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-630c1b3-request.json"
         },
         {
           "id": "C2",
@@ -1492,7 +1533,7 @@
           },
           "lastClosedSDKRequest": "docs/legado-ios/core-sdk-7ef3c7e-request.json",
           "lastSDKTerminalRecord": "docs/legado-ios/core-sdk-7ef3c7e-terminal-result.json",
-          "pendingSDKRequest": "docs/legado-ios/core-sdk-fb6aa7a-request.json"
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-630c1b3-request.json"
         },
         {
           "id": "C3",
@@ -1607,7 +1648,7 @@
           },
           "lastClosedSDKRequest": "docs/legado-ios/core-sdk-7ef3c7e-request.json",
           "lastSDKTerminalRecord": "docs/legado-ios/core-sdk-7ef3c7e-terminal-result.json",
-          "pendingSDKRequest": "docs/legado-ios/core-sdk-fb6aa7a-request.json"
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-630c1b3-request.json"
         },
         {
           "id": "C4",
@@ -1757,7 +1798,7 @@
           },
           "lastClosedSDKRequest": "docs/legado-ios/core-sdk-7ef3c7e-request.json",
           "lastSDKTerminalRecord": "docs/legado-ios/core-sdk-7ef3c7e-terminal-result.json",
-          "pendingSDKRequest": "docs/legado-ios/core-sdk-fb6aa7a-request.json"
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-630c1b3-request.json"
         },
         {
           "id": "C5",
@@ -1916,7 +1957,7 @@
           },
           "lastClosedSDKRequest": "docs/legado-ios/core-sdk-7ef3c7e-request.json",
           "lastSDKTerminalRecord": "docs/legado-ios/core-sdk-7ef3c7e-terminal-result.json",
-          "pendingSDKRequest": "docs/legado-ios/core-sdk-fb6aa7a-request.json"
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-630c1b3-request.json"
         },
         {
           "id": "S1",
@@ -1998,7 +2039,7 @@
           "nextActionZh": "提交同一源码的集中SDK/模拟器验证，实际执行已选续签、认证安装、事务恢复和触发回归；完整应用包重签另以同job必需1项验签。不以便携检查或源码审查代替真实执行。",
           "lastClosedSDKRequest": "docs/legado-ios/core-sdk-7ef3c7e-request.json",
           "lastSDKTerminalRecord": "docs/legado-ios/core-sdk-7ef3c7e-terminal-result.json",
-          "pendingSDKRequest": "docs/legado-ios/core-sdk-fb6aa7a-request.json"
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-630c1b3-request.json"
         },
         {
           "id": "S2",
@@ -2101,7 +2142,7 @@
           "nextActionZh": "提交同一源码的集中SDK/模拟器验证，实际执行已选续签、认证安装、事务恢复和触发回归；完整应用包重签另以同job必需1项验签。不以便携检查或源码审查代替真实执行。",
           "lastClosedSDKRequest": "docs/legado-ios/core-sdk-7ef3c7e-request.json",
           "lastSDKTerminalRecord": "docs/legado-ios/core-sdk-7ef3c7e-terminal-result.json",
-          "pendingSDKRequest": "docs/legado-ios/core-sdk-fb6aa7a-request.json"
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-630c1b3-request.json"
         },
         {
           "id": "S3",
@@ -2204,7 +2245,7 @@
           "nextActionZh": "提交同一源码的集中SDK/模拟器验证，实际执行已选续签、认证安装、事务恢复和触发回归；完整应用包重签另以同job必需1项验签。不以便携检查或源码审查代替真实执行。",
           "lastClosedSDKRequest": "docs/legado-ios/core-sdk-7ef3c7e-request.json",
           "lastSDKTerminalRecord": "docs/legado-ios/core-sdk-7ef3c7e-terminal-result.json",
-          "pendingSDKRequest": "docs/legado-ios/core-sdk-fb6aa7a-request.json"
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-630c1b3-request.json"
         },
         {
           "id": "S4",
@@ -2296,7 +2337,7 @@
           "nextActionZh": "提交同一源码的集中SDK/模拟器验证，实际执行已选续签、认证安装、事务恢复和触发回归；完整应用包重签另以同job必需1项验签。不以便携检查或源码审查代替真实执行。",
           "lastClosedSDKRequest": "docs/legado-ios/core-sdk-7ef3c7e-request.json",
           "lastSDKTerminalRecord": "docs/legado-ios/core-sdk-7ef3c7e-terminal-result.json",
-          "pendingSDKRequest": "docs/legado-ios/core-sdk-fb6aa7a-request.json"
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-630c1b3-request.json"
         },
         {
           "id": "S5",
@@ -2413,7 +2454,7 @@
           "nextActionZh": "提交后安全终结与下一轮准入已接线；与候选有效期、章节URL变量修复合为同源码集中SDK/模拟器/JNI/完整包重签验证，实际结果仍待执行。",
           "lastClosedSDKRequest": "docs/legado-ios/core-sdk-7ef3c7e-request.json",
           "lastSDKTerminalRecord": "docs/legado-ios/core-sdk-7ef3c7e-terminal-result.json",
-          "pendingSDKRequest": "docs/legado-ios/core-sdk-fb6aa7a-request.json"
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-630c1b3-request.json"
         },
         {
           "id": "S6",
@@ -2515,7 +2556,7 @@
           "nextActionZh": "禁用自动续签时保留bootstrap错误并维持原共用worker生命周期的修正已合入；当前fb6任务不含此后续修改，须待其终态后集中执行必要回归。",
           "lastClosedSDKRequest": "docs/legado-ios/core-sdk-7ef3c7e-request.json",
           "lastSDKTerminalRecord": "docs/legado-ios/core-sdk-7ef3c7e-terminal-result.json",
-          "pendingSDKRequest": "docs/legado-ios/core-sdk-fb6aa7a-request.json"
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-630c1b3-request.json"
         }
       ],
       "integrationCheckpoint": {
@@ -8535,7 +8576,8 @@
     "docs/legado-ios/core-sdk-d820-actual-repairs.json",
     "docs/legado-ios/core-sdk-fb6aa7a-request.json",
     "docs/legado-ios/core-renewal-disabled-worker-lifecycle-repair.json",
-    "docs/legado-ios/core-original-native-coretext-product-step.json"
+    "docs/legado-ios/core-original-native-coretext-product-step.json",
+    "docs/legado-ios/core-sdk-630c1b3-request.json"
   ],
   "userScopeAdjustments": [
     {
