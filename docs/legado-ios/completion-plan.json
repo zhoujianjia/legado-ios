@@ -169,8 +169,8 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Submit this exact reviewed seven-control checkpoint as one source-bound SDK/Native pair. It includes proxy/remote-jslib, certificate reuse, original preUpdate identity handoff and exact f233 test compiler repairs. Resource activation and the separate first-registration draft remain excluded; no IPA tag.",
-      "alreadyRunningTasks": "No live SDK/Native tasks. Both f233826 terminal failures are fully archived and must not be queried again.",
+      "nextPlannedCheckpoint": "This exact coherent pair is running. Continue the separate first-registration production draft. Do not submit another pair until current terminal evidence is classified and a necessary reviewed successor is ready; no per-change or IPA tag.",
+      "alreadyRunningTasks": "Only f481e89 SDK39533277187/job119003957104 and Native39533277157/job119003957102 are live. The f233 pair is fully closed and archived; never query it again.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
         "sourceTag": "reader-renewal-8d934dd",
@@ -211,7 +211,26 @@
         "producerPublicOutputs": 43,
         "producerMachOs": 4
       },
-      "onlyLiveSDKHandles": [],
+      "onlyLiveSDKHandles": [
+        {
+          "runID": 39533277187,
+          "jobID": 119003957104,
+          "sourceCommit": "f481e89717b96df1d15d5c3f9a72c359d1fcef55",
+          "sourceTag": "reader-renewal-f481e89",
+          "workflow": ".github/workflows/reader-renewal-probe.yml",
+          "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39533277187",
+          "initialStatus": "in_progress"
+        },
+        {
+          "runID": 39533277157,
+          "jobID": 119003957102,
+          "sourceCommit": "f481e89717b96df1d15d5c3f9a72c359d1fcef55",
+          "sourceTag": "legado-native-reader-test-f481e89",
+          "workflow": ".github/workflows/legado-native-reader-test.yml",
+          "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39533277157",
+          "initialStatus": "in_progress"
+        }
+      ],
       "latestDevicePackageTerminal": {
         "sourceCommit": "44f125b73c06bf95637765ab58e65f41d0651b44",
         "runID": 39457883604,
@@ -321,6 +340,31 @@
         "uniqueTestCompilerErrorsInEach": 2,
         "sourceRepairRecord": "docs/legado-ios/core-native-f233826-test-compiler-repair.json",
         "independentArchiveReview": "docs/legado-ios/evidence/f233826-terminal-independent-review/independent-review.json"
+      },
+      "latestSubmittedCorePair": {
+        "sourceCommit": "f481e89717b96df1d15d5c3f9a72c359d1fcef55",
+        "record": "docs/legado-ios/core-sdk-f481e89-request.json",
+        "handles": [
+          {
+            "runID": 39533277187,
+            "jobID": 119003957104,
+            "sourceCommit": "f481e89717b96df1d15d5c3f9a72c359d1fcef55",
+            "sourceTag": "reader-renewal-f481e89",
+            "workflow": ".github/workflows/reader-renewal-probe.yml",
+            "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39533277187",
+            "initialStatus": "in_progress"
+          },
+          {
+            "runID": 39533277157,
+            "jobID": 119003957102,
+            "sourceCommit": "f481e89717b96df1d15d5c3f9a72c359d1fcef55",
+            "sourceTag": "legado-native-reader-test-f481e89",
+            "workflow": ".github/workflows/legado-native-reader-test.yml",
+            "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39533277157",
+            "initialStatus": "in_progress"
+          }
+        ],
+        "actualNewAcceptedTests": 0
       }
     },
     "nextReadyBatch": [
@@ -517,7 +561,8 @@
               "scope": "Original preUpdate reGetBook/refreshTocUrl to same Host and App URL handoff; four actual JVM methods and external Java public consumer. App/Native authored regressions await SDK."
             }
           ],
-          "nextActionZh": "代理和map远程jsLib已合入并有联合JVM证据；继续完整preUpdateJs刷新与书籍身份回写、原WebJS对象返回的Android值转换合同。资源嗅探公共WK平台尚未实际执行，保持未启用；完整书源兼容仍未完成。"
+          "nextActionZh": "代理和map远程jsLib已合入并有联合JVM证据；继续完整preUpdateJs刷新与书籍身份回写、原WebJS对象返回的Android值转换合同。资源嗅探公共WK平台尚未实际执行，保持未启用；完整书源兼容仍未完成。",
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-f481e89-request.json"
         },
         {
           "id": "C2",
@@ -663,7 +708,8 @@
             "已补同Host既有backing/source/revision稳定explore scope，独立于每次opaque grant，原InfoMap仅留受检String map、LRU99及显式当前源savePending；不留task/environment，不以scope字符串授予持久权限。Native2/Package2未执行，完整C2仍未验收。",
             "公开批量正文的现有 App 状态与正文 owner 已接入：同一 BookStore 持久化队列处理文件证明、真实章节身份/任务代际、变量最终 CAS 与提交事实；晚到失败和读取错误不能删除新正文。当前仅源码审查与语法检查，原生 SDK/JNI 尚未验收，C2 仍进行中。"
           ],
-          "nextActionZh": "按真实SDK响应Cookie转换失败，改用系统真实响应属性构造并保留原HttpOnly、secure、session、绝对expiry等精确门禁；同一owner与原毫秒期限不变。现5方法中2项补强场景待统一SDK执行，具体旧失败字段未测，不提前宣称已修复验证。"
+          "nextActionZh": "按真实SDK响应Cookie转换失败，改用系统真实响应属性构造并保留原HttpOnly、secure、session、绝对expiry等精确门禁；同一owner与原毫秒期限不变。现5方法中2项补强场景待统一SDK执行，具体旧失败字段未测，不提前宣称已修复验证。",
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-f481e89-request.json"
         },
         {
           "id": "C3",
@@ -742,7 +788,8 @@
           "nextActionZh": "原版刷新两入口及App书籍URL交接已接线，JVM四方法与外部Java消费者已有真实成功证据；统一SDK执行新增Host与JNI/书库回归，资源嗅探及对象结果兼容继续未完成。",
           "preparatoryEvidence": [
             "docs/legado-ios/core-original-content-batch-rate-step.json"
-          ]
+          ],
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-f481e89-request.json"
         },
         {
           "id": "C4",
@@ -836,7 +883,8 @@
               "scope": "Original preUpdate reGetBook/refreshTocUrl to same Host and App URL handoff; four actual JVM methods and external Java public consumer. App/Native authored regressions await SDK."
             }
           ],
-          "nextActionZh": "已修复88轮的两处SDK API编译错误及5项JVM旧预期；下一份统一源码为core349、Native161、去重365。只启动同一源码的一组SDK/Native，App463定义466叶、Native28产品加2平台验证、MainJS1及两个独立冷宿主；实际结果仍待取得，平台验证不等于生产书源兼容完成。"
+          "nextActionZh": "已修复88轮的两处SDK API编译错误及5项JVM旧预期；下一份统一源码为core349、Native161、去重365。只启动同一源码的一组SDK/Native，App463定义466叶、Native28产品加2平台验证、MainJS1及两个独立冷宿主；实际结果仍待取得，平台验证不等于生产书源兼容完成。",
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-f481e89-request.json"
         },
         {
           "id": "C5",
@@ -923,7 +971,8 @@
           "implementedSubtasksZh": [
             "用户确认阅读正常。已修复分页成功后历史未清、不同阅读器共享nil书籍计数及共享任务按等待者重复计数的问题；5项新回归仅定义，25项相关方法待下一批统一SDK验证。目录超时与后台401ms响应迟延的原因仍未确定。"
           ],
-          "nextActionZh": "已修复88轮的两处SDK API编译错误及5项JVM旧预期；下一份统一源码为core349、Native161、去重365。只启动同一源码的一组SDK/Native，App463定义466叶、Native28产品加2平台验证、MainJS1及两个独立冷宿主；实际结果仍待取得，平台验证不等于生产书源兼容完成。"
+          "nextActionZh": "已修复88轮的两处SDK API编译错误及5项JVM旧预期；下一份统一源码为core349、Native161、去重365。只启动同一源码的一组SDK/Native，App463定义466叶、Native28产品加2平台验证、MainJS1及两个独立冷宿主；实际结果仍待取得，平台验证不等于生产书源兼容完成。",
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-f481e89-request.json"
         },
         {
           "id": "S1",
@@ -971,7 +1020,7 @@
             }
           ],
           "nextActionZh": "88轮SDK因两处生产API编译错误执行App0项；对应修复已合入，当前统一源码重新验证真实Bundle/IPA及材料读取。独立Package24通过不代表App验收；真实Apple材料与设备授权仍未验证。",
-          "pendingSDKRequest": "docs/legado-ios/core-sdk-f233826-request.json"
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-f481e89-request.json"
         },
         {
           "id": "S2",
@@ -1040,7 +1089,7 @@
             "已接真实Anisette v3及同owner账号网络/Keychain；设置可选服务、观察注册及确认恢复未知注册。认证/配对/界面共15源已合入，11项有行为回归仍待SDK执行，真实Apple授权未验证。"
           ],
           "nextActionZh": "同key有效证书复用与逐包profile延期验证已接线，待统一SDK执行4项新回归；继续首次设备/AppID登记与真实Apple授权缺口，严格同机安装通道仍未验证。",
-          "pendingSDKRequest": "docs/legado-ios/core-sdk-f233826-request.json"
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-f481e89-request.json"
         },
         {
           "id": "S3",
@@ -1089,7 +1138,7 @@
             "已补充受控临时 Keychain 的新进程重开、显式解锁及精确身份诊断，并实现独立有限 Mac producer 检查入口；20+9 项便携守卫通过，含实际复现并修复工具退出零但源码校验失败时误报成功的问题。实际 codesign 修复尚未验证，完整原生验收未改变。"
           ],
           "nextActionZh": "CMS BER包络修复与严格signedAttrs/签名证书门禁已合入；当前统一SDK要求同job真实产物重签及独立验签用例实际通过。旧88仅producer成功，App签名用例执行0，真实设备续签未验证。",
-          "pendingSDKRequest": "docs/legado-ios/core-sdk-f233826-request.json"
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-f481e89-request.json"
         },
         {
           "id": "S4",
@@ -1151,7 +1200,7 @@
             "已接显式受保护P12与严格公开JSON导入，验证真实SecIdentity私钥、证书链与persistent-ref后绑定原namespace；拒绝活动/未知安装事务，旧身份不删除。真实同机可达性及安装权限仍未验证。"
           ],
           "nextActionZh": "当前仅strict DirectLockdown TLS子集；先补认证provider与协议/服务模式适配，保持同机可达性、安装授权、无VPN无伴侣条件未验证，不能删除认证检查或把TCP成功当作安装通道。",
-          "pendingSDKRequest": "docs/legado-ios/core-sdk-f233826-request.json"
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-f481e89-request.json"
         },
         {
           "id": "S5",
@@ -1206,7 +1255,7 @@
             "同一App前台链路已在nil事务、uploadIntent及同进程缓存早退之前真实复验Vault租约；已连接App只保留并检查原已验profile的两个日期界，失败立即撤销签名上下文。真实既有事务才可保留显式恢复，状态写失败仅内存降权且不伪造持久ACK；独立材料、正常读和恢复上下文错误保留。新增6个真实owned回归定义，SDK执行0。"
           ],
           "nextActionZh": "事务恢复等待环、uploadIntent前置和强解包修复已合入，当前统一SDK验证真实受控重签到安装事务及恢复；覆盖安装后冷启动与用户数据保留仍需设备证据。",
-          "pendingSDKRequest": "docs/legado-ios/core-sdk-f233826-request.json"
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-f481e89-request.json"
         },
         {
           "id": "S6",
@@ -1258,7 +1307,7 @@
             }
           ],
           "nextActionZh": "前台及系统允许的后台触发已有生产接线和持久节流，当前统一SDK复验触发与事务衔接；设备调度、到期恢复及长期无人值守仍未验证。",
-          "pendingSDKRequest": "docs/legado-ios/core-sdk-f233826-request.json"
+          "pendingSDKRequest": "docs/legado-ios/core-sdk-f481e89-request.json"
         }
       ],
       "integrationCheckpoint": {
@@ -2192,7 +2241,7 @@
       },
       "queuedS2PreUpdateNativeResultCheckpoint": {
         "record": "docs/legado-ios/core-sdk-s2-preupdate-native-result-checkpoint.json",
-        "status": "ready-for-one-coherent-SDK-Native-pair",
+        "status": "submitted-awaiting-terminal-artifacts",
         "sourceCounts": {
           "core": 364,
           "native": 180,
@@ -2209,7 +2258,11 @@
           "PackageInputs": 23
         },
         "newCloudRunsOrTags": 0,
-        "actualSDKExecutions": 0
+        "actualSDKExecutions": 0,
+        "requestRecord": "docs/legado-ios/core-sdk-f481e89-request.json",
+        "sourceCommit": "f481e89717b96df1d15d5c3f9a72c359d1fcef55",
+        "actualPushedTags": 2,
+        "actualSDKExecutionsAccepted": 0
       }
     }
   },
@@ -6590,6 +6643,7 @@
     "docs/legado-ios/core-sdk-f233826-terminal-result.json",
     "docs/legado-ios/core-native-f233826-terminal-result.json",
     "docs/legado-ios/core-original-preupdate-refresh-step.json",
-    "docs/legado-ios/core-sdk-s2-preupdate-native-result-checkpoint.json"
+    "docs/legado-ios/core-sdk-s2-preupdate-native-result-checkpoint.json",
+    "docs/legado-ios/core-sdk-f481e89-request.json"
   ]
 }
