@@ -1,0 +1,245 @@
+--- Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift
++++ Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift
+@@ -48,8 +48,56 @@
+             self.removal = removal.rawValue; completedAt = date
+         }
+     }
++    /// A persisted seal of actual completed-installation cleanup, never a
++    /// Lookup inference. A sealed installer Receipt already follows Remove,
++    /// StopSession and local channel close; legacy records may obtain the same
++    /// bounded facts through an explicit reportedComplete recovery grant.
++    struct ReportedCompleteCleanup: Sendable, Codable, Equatable {
++        enum Origin: String, Sendable, Codable { case installerReceipt, reportedCompleteRecovery }
++        let origin: Origin
++        let transactionID: UUID
++        let grantID: UUID?
++        let candidate: Candidate
++        let submission: Submission
++        let removal: String
++        let completedAt: Date
++        fileprivate init(grant: RemoteCleanupGrant, outcome: SelfRenewalInstallationRecovery.Outcome, at date: Date) throws {
++            guard grant.disposition == .reportedComplete, grant.snapshot.record.phase == .receiptObserved,
++                  let removal = outcome.removal, outcome.grantID == grant.id,
++                  outcome.remotePackagePath == grant.remotePackagePath,
++                  outcome.deviceCertificateSHA256 == grant.deviceCertificateSHA256,
++                  outcome.stopSessionAcknowledged, outcome.lookup == nil,
++                  outcome.afcChannelReleasedLocally, outcome.lockdownChannelReleasedLocally,
++                  let candidate = grant.snapshot.record.candidate,
++                  let submission = grant.snapshot.record.submission else { throw Failure.invalidTransition }
++            origin = .reportedCompleteRecovery
++            transactionID = grant.snapshot.record.id; grantID = grant.id
++            self.candidate = candidate; self.submission = submission
++            self.removal = removal.rawValue; completedAt = date
++        }
++        fileprivate init(record: Record, receipt: Installer.Receipt, at date: Date) throws {
++            guard record.phase == .upgradeIntent, let candidate = record.candidate,
++                  let submission = record.submission,
++                  receipt.upgradeReportedComplete, receipt.exactLookupIdentityObserved, receipt.remoteStagingRemoved,
++                  receipt.archiveSHA256 == candidate.sha256, receipt.uploadedBytes == candidate.byteCount,
++                  receipt.bundleIdentifier == record.bundleIdentifier, receipt.bundleVersion == record.bundleVersion,
++                  receipt.submission.archiveSHA256 == candidate.sha256,
++                  receipt.submission.uploadedBytes == candidate.byteCount,
++                  receipt.submission.bundleIdentifier == record.bundleIdentifier,
++                  receipt.submission.bundleVersion == record.bundleVersion,
++                  receipt.submission.remotePackagePath == submission.remotePackagePath,
++                  receipt.submission.deviceCertificateSHA256 == submission.deviceCertificateSHA256,
++                  receipt.lockdownAuthentication.peerCertificateSHA256 == submission.deviceCertificateSHA256,
++                  receipt.afcAuthentication.peerCertificateSHA256 == submission.deviceCertificateSHA256,
++                  receipt.installationAuthentication.peerCertificateSHA256 == submission.deviceCertificateSHA256 else { throw Failure.invalidTransition }
++            origin = .installerReceipt; transactionID = record.id; grantID = nil
++            self.candidate = candidate; self.submission = submission
++            removal = "removedAcknowledged"; completedAt = date
++        }
++    }
+     enum RetirementReason: String, Sendable, Codable {
+         case preparationFailed, preparationInterrupted, supersededUnsubmittedCandidate, authenticatedUploadCleanup
++        case observedInstallationComplete
+     }
+     enum RemoteHistory: String, Sendable, Codable {
+         /// Written by this journal's actual create, not inferred from a nil path.
+@@ -90,8 +138,9 @@
+         let localCandidateRemoval: LocalCandidateRemoval
+         let retiredAt: Date
+         let safePreSubmissionCleanup: SafePreSubmissionCleanup?
+-        /// Does not establish installation, remote absence outside the sealed
+-        /// pre-submission cleanup, user-data preservation or Apple authority.
++        let reportedCompleteCleanup: ReportedCompleteCleanup?
++        /// Selected observations and cleanup permit releasing this transaction;
++        /// they do not establish kernel-image/whole-data or Apple authority.
+         var renewalVerified: Bool { false }
+         fileprivate init(_ snapshot: Snapshot) throws {
+             guard snapshot.record.phase == .retired, let retirement = snapshot.record.retirement,
+@@ -101,6 +150,7 @@
+             recordSHA256 = snapshot.encodedSHA256; originalPhase = retirement.originalPhase
+             reason = retirement.reason; localCandidateRemoval = removal; retiredAt = date
+             safePreSubmissionCleanup = snapshot.record.safePreSubmissionCleanup
++            reportedCompleteCleanup = snapshot.record.reportedCompleteCleanup
+         }
+     }
+     struct InstalledMaterialObservation: Sendable, Codable, Equatable {
+@@ -194,6 +244,7 @@
+         var userDataHandoff: UserDataCheckpoint?
+         var userDataRead: UserDataReadObservation?
+         var safePreSubmissionCleanup: SafePreSubmissionCleanup? = nil
++        var reportedCompleteCleanup: ReportedCompleteCleanup? = nil
+         var retirement: Retirement? = nil
+         var previousRetirement: PreviousRetirement? = nil
+         /// nil is a legacy record with unrecorded history, never a negative proof.
+@@ -350,10 +401,33 @@
+         defer { SourcePerfTrace.record("renewal.transaction.retire", "main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
+         try Task.checkCancellation()
+         var value = try current(expected)
++        guard reason != .observedInstallationComplete else { throw Failure.retirementNotAuthorized }
+         try authorizeRetirement(value, reason: reason)
+         value.retirement = Retirement(originalPhase: value.phase, originalRevision: value.revision,
+             originalRecordSHA256: expected.encodedSHA256, candidate: value.candidate,
+             reason: reason, initiatedAt: date, localCandidateRemoval: nil, completedAt: nil)
++        value.phase = .retirementPending
++        let pending = try advance(value, at: date)
++        return try finishRetirement(pending, at: date)
++    }
++
++    /// Initial admission requires both independent observations from this actual
++    /// process, distinct from preparation AND the submission handoff process.
++    /// Unit fixtures may exercise persisted records; no supplied process UUID or
++    /// caller Boolean can replace the production observer APIs.
++    func retireObservedInstallation(_ expected: Snapshot, at date: Date) throws -> RetirementReceipt {
++        let started = SourcePerfTrace.now
++        defer { SourcePerfTrace.record("renewal.transaction.retire.observed", "main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
++        try Task.checkCancellation()
++        var value = try current(expected)
++        try authorizeRetirement(value, reason: .observedInstallationComplete)
++        let currentProcess = SelfRenewalInstalledMaterialObserver.ProcessIdentity.current.id
++        guard value.installedMaterial?.processID == currentProcess,
++              value.userDataRead?.processID == currentProcess else { throw Failure.retirementNotAuthorized }
++        value.retirement = Retirement(originalPhase: value.phase, originalRevision: value.revision,
++            originalRecordSHA256: expected.encodedSHA256, candidate: value.candidate,
++            reason: .observedInstallationComplete, initiatedAt: date,
++            localCandidateRemoval: nil, completedAt: nil)
+         value.phase = .retirementPending
+         let pending = try advance(value, at: date)
+         return try finishRetirement(pending, at: date)
+@@ -375,7 +449,26 @@
+     }
+
+     private func authorizeRetirement(_ value: Record, reason: RetirementReason) throws {
+-        guard value.retirement == nil, value.submission == nil, value.lookupReportedSameVersion == nil,
++        if reason == .observedInstallationComplete {
++            // Structural revalidation also runs when loading a pending/tombstone
++            // record in a later process. Current-process equality is required
++            // only at the initial admission above, before the durable marker.
++            guard value.retirement == nil, value.phase == .receiptObserved,
++                  value.remoteHistory == .started, value.revision < UInt64.max - 1,
++                  let candidate = value.candidate, let submission = value.submission,
++                  value.lookupReportedSameVersion == true, value.safePreSubmissionCleanup == nil,
++                  let cleanup = value.reportedCompleteCleanup,
++                  cleanup.transactionID == value.id, cleanup.candidate == candidate,
++                  cleanup.submission == submission,
++                  let preparedProcess = value.preparationProcessID,
++                  let material = value.installedMaterial, let handoff = value.userDataHandoff,
++                  let read = value.userDataRead, material.processID == read.processID,
++                  material.processID != preparedProcess, material.processID != handoff.processID,
++                  read.selectedFilesMatch, !read.sourceWasBootstrapped else { throw Failure.retirementNotAuthorized }
++            return
++        }
++        guard value.retirement == nil, value.reportedCompleteCleanup == nil,
++              value.submission == nil, value.lookupReportedSameVersion == nil,
+               value.installedMaterial == nil, value.userDataHandoff == nil, value.userDataRead == nil,
+               value.revision < UInt64.max - 1 else { throw Failure.retirementNotAuthorized }
+         switch value.phase {
+@@ -521,6 +614,7 @@
+               receipt.bundleIdentifier == value.bundleIdentifier, receipt.bundleVersion == value.bundleVersion,
+               receipt.submission.remotePackagePath == submission.remotePackagePath,
+               receipt.installationAuthentication.peerCertificateSHA256 == submission.deviceCertificateSHA256 else { throw Failure.invalidTransition }
++        value.reportedCompleteCleanup = try ReportedCompleteCleanup(record: value, receipt: receipt, at: date)
+         value.phase = .receiptObserved; value.lookupReportedSameVersion = true
+         return try advance(value, at: date)
+     }
+@@ -632,6 +726,8 @@
+             value.phase = .candidateReady; value.submission = nil
+         case .reportedComplete:
+             guard outcome.removalVerified, outcome.lookup == nil, value.phase == .receiptObserved else { throw Failure.invalidTransition }
++            value.reportedCompleteCleanup = try ReportedCompleteCleanup(grant: grant, outcome: outcome, at: date)
++            value.remoteHistory = .started
+         case .unknownSubmission:
+             guard !outcome.removalVerified, let lookup = outcome.lookup,
+                   lookup.installationAuthentication.peerCertificateSHA256 == grant.deviceCertificateSHA256 else { throw Failure.invalidTransition }
+@@ -690,7 +786,7 @@
+                   previous.retiredAt <= value.createdAt else { throw Failure.malformedRecord }
+         }
+         if value.remoteHistory == .neverStarted {
+-            guard value.submission == nil, value.safePreSubmissionCleanup == nil,
++            guard value.submission == nil, value.safePreSubmissionCleanup == nil, value.reportedCompleteCleanup == nil,
+                   ![.uploadIntent, .upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved].contains(value.phase) else { throw Failure.malformedRecord }
+         }
+         if [.created, .signing].contains(value.phase), value.remoteHistory == .started { throw Failure.malformedRecord }
+@@ -708,14 +804,33 @@
+         }
+         if value.phase == .candidateReady, value.remoteHistory == .started,
+            value.safePreSubmissionCleanup == nil { throw Failure.malformedRecord }
++        let observedRetirement = value.retirement?.reason == .observedInstallationComplete
++        if let cleanup = value.reportedCompleteCleanup {
++            guard let candidate = value.retirement?.candidate ?? value.candidate,
++                  value.phase == .receiptObserved || observedRetirement,
++                  value.remoteHistory == .started, value.safePreSubmissionCleanup == nil,
++                  cleanup.transactionID == value.id, cleanup.candidate == candidate,
++                  cleanup.submission == value.submission, value.lookupReportedSameVersion == true,
++                  cleanup.completedAt.timeIntervalSinceReferenceDate.isFinite,
++                  cleanup.completedAt >= value.createdAt, cleanup.completedAt <= value.updatedAt,
++                  ["removedAcknowledged", "alreadyAbsentAcknowledged"].contains(cleanup.removal) else { throw Failure.malformedRecord }
++            switch cleanup.origin {
++            case .installerReceipt:
++                guard cleanup.grantID == nil, cleanup.removal == "removedAcknowledged" else { throw Failure.malformedRecord }
++            case .reportedCompleteRecovery:
++                guard cleanup.grantID != nil else { throw Failure.malformedRecord }
++            }
++        }
+         if let retirement = value.retirement {
+             guard [.retirementPending, .retired].contains(value.phase),
+                   retirement.originalRecordSHA256.count == 32,
+                   retirement.originalRevision < UInt64.max - 1,
+                   retirement.initiatedAt.timeIntervalSinceReferenceDate.isFinite,
+-                  retirement.initiatedAt >= value.createdAt, retirement.initiatedAt <= value.updatedAt,
+-                  value.submission == nil, value.lookupReportedSameVersion == nil,
+-                  value.installedMaterial == nil, value.userDataHandoff == nil, value.userDataRead == nil else { throw Failure.malformedRecord }
++                  retirement.initiatedAt >= value.createdAt, retirement.initiatedAt <= value.updatedAt else { throw Failure.malformedRecord }
++            if !observedRetirement {
++                guard value.submission == nil, value.lookupReportedSameVersion == nil,
++                      value.installedMaterial == nil, value.userDataHandoff == nil, value.userDataRead == nil else { throw Failure.malformedRecord }
++            }
+             if let candidate = retirement.candidate {
+                 guard (1...Limits.candidateBytes).contains(candidate.byteCount), candidate.sha256.count == 32 else { throw Failure.malformedRecord }
+             }
+@@ -750,15 +865,15 @@
+                   submission.remotePackagePath == prefix + id.uuidString.lowercased() + suffix else { throw Failure.malformedRecord }
+         }
+         if let observed = value.installedMaterial {
+-            guard [.upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved].contains(value.phase),
++            guard [.upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved].contains(value.phase) || observedRetirement,
+                   value.submission != nil, observed.candidateArchiveSHA256.count == 32,
+-                  observed.candidateArchiveSHA256 == value.candidate?.sha256,
++                  observed.candidateArchiveSHA256 == (value.retirement?.candidate ?? value.candidate)?.sha256,
+                   observed.authenticatedMaterialSHA256.count == 32,
+                   observed.observedAt.timeIntervalSinceReferenceDate.isFinite,
+                   observed.observedAt >= value.createdAt, observed.observedAt <= value.updatedAt else { throw Failure.malformedRecord }
+         }
+         if let handoff = value.userDataHandoff {
+-            guard [.upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved].contains(value.phase),
++            guard [.upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved].contains(value.phase) || observedRetirement,
+                   value.submission != nil, handoff.capturedAt.timeIntervalSinceReferenceDate.isFinite,
+                   handoff.capturedAt >= value.createdAt, handoff.capturedAt <= value.updatedAt,
+                   handoff.sourceCount >= 0, handoff.sourceMutationRevision >= 0,
+@@ -840,7 +955,12 @@
+         case .attentionRequired:
+             guard value.lookupReportedSameVersion == nil || value.submission != nil else { throw Failure.malformedRecord }
+         case .retirementPending, .retired:
+-            guard value.retirement != nil, value.submission == nil, value.lookupReportedSameVersion == nil else { throw Failure.malformedRecord }
++            guard value.retirement != nil else { throw Failure.malformedRecord }
++            if observedRetirement {
++                guard value.submission != nil, value.lookupReportedSameVersion == true else { throw Failure.malformedRecord }
++            } else {
++                guard value.submission == nil, value.lookupReportedSameVersion == nil else { throw Failure.malformedRecord }
++            }
+         }
+     }
+     private func publish(_ record: Record, checksCancellation: Bool = true) throws -> Snapshot {

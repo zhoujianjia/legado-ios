@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "kind": "S5 AppSession integration of observed submitted-transaction retirement",
+  "createdAt": "2026-10-21T04:04:36.588139+00:00",
+  "canonicalBaselineHEAD": "8ff97891733a0485ca549de8a71f400ad5317929",
+  "sourceRoot": ".build/s5-observed-installation-session-step/snapshot-v1/work",
+  "parentExpiry": {
+    "path": ".build/automatic-ready-expiry-repair-step/final-v1.json",
+    "bytes": 5283,
+    "sha256": "476f5cd67c1eb2099a734823204aaa080a86448172911f89cc70f88a8576debb"
+  },
+  "coordinatorJournalDependency": {
+    "path": ".build/s5-observed-installation-completion-step/final-v2.json",
+    "bytes": 11786,
+    "sha256": "8c254f73206064bcf2d325443e06f046680c3ccd9aa4d5496c5fba0b5e85766c"
+  },
+  "files": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "baseline": {
+        "path": ".build/s5-observed-installation-session-step/rawbaseline/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+        "bytes": 121639,
+        "sha256": "8a5a30bc0b8723a8c1f6a369170f712ad99d25ea299a7b5103b97dfdba243a76"
+      },
+      "candidate": {
+        "path": ".build/s5-observed-installation-session-step/snapshot-v1/work/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+        "bytes": 123848,
+        "sha256": "bcee884738fccd7f6a758a277bba63f8a28a267b3dfdfc1196ceadf9383d5391"
+      },
+      "diff": {
+        "path": ".build/s5-observed-installation-session-step/diffs-v1/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift.diff",
+        "bytes": 6989,
+        "sha256": "b40319620ef64a4d4871c75364d13e928f8994920272af4eaabe78e6ba585282"
+      }
+    }
+  ],
+  "protocol": {
+    "call": "Coordinator.retireObservedInstallationIfReady() async throws -> Journal.Snapshot?",
+    "retirementReason": "Journal.RetirementReason.observedInstallationComplete",
+    "recoveryCase": "Coordinator.Recovery.retiredObservedInstallation(Journal.RetirementReceipt)",
+    "owner": "Only the existing live signing Coordinator can admit observed retirement. Recovery-only access is never upgraded by a status projection.",
+    "sealedReceipt": "Journal.Record.reportedCompleteCleanup is persisted with the actual complete installer receipt or actual reported-complete recovery; a receipt with that seal requires no second network cleanup."
+  },
+  "changes": [
+    "After both real observations succeed, use the terminal API latest snapshot to classify status.",
+    "All three retired-state projections map only observedInstallationComplete to ready; old unsubmitted reasons remain retiredUnsubmitted.",
+    "A live-signing automatic receipt with actual reportedCompleteCleanup seal selects local observations without redundant network recovery; unsealed/unknown/recovery-only retains the explicit authenticated recovery path.",
+    "A newly retired observed transaction can leave the remote branch and proceed through the ordinary fresh-App due/material checks; unfinished recovery cannot.",
+    "connect verifies retired candidate absence through resumeRetirement, then ignores retained historical submission peer for explicit pairing replacement; active peer binding remains exact."
+  ],
+  "sourceChecks": [
+    "Reversing only the declared bounded wiring concerns exactly restores the reviewed expiry candidate text, including its new expiry check and unchanged manual prepare/submit bodies.",
+    "The terminal API follows both successful independent material/data observations and cannot run through material failure, data failure or recovery-only fallback.",
+    "Retired peer-history exemption follows actual resumeRetirement candidate-absence/durability verification; active records retain the original peer constraint.",
+    "Automatic continuation requires actual recovered ready state plus reloaded retired observed-installation reason; all other remote outcomes retain the recoveryRequired return. Fresh due/material checks and the reviewed ready-candidate policy remain below this branch.",
+    "Only live signing access with an actual receipt cleanup seal selects local observations without another connection. Legacy unsealed receipt/unknown/recovery-only still reaches the unchanged explicit authenticated recovery path."
+  ],
+  "testIdentityChanges": {
+    "newAppTestMethods": 0,
+    "newNativeTestMethods": 0,
+    "existingTestBodiesChanged": 0,
+    "expiryParentAddedMethods": [
+      "SelfRenewalAutomaticRenewalTests.resumedReadyCandidateRequiresExpiryAdvanceAndReadableCurrentApplication()"
+    ]
+  },
+  "testBoundary": "No CurrentProcessObservation or real cold-launch proof is fabricated. Coordinator/Journal dependency owns the explicitly synthetic persisted-admission regressions; real App current-process material acceptance remains external. This file is a production integration candidate, not an executed SDK result.",
+  "actualValidation": {
+    "sourceTextChecks": 5,
+    "failedChecks": 0,
+    "newSwiftCompiles": 0,
+    "newSwiftTests": 0,
+    "newGrammarParses": 0,
+    "newSDKRuns": 0,
+    "cloudQueries": 0
+  },
+  "remaining": [
+    "Root must independently review this caller together with the exact frozen Journal/Coordinator dependency and compose their source closures.",
+    "Actual Swift compilation and selected SDK regression are pending.",
+    "Successful local observed retirement permits another transaction only; all Apple authorization, actual installed image, cold launch, whole-data preservation and unattended scheduling claims require separate evidence."
+  ],
+  "authorityFlags": {
+    "appleAuthorizationEstablished": false,
+    "sameDeviceInstallationVerified": false,
+    "coldLaunchVerified": false,
+    "automaticRenewalVerified": false
+  },
+  "canonicalMutation": false,
+  "gitMutation": false,
+  "queryAgain": false,
+  "successor": {
+    "supersedes": {
+      "path": ".build/s5-observed-installation-session-step/final-v1.json",
+      "bytes": 5744,
+      "sha256": "d7f49badd8406c4e0b8ef90989f517091e236acebac94de55e12a06eb2f989c5"
+    },
+    "sourceBytesChanged": false,
+    "reason": "Only Coordinator/Journal dependency is rebound to its legacy nil-remoteHistory cleanup-seal repair successor; Session API/source/test identities are unchanged."
+  }
+}

@@ -345,7 +345,7 @@ class NativeSmokeProvenanceTests(unittest.TestCase):
     def test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging(self):
         repo = Path(__file__).resolve().parents[2]
         workflow = (repo / ".github/workflows/legado-native-reader-test.yml").read_text(encoding="utf-8")
-        self.assertEqual(len(native.SOURCE_INPUTS), 262)
+        self.assertEqual(len(native.SOURCE_INPUTS), 263)
         self.assertEqual(len(native.ORIGINAL_LOGIN_ACTION_MATERIAL_INPUTS), 23)
         self.assertTrue(set(native.ORIGINAL_LOGIN_ACTION_MATERIAL_INPUTS) <= set(native.SOURCE_INPUTS))
         self.assertIn("Execute1 MainJS and32 original methods in separate required hosts", workflow)
@@ -360,6 +360,7 @@ class NativeSmokeProvenanceTests(unittest.TestCase):
         self.assertEqual(len(native.ORIGINAL_GENERAL_WEBJS_RUNTIME_REPAIR_INPUTS), 30)
         self.assertTrue(set(native.ORIGINAL_GENERAL_WEBJS_RUNTIME_REPAIR_INPUTS) <= set(native.SOURCE_INPUTS))
         self.assertTrue(set(native.ORIGINAL_FIRST_REGISTRATION_FULL_APPLICATION_INPUTS) <= set(native.SOURCE_INPUTS))
+        self.assertTrue(set(native.NATIVE_S5_RETIREMENT_COMPILE_INPUTS) <= set(native.SOURCE_INPUTS))
         self.assertEqual(len(native.ORIGINAL_PROXY_REMOTE_CERTIFICATE_PREUPDATE_INPUTS), 35)
         self.assertTrue(set(native.ORIGINAL_PROXY_REMOTE_CERTIFICATE_PREUPDATE_INPUTS) <= set(native.SOURCE_INPUTS))
         self.assertIn('LegadoNativeOriginalReaderTests/testNativeOriginalPreUpdateRefreshKeepsPublicBookIdentityAndProgressWithNewURLContext', native.NATIVE_GROUPS["original"]["methods"])

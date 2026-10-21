@@ -1,0 +1,452 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T04:09:34.175082+00:00",
+  "status": "coherent-working-source-and-four-portable-guards-ready-awaiting-prior-SDK-terminal",
+  "baselineCommit": "8ff97891733a0485ca549de8a71f400ad5317929",
+  "changedControls": 6,
+  "reviewedControls": 7,
+  "reviewedControlBinding": [
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "bytes": 213238,
+      "sha256": "f45db39d62417ad2e2ce4f27d44537ec2ba2e37d36a1ab6919ed63d290dc02e2"
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "bytes": 197167,
+      "sha256": "9d5232f48eb521e1ec1ea176a4027bee5000a9f13854cd30a7ded32f691fd3a8"
+    },
+    {
+      "path": "scripts/reader-experience/native-smoke-tools.py",
+      "bytes": 73734,
+      "sha256": "f3c3ff05e5c785079033ab1d22dcc33ba6afbb78159774e4552d1e6ab5388147"
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "bytes": 35931,
+      "sha256": "08105c7ee89209dd3cc39e57e06be344df152981a164b6bd4ceecdfcbfdfc569"
+    },
+    {
+      "path": ".github/workflows/reader-renewal-probe.yml",
+      "bytes": 10788,
+      "sha256": "bdfe0edd83aa4d9cd20dd2bb68bae63e761e843e866920dbce0223e3f5bc0ec0"
+    },
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "bytes": 11827,
+      "sha256": "19409e77f7a9a24ac96328ebdf9b7afacb56499de59dd8bc36fb254ccbfec4f2"
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tests.sh",
+      "bytes": 44294,
+      "sha256": "909ea69b670b1ee2c80d7439e46c46fa69b27e4f7fff9fc930570d2f649334d6"
+    }
+  ],
+  "composedSourceBinding": [
+    {
+      "path": "Modules/Services/LibraryStore/BookStore.swift",
+      "bytes": 219240,
+      "sha256": "590413bbbb20bc66346a72de09f74f10fd985b4c7f3bc0d6c6c1b4ec581d2b33"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 123848,
+      "sha256": "bcee884738fccd7f6a758a277bba63f8a28a267b3dfdfc1196ceadf9383d5391"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+      "bytes": 29615,
+      "sha256": "743ae882d8e46ed559c6df857990020575b31ec9bdda19f516171b2c29dac225"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift",
+      "bytes": 66485,
+      "sha256": "a80a12caf049dfa60d1d75a4e5b84aa7ac3e12acae95897fe7531385fd6117b3"
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "bytes": 142491,
+      "sha256": "61fa7f4b1bafd9fd0fb5901dce64f8978e742f4a1735bcbb30ae46834605f08b"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift",
+      "bytes": 18951,
+      "sha256": "41fe0cdf62d6b5dcd4abad922ec4f8a722d5163879096e566d7a324380f66aa6"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalTransactionRetirementTests.swift",
+      "bytes": 42610,
+      "sha256": "6c07f961c2b23c4b53489a11a4da7397dc27d148e1d9ce457f4c92fd6a22b475"
+    }
+  ],
+  "counts": {
+    "core": 418,
+    "native": 263,
+    "union": 427,
+    "currentcoreDefinitions": 479,
+    "currentcoreLeaves": 482,
+    "originalMethods": 32,
+    "MainJS": 1,
+    "coldIndependent": 2,
+    "S3Definitions": 1,
+    "S3Leaves": 1,
+    "PackageDefinitions": 24,
+    "PackageInputs": 23,
+    "boolPairs": 3
+  },
+  "currentcoreOnlyAddedCases": [
+    "SelfRenewalAutomaticRenewalTests/resumedReadyCandidateRequiresExpiryAdvanceAndReadableCurrentApplication",
+    "SelfRenewalTransactionRetirementTests/refusesIncompleteOrMixedObservedAdmissionWithoutMutation",
+    "SelfRenewalTransactionRetirementTests/retiresPersistedObservedAdmissionAcrossCrashWindowsAndCreatesSuccessor",
+    "SelfRenewalTransactionRetirementTests/sealsActualReportedCompleteCleanupWithoutPromotingLookup"
+  ],
+  "preservedControls": {
+    "old13NonCurrentModeSetsExact": true,
+    "old475CurrentcoreCasesRetained": true,
+    "newCurrentcoreOnlyDefinitions": [
+      "SelfRenewalAutomaticRenewalTests/resumedReadyCandidateRequiresExpiryAdvanceAndReadableCurrentApplication",
+      "SelfRenewalTransactionRetirementTests/refusesIncompleteOrMixedObservedAdmissionWithoutMutation",
+      "SelfRenewalTransactionRetirementTests/retiresPersistedObservedAdmissionAcrossCrashWindowsAndCreatesSuccessor",
+      "SelfRenewalTransactionRetirementTests/sealsActualReportedCompleteCleanupWithoutPromotingLookup"
+    ],
+    "threeOriginalBoolPairsExact": true,
+    "allExistingCoreToolBytesRestoredByRemovingNewConstantsAndUndoingOnlyFiveActiveNumericReplacements": true,
+    "allNativeFunctionBytesExactByRemovingOnlyNewSourceDeclaration": true,
+    "oldNative32MethodsAndOrderExact": true,
+    "separateMainJS1Cold2FullApplicationS3OneOneUnchanged": true,
+    "SDKMandatoryProducerFixtureBudgetsPhaseExitFailClosedGatesUnchanged": true,
+    "nativeWorkflowByteExact": true,
+    "oldWholeClassWrapperBoundariesUnchanged": "renewal shell diff contains only currentcore count comment; earlier exact seven integrated selectors remain intact",
+    "explicitSourceClosureBoundary": "418/263/427 are declared reviewed source owner/input rosters, not a claim of all transitive App compile inputs",
+    "canonicalNonControlMatches": 416,
+    "frozenCandidateSourceOverlays": [
+      "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+      "Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift",
+      "Tests/iOS/yuedu appTests/SelfRenewalTransactionRetirementTests.swift"
+    ],
+    "packageInputCount": 23,
+    "packageChangedInputPaths": [
+      ".github/workflows/reader-renewal-probe.yml"
+    ],
+    "freshPackage24Required": true
+  },
+  "actualPortableValidation": {
+    "result": {
+      "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/affected-validation-v1.json",
+      "bytes": 3270,
+      "sha256": "566eaa78af535ae954043292976c01a3f361fdb70e24542daee8679eb4ac5a6e"
+    },
+    "distinctMethods": 4,
+    "actualExecutions": 4,
+    "passed": 4,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "repeatedPassingMethods": 0,
+    "logs": [
+      {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/affected-core-v1.log",
+        "bytes": 736,
+        "sha256": "c27c9da0c25696a920b21234b46b1fcbf833d55b0b410d50670ee2a1f20c04be"
+      },
+      {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/affected-native-v1.log",
+        "bytes": 308,
+        "sha256": "ac8b0736f06ca66fcd9aabb3f77b382934288b3ae3bb63c023a097a8c9da3642"
+      }
+    ],
+    "claim": "Only four Python guards; no Swift build, XCTest, simulator, JNI, JVM compile/378 replay, Apple-account or device acceptance."
+  },
+  "package": {
+    "count": 23,
+    "compilationInputs": 16,
+    "controls": 7,
+    "changedPaths": [
+      ".github/workflows/reader-renewal-probe.yml"
+    ],
+    "fresh24Required": true,
+    "priorPackageResultNotReusedForThisSnapshot": true
+  },
+  "evidence": [
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/transaction-candidate-v2.json",
+      "bytes": 11786,
+      "sha256": "8c254f73206064bcf2d325443e06f046680c3ccd9aa4d5496c5fba0b5e85766c",
+      "original": {
+        "path": ".build/s5-observed-installation-completion-step/final-v2.json",
+        "bytes": 11786,
+        "sha256": "8c254f73206064bcf2d325443e06f046680c3ccd9aa4d5496c5fba0b5e85766c"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/session-candidate-v2.json",
+      "bytes": 6182,
+      "sha256": "7ac59f4c7bf7aa2ee0b806a65d9c9d8ef4395c486a78d446ae334567885aac9c",
+      "original": {
+        "path": ".build/s5-observed-installation-session-step/final-v2.json",
+        "bytes": 6182,
+        "sha256": "7ac59f4c7bf7aa2ee0b806a65d9c9d8ef4395c486a78d446ae334567885aac9c"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/controls-candidate.json",
+      "bytes": 20618,
+      "sha256": "825ae2b4d568e7b087a64f5ec3997c929b312102c87c7dbe931c1891bf478c7e",
+      "original": {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/preparation/final-v1.json",
+        "bytes": 20618,
+        "sha256": "825ae2b4d568e7b087a64f5ec3997c929b312102c87c7dbe931c1891bf478c7e"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/transaction-source-checks.json",
+      "bytes": 7248,
+      "sha256": "e072a04e58090ce9a535716c4f53a80f63b5ec37f81c2746db5539f8784c6745",
+      "original": {
+        "path": ".build/s5-observed-installation-completion-step/source-checks-v2.json",
+        "bytes": 7248,
+        "sha256": "e072a04e58090ce9a535716c4f53a80f63b5ec37f81c2746db5539f8784c6745"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/SelfRenewalTransactionJournal.swift.diff",
+      "bytes": 17312,
+      "sha256": "b897dc6292e0b52f9c717373cbe3fe70c63a848f651a7305afa6d1b6cb660f0e",
+      "original": {
+        "path": ".build/s5-observed-installation-completion-step/diffs-v2/SelfRenewalTransactionJournal.swift.diff",
+        "bytes": 17313,
+        "sha256": "f946f419ac8d26862356aa21f82ddcac66b7f08a099363c315a138d04decc404"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/SelfRenewalControlledRenewalCoordinator.swift.diff",
+      "bytes": 3367,
+      "sha256": "15eac87d7afda4030eda10cd0737fd633e5985018d4319599de2571f6cf05919",
+      "original": {
+        "path": ".build/s5-observed-installation-completion-step/diffs-v2/SelfRenewalControlledRenewalCoordinator.swift.diff",
+        "bytes": 3368,
+        "sha256": "fb830cf0bb320007ddbf1ae73a3ca6c70ab0e06cd11ff8bfdef89b938a6e64ea"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/SelfRenewalTransactionRetirementTests.swift.diff",
+      "bytes": 19577,
+      "sha256": "4cdb45e10d6502eedb73843e3788be004c05e2ae4fad08350aa4d8dc61e286f1",
+      "original": {
+        "path": ".build/s5-observed-installation-completion-step/diffs-v2/SelfRenewalTransactionRetirementTests.swift.diff",
+        "bytes": 19578,
+        "sha256": "fc38834081719535bffcff6620cf6b2c65a03ce755b3b8429a1da24bd1161fde"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/SelfRenewalAppSession.swift.diff",
+      "bytes": 6988,
+      "sha256": "e43c0811eb6514dd77f9b7d3eece6fb3277683116df7535e8ca68152a93ef8a9",
+      "original": {
+        "path": ".build/s5-observed-installation-session-step/diffs-v1/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift.diff",
+        "bytes": 6989,
+        "sha256": "b40319620ef64a4d4871c75364d13e928f8994920272af4eaabe78e6ba585282"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/renewal-probe-tools.py.diff",
+      "bytes": 4208,
+      "sha256": "1885170f41d1143fbd960419649c413f55298b6f7c085c6bcfa5ddcfa7acfa82",
+      "original": {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/diffs/scripts/reader-experience/renewal-probe-tools.py.diff",
+        "bytes": 4209,
+        "sha256": "497ea00d64ddcc4067742e60253606bce7c0629b737ac446acec3273b42cefd8"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/test-renewal-probe-tools.py.diff",
+      "bytes": 35277,
+      "sha256": "5c92831171ce10bb038cc9392980c93634ba882c0b29b1f6d7b290728e5507a0",
+      "original": {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/diffs/scripts/reader-experience/test-renewal-probe-tools.py.diff",
+        "bytes": 35290,
+        "sha256": "60e1918ced82b02c311746741085671877c927c19d2a715f6c390534818bd6fd"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/native-smoke-tools.py.diff",
+      "bytes": 553,
+      "sha256": "38d242391e621af037351607cb30e1508a559901f03533e3aefc801e49e8c19b",
+      "original": {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/diffs/scripts/reader-experience/native-smoke-tools.py.diff",
+        "bytes": 555,
+        "sha256": "4253fe2bbd77277906f3f4fafdd26233064f0ea8747d12cf6451b6fd81ce318e"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/test-native-smoke-tools.py.diff",
+      "bytes": 1640,
+      "sha256": "89bd59987e978880ccd37cc59be39637bb277974b100eecd19edd17dade4c24a",
+      "original": {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/diffs/scripts/reader-experience/test-native-smoke-tools.py.diff",
+        "bytes": 1640,
+        "sha256": "89bd59987e978880ccd37cc59be39637bb277974b100eecd19edd17dade4c24a"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/reader-renewal-probe.yml.diff",
+      "bytes": 8555,
+      "sha256": "f9292cbd12d1244ad549d5aa00e1812662542db32514c3311f6a8b31321747ad",
+      "original": {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/diffs/.github/workflows/reader-renewal-probe.yml.diff",
+        "bytes": 8558,
+        "sha256": "a6138228f83cb983ad4e371ff080409b63ff4ddeebd3a7b00a2d3e806adf769d"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/renewal-probe-tests.sh.diff",
+      "bytes": 730,
+      "sha256": "7804dbb2285e32ee8188b1e952646c3f2c1ebe7228f6a48e9eb9e73484984b6f",
+      "original": {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/diffs/scripts/reader-experience/renewal-probe-tests.sh.diff",
+        "bytes": 730,
+        "sha256": "7804dbb2285e32ee8188b1e952646c3f2c1ebe7228f6a48e9eb9e73484984b6f"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/source-rosters-final.json",
+      "bytes": 227227,
+      "sha256": "0d90ba90577f77751d33c9a07ed1fa272961e6b8f7e31bc0b6dff636bd4edcde",
+      "original": {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/source-rosters-final.json",
+        "bytes": 227227,
+        "sha256": "0d90ba90577f77751d33c9a07ed1fa272961e6b8f7e31bc0b6dff636bd4edcde"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/selectors-final.json",
+      "bytes": 90954,
+      "sha256": "4c9c637ffab4f98e37241ed571c62dc8df9519dbad644d5762957ddc83042807",
+      "original": {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/selectors-final.json",
+        "bytes": 90954,
+        "sha256": "4c9c637ffab4f98e37241ed571c62dc8df9519dbad644d5762957ddc83042807"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/invariants-final.json",
+      "bytes": 1831,
+      "sha256": "0c80baa48ee4c92008682ea1d893ecb6041af0940c26d18d02ac8882b089255e",
+      "original": {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/preparation/invariants-final.json",
+        "bytes": 1831,
+        "sha256": "0c80baa48ee4c92008682ea1d893ecb6041af0940c26d18d02ac8882b089255e"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/final-source-bindings-ready.json",
+      "bytes": 5800,
+      "sha256": "91318a6ddd43d129650bac44ad4a730b968f931561fbe712dd0727f10582db38",
+      "original": {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/preparation/final-source-bindings-ready.json",
+        "bytes": 5800,
+        "sha256": "91318a6ddd43d129650bac44ad4a730b968f931561fbe712dd0727f10582db38"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/affected-validation-v1.json",
+      "bytes": 3270,
+      "sha256": "566eaa78af535ae954043292976c01a3f361fdb70e24542daee8679eb4ac5a6e",
+      "original": {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/affected-validation-v1.json",
+        "bytes": 3270,
+        "sha256": "566eaa78af535ae954043292976c01a3f361fdb70e24542daee8679eb4ac5a6e"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/affected-core-v1.json",
+      "bytes": 1638,
+      "sha256": "39148d768c6b310f12a58be66921d3b2af54ba3553f435b8a0f10e7220d4fde4",
+      "original": {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/affected-core-v1.json",
+        "bytes": 1638,
+        "sha256": "39148d768c6b310f12a58be66921d3b2af54ba3553f435b8a0f10e7220d4fde4"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/affected-core-v1.log",
+      "bytes": 728,
+      "sha256": "b715be16a0f1deb7caebfca0f57d7fdd21d3d8d876cd18bc53bab7b5de1ef992",
+      "original": {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/affected-core-v1.log",
+        "bytes": 736,
+        "sha256": "c27c9da0c25696a920b21234b46b1fcbf833d55b0b410d50670ee2a1f20c04be"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/affected-native-v1.json",
+      "bytes": 1163,
+      "sha256": "98c48f51484d714b80a04d194ebdd5d79f846d0c53f23df1078ef664325308d5",
+      "original": {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/affected-native-v1.json",
+        "bytes": 1163,
+        "sha256": "98c48f51484d714b80a04d194ebdd5d79f846d0c53f23df1078ef664325308d5"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/affected-native-v1.log",
+      "bytes": 302,
+      "sha256": "0fe7a7a380111ba225a490ee8ef0ae5b24f8247be23603b5379781f1dcc37494",
+      "original": {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/affected-native-v1.log",
+        "bytes": 308,
+        "sha256": "ac8b0736f06ca66fcd9aabb3f77b382934288b3ae3bb63c023a097a8c9da3642"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/prepare-controls.py",
+      "bytes": 12453,
+      "sha256": "e8e8fe22f57e0b94b1fb562101c347118bd9932f97d63fd97d65a2c32cd46c78",
+      "original": {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/prepare-controls.py",
+        "bytes": 12453,
+        "sha256": "e8e8fe22f57e0b94b1fb562101c347118bd9932f97d63fd97d65a2c32cd46c78"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/run-affected-once.py",
+      "bytes": 2793,
+      "sha256": "b119d03d69346483118fe5793f7bb858e013da2125e7e71d91fe09907611628f",
+      "original": {
+        "path": ".build/consolidated-sdk-s5-c4-readiness-checkpoint/run-affected-once.py",
+        "bytes": 2793,
+        "sha256": "b119d03d69346483118fe5793f7bb858e013da2125e7e71d91fe09907611628f"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/root-review.json",
+      "bytes": 1151,
+      "sha256": "a4592a303132c9f08da33b1c028d604c3870ac3350aca2277f1346820e22b33a",
+      "original": {
+        "path": ".build/s5-readiness-integration/root-review.json",
+        "bytes": 1151,
+        "sha256": "a4592a303132c9f08da33b1c028d604c3870ac3350aca2277f1346820e22b33a"
+      }
+    }
+  ],
+  "operationalRetirementRecord": "docs/legado-ios/core-renewal-observed-installation-retirement-step.json",
+  "newCloudTagsOrRuns": 0,
+  "actualNewAppOrNativeOrPackageExecutions": 0,
+  "onlyPriorLiveSDK": {
+    "runID": 39537665728,
+    "jobID": 119017948485,
+    "sourceCommit": "7ef3c7ec1b0d37ce2b395bb897f6806f5acbafa8",
+    "oldSelectedDefinitions": 475,
+    "oldSelectedLeaves": 478,
+    "doesNotExecuteThisNewCheckpoint": true
+  },
+  "nextAction": "Classify and archive the exact SDK7ef terminal before one successor source-bound SDK/Native checkpoint; combine any actual failure repair without more long-tail scope or an IPA.",
+  "temporaryBookSourceTargetPercent": 90,
+  "measuredCompatibilityPercent": null,
+  "otherSeventeenItemsRemainDeferred": true,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

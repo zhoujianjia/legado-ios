@@ -38,6 +38,7 @@ actor SelfRenewalControlledRenewalCoordinator {
         case remoteCleanup(Journal.Snapshot, SelfRenewalInstallationRecovery.Outcome)
         case authenticatedLookup(Journal.Snapshot, Installer.LookupObservation)
         case retiredUnsubmitted(Journal.RetirementReceipt)
+        case retiredObservedInstallation(Journal.RetirementReceipt)
     }
     struct TransportCompletion: Sendable {
         let snapshot: Journal.Snapshot
@@ -270,7 +271,9 @@ actor SelfRenewalControlledRenewalCoordinator {
             }
             return .candidateReady(snapshot)
         case .retirementPending, .retired:
-            return .retiredUnsubmitted(try await journal.resumeRetirement(snapshot, at: clock()))
+            let receipt = try await journal.resumeRetirement(snapshot, at: clock())
+            return receipt.reason == .observedInstallationComplete
+                ? .retiredObservedInstallation(receipt) : .retiredUnsubmitted(receipt)
         case .uploadIntent, .receiptObserved, .upgradeIntent, .installationUnknown, .lookupObserved:
             guard let intent = snapshot.record.submission,
                   Data(SHA256.hash(data: pairing.deviceCertificateDER)) == intent.deviceCertificateSHA256 else { throw Failure.wrongPeer }
@@ -346,11 +349,32 @@ actor SelfRenewalControlledRenewalCoordinator {
         return (snapshot, lease)
     }
 
+    /// Releases only a fully admitted observed transaction. A receipt or Lookup
+    /// alone leaves it active. The actual live signing lease is required even
+    /// for reentry; recovery-only owners cannot gain signing authority here.
+    func retireObservedInstallationIfReady() async throws -> Journal.Snapshot? {
+        guard vault != nil, namespace != nil else { throw Failure.signingMaterialsUnavailable }
+        guard !busy else { throw Failure.busy }
+        busy = true; defer { busy = false }
+        let context = try await validatedObservationContext()
+        guard let snapshot = context.snapshot else { return nil }
+        switch snapshot.record.phase {
+        case .retirementPending, .retired:
+            _ = try await journal.resumeRetirement(snapshot, at: clock())
+        case .receiptObserved:
+            do { _ = try await journal.retireObservedInstallation(snapshot, at: clock()) }
+            catch Journal.Failure.retirementNotAuthorized { return snapshot }
+        default: return snapshot
+        }
+        return try await journal.load()
+    }
+
     func observeUserDataAfterNormalLoad(handoff: SelfRenewalUserDataHandoff) async throws -> Journal.Snapshot? {
         guard !busy else { throw Failure.busy }
         busy = true; defer { busy = false }
         guard let snapshot = try await journal.load() else { return nil }
-        guard let checkpoint = snapshot.record.userDataHandoff else { return snapshot }
+        guard ![.retirementPending, .retired].contains(snapshot.record.phase),
+              let checkpoint = snapshot.record.userDataHandoff else { return snapshot }
         if snapshot.record.userDataRead?.processID == SelfRenewalInstalledMaterialObserver.ProcessIdentity.current.id { return snapshot }
         let observation = try await handoff.observeNormalLoad(expected: checkpoint)
         return try await journal.noteNormalUserDataRead(snapshot, observation: observation, at: clock())

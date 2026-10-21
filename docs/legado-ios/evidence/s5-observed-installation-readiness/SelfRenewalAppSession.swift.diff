@@ -1,0 +1,114 @@
+--- expiry-baseline/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift
++++ candidate/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift
+@@ -562,11 +562,29 @@
+         do {
+             let snapshot = try await journal.load()
+             if let phase = snapshot?.record.phase, Self.isRemoteRecoveryPhase(phase) {
+-                // Intent is durable BEFORE any authenticated Lookup/cleanup.
++                // Intent is durable BEFORE any authenticated Lookup/cleanup
++                // or a local observed-retirement attempt.
+                 try beginAutomaticAttempt(&policy, at: now)
+                 if coordinator == nil { activate(try await resolve(configuration)) }
+-                _ = try await recoverExplicitlyOwned(handoff: handoff)
+-                return try await finishAutomaticAttempt(policy, outcome: .recoveryRequired)
++                let recovered: Status
++                if access == .signing, let coordinator, phase == .receiptObserved,
++                   snapshot?.record.reportedCompleteCleanup != nil {
++                    // The actual installer already sealed Remove, StopSession
++                    // and channel drain with its receipt. Current-process and
++                    // normal-load observations need no second connection.
++                    recovered = try await observe(coordinator, handoff: handoff)
++                } else {
++                    recovered = try await recoverExplicitlyOwned(handoff: handoff)
++                }
++                let terminal = try await journal.load()
++                if recovered.state != .ready || terminal?.record.phase != .retired
++                    || terminal?.record.retirement?.reason != .observedInstallationComplete {
++                    return try await finishAutomaticAttempt(policy, outcome: .recoveryRequired)
++                }
++                // Only the sealed observed-installation retirement permits a
++                // next cycle. Continue the ordinary current-App due/material
++                // checks; a Lookup or unsubmitted retirement never takes this
++                // route and no second Upgrade of the old candidate is issued.
+             }
+             if snapshot?.record.phase == .attentionRequired { throw Journal.Failure.activeTransaction }
+             if snapshot?.record.phase == .candidateReady {
+@@ -819,7 +837,8 @@
+         submitted: Coordinator.TransportCompletion? = nil, failure: Error? = nil) async throws -> Status {
+         let observation = Task { [self] in
+             try await openLocalOwner()
+-            let phase = try await journal?.load()?.record.phase
++            let snapshot = try await journal?.load()
++            let phase = snapshot?.record.phase
+             let problem: Problem?
+             if let failure {
+                 let actual = Self.renewalExecutionProblem(failure)
+@@ -836,7 +855,7 @@
+                 switch phase {
+                 case nil: state = configuration == nil ? .unconfigured : .ready
+                 case .candidateReady: state = .candidateReady
+-                case .retired: state = .retiredUnsubmitted
++                case .retired: state = Self.retiredState(snapshot)
+                 case .created, .signing, .retirementPending, .attentionRequired: state = .attentionRequired
+                 case .uploadIntent, .upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved: state = .recoveryRequired
+                 }
+@@ -1316,13 +1335,14 @@
+             let connection = try await resolve(configuration)
+             try Task.checkCancellation()
+             activate(connection)
+-            let phase = try await journal?.load()?.record.phase
++            let snapshot = try await journal?.load()
++            let phase = snapshot?.record.phase
+             try Task.checkCancellation()
+             let state: State
+             switch phase {
+             case nil: state = .ready
+             case .candidateReady: state = .candidateReady
+-            case .retired: state = .retiredUnsubmitted
++            case .retired: state = Self.retiredState(snapshot)
+             case .attentionRequired, .created, .signing, .retirementPending: state = .attentionRequired
+             case .uploadIntent, .upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved: state = .recoveryRequired
+             }
+@@ -1494,7 +1514,10 @@
+             } else {
+                 guard snapshot.record.materialGeneration == lease.generation else { throw Vault.Failure.staleGeneration }
+             }
+-            if let submission = snapshot.record.submission, let device = configuration.device {
++            // A fully resumed retired record retains its old submission as
++            // history, not a live peer grant. Explicit pairing replacement is
++            // allowed only after the candidate-absence check above succeeds.
++            if snapshot.record.phase != .retired, let submission = snapshot.record.submission, let device = configuration.device {
+                 guard submission.deviceCertificateSHA256 == Data(SHA256.hash(data: device.deviceCertificateDER)) else { throw Coordinator.Failure.wrongPeer }
+             }
+         }
+@@ -1739,12 +1762,16 @@
+             throw await unavailable(ObservationFailures(installedMaterial: materialError, normalUserData: userDataError), problem: storage ? .storage : .observation)
+         }
+         do {
++            // Both independent observations succeeded above. The Coordinator
++            // alone checks the authenticated receipt, remote cleanup and same
++            // new process facts before its durable local retirement boundary.
++            snapshot = try await coordinator.retireObservedInstallationIfReady()
+             let phase = snapshot?.record.phase
+             let state: State
+             switch phase {
+             case nil: state = .ready
+             case .candidateReady: state = .candidateReady
+-            case .retired: state = .retiredUnsubmitted
++            case .retired: state = Self.retiredState(snapshot)
+             case .attentionRequired: state = .attentionRequired
+             case .created, .signing, .retirementPending: state = .attentionRequired
+             case .uploadIntent, .upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved: state = .recoveryRequired
+@@ -1752,6 +1779,12 @@
+             return try publish(state: state, phase: phase)
+         } catch is CancellationError { throw CancellationError() }
+         catch { throw await unavailable(error, problem: .observation) }
++    }
++
++    /// Journal.load validates the retired checkpoint and completed local
++    /// cleanup. This projection grants no signing capability on its own.
++    private static func retiredState(_ snapshot: Journal.Snapshot?) -> State {
++        snapshot?.record.retirement?.reason == .observedInstallationComplete ? .ready : .retiredUnsubmitted
+     }
+
+     private func unavailable(_ original: Error, problem: Problem) async -> Unavailable {

@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T04:09:34.174082+00:00",
+  "status": "production-observed-retirement-and-next-cycle-connected-Apple-execution-pending",
+  "baselineCommit": "8ff97891733a0485ca549de8a71f400ad5317929",
+  "productionFilesChanged": 3,
+  "existingTestFilesChanged": 1,
+  "sourceBinding": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift",
+      "bytes": 66485,
+      "sha256": "a80a12caf049dfa60d1d75a4e5b84aa7ac3e12acae95897fe7531385fd6117b3"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+      "bytes": 29615,
+      "sha256": "743ae882d8e46ed559c6df857990020575b31ec9bdda19f516171b2c29dac225"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalTransactionRetirementTests.swift",
+      "bytes": 42610,
+      "sha256": "6c07f961c2b23c4b53489a11a4da7397dc27d148e1d9ce457f4c92fd6a22b475"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 123848,
+      "sha256": "bcee884738fccd7f6a758a277bba63f8a28a267b3dfdfc1196ceadf9383d5391"
+    }
+  ],
+  "behavior": [
+    "Persist cleanup from the real sealed installer receipt in the same durable receipt advance; legacy completed receipts can obtain the seal from authenticated explicit recovery.",
+    "Require receipt, exact cleanup/candidate/submission, matching materials and selected normal-load data from the same actual new process, distinct from both preparation and handoff.",
+    "Reuse durable retirementPending, fixed owned candidate unlink/fsync and retired tombstone before one bounded predecessor commitment permits a successor.",
+    "Automatic sealed-receipt observation can retire locally and proceed through the existing fresh due/material policy without redundant network cleanup.",
+    "Unknown Upgrade and Lookup stay active; recovery-only cannot gain signing or new-install authority."
+  ],
+  "newAuthoredCurrentCoreDefinitions": [
+    {
+      "suite": "SelfRenewalTransactionRetirementTests",
+      "method": "retiresPersistedObservedAdmissionAcrossCrashWindowsAndCreatesSuccessor",
+      "parameters": []
+    },
+    {
+      "suite": "SelfRenewalTransactionRetirementTests",
+      "method": "refusesIncompleteOrMixedObservedAdmissionWithoutMutation",
+      "parameters": []
+    },
+    {
+      "suite": "SelfRenewalTransactionRetirementTests",
+      "method": "sealsActualReportedCompleteCleanupWithoutPromotingLookup",
+      "parameters": []
+    }
+  ],
+  "positiveRetirementFixtureIsSimulatedPersistentState": true,
+  "actualNewSwiftCompilerExecutions": 0,
+  "actualNewSwiftTestExecutions": 0,
+  "rootReview": {
+    "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/root-review.json",
+    "bytes": 1151,
+    "sha256": "a4592a303132c9f08da33b1c028d604c3870ac3350aca2277f1346820e22b33a"
+  },
+  "evidence": [
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/transaction-candidate-v2.json",
+      "bytes": 11786,
+      "sha256": "8c254f73206064bcf2d325443e06f046680c3ccd9aa4d5496c5fba0b5e85766c",
+      "original": {
+        "path": ".build/s5-observed-installation-completion-step/final-v2.json",
+        "bytes": 11786,
+        "sha256": "8c254f73206064bcf2d325443e06f046680c3ccd9aa4d5496c5fba0b5e85766c"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/session-candidate-v2.json",
+      "bytes": 6182,
+      "sha256": "7ac59f4c7bf7aa2ee0b806a65d9c9d8ef4395c486a78d446ae334567885aac9c",
+      "original": {
+        "path": ".build/s5-observed-installation-session-step/final-v2.json",
+        "bytes": 6182,
+        "sha256": "7ac59f4c7bf7aa2ee0b806a65d9c9d8ef4395c486a78d446ae334567885aac9c"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-observed-installation-readiness/transaction-source-checks.json",
+      "bytes": 7248,
+      "sha256": "e072a04e58090ce9a535716c4f53a80f63b5ec37f81c2746db5539f8784c6745",
+      "original": {
+        "path": ".build/s5-observed-installation-completion-step/source-checks-v2.json",
+        "bytes": 7248,
+        "sha256": "e072a04e58090ce9a535716c4f53a80f63b5ec37f81c2746db5539f8784c6745"
+      }
+    }
+  ],
+  "limits": [
+    "No actual cold-launch or installed-image/whole-container proof is asserted.",
+    "No actual Apple authorization, real-device installation, expiry advancement or unattended scheduling result is established.",
+    "Code and authored state-machine/TLS regressions await actual SDK execution."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

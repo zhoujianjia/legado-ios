@@ -1,0 +1,155 @@
+{
+  "kind": "source-only checks, not Swift parsing/compilation/test execution",
+  "checks": [
+    "canonical baseline unchanged: Modules\\Services\\SelfRenewal\\SelfRenewalTransactionJournal.swift",
+    "UTF8 LF and final newline: Modules\\Services\\SelfRenewal\\SelfRenewalTransactionJournal.swift",
+    "canonical baseline unchanged: Modules\\Services\\SelfRenewal\\SelfRenewalControlledRenewalCoordinator.swift",
+    "UTF8 LF and final newline: Modules\\Services\\SelfRenewal\\SelfRenewalControlledRenewalCoordinator.swift",
+    "canonical baseline unchanged: Tests\\iOS\\yuedu appTests\\SelfRenewalTransactionRetirementTests.swift",
+    "UTF8 LF and final newline: Tests\\iOS\\yuedu appTests\\SelfRenewalTransactionRetirementTests.swift",
+    "all seven old test methods exact prefix",
+    "all original test helpers exact suffix",
+    "old seven identities preserved",
+    "three new nonparameter definitions only",
+    "unchanged journal function finishRetirement",
+    "unchanged journal function confirmRetirement",
+    "unchanged journal function requireCandidateAbsent",
+    "unchanged journal function removeOwnedCandidate",
+    "unchanged journal function publish",
+    "unchanged journal function noteNormalUserDataRead",
+    "unchanged journal function noteSubmissionInterruption",
+    "unchanged coordinator function validatedObservationContext",
+    "unchanged coordinator function observeCurrentProcess",
+    "unchanged coordinator function beforeSubmission",
+    "unchanged coordinator function prepare",
+    "unknown cleanup branch exact Lookup-only",
+    "existing process meaning var observedDifferentProcess: Bool?",
+    "existing process meaning var userDataReadInDifferentProcess: Bool?",
+    "actual selected file/position recomputation exact",
+    "initial current-process admission before marker",
+    "resume has no new current-process precondition",
+    "unsubmitted rejects new reason",
+    "retired data observation returns before owner read",
+    "receipt seals before same durable advance",
+    "completion ifReady only catches notAuthorized",
+    "no new JSContext(",
+    "no new UserDefaults",
+    "no new Task.sleep",
+    "no new Thread.sleep",
+    "no new try?"
+  ],
+  "failedChecks": [],
+  "files": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift",
+      "baseline": {
+        "path": ".build/s5-observed-installation-completion-step/rawbaseline/Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift",
+        "bytes": 57857,
+        "sha256": "e32b6c019fce3ee0c53d629ccd74f35491c88c409224310b205ed8339bf4f3cc"
+      },
+      "candidate": {
+        "path": ".build/s5-observed-installation-completion-step/work/Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift",
+        "bytes": 66485,
+        "sha256": "a80a12caf049dfa60d1d75a4e5b84aa7ac3e12acae95897fe7531385fd6117b3"
+      },
+      "diff": {
+        "path": ".build/s5-observed-installation-completion-step/diffs-v2/SelfRenewalTransactionJournal.swift.diff",
+        "bytes": 17313,
+        "sha256": "f946f419ac8d26862356aa21f82ddcac66b7f08a099363c315a138d04decc404"
+      }
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+      "baseline": {
+        "path": ".build/s5-observed-installation-completion-step/rawbaseline/Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+        "bytes": 28247,
+        "sha256": "e3a98cad4ec7bc71d8376c276a0519f6e7a2db91666459609cfdcb9a3cecc5ab"
+      },
+      "candidate": {
+        "path": ".build/s5-observed-installation-completion-step/work/Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+        "bytes": 29615,
+        "sha256": "743ae882d8e46ed559c6df857990020575b31ec9bdda19f516171b2c29dac225"
+      },
+      "diff": {
+        "path": ".build/s5-observed-installation-completion-step/diffs-v2/SelfRenewalControlledRenewalCoordinator.swift.diff",
+        "bytes": 3368,
+        "sha256": "fb830cf0bb320007ddbf1ae73a3ca6c70ab0e06cd11ff8bfdef89b938a6e64ea"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalTransactionRetirementTests.swift",
+      "baseline": {
+        "path": ".build/s5-observed-installation-completion-step/rawbaseline/Tests/iOS/yuedu appTests/SelfRenewalTransactionRetirementTests.swift",
+        "bytes": 23750,
+        "sha256": "723ac24f69be455cab98dafda1c93fed31db6d5c3c4c26992be469a334765fb5"
+      },
+      "candidate": {
+        "path": ".build/s5-observed-installation-completion-step/work/Tests/iOS/yuedu appTests/SelfRenewalTransactionRetirementTests.swift",
+        "bytes": 42610,
+        "sha256": "6c07f961c2b23c4b53489a11a4da7397dc27d148e1d9ce457f4c92fd6a22b475"
+      },
+      "diff": {
+        "path": ".build/s5-observed-installation-completion-step/diffs-v2/SelfRenewalTransactionRetirementTests.swift.diff",
+        "bytes": 19578,
+        "sha256": "fc38834081719535bffcff6620cf6b2c65a03ce755b3b8429a1da24bd1161fde"
+      }
+    }
+  ],
+  "unchangedOwnerBindings": [
+    {
+      "path": "F:/yuedu-reader/Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+      "bytes": 34406,
+      "sha256": "68f5c642486ba26220dae4e55463b635151a620225d430fd941289f8c81feec9"
+    },
+    {
+      "path": "F:/yuedu-reader/Modules/Services/SelfRenewal/SelfRenewalInstallationRecovery.swift",
+      "bytes": 12137,
+      "sha256": "038e79c42b6305bf6c06a173bd08c78a968d068c36ccf5f0d25f627a4c71389c"
+    },
+    {
+      "path": "F:/yuedu-reader/Modules/Services/SelfRenewal/SelfRenewalInstalledMaterialObserver.swift",
+      "bytes": 9704,
+      "sha256": "51ce7f14efffe7524a0f1de6e3d815182853086f47b1ecc348491e975bd6055b"
+    },
+    {
+      "path": "F:/yuedu-reader/Modules/Services/SelfRenewal/SelfRenewalUserDataHandoff.swift",
+      "bytes": 8838,
+      "sha256": "3e21a869f1279fb5127842ed0aa2538ff277039a3e0372783a01961974435a03"
+    },
+    {
+      "path": "F:/yuedu-reader/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "bytes": 61427,
+      "sha256": "eacba522c47a405fd8d47f9547b6a9f2f2286f2f2fb9183242be0c3dbcd99380"
+    },
+    {
+      "path": "F:/yuedu-reader/Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+      "bytes": 33355,
+      "sha256": "bd62c29296bbc86b83f6f5aadc56302d116277a86f65e5c7898f7a1794fff44c"
+    },
+    {
+      "path": "F:/yuedu-reader/Tests/iOS/yuedu appTests/SelfRenewalControlledPackageSignerTests.swift",
+      "bytes": 27606,
+      "sha256": "4c7203df3802cb9280fe3652ceb41ef5f936db033b1a9ec9e7dcb65d5ae72abc"
+    }
+  ],
+  "newTestDefinitions": [
+    {
+      "suite": "SelfRenewalTransactionRetirementTests",
+      "method": "retiresPersistedObservedAdmissionAcrossCrashWindowsAndCreatesSuccessor",
+      "parameters": []
+    },
+    {
+      "suite": "SelfRenewalTransactionRetirementTests",
+      "method": "refusesIncompleteOrMixedObservedAdmissionWithoutMutation",
+      "parameters": []
+    },
+    {
+      "suite": "SelfRenewalTransactionRetirementTests",
+      "method": "sealsActualReportedCompleteCleanupWithoutPromotingLookup",
+      "parameters": []
+    }
+  ],
+  "actualSwiftCompilerExecutions": 0,
+  "actualSwiftTestsExecuted": 0,
+  "actualAppleDeviceExecutions": 0
+}

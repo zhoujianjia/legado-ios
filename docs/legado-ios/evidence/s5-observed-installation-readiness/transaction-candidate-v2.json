@@ -1,0 +1,221 @@
+{
+  "schema": 1,
+  "kind": "S5 observed-installation completion source candidate, SDK unexecuted",
+  "sourceRoot": ".build/s5-observed-installation-completion-step/snapshot-v2/work",
+  "baseline": {
+    "path": ".build/s5-observed-installation-completion-step/baseline.json",
+    "bytes": 688,
+    "sha256": "63b58aac7eecbed4fd2fd60a4a3829f80c1bed80d9ec7588549a14780ce45621"
+  },
+  "files": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift",
+      "baseline": {
+        "path": ".build/s5-observed-installation-completion-step/rawbaseline/Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift",
+        "bytes": 57857,
+        "sha256": "e32b6c019fce3ee0c53d629ccd74f35491c88c409224310b205ed8339bf4f3cc"
+      },
+      "candidate": {
+        "path": ".build/s5-observed-installation-completion-step/snapshot-v2/work/Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift",
+        "bytes": 66485,
+        "sha256": "a80a12caf049dfa60d1d75a4e5b84aa7ac3e12acae95897fe7531385fd6117b3"
+      },
+      "diff": {
+        "path": ".build/s5-observed-installation-completion-step/diffs-v2/SelfRenewalTransactionJournal.swift.diff",
+        "bytes": 17313,
+        "sha256": "f946f419ac8d26862356aa21f82ddcac66b7f08a099363c315a138d04decc404"
+      }
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+      "baseline": {
+        "path": ".build/s5-observed-installation-completion-step/rawbaseline/Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+        "bytes": 28247,
+        "sha256": "e3a98cad4ec7bc71d8376c276a0519f6e7a2db91666459609cfdcb9a3cecc5ab"
+      },
+      "candidate": {
+        "path": ".build/s5-observed-installation-completion-step/snapshot-v2/work/Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+        "bytes": 29615,
+        "sha256": "743ae882d8e46ed559c6df857990020575b31ec9bdda19f516171b2c29dac225"
+      },
+      "diff": {
+        "path": ".build/s5-observed-installation-completion-step/diffs-v2/SelfRenewalControlledRenewalCoordinator.swift.diff",
+        "bytes": 3368,
+        "sha256": "fb830cf0bb320007ddbf1ae73a3ca6c70ab0e06cd11ff8bfdef89b938a6e64ea"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalTransactionRetirementTests.swift",
+      "baseline": {
+        "path": ".build/s5-observed-installation-completion-step/rawbaseline/Tests/iOS/yuedu appTests/SelfRenewalTransactionRetirementTests.swift",
+        "bytes": 23750,
+        "sha256": "723ac24f69be455cab98dafda1c93fed31db6d5c3c4c26992be469a334765fb5"
+      },
+      "candidate": {
+        "path": ".build/s5-observed-installation-completion-step/snapshot-v2/work/Tests/iOS/yuedu appTests/SelfRenewalTransactionRetirementTests.swift",
+        "bytes": 42610,
+        "sha256": "6c07f961c2b23c4b53489a11a4da7397dc27d148e1d9ce457f4c92fd6a22b475"
+      },
+      "diff": {
+        "path": ".build/s5-observed-installation-completion-step/diffs-v2/SelfRenewalTransactionRetirementTests.swift.diff",
+        "bytes": 19578,
+        "sha256": "fc38834081719535bffcff6620cf6b2c65a03ce755b3b8429a1da24bd1161fde"
+      }
+    }
+  ],
+  "api": {
+    "coordinatorMethod": "retireObservedInstallationIfReady() async throws -> Journal.Snapshot?",
+    "journalMethod": "retireObservedInstallation(_ expected: Snapshot, at date: Date) throws -> RetirementReceipt",
+    "retirementReason": "observedInstallationComplete",
+    "recoveryCase": "retiredObservedInstallation(Journal.RetirementReceipt)",
+    "recordField": "reportedCompleteCleanup: ReportedCompleteCleanup?",
+    "cleanupOrigins": [
+      "installerReceipt (grantID nil)",
+      "reportedCompleteRecovery (actual grantID required)"
+    ],
+    "notReady": "Same snapshot returned without mutation; no network operation in ifReady.",
+    "admission": "receiptObserved, sealed completed cleanup bound to transaction/candidate/submission, same current observation process distinct from both preparation and handoff, selectedFilesMatch and no bootstrap.",
+    "pendingRecovery": "Revalidates persisted authorization; no requirement that past admission process equals the reopening process.",
+    "cancel": "Checks cancellation before admission/resume; once pending is durably admitted, existing synchronous owned candidate unlink/fsync/tombstone commit runs without a cancellation interruption. Errors/CAS/durability unknown remain errors; no remote Upgrade retry.",
+    "permissions": "ifReady requires signing owner and current Vault lease; recovery-only gains no preparation/signing permission.",
+    "sessionIntegration": "Separate login_info_v2_review stage consumes after both independent observations, handles new Recovery case; automatic sealed receipt can await observations without another network cleanup. Explicit recovery retains real network semantics."
+  },
+  "sourceChecks": {
+    "path": ".build/s5-observed-installation-completion-step/source-checks-v2.json",
+    "bytes": 7248,
+    "sha256": "e072a04e58090ce9a535716c4f53a80f63b5ec37f81c2746db5539f8784c6745"
+  },
+  "sourceCheckScript": {
+    "path": ".build/s5-observed-installation-completion-step/check-source-v2.py",
+    "bytes": 6067,
+    "sha256": "0d5e53f512ae664cb412e336bbddce193d2b062a8356d5fb82afff709db95967"
+  },
+  "unchangedOwnerBindings": [
+    {
+      "path": "F:/yuedu-reader/Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+      "bytes": 34406,
+      "sha256": "68f5c642486ba26220dae4e55463b635151a620225d430fd941289f8c81feec9"
+    },
+    {
+      "path": "F:/yuedu-reader/Modules/Services/SelfRenewal/SelfRenewalInstallationRecovery.swift",
+      "bytes": 12137,
+      "sha256": "038e79c42b6305bf6c06a173bd08c78a968d068c36ccf5f0d25f627a4c71389c"
+    },
+    {
+      "path": "F:/yuedu-reader/Modules/Services/SelfRenewal/SelfRenewalInstalledMaterialObserver.swift",
+      "bytes": 9704,
+      "sha256": "51ce7f14efffe7524a0f1de6e3d815182853086f47b1ecc348491e975bd6055b"
+    },
+    {
+      "path": "F:/yuedu-reader/Modules/Services/SelfRenewal/SelfRenewalUserDataHandoff.swift",
+      "bytes": 8838,
+      "sha256": "3e21a869f1279fb5127842ed0aa2538ff277039a3e0372783a01961974435a03"
+    },
+    {
+      "path": "F:/yuedu-reader/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "bytes": 61427,
+      "sha256": "eacba522c47a405fd8d47f9547b6a9f2f2286f2f2fb9183242be0c3dbcd99380"
+    },
+    {
+      "path": "F:/yuedu-reader/Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+      "bytes": 33355,
+      "sha256": "bd62c29296bbc86b83f6f5aadc56302d116277a86f65e5c7898f7a1794fff44c"
+    },
+    {
+      "path": "F:/yuedu-reader/Tests/iOS/yuedu appTests/SelfRenewalControlledPackageSignerTests.swift",
+      "bytes": 27606,
+      "sha256": "4c7203df3802cb9280fe3652ceb41ef5f936db033b1a9ec9e7dcb65d5ae72abc"
+    }
+  ],
+  "sourceEvidence": {
+    "installerReceipt": "Existing fileprivate Receipt is returned only after Complete + exact Lookup + Remove + StopSession ACK; execute defers close Lockdown/AFC/proxy before the Coordinator receives it. noteTransportReceipt now stores the seal in the same durable advance.",
+    "legacyCleanup": "Existing reportedComplete recovery Outcome requires matching actual grant/path/peer, Remove or ENOENT + StopSession + both local channel releases. No partial RecoveryFailure or Lookup manufactures the seal.",
+    "oldStateMachine": "Old seven tests and original helpers byte exact; unchanged finishRetirement/confirm/remove/publish code uses the fixed owned candidate. Unknown-submission cleanup body and normal-file/position recomputation exact.",
+    "preservation": "New retirement preserves submission, cleanup, material, handoff and normal-load evidence; only candidate is cleared after owned removal. Successor stores one prior retirement commitment."
+  },
+  "testDefinitions": [
+    {
+      "suite": "SelfRenewalTransactionRetirementTests",
+      "method": "retiresPersistedObservedAdmissionAcrossCrashWindowsAndCreatesSuccessor",
+      "parameters": []
+    },
+    {
+      "suite": "SelfRenewalTransactionRetirementTests",
+      "method": "refusesIncompleteOrMixedObservedAdmissionWithoutMutation",
+      "parameters": []
+    },
+    {
+      "suite": "SelfRenewalTransactionRetirementTests",
+      "method": "sealsActualReportedCompleteCleanupWithoutPromotingLookup",
+      "parameters": []
+    }
+  ],
+  "authoredVectors": {
+    "positive": "Explicit raw persistent admission unit fixture; fixed candidate removal before unlink/after unlink/after directory sync, historical admitted process, tombstone reentry and second create commitment.",
+    "negative": [
+      "missing cleanup",
+      "missing handoff",
+      "same preparation process",
+      "same handoff process",
+      "mixed observation processes",
+      "past noncurrent initial admission",
+      "selected position mismatch",
+      "source bootstrap",
+      "upgradeIntent",
+      "installationUnknown",
+      "lookupObserved",
+      "unsubmitted entry rejects new reason",
+      "cancelled initial admission"
+    ],
+    "controlledTLS": "Authored existing true loopback mTLS/installer/Vault package path verifies immediate Receipt seal, no-network not-ready call, recovery-only denial, legacy record explicitly missing both cleanup seal and remoteHistory, and actual ENOENT recovery seal with remoteHistory.started."
+  },
+  "actualExecutions": {
+    "sourceChecks": 36,
+    "SwiftGrammar": 0,
+    "SwiftCompiler": 0,
+    "SwiftTests": 0,
+    "SDK": 0,
+    "realAppleDevice": 0,
+    "cloud": 0
+  },
+  "proofLimits": [
+    "Raw persisted-admission fixtures intentionally model accepted durable data; they do not construct production CurrentProcessObservation or establish cold launch/installed kernel image.",
+    "New Swift tests and controlled TLS vectors are authored, not executed locally.",
+    "Only selected normal-load owner files and positions are compared; all user data preservation remains unproved.",
+    "Unknown Upgrade/Lookup states remain active and never auto-delete remote package or resubmit.",
+    "No new owner/store, phase, engine, credential, or network route. No canonical/Git/cloud changes."
+  ],
+  "completionFlags": {
+    "selfRenewalComplete": false,
+    "sourceCompatibilityComplete": false,
+    "originalCoreComplete": false,
+    "deviceValidationComplete": false
+  },
+  "successor": {
+    "supersedes": {
+      "path": ".build/s5-observed-installation-completion-step/final-v1.json",
+      "bytes": 10300,
+      "sha256": "96eeef0a1ae7d2b61921983415388481228a2be118f655112fa6f94c5012c0f5"
+    },
+    "why": "Root review found valid legacy receipt remoteHistory=nil could not persist a new cleanup seal. Actual reportedComplete grant/Outcome now records positive started history before the same durable advance.",
+    "sourceChangesFromV1": [
+      {
+        "path": "Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift",
+        "diff": {
+          "path": ".build/s5-observed-installation-completion-step/diffs-v2/SelfRenewalTransactionJournal.swift.from-v1.diff",
+          "bytes": 753,
+          "sha256": "82ceb45740b7d725b936c60c85e879c180d43b50e76d291ad50c54801a1ec631"
+        }
+      },
+      {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalTransactionRetirementTests.swift",
+        "diff": {
+          "path": ".build/s5-observed-installation-completion-step/diffs-v2/SelfRenewalTransactionRetirementTests.swift.from-v1.diff",
+          "bytes": 1618,
+          "sha256": "bf4a863ca2f134e1ea4e78766abaace524f50ebcfa1497db7c3f5383785153c7"
+        }
+      }
+    ],
+    "unchanged": "Coordinator bytes, API/definitions, all old test methods/helpers and all permission/unknown-submission checks unchanged. No Swift/SDK tests executed."
+  }
+}

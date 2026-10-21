@@ -1,0 +1,48 @@
+--- a/scripts/reader-experience/renewal-probe-tools.py
++++ b/scripts/reader-experience/renewal-probe-tools.py
+@@ -584,6 +584,16 @@
+ assert not (EXPECTED_CASES["currentcore"] & CURRENTCORE_FIRST_REGISTRATION_QUALIFIED_CASES)
+ EXPECTED_CASES["currentcore"] |= CURRENTCORE_FIRST_REGISTRATION_QUALIFIED_CASES
+ assert len(EXPECTED_CASES["currentcore"]) == 475
++
++# Later observed-installation and resumed-ready tests extend currentcore only.
++CURRENTCORE_S5_READINESS_CASES = {'SelfRenewalAutomaticRenewalTests': ('resumedReadyCandidateRequiresExpiryAdvanceAndReadableCurrentApplication',), 'SelfRenewalTransactionRetirementTests': ('retiresPersistedObservedAdmissionAcrossCrashWindowsAndCreatesSuccessor', 'refusesIncompleteOrMixedObservedAdmissionWithoutMutation', 'sealsActualReportedCompleteCleanupWithoutPromotingLookup')}
++CURRENTCORE_S5_READINESS_SOURCE_PATHS = {'SelfRenewalAutomaticRenewalTests': 'Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift', 'SelfRenewalTransactionRetirementTests': 'Tests/iOS/yuedu appTests/SelfRenewalTransactionRetirementTests.swift'}
++CURRENTCORE_S5_READINESS_QUALIFIED_CASES = {suite + "/" + method
++    for suite, methods in CURRENTCORE_S5_READINESS_CASES.items() for method in methods}
++assert len(CURRENTCORE_S5_READINESS_QUALIFIED_CASES) == 4
++assert not (EXPECTED_CASES["currentcore"] & CURRENTCORE_S5_READINESS_QUALIFIED_CASES)
++EXPECTED_CASES["currentcore"] |= CURRENTCORE_S5_READINESS_QUALIFIED_CASES
++assert len(EXPECTED_CASES["currentcore"]) == 479
+
+ PARAMETER_MODES = ("transactionrenewal", "handoffrenewal", "currentcore")
+ SDK_MODES = ("integratedrenewal", "transactionrenewal", "handoffrenewal", "currentcore")
+@@ -2210,7 +2220,7 @@
+     if (selection_mode() != "currentcore" or prepared.get("selectionMode") != "currentcore"
+             or prepared.get("sourceCommit") != validate_tag() or prepared.get("sourceInputs") != current
+             or prepared.get("intendedTests") != {"currentcore": sorted(EXPECTED_CASES["currentcore"])}
+-            or prepared.get("intendedQualifiedMethodDefinitions") != 475 or prepared.get("intendedArgumentLeafCount") != 478
++            or prepared.get("intendedQualifiedMethodDefinitions") != 479 or prepared.get("intendedArgumentLeafCount") != 482
+             or prepared.get("intendedArgumentCases") != {case: {"parameter": name, "values": [False, True]} for case, name in parameter_cases("currentcore").items()}):
+         raise ValueError("Current core phase cannot run with changed preparation/source")
+     return {"sourceCommit": prepared["sourceCommit"], "sourceTag": prepared["sourceTag"],
+@@ -2365,7 +2375,7 @@
+         rows.append(_run_currentcore_phase(work, name, command, timeout, source, _currentcore_blockers(name, rows)))
+     failure = _currentcore_first_failure(rows)
+     ledger = {"schemaVersion": 1, "selectionMode": "currentcore", "source": source,
+-              "qualifiedMethodDefinitions": 475, "argumentLeaves": 478,
++              "qualifiedMethodDefinitions": 479, "argumentLeaves": 482,
+               "phaseOrder": list(CURRENTCORE_PHASES), "phases": rows, "firstFailure": failure,
+               "phaseRecords": [_currentcore_fact(work, "currentcore-phase-" + name + ".json") for name in CURRENTCORE_PHASES],
+               "historicalPackageEvidence": _currentcore_fact(work, "historical-package-evidence.json"),
+@@ -2390,8 +2400,8 @@
+     ledger = smoke.read_json(work / "currentcore-pipeline.json")
+     source = _currentcore_source_state(work)
+     if (ledger.get("schemaVersion") != 1 or ledger.get("selectionMode") != "currentcore"
+-            or ledger.get("source") != source or ledger.get("qualifiedMethodDefinitions") != 475
+-            or ledger.get("argumentLeaves") != 478 or ledger.get("phaseOrder") != list(CURRENTCORE_PHASES)
++            or ledger.get("source") != source or ledger.get("qualifiedMethodDefinitions") != 479
++            or ledger.get("argumentLeaves") != 482 or ledger.get("phaseOrder") != list(CURRENTCORE_PHASES)
+             or ledger.get("firstFailure") is not None or ledger.get("allPhasesSucceeded") is not True):
+         raise ValueError("Missing/failed/changed same-source currentcore pipeline")
+     rows = ledger.get("phases")

@@ -562,6 +562,11 @@ SOURCE_INPUTS += tuple(path for path in ORIGINAL_FIRST_REGISTRATION_FULL_APPLICA
 assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 262
 
 
+NATIVE_S5_RETIREMENT_COMPILE_INPUTS = ('Tests/iOS/yuedu appTests/SelfRenewalTransactionRetirementTests.swift',)
+SOURCE_INPUTS += tuple(path for path in NATIVE_S5_RETIREMENT_COMPILE_INPUTS if path not in SOURCE_INPUTS)
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 263
+
+
 def source_inputs():
     records = []
     for relative in SOURCE_INPUTS:

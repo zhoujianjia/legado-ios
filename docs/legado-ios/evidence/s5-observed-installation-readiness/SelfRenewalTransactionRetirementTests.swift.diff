@@ -1,0 +1,259 @@
+--- Tests/iOS/yuedu appTests/SelfRenewalTransactionRetirementTests.swift
++++ Tests/iOS/yuedu appTests/SelfRenewalTransactionRetirementTests.swift
+@@ -286,6 +286,256 @@
+         }
+     }
+
++    @Test("persisted admission fixture retires only selected observations and resumes fixed owned cleanup")
++    func retiresPersistedObservedAdmissionAcrossCrashWindowsAndCreatesSuccessor() async throws {
++        // These are explicitly simulated persisted admission facts. They test
++        // the journal state machine, not a cold launch, Bundle.main, or install.
++        for window in 0..<3 {
++            try await Self.root { _, root in
++                let journal = try await Journal.open(at: root)
++                _ = try await Self.ready(journal)
++                try await journal.close()
++                let original = try Self.writeObservedFixture(root: root)
++                let reopened = try await Journal.open(at: root)
++                let loaded = try await reopened.load(); let admitted = try #require(loaded)
++                let candidate = root.appendingPathComponent("candidate.ipa")
++                guard chmod(candidate.path, 0o644) == 0 else { throw Journal.Failure.storageIO }
++                do { _ = try await reopened.retireObservedInstallation(admitted, at: Self.date)
++                    Issue.record("Unsafe owned candidate mode was deleted")
++                } catch Journal.Failure.storageIO {}
++                let pendingLoad = try await reopened.load(); let pending = try #require(pendingLoad)
++                #expect(pending.record.phase == .retirementPending)
++                #expect(pending.record.retirement?.reason == .observedInstallationComplete)
++                #expect(pending.record.retirement?.originalRecordSHA256 == Data(SHA256.hash(data: original)))
++                #expect(pending.record.submission == admitted.record.submission)
++                #expect(pending.record.reportedCompleteCleanup == admitted.record.reportedCompleteCleanup)
++                do { _ = try await Self.create(reopened); Issue.record("Pending completion admitted a second transaction") }
++                catch Journal.Failure.activeTransaction {}
++                try await reopened.close()
++                guard chmod(candidate.path, 0o600) == 0 else { throw Journal.Failure.storageIO }
++                if window > 0, unlink(candidate.path) != 0 { throw Journal.Failure.storageIO }
++                if window == 2 { try Self.syncDirectory(root) }
++                // Simulate admission from a previous process in persisted bytes.
++                // Rebuild the original hash commitment too; this does not mint
++                // a sealed production observer or assert an actual process exit.
++                try Self.historicalPendingFixture(root: root)
++                let recovery = try await Journal.open(at: root)
++                do {
++                    let restoredLoad = try await recovery.load(); let restored = try #require(restoredLoad)
++                    #expect(restored.record.installedMaterial?.processID != SelfRenewalInstalledMaterialObserver.ProcessIdentity.current.id)
++                    let receipt = try await recovery.resumeRetirement(restored, at: Self.date)
++                    #expect(receipt.reason == .observedInstallationComplete && receipt.originalPhase == .receiptObserved)
++                    #expect(receipt.localCandidateRemoval == (window == 0 ? .removed : .alreadyAbsent))
++                    #expect(receipt.reportedCompleteCleanup != nil && !receipt.renewalVerified)
++                    let retiredLoad = try await recovery.load(); let retired = try #require(retiredLoad)
++                    #expect(retired.record.phase == .retired && retired.record.candidate == nil)
++                    #expect(retired.record.submission == admitted.record.submission)
++                    #expect(retired.record.userDataHandoff == admitted.record.userDataHandoff)
++                    #expect(retired.record.userDataRead?.selectedFilesMatch == true && !retired.record.renewalVerified)
++                    let repeated = try await recovery.resumeRetirement(retired, at: Self.date)
++                    #expect(repeated.recordSHA256 == receipt.recordSHA256)
++                    let next = try await Self.create(recovery)
++                    #expect(next.record.id != admitted.record.id && next.record.phase == .created)
++                    #expect(next.record.previousRetirement?.transactionID == admitted.record.id)
++                    #expect(next.record.previousRetirement?.recordSHA256 == receipt.recordSHA256)
++                    #expect(next.record.submission == nil && next.record.installedMaterial == nil)
++                    try await recovery.close()
++                } catch { try await recovery.close(); throw error }
++            }
++        }
++    }
++
++    @Test("receipt, cleanup and same-process or mixed-process facts cannot alone authorize observed completion")
++    func refusesIncompleteOrMixedObservedAdmissionWithoutMutation() async throws {
++        let variants = ["noCleanup", "noHandoff", "samePreparation", "sameHandoff", "mixedProcesses",
++            "pastProcess", "selectedMismatch", "bootstrapped", "upgradeIntent", "installationUnknown", "lookupObserved"]
++        for variant in variants {
++            try await Self.root { _, root in
++                let journal = try await Journal.open(at: root)
++                _ = try await Self.ready(journal)
++                try await journal.close()
++                let before = try Self.writeObservedFixture(root: root, variant: variant)
++                let reopened = try await Journal.open(at: root)
++                do {
++                    let loaded = try await reopened.load(); let state = try #require(loaded)
++                    do { _ = try await reopened.retireObservedInstallation(state, at: Self.date)
++                        Issue.record("Insufficient persisted admission was retired: \(variant)")
++                    } catch Journal.Failure.retirementNotAuthorized {}
++                    do { _ = try await reopened.retireUnsubmitted(state, reason: .observedInstallationComplete, at: Self.date)
++                        Issue.record("Unsubmitted API accepted the submitted completion reason")
++                    } catch Journal.Failure.retirementNotAuthorized {}
++                    do { _ = try await Self.create(reopened); Issue.record("Insufficient admission admitted another transaction") }
++                    catch Journal.Failure.activeTransaction {}
++                    let after = try Data(contentsOf: root.appendingPathComponent("transaction.json"))
++                    #expect(after == before)
++                    #expect(FileManager.default.fileExists(atPath: root.appendingPathComponent("candidate.ipa").path))
++                    try await reopened.close()
++                } catch { try await reopened.close(); throw error }
++            }
++        }
++        try await Self.root { _, root in
++            let journal = try await Journal.open(at: root)
++            _ = try await Self.ready(journal); try await journal.close()
++            let before = try Self.writeObservedFixture(root: root)
++            let reopened = try await Journal.open(at: root)
++            do {
++                let loaded = try await reopened.load(); let state = try #require(loaded)
++                let cancelled = Task.detached {
++                    withUnsafeCurrentTask { $0?.cancel() }
++                    return try await reopened.retireObservedInstallation(state, at: Self.date)
++                }
++                do { _ = try await cancelled.value; Issue.record("Cancelled completion was admitted") }
++                catch is CancellationError {}
++                let after = try Data(contentsOf: root.appendingPathComponent("transaction.json"))
++                #expect(after == before)
++                try await reopened.close()
++            } catch { try await reopened.close(); throw error }
++        }
++    }
++
++    @Test("actual installer receipt seals cleanup without another connection and legacy recovery can seal ENOENT")
++    func sealsActualReportedCompleteCleanupWithoutPromotingLookup() async throws {
++        for mode: Peer.Mode in [.normal, .cleanupAfterReportedComplete] {
++            try await Package.fixture { fixture in
++                let journal = try await Journal.open(at: fixture.directory.appendingPathComponent("SelfRenewalTransactions"))
++                do {
++                    let coordinator = Coordinator(journal: journal, vault: fixture.vault, namespace: fixture.namespace, clock: { fixture.date })
++                    let ready = try await Self.prepare(coordinator, fixture)
++                    let url = try await journal.candidateURL(ready); let archive = try Data(contentsOf: url)
++                    try await Peer.withPeer(mode, bytes: archive, bundle: ready.record.bundleIdentifier,
++                        version: ready.record.bundleVersion, at: fixture.date) { peer in
++                        let result = try await coordinator.submit(pairing: peer.pairing, endpoint: peer.endpoint, timeoutSeconds: 12)
++                        let seal = try #require(result.snapshot.record.reportedCompleteCleanup)
++                        #expect(seal.origin == .installerReceipt && seal.grantID == nil)
++                        #expect(seal.transactionID == ready.record.id && seal.candidate == ready.record.candidate)
++                        #expect(seal.submission == result.snapshot.record.submission && seal.removal == "removedAcknowledged")
++                        let before = peer.observed.snapshot
++                        #expect(before.authenticatedChannels == 3 && before.closedFileHandles == 1)
++                        #expect(before.removedPaths == [seal.submission.remotePackagePath])
++                        #expect(before.stoppedSessions == ["owned-session"])
++                        let notReady = try await coordinator.retireObservedInstallationIfReady()
++                        #expect(notReady?.record == result.snapshot.record)
++                        let after = peer.observed.snapshot
++                        #expect(after.authenticatedChannels == before.authenticatedChannels && after.removeAttempts == before.removeAttempts)
++                        #expect(after.upgradeRequests == 1 && after.lookupRequests == 1)
++                        let recoveryOnly = try await Coordinator.recoveryOnly(journal: journal, clock: { fixture.date })
++                        do { _ = try await recoveryOnly.retireObservedInstallationIfReady(); Issue.record("Recovery-only obtained completion/signing power") }
++                        catch Coordinator.Failure.signingMaterialsUnavailable {}
++                        if mode == .cleanupAfterReportedComplete {
++                            // Recovery remains available for legacy records that
++                            // did not persist receipt cleanup. Its sealed Outcome
++                            // accepts real ENOENT + Stop + both channel releases.
++                            try await coordinator.close()
++                            let root = fixture.directory.appendingPathComponent("SelfRenewalTransactions")
++                            let path = root.appendingPathComponent("transaction.json")
++                            let raw = try Data(contentsOf: path)
++                            var legacy = try #require(JSONSerialization.jsonObject(with: raw) as? [String: Any])
++                            legacy.removeValue(forKey: "reportedCompleteCleanup")
++                            legacy.removeValue(forKey: "remoteHistory")
++                            try Self.replaceRecord(JSONSerialization.data(withJSONObject: legacy, options: [.sortedKeys]), at: path)
++                            let reopened = try await Journal.open(at: root)
++                            do {
++                                let resumed = Coordinator(journal: reopened, vault: fixture.vault, namespace: fixture.namespace, clock: { fixture.date })
++                                let recovery = try await resumed.recover(pairing: peer.pairing, endpoint: peer.endpoint, timeoutSeconds: 12)
++                                guard case .remoteCleanup(let saved, let outcome) = recovery else {
++                                    Issue.record("Reported Complete cleanup was not returned"); try await resumed.close(); return
++                                }
++                                let recovered = try #require(saved.record.reportedCompleteCleanup)
++                                #expect(outcome.removal == .alreadyAbsentAcknowledged && outcome.stopSessionAcknowledged)
++                                #expect(outcome.afcChannelReleasedLocally && outcome.lockdownChannelReleasedLocally)
++                                #expect(recovered.origin == .reportedCompleteRecovery && recovered.grantID == outcome.grantID)
++                                #expect(recovered.candidate == seal.candidate && recovered.submission == seal.submission)
++                                #expect(saved.record.phase == .receiptObserved && saved.record.remoteHistory == .started)
++                                #expect(!saved.record.renewalVerified)
++                                try await resumed.close()
++                            } catch { try await reopened.close(); throw error }
++                        }
++                    }
++                    try await coordinator.close()
++                } catch { try await journal.close(); throw error }
++            }
++        }
++    }
++
++    /// Deliberately authored persisted state-machine input, not an observation
++    /// factory: production still accepts only Bundle.main and normal-load owners.
++    nonisolated private static func writeObservedFixture(root: URL, variant: String = "ready") throws -> Data {
++        let path = root.appendingPathComponent("transaction.json")
++        let raw = try Data(contentsOf: path)
++        var object = try #require(JSONSerialization.jsonObject(with: raw) as? [String: Any])
++        let current = SelfRenewalInstalledMaterialObserver.ProcessIdentity.current.id.uuidString
++        let preparation = UUID().uuidString, handoff = UUID().uuidString
++        let digest = Data(repeating: 0x61, count: 32).base64EncodedString()
++        let candidate = try #require(object["candidate"] as? [String: Any])
++        let candidateDigest = try #require(candidate["sha256"] as? String)
++        let transactionID = try #require(object["id"] as? String)
++        let submission: [String: Any] = ["remotePackagePath": "PublicStaging/reader-renewal-" + UUID().uuidString.lowercased() + ".ipa",
++            "deviceCertificateSHA256": digest]
++        let timestamp = date.timeIntervalSinceReferenceDate
++        let savedFiles: [[String: Any]] = ["shelf", "reading", "sources"].map { role in
++            ["role": role, "operation": role == "sources" ? "atomicWriteCompleted" : "written", "rawSHA256": digest, "rawByteCount": 3]
++        }
++        var readFiles: [[String: Any]] = ["shelf", "reading", "sources"].map { role in
++            ["role": role, "operation": role == "sources" ? "normalFileRead" : "read", "rawSHA256": digest, "rawByteCount": 3]
++        }
++        let position: [String: Any] = ["spineIndex": 2, "charOffset": 17]
++        let savedPosition: [String: Any] = ["bookID": "owned-book", "position": position, "rawSHA256": digest, "rawByteCount": 8]
++        var material: [String: Any] = ["candidateArchiveSHA256": candidateDigest,
++            "authenticatedMaterialSHA256": digest, "processID": current, "observedAt": timestamp]
++        var checkpoint: [String: Any] = ["processID": handoff, "capturedAt": timestamp,
++            "bookMutationRevision": 0, "sourceMutationRevision": 0, "sourceCount": 1,
++            "files": savedFiles, "positions": [savedPosition]]
++        var read: [String: Any] = ["processID": current, "observedAt": timestamp,
++            "files": readFiles, "positions": [savedPosition], "selectedFilesMatch": true, "sourceWasBootstrapped": false]
++        object["phase"] = "receiptObserved"; object["remoteHistory"] = "started"
++        object["preparationProcessID"] = preparation; object["submission"] = submission
++        object["lookupReportedSameVersion"] = true
++        object["reportedCompleteCleanup"] = ["origin": "installerReceipt", "transactionID": transactionID,
++            "candidate": candidate, "submission": submission, "removal": "removedAcknowledged", "completedAt": timestamp]
++        switch variant {
++        case "noCleanup": object.removeValue(forKey: "reportedCompleteCleanup")
++        case "noHandoff": checkpoint = [:]; read = [:]
++        case "samePreparation": object["preparationProcessID"] = current
++        case "sameHandoff": checkpoint["processID"] = current
++        case "mixedProcesses": read["processID"] = UUID().uuidString
++        case "pastProcess": let past = UUID().uuidString; material["processID"] = past; read["processID"] = past
++        case "selectedMismatch":
++            var different = savedPosition; different["position"] = ["spineIndex": 2, "charOffset": 18]
++            read["positions"] = [different]; read["selectedFilesMatch"] = false
++        case "bootstrapped":
++            readFiles[2]["operation"] = "normalBootstrapWrite"; read["files"] = readFiles
++            read["sourceWasBootstrapped"] = true; read["selectedFilesMatch"] = false
++        case "upgradeIntent", "installationUnknown", "lookupObserved":
++            object["phase"] = variant; object.removeValue(forKey: "reportedCompleteCleanup")
++            if variant != "lookupObserved" { object.removeValue(forKey: "lookupReportedSameVersion") }
++        default: break
++        }
++        object["installedMaterial"] = material
++        if !checkpoint.isEmpty { object["userDataHandoff"] = checkpoint; object["userDataRead"] = read }
++        let result = try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys])
++        try replaceRecord(result, at: path)
++        return result
++    }
++
++    nonisolated private static func historicalPendingFixture(root: URL) throws {
++        let path = root.appendingPathComponent("transaction.json")
++        let raw = try Data(contentsOf: path)
++        var pending = try #require(JSONSerialization.jsonObject(with: raw) as? [String: Any])
++        var retirement = try #require(pending["retirement"] as? [String: Any])
++        let process = UUID().uuidString
++        for key in ["installedMaterial", "userDataRead"] {
++            var observation = try #require(pending[key] as? [String: Any])
++            observation["processID"] = process; pending[key] = observation
++        }
++        var original = pending
++        original["phase"] = retirement["originalPhase"]; original["revision"] = retirement["originalRevision"]
++        original.removeValue(forKey: "retirement")
++        let originalRaw = try JSONSerialization.data(withJSONObject: original, options: [.sortedKeys])
++        retirement["originalRecordSHA256"] = Data(SHA256.hash(data: originalRaw)).base64EncodedString()
++        pending["retirement"] = retirement
++        try replaceRecord(JSONSerialization.data(withJSONObject: pending, options: [.sortedKeys]), at: path)
++    }
++
+     nonisolated private static func create(_ journal: Journal) async throws -> Journal.Snapshot {
+         try await journal.create(namespace: UUID(), generation: 1,
+             originalSHA256: Data(repeating: 0x11, count: 32), identitySHA256: Data(repeating: 0x22, count: 32),
