@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T02:54:43.861823+00:00",
+  "status": "exact-existing-DER-value-API-repair-applied-target-SDK-rerun-pending",
+  "failedSourceCommit": "f481e89717b96df1d15d5c3f9a72c359d1fcef55",
+  "runID": 39533277187,
+  "jobID": 119003957104,
+  "actualFailure": "The public SignedAttribute.Value returned by parseDER/children owns originalDER, not the private Node.full property.",
+  "currentCanonicalBaseline": {
+    "path": ".build/f481-sdk-vault-value-api-repair/baseline/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+    "bytes": 61420,
+    "sha256": "74261b3b4c13e266d6dadbe8882ed9620c7ff9a716fee2d67e8547d4ac45202b"
+  },
+  "fixedCanonicalSource": {
+    "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+    "bytes": 61427,
+    "sha256": "eacba522c47a405fd8d47f9547b6a9f2f2286f2f2fb9183242be0c3dbcd99380"
+  },
+  "APIImplementationOwner": {
+    "path": "Modules/Services/SelfRenewal/SelfRenewalCMSVerifier.swift",
+    "bytes": 29782,
+    "sha256": "688e95c2eed047414fc1113ead036f95e81bbafc8733229105ac387221026e12"
+  },
+  "meaning": "originalDER is assigned verbatim from Node.full by the same bounded DER parser. This fixes the member reference without re-encoding certificate validity or changing trust/date semantics.",
+  "oneExpressionChangedRestOf61420ByteBaselineExact": true,
+  "firstRegistrationAndPairedTargetProfileGuardsPreserved": true,
+  "newDefinitions": 0,
+  "actualNewSwiftCompilerRuns": 0,
+  "actualNewTests": 0,
+  "newCloudRunsOrTags": 0,
+  "confirmedTerminalSourceAppTestsExecuted": 0,
+  "confirmedTerminalIndependentPackagePassed": 24,
+  "SDKTerminalArchiveStatus": "Downloaded, CRC/hash verified and independently being classified; full archive pending.",
+  "evidence": [
+    {
+      "path": "docs/legado-ios/evidence/sdk-f481-vault-value-api-repair/actual-native-compiler-diagnostic.log",
+      "bytes": 414,
+      "sha256": "bbb201348080111661a1c25581ab4831590c059aebd2f881cabe0ec237d9f22b",
+      "original": {
+        "path": ".build/sdk-f481e89-terminal/unpacked/evidence/reader-renewal-probe/currentcore-native.log",
+        "bytes": 414,
+        "sha256": "bbb201348080111661a1c25581ab4831590c059aebd2f881cabe0ec237d9f22b"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/sdk-f481-vault-value-api-repair/repair.py",
+      "bytes": 6881,
+      "sha256": "cd531c753a951cf2f54e11d9ee2c24a589954b5c4e2c3cd708a4737778c25946",
+      "original": {
+        "path": ".build/repair-f481-sdk-vault-value-api.py",
+        "bytes": 6881,
+        "sha256": "cd531c753a951cf2f54e11d9ee2c24a589954b5c4e2c3cd708a4737778c25946"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    }
+  ],
+  "limits": [
+    "This exact source fix is not a new Apple SDK compile/test pass.",
+    "Do not reuse the failed f481 run as acceptance of first registration or the API repair."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

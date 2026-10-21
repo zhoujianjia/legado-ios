@@ -387,7 +387,7 @@ actor SelfRenewalSigningMaterialVault {
             let tbs = try SelfRenewalCMSVerifier.children(of: fields[0])
             let start = tbs.first?.tag == 0xa0 ? 1 : 0
             guard tbs.count > start + 3,
-                  case .array(let validity) = try SelfRenewalDERPropertyList.decode(tbs[start + 3].full),
+                  case .array(let validity) = try SelfRenewalDERPropertyList.decode(tbs[start + 3].originalDER),
                   validity.count == 2, case .date(let begins) = validity[0],
                   case .date(let ends) = validity[1], begins < ends else { throw Failure.invalidCertificate }
             guard date >= begins else { throw Failure.untrustedCertificate }
