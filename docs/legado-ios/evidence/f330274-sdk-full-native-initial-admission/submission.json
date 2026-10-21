@@ -1,0 +1,242 @@
+{
+  "schemaVersion": 1,
+  "phase": "both-source-bound-tags-pushed-awaiting-initial-run-admission",
+  "preparedUTC": "2026-10-21T09:35:45.263444+00:00",
+  "sourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+  "checkpoint": {
+    "path": "docs/legado-ios/core-sdk-630c1b3-native-module-import-repair.json",
+    "bytes": 2798,
+    "sha256": "7c6484558bcf3b0a318ad59cf3b26f8af97c8bb13f37ed65044521ece138c1f9"
+  },
+  "sourceClosure": {
+    "path": ".build/sdk-630c1b3-native-module-import-repair/source-rosters-final.json",
+    "bytes": 233508,
+    "sha256": "156660d5b89d7dcd92a0fdc15b9bb830983b1bb0091808c3cd93bf2bef73df1b"
+  },
+  "sourceInputsBoundToWorkingTreeAndGit": 440,
+  "intendedSelection": {
+    "core": 418,
+    "native": 282,
+    "union": 440,
+    "currentcoreDefinitions": 479,
+    "currentcoreLeaves": 482,
+    "originalMethods": 32,
+    "originalProduct": 29,
+    "platformCharacterization": 3,
+    "MainJS": 1,
+    "coldIndependent": 2,
+    "S3Definitions": 1,
+    "S3Leaves": 1,
+    "fullApplicationDefinitions": 1,
+    "fullApplicationLeaves": 1,
+    "PackageDefinitions": 24,
+    "PackageInputs": 23,
+    "boolPairs": 3
+  },
+  "closedPairAuthority": {
+    "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
+    "SDK": {
+      "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
+      "sourceTag": "reader-renewal-630c1b3",
+      "runID": 39564545834,
+      "jobID": 119103568353,
+      "status": "completed",
+      "conclusion": "failure",
+      "queryAgain": false,
+      "record": "docs/legado-ios/core-sdk-630c1b3-terminal-result.json"
+    },
+    "Native": {
+      "sourceCommit": "630c1b34c78c5751d5b6314fa99dc6a792e22b2c",
+      "sourceTag": "legado-native-reader-test-630c1b3",
+      "runID": 39564545728,
+      "jobID": 119103568067,
+      "status": "completed",
+      "conclusion": "failure",
+      "queryAgain": false,
+      "record": "docs/legado-ios/core-native-630c1b3-terminal-result.json"
+    }
+  },
+  "integratedChangedSources": [
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "bytes": 174580,
+      "sha256": "67821a56afbb7287d32786be66bc0f272286cb2d58737d2a3f744ebd26cfc2a4"
+    }
+  ],
+  "tags": [
+    "reader-renewal-f330274",
+    "legado-native-reader-test-f330274"
+  ],
+  "workflows": [
+    ".github/workflows/reader-renewal-probe.yml",
+    ".github/workflows/legado-native-reader-test.yml"
+  ],
+  "admissionMode": "SDK-currentcore-and-FULL-Native-only",
+  "historicalTerminalRecords": [
+    {
+      "path": "docs/legado-ios/core-sdk-630c1b3-terminal-result.json",
+      "bytes": 3559,
+      "sha256": "5f58514ed06e68ada7f96d127ae3cce89e71801964e0b7b1e06b78695efbf2f7"
+    },
+    {
+      "path": "docs/legado-ios/core-native-630c1b3-terminal-result.json",
+      "bytes": 3332,
+      "sha256": "043b8d1fdbd3c303b80ce805af38bca631581108b7f1098068648093c97f4e19"
+    }
+  ],
+  "oldTerminalsRequeried": false,
+  "sourcePrerequisite": "Root must first integrate and commit the entire reviewed repair batch plus its exact fresh440 roster; old SDK and Native terminal archives must both be integrated and all live/archive-pending handles empty.",
+  "existingBudgets": {
+    "SDKJobMinutes": 125,
+    "SDKSingleColdSeconds": 3600,
+    "fullNativeJobMinutes": 150,
+    "deviceBuildSeconds": 3600,
+    "S3WrapperSeconds": 3600,
+    "S3ParentSeconds": 3660,
+    "MainJSSeconds": 2700,
+    "originalHostSeconds": 1800,
+    "coldEachWrapperSeconds": 900,
+    "coldEachParentSeconds": 960,
+    "coldEachExportSeconds": 60
+  },
+  "preservedHistoricalRequest": {
+    "path": "docs/legado-ios/core-sdk-630c1b3-request.json",
+    "bytes": 3473,
+    "sha256": "b35523a4de3a22ce765fa04512aefc8dee3558ce7bb82ad3ea3606afe61c0a49"
+  },
+  "rootOnlyNextCommands": [
+    [
+      "git",
+      "ls-remote",
+      "--tags",
+      "origin",
+      "refs/tags/reader-renewal-f330274",
+      "refs/tags/legado-native-reader-test-f330274"
+    ],
+    [
+      "git",
+      "tag",
+      "reader-renewal-f330274",
+      "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd"
+    ],
+    [
+      "git",
+      "tag",
+      "legado-native-reader-test-f330274",
+      "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd"
+    ],
+    [
+      "git",
+      "push",
+      "--atomic",
+      "origin",
+      "refs/tags/reader-renewal-f330274:refs/tags/reader-renewal-f330274",
+      "refs/tags/legado-native-reader-test-f330274:refs/tags/legado-native-reader-test-f330274"
+    ]
+  ],
+  "rootExecutionConditions": [
+    "Do not execute tag commands unless BOTH exact remote tag refs are absent.",
+    "The submit subcommand rechecks exact HEAD, clean tracked bytes, prepared metadata and empty-live policy; the 440-source Git/working-byte preparation is not repeated.",
+    "Stop on any command failure. Never force, delete, replace or recreate tags after partial submission; retain the exact push output and inspect the recorded state.",
+    "Record push exit and the two real initial run/job observations separately, bound to exact source/tag/workflow; no guessed IDs and no automatic polling.",
+    "Preserve all prior initial request/terminal records. Do not substitute focused-cold, old ledgers or minimal fixture success for FULL Native/S3."
+  ],
+  "actualNewSDKTests": 0,
+  "actualNewNativeTests": 0,
+  "actualNewCloudRunsObserved": 0,
+  "actualFullApplicationSignerExecuted": 0,
+  "IPARebuiltOrTagSubmitted": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "preparation": {
+    "path": ".build/630c1b3-import-followup-admission/prepared.json",
+    "bytes": 5499,
+    "sha256": "50fa650de3111a0345155f108905dfada236b4ae478115a44ea95b6137ce15c8"
+  },
+  "tagCommands": [
+    {
+      "argv": [
+        "git",
+        "tag",
+        "reader-renewal-f330274",
+        "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd"
+      ],
+      "exitCode": 0,
+      "stdout": {
+        "path": ".build/630c1b3-import-followup-admission/local-tag-0.stdout.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": ".build/630c1b3-import-followup-admission/local-tag-0.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "git",
+        "tag",
+        "legado-native-reader-test-f330274",
+        "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd"
+      ],
+      "exitCode": 0,
+      "stdout": {
+        "path": ".build/630c1b3-import-followup-admission/local-tag-1.stdout.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": ".build/630c1b3-import-followup-admission/local-tag-1.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "remoteTagCheck": {
+    "argv": [
+      "git",
+      "ls-remote",
+      "--tags",
+      "origin",
+      "refs/tags/reader-renewal-f330274",
+      "refs/tags/legado-native-reader-test-f330274"
+    ],
+    "exitCode": 0,
+    "stdout": {
+      "path": ".build/630c1b3-import-followup-admission/remote-tag-check.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stderr": {
+      "path": ".build/630c1b3-import-followup-admission/remote-tag-check.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "pushExitCode": 0,
+  "pushCommand": {
+    "argv": [
+      "git",
+      "push",
+      "--atomic",
+      "origin",
+      "refs/tags/reader-renewal-f330274:refs/tags/reader-renewal-f330274",
+      "refs/tags/legado-native-reader-test-f330274:refs/tags/legado-native-reader-test-f330274"
+    ],
+    "exitCode": 0,
+    "stdout": {
+      "path": ".build/630c1b3-import-followup-admission/tag-push.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stderr": {
+      "path": ".build/630c1b3-import-followup-admission/tag-push.stderr.log",
+      "bytes": 203,
+      "sha256": "9dd0143b2fdef887b1d7242490127e2415212b8cb592f03d465fb9d6df833480"
+    }
+  },
+  "pushedUTC": "2026-10-21T09:35:54.942301+00:00"
+}
