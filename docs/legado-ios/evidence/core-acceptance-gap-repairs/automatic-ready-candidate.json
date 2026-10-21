@@ -1,0 +1,100 @@
+{
+  "schema": 1,
+  "kind": "bounded automatic candidateReady expiry-policy repair",
+  "createdAt": "2026-10-21T03:51:42.801204+00:00",
+  "sourceRoot": ".build/automatic-ready-expiry-repair-step/snapshot-v1/work",
+  "files": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "baseline": {
+        "path": ".build/automatic-ready-expiry-repair-step/rawbaseline/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+        "bytes": 120999,
+        "sha256": "ab91be82fad410a5afec802edc3405be8ed39a6fdc413f88bab273f6d2d9884b"
+      },
+      "candidate": {
+        "path": ".build/automatic-ready-expiry-repair-step/snapshot-v1/work/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+        "bytes": 121639,
+        "sha256": "8a5a30bc0b8723a8c1f6a369170f712ad99d25ea299a7b5103b97dfdba243a76"
+      },
+      "diff": {
+        "path": ".build/automatic-ready-expiry-repair-step/diffs-v1/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift.diff",
+        "bytes": 2275,
+        "sha256": "f7920fdd04f2574537bb24190877d99f67879bec30d38c75875345fa2df4434c"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift",
+      "baseline": {
+        "path": ".build/automatic-ready-expiry-repair-step/rawbaseline/Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift",
+        "bytes": 13969,
+        "sha256": "084f3ea79231f575b10c582b688cdcb9cc294693e92966523799c69766bcc3a8"
+      },
+      "candidate": {
+        "path": ".build/automatic-ready-expiry-repair-step/snapshot-v1/work/Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift",
+        "bytes": 18951,
+        "sha256": "41fe0cdf62d6b5dcd4abad922ec4f8a722d5163879096e566d7a324380f66aa6"
+      },
+      "diff": {
+        "path": ".build/automatic-ready-expiry-repair-step/diffs-v1/Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift.diff",
+        "bytes": 6751,
+        "sha256": "2c4830773de115582ee671f3bf7fa88e657a080075d98320f873515d06b88f7b"
+      }
+    }
+  ],
+  "change": "Resume of an existing ready candidate now applies the same strictly-later minimum profile expiry policy as fresh automatic renewal using the exact current material already read by renewalSigningContext. The private result carries that actual material, avoiding a duplicate full App read.",
+  "admission": "Same configured actual App identity and fresh lease remain required. Coordinator submission still rechecks the exact journal material generation and persisted candidate signature/digest before authenticated transport.",
+  "newTests": [
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift",
+      "suite": "SelfRenewalAutomaticRenewalTests",
+      "method": "resumedReadyCandidateRequiresExpiryAdvanceAndReadableCurrentApplication()",
+      "parameters": 0,
+      "async": true,
+      "throws": true,
+      "vectors": [
+        "equal current/new minimum expiry: manual prepare permitted, automatic rejects, no transport, raw record/candidate preserved",
+        "shorter still-valid minimum expiry: same rejection and exact preservation",
+        "changed/unreadable actual current profile after configuration: fail closed without transport, ready candidate preserved",
+        "longer valid profiles: exact ready bytes actually submitted through existing loopback TLS installer, receipt only and automaticVerified false"
+      ]
+    }
+  ],
+  "testDefinitions": {
+    "old": 4,
+    "new": 5,
+    "added": 1,
+    "removedOrRenamed": 0,
+    "nativeAdded": 0
+  },
+  "sourceChecks": [
+    "Removing the ready-branch expiry check and private context result projection exactly restores all production baseline text; manual API bodies and normal automatic expiry guard unchanged.",
+    "All four existing @Test methods and their bodies are exactly unchanged; only the existing profile publisher helper gains a defaulted expiry parameter plus one new no-argument async throws method.",
+    "Fresh renewalSigningContext material read/lease validation and strict advancement precede automatic submission; branch introduces no account refresh, journal mutation or fallback."
+  ],
+  "actualValidation": {
+    "sourceTextRestorationChecks": 3,
+    "failedSourceChecks": 0,
+    "swiftCompilerExecutions": 0,
+    "swiftTestingExecutions": 0,
+    "SDKExecutions": 0,
+    "grammarParserExecutions": 0,
+    "cloudQueries": 0
+  },
+  "remaining": [
+    "The new and existing Swift regressions require a future actual SDK run; source checks are not compilation or runtime pass.",
+    "Root separately owns safe submitted-transaction finalization and next-cycle admission; this repair does not alter Journal/Coordinator/Recovery semantics.",
+    "The checked advancement is the existing minimum-profile-expiry policy, not an invented fixed-duration margin or per-component advancement rule for new CSR.",
+    "Receipt observation does not establish installed image, Apple authorization, cold launch, or automatic renewal success."
+  ],
+  "authorityFlags": {
+    "appleAuthorizationEstablished": false,
+    "sameDeviceInstallationVerified": false,
+    "coldLaunchVerified": false,
+    "automaticRenewalVerified": false
+  },
+  "mutations": {
+    "canonical": false,
+    "Git": false,
+    "cloud": false
+  }
+}

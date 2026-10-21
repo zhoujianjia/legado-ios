@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T03:54:21.082614+00:00",
+  "status": "two-production-repairs-integrated-actual-Apple-execution-pending",
+  "baselineCommit": "9e0db98bd852411670c95fa4b117bc8aaa877d71",
+  "productionFilesChanged": 2,
+  "testFilesChanged": 2,
+  "sourceBinding": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 121639,
+      "sha256": "8a5a30bc0b8723a8c1f6a369170f712ad99d25ea299a7b5103b97dfdba243a76"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift",
+      "bytes": 18951,
+      "sha256": "41fe0cdf62d6b5dcd4abad922ec4f8a722d5163879096e566d7a324380f66aa6"
+    },
+    {
+      "path": "Modules/Services/LibraryStore/BookStore.swift",
+      "bytes": 219240,
+      "sha256": "590413bbbb20bc66346a72de09f74f10fd985b4c7f3bc0d6c6c1b4ec581d2b33"
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "bytes": 142491,
+      "sha256": "61fa7f4b1bafd9fd0fb5901dce64f8978e742f4a1735bcbb30ae46834605f08b"
+    }
+  ],
+  "changes": [
+    {
+      "scope": "S6 automatic ready resume",
+      "trigger": "A manually prepared candidate has equal or shorter still-valid profile expiry than the current application.",
+      "result": "The automatic ready branch reads the actual current application and requires the same strict minimum-profile-expiry advancement as the fresh automatic branch before upload.",
+      "regression": {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift",
+        "suite": "SelfRenewalAutomaticRenewalTests",
+        "method": "resumedReadyCandidateRequiresExpiryAdvanceAndReadableCurrentApplication()",
+        "parameters": 0,
+        "async": true,
+        "throws": true,
+        "vectors": [
+          "equal current/new minimum expiry: manual prepare permitted, automatic rejects, no transport, raw record/candidate preserved",
+          "shorter still-valid minimum expiry: same rejection and exact preservation",
+          "changed/unreadable actual current profile after configuration: fail closed without transport, ready candidate preserved",
+          "longer valid profiles: exact ready bytes actually submitted through existing loopback TLS installer, receipt only and automaticVerified false"
+        ]
+      }
+    },
+    {
+      "scope": "C4 chapter URL refresh",
+      "trigger": "An already-read chapter has variables when preUpdate changes its URL and the new preview has no such variables.",
+      "result": "The shared merge preserves UUIDs but inherits the old runtime variables and cached filename only for the same normalized URL. New URL state can pass the existing exact preview transfer.",
+      "regression": {
+        "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+        "owner": "LegadoNativeOriginalReaderTests",
+        "method": "testNativeOriginalPreUpdateRefreshKeepsPublicBookIdentityAndProgressWithNewURLContext",
+        "newDefinitions": 0,
+        "definitionsInFileBefore": 17,
+        "definitionsInFileAfter": 17,
+        "oldMethodIdentitiesAndOrderExact": true,
+        "other16TestMethodBodiesExact": true,
+        "actualOwnerCalls": [
+          "ChapterFetchManager.fetchChapter for old c1/c1p2 produces nativeParsed and actual cache",
+          "BookStore.refreshOnlineBookMetadata with real preUpdate moves URLs and completes strict transfer",
+          "ChapterFetchManager.fetchChapter for moved-c1 through current source returns fresh content and nativeMovedParsed",
+          "reopened same owned BookStore preserves stable IDs/progress and only new chapter variables"
+        ],
+        "newFixtureRoute": "GET /<owned-runUUID>/moved-c1",
+        "fixtureMaximumRequestBudgetUnchanged": 16,
+        "sameURLRegression": "testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen body remains byte exact, including unchanged bytes/inode, cache reuse, runtimeVariables and same-UUID assertions."
+      }
+    }
+  ],
+  "newAuthoredCurrentCoreDefinitions": 1,
+  "newAuthoredNativeDefinitions": 0,
+  "actualPostFixSwiftCompilerExecutions": 0,
+  "actualPostFixAppOrNativeTestExecutions": 0,
+  "sourceChecksAreNotBehavioralTests": true,
+  "rootSourceReview": {
+    "reviewedDiffs": 4,
+    "baselineAndCandidateBytesVerified": true,
+    "existingSessionCallersUseNamedTupleMembers": true,
+    "laterAuthenticationConfigurationIsSupportedByExistingConfigurePath": true,
+    "sameURLCacheVariablesAndStableChapterIdentityPreserved": true,
+    "unresolvedFindingsInTheseTwoChanges": []
+  },
+  "evidence": [
+    {
+      "path": "docs/legado-ios/evidence/core-acceptance-gap-repairs/automatic-ready-candidate.json",
+      "bytes": 5283,
+      "sha256": "476f5cd67c1eb2099a734823204aaa080a86448172911f89cc70f88a8576debb",
+      "original": {
+        "path": ".build/automatic-ready-expiry-repair-step/final-v1.json",
+        "bytes": 5283,
+        "sha256": "476f5cd67c1eb2099a734823204aaa080a86448172911f89cc70f88a8576debb"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-acceptance-gap-repairs/chapter-url-variable-candidate.json",
+      "bytes": 6494,
+      "sha256": "b4f54cde72a6be653b8815024e250ac1725934c7784e4243d8e2e899351e79b8",
+      "original": {
+        "path": ".build/c4-original-refresh-chapter-variable-step/preparation/final-v1.json",
+        "bytes": 6494,
+        "sha256": "b4f54cde72a6be653b8815024e250ac1725934c7784e4243d8e2e899351e79b8"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-acceptance-gap-repairs/s4-s6-source-audit.json",
+      "bytes": 15275,
+      "sha256": "5987b46571e5d1630ebc26d714e620d2f4e310e7e3234280508b2ce91c92ae71",
+      "original": {
+        "path": ".build/s4-s6-acceptance-gap-review/review-v1.json",
+        "bytes": 15275,
+        "sha256": "5987b46571e5d1630ebc26d714e620d2f4e310e7e3234280508b2ce91c92ae71"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-acceptance-gap-repairs/c4-c5-source-audit.json",
+      "bytes": 8543,
+      "sha256": "0eddf6475ae435115a540c16ab728188af803bda5682a3f8d33e642de74a2b41",
+      "original": {
+        "path": ".build/c4-c5-core-acceptance-gap-review-step/review-v1.json",
+        "bytes": 8543,
+        "sha256": "0eddf6475ae435115a540c16ab728188af803bda5682a3f8d33e642de74a2b41"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-acceptance-gap-repairs/chapter-source-checks.json",
+      "bytes": 4076,
+      "sha256": "924d21bfa3639c94903bd876e01e80e40aa0eeab4d08b7be8f931a3225f5eb31",
+      "original": {
+        "path": ".build/c4-original-refresh-chapter-variable-step/source-checks.json",
+        "bytes": 4076,
+        "sha256": "924d21bfa3639c94903bd876e01e80e40aa0eeab4d08b7be8f931a3225f5eb31"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-acceptance-gap-repairs/SelfRenewalAppSession.swift.diff",
+      "bytes": 2274,
+      "sha256": "237f52bc163f664d0d280de5bc64897fd2e31f9469c3955d13621c65c9a9f7a1",
+      "original": {
+        "path": ".build/automatic-ready-expiry-repair-step/diffs-v1/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift.diff",
+        "bytes": 2275,
+        "sha256": "f7920fdd04f2574537bb24190877d99f67879bec30d38c75875345fa2df4434c"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-acceptance-gap-repairs/SelfRenewalAutomaticRenewalTests.swift.diff",
+      "bytes": 6750,
+      "sha256": "f9c9ac56fd7e7cff1ac9c776e210cb95c958ed4af2ea87026a6d64e129f328f1",
+      "original": {
+        "path": ".build/automatic-ready-expiry-repair-step/diffs-v1/Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift.diff",
+        "bytes": 6751,
+        "sha256": "2c4830773de115582ee671f3bf7fa88e657a080075d98320f873515d06b88f7b"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-acceptance-gap-repairs/BookStore.swift.diff",
+      "bytes": 1147,
+      "sha256": "e77fbb1e38e8df8d28e06d10413513d15f181530739717f70c0ff39276f98b1c",
+      "original": {
+        "path": ".build/c4-original-refresh-chapter-variable-step/diffs/Modules/Services/LibraryStore/BookStore.swift.diff",
+        "bytes": 1147,
+        "sha256": "e77fbb1e38e8df8d28e06d10413513d15f181530739717f70c0ff39276f98b1c"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/core-acceptance-gap-repairs/LegadoNativeOriginalReaderTests.swift.diff",
+      "bytes": 6712,
+      "sha256": "da6c3545e96c8efb0e7274eae449aee80bbccf4e6e60982d1da75413550d9df5",
+      "original": {
+        "path": ".build/c4-original-refresh-chapter-variable-step/diffs/Tests/iOS/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 6712,
+        "sha256": "da6c3545e96c8efb0e7274eae449aee80bbccf4e6e60982d1da75413550d9df5"
+      }
+    }
+  ],
+  "remainingCoreCodeGap": {
+    "scope": "S5 submitted transaction completion and next-cycle admission",
+    "status": "actual-implementation-in-progress-in-isolated-stage",
+    "requiredEvidence": [
+      "receiptObserved",
+      "sealed authenticated reported-complete remote cleanup",
+      "same actual current process for matching Bundle.main material and selected normal-load data",
+      "process differs from both preparation and pre-submission handoff",
+      "durable pending retirement and owned local-candidate deletion before admitting a successor"
+    ],
+    "unknownUpgradeAndLookupRemainUnfinished": true,
+    "newSourceAcceptedInThisRecord": false
+  },
+  "nextCheckpoint": "Rebind these changed sources and the exact new currentcore method with S5 completion and any actual SDK7ef terminal repairs; no new cloud tag while SDK7ef is live.",
+  "cloudActions": 0,
+  "deviceActions": 0,
+  "realCredentialReads": 0,
+  "temporaryBookSourceTargetPercent": 90,
+  "measuredCompatibilityPercent": null,
+  "otherSeventeenItemsRemainDeferred": true,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

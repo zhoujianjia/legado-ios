@@ -1,0 +1,82 @@
+--- a/Tests/iOS/LegadoNativeOriginalReaderTests.swift
++++ b/Tests/iOS/LegadoNativeOriginalReaderTests.swift
+@@ -1126,6 +1126,16 @@
+         executionTimeAllowance = 180
+         try await withFixture { fixture in
+             try await self.withPublicOwnedBook(fixture) { fetcher, owned in
++                // Populate the real old-URL chapter owner and durable body before
++                // preUpdate moves the book; an unread book has no stale variables.
++                let originalReader = await self.manager(fixture)
++                let originalContent = try await originalReader.fetchChapter(book: owned.book, chapterIndex: 0,
++                    priority: .immediate, store: owned.store)
++                XCTAssertTrue(originalContent.content.contains("first&page"))
++                XCTAssertTrue(originalContent.content.contains("last page"))
++                let originalChapters = try await owned.store.originalRuntimeChapters(bookID: owned.book.id)
++                XCTAssertEqual(originalChapters.first?.runtimeVariables?["nativeParsed"], "yes")
++                XCTAssertEqual(originalChapters.first?.cachedFilename, "0.txt")
+                 let savedPosition = 0.375
+                 await MainActor.run { owned.store.updatePosition(bookId: owned.book.id, position: savedPosition, forceSave: true) }
+                 await BookStore.queuedWritesLanded()
+@@ -1146,6 +1156,12 @@
+                 if(String(book.bookUrl).indexOf('/moved-book')<0){java.reGetBook();java.refreshTocUrl();}
+                 book.putVariable('nativePreUpdate','completed');
+                 """
++                authored.ruleContent.title = """
++                @js:if(String(java.get('nativeBig')).length===10000)throw new Error('old book variables reached moved content');
++                if(String(java.get('nativeRenewedBig')).length!==10000)throw new Error('lost moved book variables');
++                if(String(chapter.getVariable('nativeParsed'))==='yes')throw new Error('old chapter variables reached moved content');
++                chapter.putVariable('nativeMovedParsed','yes');String(chapter.title)+'!'
++                """
+                 let source = authored
+                 let requestsBefore = fixture.peer.snapshot.requests.count
+                 let refreshed = try await owned.store.refreshOnlineBookMetadata(bookId: owned.book.id,
+@@ -1163,6 +1179,22 @@
+                 XCTAssertEqual(refreshed.runtimeVariables?["nativeRenewedBig"], String(repeating: "R", count: 10_000))
+                 XCTAssertNil(refreshed.runtimeVariables?["nativeBig"])
+                 XCTAssertEqual(refreshed.onlineChapters?.map(\.url), [fixture.baseURL + "/moved-c1", fixture.baseURL + "/moved-c2"])
++                XCTAssertEqual(refreshed.onlineChapters?.map(\.id), originalChapters.map(\.id))
++                XCTAssertTrue(refreshed.onlineChapters?.allSatisfy { $0.cachedFilename == nil } == true)
++                XCTAssertTrue(refreshed.onlineChapters?.allSatisfy { ($0.runtimeVariables ?? [:]).isEmpty } == true,
++                    "Changed chapter URLs must reach preview transfer with only their new variable compartment")
++                let webViewFetcher = await MainActor.run { WebViewFetcher.shared }
++                let movedReader = ChapterFetchManager(bookSourceFetcher: fetcher,
++                    webViewFetcher: webViewFetcher, sourceResolver: { _ in source })
++                let movedContent = try await movedReader.fetchChapter(book: refreshed, chapterIndex: 0,
++                    priority: .immediate, store: owned.store)
++                XCTAssertTrue(movedContent.content.contains("moved first chapter"))
++                let movedChapters = try await owned.store.originalRuntimeChapters(bookID: owned.book.id)
++                XCTAssertEqual(movedChapters.map(\.id), originalChapters.map(\.id))
++                XCTAssertEqual(movedChapters.first?.runtimeVariables?["nativeMovedParsed"], "yes")
++                XCTAssertNil(movedChapters.first?.runtimeVariables?["nativeParsed"])
++                XCTAssertEqual(movedChapters.first?.cachedFilename, "0.txt")
++                await BookStore.queuedWritesLanded()
+                 let afterRequests = Array(fixture.peer.snapshot.requests.dropFirst(requestsBefore))
+                 let search = try XCTUnwrap(afterRequests.first { $0.target.hasPrefix(fixture.prefix + "/refresh-search?") })
+                 let components = try XCTUnwrap(URLComponents(string: "http://127.0.0.1" + search.target))
+@@ -1170,6 +1202,7 @@
+                 XCTAssertEqual(components.queryItems?.first(where: { $0.name == "page" })?.value, "1")
+                 XCTAssertTrue(afterRequests.contains { $0.target == fixture.prefix + "/moved-book" })
+                 XCTAssertTrue(afterRequests.contains { $0.target == fixture.prefix + "/moved-toc" })
++                XCTAssertEqual(afterRequests.filter { $0.target == fixture.prefix + "/moved-c1" }.count, 1)
+                 XCTAssertFalse(afterRequests.contains { $0.target == fixture.prefix + "/book" })
+                 let newID = await owned.store.originalStoredOnlineBookID(sourceID: source.id, bookURL: newURL)
+                 let oldID = await owned.store.originalStoredOnlineBookID(sourceID: source.id, bookURL: owned.dto.bookURL)
+@@ -1183,6 +1216,9 @@
+                 XCTAssertEqual(restored.tocURL, fixture.baseURL + "/moved-toc")
+                 XCTAssertEqual(restored.runtimeVariables?["nativeRenewedBig"], String(repeating: "R", count: 10_000))
+                 XCTAssertNil(restored.runtimeVariables?["nativeBig"])
++                XCTAssertEqual(restored.onlineChapters?.map(\.id), originalChapters.map(\.id))
++                XCTAssertEqual(restored.onlineChapters?.first?.runtimeVariables?["nativeMovedParsed"], "yes")
++                XCTAssertNil(restored.onlineChapters?.first?.runtimeVariables?["nativeParsed"])
+                 // After the real App handoff, obtain the next ordinary context
+                 // through its existing public preparer; no fabricated grant/DTO.
+                 let known = OnlineBook(name: restored.title, author: restored.author, intro: "", coverUrl: "",
+@@ -1563,6 +1599,8 @@
+                 throw NativeOriginalReaderError.failed("Unexpected precise-search identity/page")
+             }
+             body = "<div class='book'><a href='\(prefix)/moved-book'>Original JNI Updated</a><b>Owned author</b></div>"
++        } else if target == prefix + "/moved-c1" {
++            body = "<div id='text'>moved first chapter</div>"
+         } else if target == prefix + "/moved-book" {
+             body = "<h1>Unwanted moved rename</h1><a id='toc' href='\(prefix)/moved-toc'>toc</a>"
+         } else if target == prefix + "/moved-toc" {

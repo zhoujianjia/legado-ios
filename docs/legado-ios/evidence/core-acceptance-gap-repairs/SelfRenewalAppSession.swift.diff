@@ -1,0 +1,35 @@
+--- rawbaseline/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift
++++ candidate/Modules/Services/SelfRenewal/SelfRenewalAppSession.swift
+@@ -576,7 +576,13 @@
+                 // refreshing the account, or replacing the candidate.
+                 try beginAutomaticAttempt(&policy, at: now)
+                 if coordinator == nil { activate(try await resolve(configuration)) }
+-                _ = try await renewalSigningContext()
++                let context = try await renewalSigningContext()
++                let validity = try ConnectedProfileValidity(context.currentApplication)
++                // Manual preparation accepts a valid same-identity package.
++                // Automatic resume must additionally satisfy the same expiry
++                // advancement policy as a newly prepared automatic attempt.
++                guard let renewedExpiry = context.lease.profiles.map(\.summary.expiresAt).min(),
++                      renewedExpiry > validity.expiresAt else { throw AutomaticRenewalFailure.materialsDoNotExtendCurrentApplication }
+                 _ = try await submitPreparedRenewalOwned(handoff: handoff)
+                 return try await finishAutomaticAttempt(policy, outcome: .receiptObserved)
+             }
+@@ -765,7 +771,7 @@
+     }
+
+     private func renewalSigningContext() async throws -> (configuration: Configuration,
+-        coordinator: Coordinator, lease: Vault.Lease) {
++        coordinator: Coordinator, lease: Vault.Lease, currentApplication: SelfRenewalApplicationMaterialVerifier.Materials) {
+         guard !configurationNeedsReload, access == .signing, let configuration,
+               let coordinator, let vault, let namespace, let profileValidity else {
+             throw Coordinator.Failure.signingMaterialsUnavailable
+@@ -778,7 +784,7 @@
+                 codeAnchors: configuration.codeAnchors, profileAnchors: configuration.profileAnchors, at: clock())
+             let lease = try await vault.lease(in: namespace)
+             try await vault.validate(lease, for: actual)
+-            return (configuration, coordinator, lease)
++            return (configuration, coordinator, lease, actual)
+         } catch is CancellationError { throw CancellationError() }
+         catch {
+             let original = error

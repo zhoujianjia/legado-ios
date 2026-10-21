@@ -1,0 +1,280 @@
+{
+  "schema": 1,
+  "kind": "read-only S4-S6 next-action acceptance-gap audit",
+  "createdAt": "2026-10-21T03:48:21.139057+00:00",
+  "observedHEAD": "9e0db98bd852411670c95fa4b117bc8aaa877d71",
+  "scope": [
+    "current completion-plan S4/S5/S6",
+    "actual App entry/Owner/Session/installer/journal/recovery/handoff/background call chain",
+    "expiry advancement on fresh and resumed automatic preparation"
+  ],
+  "sourceFacts": [
+    {
+      "path": "docs/legado-ios/completion-plan.json",
+      "bytes": 488022,
+      "sha256": "0acbda1637f7df2045fd8bc21d01a568b02d3c5272da3df0acf4023105b94b64"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+      "bytes": 37029,
+      "sha256": "5010aedb7e79031e91afbdad3b1e39f9e03ddb094298296bcdbced74fbee96c8"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+      "bytes": 120999,
+      "sha256": "ab91be82fad410a5afec802edc3405be8ed39a6fdc413f88bab273f6d2d9884b"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalAuthenticatedInstallationClient.swift",
+      "bytes": 34406,
+      "sha256": "68f5c642486ba26220dae4e55463b635151a620225d430fd941289f8c81feec9"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+      "bytes": 28247,
+      "sha256": "e3a98cad4ec7bc71d8376c276a0519f6e7a2db91666459609cfdcb9a3cecc5ab"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift",
+      "bytes": 57857,
+      "sha256": "e32b6c019fce3ee0c53d629ccd74f35491c88c409224310b205ed8339bf4f3cc"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalInstallationRecovery.swift",
+      "bytes": 12137,
+      "sha256": "038e79c42b6305bf6c06a173bd08c78a968d068c36ccf5f0d25f627a4c71389c"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalUserDataHandoff.swift",
+      "bytes": 8838,
+      "sha256": "3e21a869f1279fb5127842ed0aa2538ff277039a3e0372783a01961974435a03"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalBackgroundTaskBridge.swift",
+      "bytes": 4794,
+      "sha256": "d82f34662f993493bf48e219734c65241c2411549a6b70311959c3370c64f1fe"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "bytes": 61427,
+      "sha256": "eacba522c47a405fd8d47f9547b6a9f2f2286f2f2fb9183242be0c3dbcd99380"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "bytes": 72084,
+      "sha256": "d823257c940243a379d8e051b3c860aa6e0c463750804b471535ffbf28bef5f4"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalReplacementPolicy.swift",
+      "bytes": 14675,
+      "sha256": "8d8c3c6f890d5bfc81ac9501ac59c3a9cb2a7049e075dc98f009653cdb534541"
+    },
+    {
+      "path": "Targets/Yuedu/SharedApp/yuedu_appApp.swift",
+      "bytes": 26799,
+      "sha256": "26b8ecf72165eabd06dd6df16d6457e7a037b62bdf4cd5c00bee00ac95f065b1"
+    },
+    {
+      "path": "Info.plist",
+      "bytes": 8595,
+      "sha256": "259fc6d3e8e25ab3f797636bcf231227b2c90442a964e240e3c3068660276b71"
+    }
+  ],
+  "method": {
+    "sourceOnly": true,
+    "newTestExecutions": 0,
+    "newSwiftCompiles": 0,
+    "newSDKRuns": 0,
+    "cloudQueries": 0,
+    "canonicalWrites": 0,
+    "gitMutations": 0,
+    "realAccountRequests": 0
+  },
+  "confirmedLocalCodeGaps": [
+    {
+      "id": "S6-AUTOMATIC-READY-EXPIRY",
+      "priority": "P2",
+      "title": "Automatic resume of candidateReady bypasses its own expiry-advancement policy",
+      "trigger": "Prepare a valid same-identity candidate manually using a still-valid lease whose minimum profile expiry is equal to or earlier than the currently installed App minimum expiry; enable or resume automatic renewal after its throttle is due.",
+      "actual": "The candidateReady branch executes renewalSigningContext and submitPreparedRenewalOwned before reading actual App expiry. Those paths validate current signatures, identity, generation and non-expiry, but do not compare candidate expiry with current App expiry. It may upload/Upgrade and report receiptObserved without extending the effective App validity.",
+      "evidence": [
+        {
+          "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+          "lines": [
+            572,
+            581
+          ],
+          "observation": "early candidateReady submission precedes current-App material read at 583 and normal-path renewedExpiry comparison at 618-619"
+        },
+        {
+          "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+          "lines": [
+            705,
+            792
+          ],
+          "observation": "manual prepare and renewalSigningContext require a current valid lease but no expiry advancement"
+        },
+        {
+          "path": "Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+          "lines": [
+            101,
+            134,
+            200,
+            225,
+            403,
+            413
+          ],
+          "observation": "candidate construction and re-verification validate exact bytes/material/generation but no relative-expiry condition"
+        },
+        {
+          "path": "Modules/Services/SelfRenewal/SelfRenewalReplacementPolicy.swift",
+          "lines": [
+            179,
+            187
+          ],
+          "observation": "candidate is required to be valid now; metadata compatibility does not imply extension"
+        }
+      ],
+      "nextLocalAction": "Apply the existing current-App expiry-advancement rule to the exact persisted candidate on automatic candidateReady resume before any authenticated connection. Preserve the ready candidate and avoid refreshing/replacing its material generation on rejection. Add a controlled negative regression and retain the interrupted extending-candidate recovery case.",
+      "limits": "Static reachable-path proof, not a newly executed reproduction. receiptObserved remains a transport observation; no false installed/automaticVerified flag is asserted."
+    },
+    {
+      "id": "S5-SUBMITTED-CYCLE-FINALIZATION",
+      "priority": "P2",
+      "title": "The submitted transaction has no implemented safe terminal handoff to a subsequent renewal cycle",
+      "trigger": "An Upgrade has an authenticated receipt, and a later genuine process supplies matching candidate material plus matching normal-load data observations; the next renewal becomes due.",
+      "actual": "Both observations are stored without a phase transition. Reported-complete remote cleanup retains receiptObserved. Every later automatic attempt selects recoveryRequired, while create/new prepare requires the predecessor to be retired and refuses any submitted phase. Current APIs cannot begin the second renewal cycle even after these observations exist.",
+      "evidence": [
+        {
+          "path": "Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift",
+          "lines": [
+            18,
+            21,
+            319,
+            326
+          ],
+          "observation": "phase inventory has no post-submission terminal state; create permits only a retired predecessor"
+        },
+        {
+          "path": "Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift",
+          "lines": [
+            537,
+            555,
+            560,
+            592
+          ],
+          "observation": "current-process material and normal-load observations do not finalize a submitted transaction"
+        },
+        {
+          "path": "Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift",
+          "lines": [
+            633,
+            635
+          ],
+          "observation": "reportedComplete cleanup leaves the receiptObserved phase unchanged"
+        },
+        {
+          "path": "Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+          "lines": [
+            169,
+            184
+          ],
+          "observation": "submitted/lookup phases cannot be retired or superseded before another prepare"
+        },
+        {
+          "path": "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+          "lines": [
+            562,
+            570,
+            1546,
+            1548
+          ],
+          "observation": "all submitted phases unconditionally take the recovery-only automatic branch"
+        }
+      ],
+      "nextLocalAction": "Specify and implement a narrowly authenticated post-submission terminal transition, including crash/reopen and next-cycle admission regression, without treating same-version Lookup, a receipt, or same-process reads as installation/cold-launch proof. The local transition mechanism can be implemented and controlled-tested; acceptance of real installation and OS image/cold-launch evidence remains external.",
+      "limits": "Conservative current behavior prevents duplicate Upgrade; it is an absent continuing-renewal capability, not an assertion that current code falsely completes installation. No automatic deletion or unsafe Lookup-based retirement is recommended."
+    }
+  ],
+  "implementedAwaitingCurrentSDKRegression": [
+    {
+      "step": "S4",
+      "code": "AuthenticatedInstallationClient.swift:201-435; InstallationRecovery.swift:80-200",
+      "facts": [
+        "bounded actual TCP/mutual TLS and exact pairing proof",
+        "AFC chunk/digest upload, Upgrade terminal Complete, terminal Lookup Complete plus exact bundle/version, owned staging cleanup and StopSession",
+        "cancellation forwarded to real transport and awaited; partial/unknown effects retained",
+        "unknown Upgrade uses fresh authenticated Lookup only and never assumes notFound permits deletion"
+      ],
+      "existingRegressionSources": [
+        "SelfRenewalAuthenticatedInstallationClientTests.swift",
+        "SelfRenewalInstallationRecoveryTests.swift",
+        "SelfRenewalExpirySafeRecoveryTests.swift"
+      ]
+    },
+    {
+      "step": "S5",
+      "code": "AppSession.swift:705-850,1434-1542,1672-1748; ControlledRenewalCoordinator.swift:101-139,200-236,359-413; TransactionJournal.swift:453-592,846-878; UserDataHandoff.swift:82-160",
+      "facts": [
+        "one journal actor/flock and durable candidate/intent boundaries precede remote creation and first Upgrade byte",
+        "exact candidate re-verification and fresh lease/generation checks before upload and submission",
+        "same real BookStore/source/position owners flush before durable Upgrade intent",
+        "independent real current-process material and normal-load observations retained",
+        "failed/unknown outcomes retain transaction and actual effects; unavailable material revokes signing and narrows to owned recovery"
+      ],
+      "existingRegressionSources": [
+        "SelfRenewalControlledRenewalCoordinatorTests.swift",
+        "SelfRenewalTransactionJournalTests.swift",
+        "SelfRenewalUserDataHandoffTests.swift"
+      ]
+    },
+    {
+      "step": "S6",
+      "code": "yuedu_appApp.swift:193-230,326-352; AppOwner.swift:88-264; BackgroundTaskBridge.swift:32-107; Info.plist:270-273",
+      "facts": [
+        "actual App injects existing stores and starts the same owner",
+        "foreground scene-generation admission, queued activation deduplication and foreground cancellation/drain",
+        "real BGProcessingTask registration, expiry forwarding and completion only after worker drain",
+        "persisted opt-in/throttle/clock-backoff, existing Session signer/installer/journal path"
+      ],
+      "existingRegressionSources": [
+        "SelfRenewalAppOwnerTests.swift",
+        "SelfRenewalAutomaticRenewalTests.swift"
+      ]
+    }
+  ],
+  "expiryPolicyAssessment": {
+    "freshAutomatic": "AppSession 618-619 requires renewed minimum profile expiry strictly later than current actual App minimum expiry, then revalidates the lease; 48h is a trigger lead, not a promised duration.",
+    "certificateReuse": "Vault.refreshProfiles 424-430 requires each component expiry to advance against the authenticated old publication baseline.",
+    "newCSRAndReconcile": "Vault.publish 633-665 independently verifies current profiles, target device and current non-expiry. It does not compare with old App expiry; the normal automatic outer branch supplies that minimum-expiry check.",
+    "manual": "Explicit prepare/submit accept valid same-identity packages and report candidate/transport observations. Absence of relative-expiry enforcement is not separately classified as a bug in these manual APIs, because they do not report completed renewal.",
+    "minimumRemainingWindow": "No numeric minimum beyond current validity and strict automatic expiry advancement is specified by the inspected contract; no invented 48h-validity requirement or arbitrary safety-margin bug is asserted."
+  },
+  "externalUnverifiedAcceptance": [
+    "A real Apple account/team accepts original exact three bundle IDs, groups, device and refreshed profiles; controlled cryptographic fixtures do not grant Apple authority.",
+    "A real authenticated installation channel exists on the same iPhone with the claimed PC/USB/VPN/companion conditions; present direct TCP adapter rejects absent service TLS rather than fabricating mux/tunnel authority.",
+    "Actual iOS replacement accepts the re-signed complete App, preserves selected and other user data/access groups, launches the newly installed image, and advances real expiry.",
+    "Actual cold process normal loads and material observations after real installation. Source observations and matching file receipts are not by themselves proof that the kernel ran the new image.",
+    "Actual BGProcessingTask grant, cold background-only binding, expiry behavior and repeated unattended cycles. BackgroundTaskBridge 43-45 explicitly does not create substitute stores if no scene binds the existing owners; scheduling is OS-controlled.",
+    "Current SDK7ef3 result is monitored by Root; this audit neither queried nor inferred its outcome. Source review/test definitions are not execution evidence."
+  ],
+  "notFindings": [
+    "historical completion-plan implementedSubtasks text claiming startup/DI unfinished is superseded by later entries and the actual connected source",
+    "untested code is not classified as missing implementation",
+    "manual re-signing proof is not automatically proof of extended expiry",
+    "no additional definite S4 transport or S6 owner-cancellation bug identified in this bounded read"
+  ],
+  "recommendedOrder": [
+    "First close S6-AUTOMATIC-READY-EXPIRY with the existing owners and one controlled negative path; no device required.",
+    "Resolve S5-SUBMITTED-CYCLE-FINALIZATION with an explicit bounded proof/transition contract before claiming repeat unattended renewal.",
+    "Consume current SDK results for already encoded S4-S6 regression; do not rerun passed suites without a changed scope/failure.",
+    "Obtain real account/install/cold-launch/OS scheduling evidence separately; keep all end-to-end authority flags false until proved."
+  ],
+  "proofFlags": {
+    "realAppleAuthorizationEstablished": false,
+    "sameDeviceInstallationVerified": false,
+    "coldLaunchVerified": false,
+    "automaticRenewalVerified": false
+  },
+  "queryAgain": false
+}

@@ -1,0 +1,23 @@
+--- a/Modules/Services/LibraryStore/BookStore.swift
++++ b/Modules/Services/LibraryStore/BookStore.swift
+@@ -4197,12 +4197,14 @@
+             merged.id = current.id
+             if normalizedOnlineValue(current.url) == normalizedOnlineValue(chapter.url) {
+                 merged.cachedFilename = current.cachedFilename
+-            }
+-            if (merged.runtimeVariables == nil || merged.runtimeVariables?.isEmpty == true),
+-                let currentRuntime = current.runtimeVariables,
+-                !currentRuntime.isEmpty
+-            {
+-                merged.runtimeVariables = currentRuntime
++                // Variables belong to the chapter URL that produced them. A refreshed
++                // URL adopts its new original preview compartment, including deletion.
++                if (merged.runtimeVariables == nil || merged.runtimeVariables?.isEmpty == true),
++                    let currentRuntime = current.runtimeVariables,
++                    !currentRuntime.isEmpty
++                {
++                    merged.runtimeVariables = currentRuntime
++                }
+             }
+             return merged
+         }

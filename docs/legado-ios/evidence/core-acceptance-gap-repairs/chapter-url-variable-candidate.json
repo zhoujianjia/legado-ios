@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "status": "frozen-candidate-awaiting-independent-review-and-SDK",
+  "sourceRoot": ".build/c4-original-refresh-chapter-variable-step/snapshot-v1/work",
+  "sourceFiles": [
+    {
+      "path": "Modules/Services/LibraryStore/BookStore.swift",
+      "baseline": {
+        "bytes": 219041,
+        "sha256": "cee22b2206c6dfa1c8a54abd894b2d0a12f5ca832186c3ff62f30b81975f3aee"
+      },
+      "candidate": {
+        "bytes": 219240,
+        "sha256": "590413bbbb20bc66346a72de09f74f10fd985b4c7f3bc0d6c6c1b4ec581d2b33"
+      },
+      "diff": {
+        "path": ".build/c4-original-refresh-chapter-variable-step/diffs/Modules/Services/LibraryStore/BookStore.swift.diff",
+        "bytes": 1147,
+        "sha256": "e77fbb1e38e8df8d28e06d10413513d15f181530739717f70c0ff39276f98b1c"
+      }
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "baseline": {
+        "bytes": 139151,
+        "sha256": "93b99960f1239b785098a6393d9d31a786380210bb48de502aaad43a775b6b1b"
+      },
+      "candidate": {
+        "bytes": 142491,
+        "sha256": "61fa7f4b1bafd9fd0fb5901dce64f8978e742f4a1735bcbb30ae46834605f08b"
+      },
+      "diff": {
+        "path": ".build/c4-original-refresh-chapter-variable-step/diffs/Tests/iOS/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 6712,
+        "sha256": "da6c3545e96c8efb0e7274eae449aee80bbccf4e6e60982d1da75413550d9df5"
+      }
+    }
+  ],
+  "baselineBoundary": "Both raw baselines were byte-checked against canonical working source at capture/freeze. Root owns commit identity and integration; no canonical source was written.",
+  "problem": "C4 preUpdate chapter URL refresh copies stale old chapter variables and fails strict preview handoff after metadata commit.",
+  "productionChange": {
+    "path": "Modules/Services/LibraryStore/BookStore.swift",
+    "function": "BookStore.mergeOnlineChapters",
+    "changedBehavior": "Copy old runtimeVariables only when the existing normalized chapter URL still matches. Stable chapter IDs remain preserved for all indices. Same-URL cache filename/variables and unchanged-write semantics are preserved.",
+    "otherProductionChanges": 0
+  },
+  "regression": {
+    "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+    "owner": "LegadoNativeOriginalReaderTests",
+    "method": "testNativeOriginalPreUpdateRefreshKeepsPublicBookIdentityAndProgressWithNewURLContext",
+    "newDefinitions": 0,
+    "definitionsInFileBefore": 17,
+    "definitionsInFileAfter": 17,
+    "oldMethodIdentitiesAndOrderExact": true,
+    "other16TestMethodBodiesExact": true,
+    "actualOwnerCalls": [
+      "ChapterFetchManager.fetchChapter for old c1/c1p2 produces nativeParsed and actual cache",
+      "BookStore.refreshOnlineBookMetadata with real preUpdate moves URLs and completes strict transfer",
+      "ChapterFetchManager.fetchChapter for moved-c1 through current source returns fresh content and nativeMovedParsed",
+      "reopened same owned BookStore preserves stable IDs/progress and only new chapter variables"
+    ],
+    "newFixtureRoute": "GET /<owned-runUUID>/moved-c1",
+    "fixtureMaximumRequestBudgetUnchanged": 16,
+    "sameURLRegression": "testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen body remains byte exact, including unchanged bytes/inode, cache reuse, runtimeVariables and same-UUID assertions."
+  },
+  "evidence": [
+    {
+      "path": ".build/c4-original-refresh-chapter-variable-step/source-checks.json",
+      "bytes": 4076,
+      "sha256": "924d21bfa3639c94903bd876e01e80e40aa0eeab4d08b7be8f931a3225f5eb31"
+    },
+    {
+      "path": ".build/c4-c5-core-acceptance-gap-review-step/review-v1.json",
+      "bytes": 8543,
+      "sha256": "0eddf6475ae435115a540c16ab728188af803bda5682a3f8d33e642de74a2b41"
+    }
+  ],
+  "dependencyBindings": [
+    {
+      "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "bytes": 134237,
+      "sha256": "4b5e0c2b3c476a12f02f2ea2b5061532cd5e59a2a3ce1ef391bf006c8a05fcab"
+    },
+    {
+      "path": "Modules/Services/Online/OnlineReadingPipeline.swift",
+      "bytes": 63609,
+      "sha256": "dfacf47bfbe3396fe2003e3b051cb14ca9ce72981e6626e75c2c5ac7cd7a09e0"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher+Chapter.swift",
+      "bytes": 7906,
+      "sha256": "cc91c73c4bd17d60879283521de7a336126d9f7b9d165e3282ea20b85d6a4378"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher+OriginalPreview.swift",
+      "bytes": 6893,
+      "sha256": "fdf99e43c00320bd7977835b34c168dcc87eae50286d69fc4f37d5cfdddfd4b6"
+    },
+    {
+      "path": "scripts/reader-experience/original-cold-process-tools.py",
+      "bytes": 16767,
+      "sha256": "857611a99eaf8d02f4a0af5fe3157e1e6f18d7227773920c3deac8940ef8be03"
+    },
+    {
+      "path": "docs/legado-ios/core-native-fc3b01c-terminal-result.json",
+      "bytes": 34112,
+      "sha256": "adf24ca3532427b6a4d06dcf2743c56ea048041368112e2ca86fe46d17485653"
+    },
+    {
+      "path": "docs/legado-ios/core-native-7ef3c7e-terminal-result.json",
+      "bytes": 22744,
+      "sha256": "9d79be4e1a14ac18b59cc400795b544adac16da95e0b59af831afb09639b70e7"
+    }
+  ],
+  "actualValidation": {
+    "kind": "source-integrity-only",
+    "passedChecks": 11,
+    "failedChecks": 0,
+    "SwiftCompiler": 0,
+    "SwiftParser": 0,
+    "XCTest": 0,
+    "JVMJUnit": 0,
+    "NativeJNI": 0,
+    "cloudQueries": 0,
+    "notExecuted": [
+      "modified Native preUpdate method",
+      "same-URL Native regression",
+      "independent cold producer/consumer hosts",
+      "Apple SDK compilation"
+    ]
+  },
+  "harnessInputAdvice": {
+    "newPaths": [],
+    "newSelectors": [],
+    "AppDefinitionDelta": 0,
+    "NativeDefinitionDelta": 0,
+    "requiredRebinding": [
+      "Modules/Services/LibraryStore/BookStore.swift",
+      "Tests/iOS/LegadoNativeOriginalReaderTests.swift"
+    ],
+    "instruction": "Both existing selected compile inputs require fresh byte stamps in the next coherent checkpoint. Do not add another method or rerun unrelated JVM suites."
+  },
+  "proofLimits": [
+    "No Swift compiler is available here; source checks do not establish compilation or XCTest behavior.",
+    "The new Native regression is authored, not passed. Actual failed-before/fixed-after SDK execution remains required.",
+    "No cold-host, real-site compatibility percentage, device or renewal acceptance is claimed."
+  ],
+  "canonicalWrites": false,
+  "GitMutations": false,
+  "cloudActions": false,
+  "allNonDeviceWorkComplete": false
+}

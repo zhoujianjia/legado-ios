@@ -4197,12 +4197,14 @@ class BookStore: ObservableObject, BookProvider {
             merged.id = current.id
             if normalizedOnlineValue(current.url) == normalizedOnlineValue(chapter.url) {
                 merged.cachedFilename = current.cachedFilename
-            }
-            if (merged.runtimeVariables == nil || merged.runtimeVariables?.isEmpty == true),
-                let currentRuntime = current.runtimeVariables,
-                !currentRuntime.isEmpty
-            {
-                merged.runtimeVariables = currentRuntime
+                // Variables belong to the chapter URL that produced them. A refreshed
+                // URL adopts its new original preview compartment, including deletion.
+                if (merged.runtimeVariables == nil || merged.runtimeVariables?.isEmpty == true),
+                    let currentRuntime = current.runtimeVariables,
+                    !currentRuntime.isEmpty
+                {
+                    merged.runtimeVariables = currentRuntime
+                }
             }
             return merged
         }

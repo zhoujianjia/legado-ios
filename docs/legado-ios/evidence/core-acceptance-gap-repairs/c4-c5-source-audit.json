@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "scope": "Bounded current C4-C5 original traditional-text production route and acceptance gaps; 90-percent stage scope only. No new long-tail scope.",
+  "recordedUTC": "2026-10-21T03:52:41.154984+00:00",
+  "productionFindings": [
+    {
+      "id": "C4-CHAPTER-URL-VARIABLE-HANDOFF",
+      "severity": "P2",
+      "status": "candidate-prepared-not-executed",
+      "trigger": "A previously read stored chapter has nonempty original runtime variables; preUpdate refresh changes the book/chapter URL and the new URL compartment has no chapter variables.",
+      "anchors": [
+        "Modules/Services/LibraryStore/BookStore.swift:4198-4205",
+        "Modules/Services/LibraryStore/BookStore.swift:2755-2759",
+        "Modules/Services/LibraryStore/BookStore.swift:2811-2813",
+        "Modules/Services/Online/LegadoMainJSSourceService.swift:1297-1310",
+        "Modules/Services/Online/LegadoMainJSSourceService.swift:1008-1012"
+      ],
+      "cause": "The merge carries old nonempty chapter variables by index even when URL changed. New preUpdate preview uses the new URL compartment. The already-committed App chapter therefore differs from the preview, and the subsequent strict transfer rejects STATE_CONFLICT.",
+      "impact": "Refresh can report failure after publishing stale variables under a new URL. A subsequent original content request can observe variables belonging to the old chapter URL.",
+      "minimalRepair": "In the existing merge, inherit old chapter variables only under the existing same-normalized-URL condition, alongside the existing cached-filename preservation. Keep UUID inheritance outside that condition.",
+      "candidateSourceRows": [
+        {
+          "path": "Modules/Services/LibraryStore/BookStore.swift",
+          "baseline": {
+            "bytes": 219041,
+            "sha256": "cee22b2206c6dfa1c8a54abd894b2d0a12f5ca832186c3ff62f30b81975f3aee"
+          },
+          "candidate": {
+            "bytes": 219240,
+            "sha256": "590413bbbb20bc66346a72de09f74f10fd985b4c7f3bc0d6c6c1b4ec581d2b33"
+          },
+          "diff": {
+            "path": ".build/c4-original-refresh-chapter-variable-step/diffs/Modules/Services/LibraryStore/BookStore.swift.diff",
+            "bytes": 1147,
+            "sha256": "e77fbb1e38e8df8d28e06d10413513d15f181530739717f70c0ff39276f98b1c"
+          }
+        },
+        {
+          "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+          "baseline": {
+            "bytes": 139151,
+            "sha256": "93b99960f1239b785098a6393d9d31a786380210bb48de502aaad43a775b6b1b"
+          },
+          "candidate": {
+            "bytes": 142491,
+            "sha256": "61fa7f4b1bafd9fd0fb5901dce64f8978e742f4a1735bcbb30ae46834605f08b"
+          },
+          "diff": {
+            "path": ".build/c4-original-refresh-chapter-variable-step/diffs/Tests/iOS/LegadoNativeOriginalReaderTests.swift.diff",
+            "bytes": 6712,
+            "sha256": "da6c3545e96c8efb0e7274eae449aee80bbccf4e6e60982d1da75413550d9df5"
+          }
+        }
+      ],
+      "regression": "Extend the existing Native preUpdate method to actually fetch old paginated content first, prove nativeParsed and durable cache, refresh to new URLs, prove new variables are empty before transfer completes, then fetch new content and reopen the same owned book. No new method or selector."
+    }
+  ],
+  "implementedPendingActualValidation": [
+    {
+      "contract": "C4 ordinary JVM to unique App entry and current stored reader",
+      "status": "implemented; current combined Apple SDK/Native acceptance remains pending",
+      "anchors": [
+        "Modules/Core/BookSource/BookSourceFetcher+Search.swift:175",
+        "Modules/Core/BookSource/BookSourceFetcher+BookInfo.swift:26",
+        "Modules/Core/BookSource/BookSourceFetcher+TOC.swift:59",
+        "Modules/Core/BookSource/BookSourceFetcher+Chapter.swift:71",
+        "Modules/Services/Online/OnlineReadingPipeline.swift:423"
+      ],
+      "boundary": "fc3 source had actual original26 plus separate MainJS1 success. That frozen scope does not accept later S2/C5/WebJS/Base64/general/preUpdate changes."
+    },
+    {
+      "contract": "C4 same-URL identity/cache/metadata preservation",
+      "status": "existing actual product regression encoded and preserved byte for byte by this candidate",
+      "anchors": [
+        "Tests/iOS/LegadoNativeOriginalReaderTests.swift:538-603"
+      ],
+      "boundary": "No rerun here. Preserving the existing method source is not a new runtime pass."
+    },
+    {
+      "contract": "C5 independent cold producer and consumer",
+      "status": "fully wired source and fail-closed receipt/controller; actual two-host run still unexecuted",
+      "anchors": [
+        "Tests/iOS/LegadoNativeOriginalReaderTests.swift:194",
+        "Tests/iOS/LegadoNativeOriginalReaderTests.swift:307",
+        "scripts/reader-experience/original-cold-process-tools.py:176",
+        "scripts/reader-experience/original-cold-process-tools.py:202",
+        "scripts/reader-experience/original-cold-process-tools.py:230",
+        "scripts/reader-experience/original-cold-process-tools.py:263"
+      ],
+      "controls": "Same explicit simulator destination and actual data container; source/run nonce; producer peer stopped; actual producer PID exit evidence before accepted marker; separate consumer PID; real BookStore/JSONFileReadingPositionStore/cache checks and cache-first resolver count zero; cleanup only accepted owned book UUID.",
+      "boundary": "Latest closed Native7ef has 378/378 actual JVM pass but zero full-device/S3/simulator-original/MainJS/cold hosts because the full-input protocol guard failed before these stages. Same-process reopen from fc3 is not independent cold-host acceptance."
+    }
+  ],
+  "externalAndSampleUnverified": [
+    {
+      "contract": "90-percent stage target",
+      "measuredPercent": null,
+      "reason": "Representative real public-source end-to-end sample coverage is not measured. Synthetic method counts and a single fixed ordinary JAR cannot establish a percentage of all sources."
+    },
+    {
+      "contract": "Physical-device/user-site conditions",
+      "reason": "This source-only review provides no new real-site login/challenge reliability, phone/offline OS lifecycle or autonomous renewal acceptance. These are not inferred production stubs."
+    }
+  ],
+  "notProductionBugs": [
+    "Legacy cachedTOCPackage being bypassed for original metadata is intentional; the existing BookStore chapter owner and checked body cache supply offline reads.",
+    "Existing stored traditional OnlineBookView already refreshes through BookStore before navigation; no separate raw-TOC overwrite bug was found.",
+    "Historical C4 preparatory text saying default routing was not switched is not a description of the current code path."
+  ],
+  "validation": {
+    "newTestExecutions": 0,
+    "newCompilerExecutions": 0,
+    "newCloudQueries": 0,
+    "privateInputsRead": false,
+    "canonicalWrites": false,
+    "gitMutations": false
+  },
+  "dependencyBindings": [
+    {
+      "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "bytes": 134237,
+      "sha256": "4b5e0c2b3c476a12f02f2ea2b5061532cd5e59a2a3ce1ef391bf006c8a05fcab"
+    },
+    {
+      "path": "Modules/Services/Online/OnlineReadingPipeline.swift",
+      "bytes": 63609,
+      "sha256": "dfacf47bfbe3396fe2003e3b051cb14ca9ce72981e6626e75c2c5ac7cd7a09e0"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher+Chapter.swift",
+      "bytes": 7906,
+      "sha256": "cc91c73c4bd17d60879283521de7a336126d9f7b9d165e3282ea20b85d6a4378"
+    },
+    {
+      "path": "Modules/Core/BookSource/BookSourceFetcher+OriginalPreview.swift",
+      "bytes": 6893,
+      "sha256": "fdf99e43c00320bd7977835b34c168dcc87eae50286d69fc4f37d5cfdddfd4b6"
+    },
+    {
+      "path": "scripts/reader-experience/original-cold-process-tools.py",
+      "bytes": 16767,
+      "sha256": "857611a99eaf8d02f4a0af5fe3157e1e6f18d7227773920c3deac8940ef8be03"
+    },
+    {
+      "path": "docs/legado-ios/core-native-fc3b01c-terminal-result.json",
+      "bytes": 34112,
+      "sha256": "adf24ca3532427b6a4d06dcf2743c56ea048041368112e2ca86fe46d17485653"
+    },
+    {
+      "path": "docs/legado-ios/core-native-7ef3c7e-terminal-result.json",
+      "bytes": 22744,
+      "sha256": "9d79be4e1a14ac18b59cc400795b544adac16da95e0b59af831afb09639b70e7"
+    }
+  ],
+  "allNonDeviceWorkComplete": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "automaticSelfRenewalImplemented": false
+}

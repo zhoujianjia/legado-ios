@@ -1,0 +1,94 @@
+--- rawbaseline/Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift
++++ candidate/Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift
+@@ -133,6 +133,73 @@
+         }
+     }
+
++    @Test("automatic ready resume preserves rejected candidates and requires current App expiry advancement before transport")
++    func resumedReadyCandidateRequiresExpiryAdvanceAndReadableCurrentApplication() async throws {
++        let cases: [(expiresAfter: TimeInterval, corruptCurrent: Bool, submits: Bool)] = [
++            (3_600, false, false), (1_800, false, false),
++            (7_200, true, false), (7_200, false, true),
++        ]
++        for testCase in cases {
++            try await Package.fixture { f in
++                // Capture the original currently running fixture before the
++                // publication changes. The real current profiles last one hour.
++                let application = try await Self.currentApplication(f)
++                try await Self.extendPublishedProfiles(f, expiresAfter: testCase.expiresAfter)
++                let root = f.directory.appendingPathComponent("SelfRenewalApp")
++                let owners = try await App.library(in: f.directory, at: f.date)
++                let handoff = await owners.handoff
++                let session = Session(root: root, currentApplicationRoot: application, clock: { f.date })
++                do {
++                    _ = try await session.bootstrap(handoff: handoff)
++                    _ = try await session.configure(from: App.configuration(f, device: nil), handoff: handoff)
++                    // Manual preparation deliberately keeps its original API:
++                    // even shorter still-valid profiles can become ready.
++                    let prepared = try await session.prepareRenewal(from: f.input)
++                    #expect(prepared.phase == .candidateReady)
++                    let ready = try App.record(root)
++                    let candidate = try App.candidate(root, record: ready)
++                    let recordPath = root.appendingPathComponent("SelfRenewalTransactions/transaction.json")
++                    let initialRecord = try Data(contentsOf: recordPath)
++                    let mode: Peer.Mode = testCase.submits ? .normal : .unusedInput
++                    try await Peer.withPeer(mode, bytes: candidate, bundle: ready.bundleIdentifier,
++                        version: ready.bundleVersion, at: f.date) { peer in
++                        _ = try await session.configure(from: App.configuration(f, device: App.device(peer)), handoff: handoff)
++                        _ = try await session.setAutomaticRenewalEnabled(true)
++                        if testCase.corruptCurrent {
++                            // Admission must use a fresh actual App read; an old
++                            // connected validity bound must not authorize upload.
++                            try Data("unreadable-current-profile".utf8).write(to:
++                                application.appendingPathComponent("embedded.mobileprovision"))
++                        }
++                        if testCase.submits {
++                            let result = try await session.runAutomaticRenewal(handoff: handoff)
++                            #expect(result.outcome == .receiptObserved && !result.automaticRenewalVerified)
++                            #expect(peer.observed.snapshot.uploaded == candidate)
++                            #expect(peer.observed.snapshot.upgradeRequests == 1)
++                            #expect(try App.record(root).phase == .receiptObserved)
++                        } else {
++                            do {
++                                _ = try await session.runAutomaticRenewal(handoff: handoff)
++                                Issue.record("Automatic ready resume accepted absent expiry advancement or unreadable current material")
++                            } catch { #expect(!(error is CancellationError)) }
++                            let result = await session.automaticRenewalObservation()
++                            #expect(result.outcome == .failed && !result.automaticRenewalVerified)
++                            #expect(peer.observed.snapshot.authenticatedChannels == 0)
++                            #expect(peer.observed.snapshot.openedFileHandles == 0)
++                            #expect(peer.observed.snapshot.uploaded.isEmpty && peer.observed.snapshot.upgradeRequests == 0)
++                            #expect(try Data(contentsOf: recordPath) == initialRecord)
++                            #expect(try App.candidate(root, record: App.record(root)) == candidate)
++                            let preserved = try App.record(root)
++                            #expect(preserved.phase == .candidateReady && preserved.submission == nil)
++                            #expect(preserved.remoteHistory == .neverStarted && preserved.materialGeneration == ready.materialGeneration)
++                        }
++                    }
++                    try await session.close()
++                } catch { do { try await session.close() } catch { Issue.record(error) }; throw error }
++            }
++        }
++    }
++
+     @Test("caller expiration cancels the actual automatic TLS task and awaits durable candidate recovery")
+     func cancellationDrainsActualAutomaticTransportAndPersistsInterruption() async throws {
+         try await Package.fixture { f in
+@@ -189,14 +256,15 @@
+         }
+         return destination
+     }
+-    private nonisolated static func extendPublishedProfiles(_ f: Package.Fixture) async throws {
++    private nonisolated static func extendPublishedProfiles(_ f: Package.Fixture,
++        expiresAfter: TimeInterval = 7_200) async throws {
+         let leaf = try #require(f.lease.keyMaterial.certificateChainDER.first)
+         let profiles = try f.lease.profiles.map { profile in
+             let path = profile.file.relativePath
+             let component = path == "embedded.mobileprovision" ? "." : String(path.dropLast("/embedded.mobileprovision".count))
+             return SelfRenewalSigningMaterialVault.ProfileInput(componentRelativePath: component,
+                 bytes: try SelfRenewalSigningOwnedPKIFixture.profile(from: profile, developerCertificate: leaf,
+-                    issuer: f.issuer, at: f.date) { $0["ExpirationDate"] = .date(f.date.addingTimeInterval(7_200)) })
++                    issuer: f.issuer, at: f.date) { $0["ExpirationDate"] = .date(f.date.addingTimeInterval(expiresAfter)) })
+         }
+         _ = try await f.vault.publish(in: f.namespace, keyID: f.lease.keyID, expectedGeneration: f.lease.generation,
+             certificateChainDER: f.lease.keyMaterial.certificateChainDER, profiles: profiles)
