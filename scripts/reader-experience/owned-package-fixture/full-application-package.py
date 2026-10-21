@@ -125,6 +125,12 @@ def validate_input(base,build):
         'buildManifest':{'bytes':manifest_path.stat().st_size,'sha256':digest(manifest_path)},
         'nativeReuse':{'bytes':native.stat().st_size,'sha256':digest(native)}}
 
+def validate_resource_bundle_metadata(info,relative):
+    if (not relative.endswith('.bundle') or not isinstance(info,dict)
+        or info.get('CFBundlePackageType')!='BNDL'
+        or 'CFBundleExecutable' in info or 'NSExtension' in info):
+        raise ValueError('full-app invalid resource-only bundle '+relative)
+
 def produce(base,out,owned,prepared,cms,codesign,root,at):
     source_app=prepared['app'];app=owned/'Payload/YueduReader.app'
     shutil.copytree(source_app,app,symlinks=True)
@@ -134,9 +140,13 @@ def produce(base,out,owned,prepared,cms,codesign,root,at):
     expected={'.':repo/'Resources/Yuedu-Reader.entitlements',
         'PlugIns/yuedu_app_Widget.appex':repo/'Widget/Yuedu-Reader-Widget.entitlements',
         'PlugIns/yuedu_app_ShareExtension.appex':repo/'ShareExtension/Yuedu-Reader-ShareExtension.entitlements'}
-    file_facts=[];components=[];executables=set();class_count=0
+    file_facts=[];components=[];executables=set();class_count=0;inventory_paths={'.'}
     for path in sorted(app.rglob('*')):
         if path.is_symlink():raise ValueError('full-app symlink is unsupported; not flattened')
+        if path.is_dir():
+            if path.suffix.lower() in ('.app','.appex','.framework','.xpc','.bundle'):
+                inventory_paths.add(path.relative_to(app).as_posix())
+            continue
         if not path.is_file():continue
         relative=path.relative_to(app).as_posix()
         file_facts.append({'path':relative,'bytes':path.stat().st_size,'sha256':digest(path)})
@@ -173,6 +183,16 @@ def produce(base,out,owned,prepared,cms,codesign,root,at):
         raise ValueError('full-app actual JVM/three-bundle cardinality mismatch')
     by_path={c['path']:c for c in components}
     if len(by_path)!=len(components):raise ValueError('full-app duplicate component')
+    resource_paths=inventory_paths-set(by_path)
+    if len(inventory_paths)>64 or any(not path.endswith('.bundle') for path in resource_paths):
+        raise ValueError('full-app unclassified inventory component')
+    for relative in sorted(resource_paths):
+        bundle=app/relative;info=bundle/'Info.plist'
+        if not info.is_file() or not 0<info.stat().st_size<=262144:
+            raise ValueError('full-app resource-only bundle Info missing or oversized')
+        validate_resource_bundle_metadata(plistlib.loads(info.read_bytes()),relative)
+        if (bundle/'_CodeSignature/CodeResources').exists() or (bundle/'embedded.mobileprovision').exists():
+            raise ValueError('full-app resource-only bundle has an independent signing envelope')
     jar_path=app/'LegadoRuntime/legado-runtime.jar'
     if not jar_path.is_file():raise ValueError('full-app real ordinary JAR missing')
     unchanged={f['path']:f for f in file_facts}
@@ -222,7 +242,8 @@ def produce(base,out,owned,prepared,cms,codesign,root,at):
         'archiveFile':'full-sdk-owned-package.ipa','archiveBytes':archive.stat().st_size,'archiveSHA256':digest(archive),
         'anchor':base.base64.b64encode(root).decode(),'verificationEpochSeconds':int(at.timestamp()),
         'ordinaryJar':{'path':jar_path.relative_to(app).as_posix(),'bytes':jar_path.stat().st_size,'sha256':digest(jar_path)},
-        'realJavaClassResourceCount':class_count,'componentPaths':sorted(by_path),'bundlePaths':sorted(expected),
+        'realJavaClassResourceCount':class_count,'componentPaths':sorted(inventory_paths),
+        'signedComponentPaths':sorted(by_path),'resourceBundlePaths':sorted(resource_paths),'bundlePaths':sorted(expected),
         'originalBuildManifest':prepared['buildManifest'],'sameJobNativeReuse':prepared['nativeReuse'],
         'allUnrelatedDeviceBuildFilesPreserved':True,'privateMaterialArtifacts':0,'realAppleAccountUsed':False,
         'controlledOriginalSigningOnly':True,'realDeviceExecution':False}

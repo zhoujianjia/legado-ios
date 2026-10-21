@@ -56,6 +56,9 @@ enum SelfRenewalMaterialInventory {
         let executable: CodeFile?
         let embeddedProvisioningProfile: FileFact?
         let codeResources: FileFact?
+        /// Bounded BNDL metadata and the complete inventory establish absence
+        /// of native code; the containing signed resource seal still applies.
+        let resourceOnly: Bool
     }
     struct Inventory: Sendable, Equatable {
         let components: [Component]
@@ -108,18 +111,36 @@ enum SelfRenewalMaterialInventory {
     }
 
     /// Pure, bounded parsing. Values from Info.plist remain untrusted metadata.
-    static func parseInfoPlist(_ data: Data) throws -> Metadata {
+    static func parseInfoPlist(_ data: Data, resourceBundle: Bool = false) throws -> Metadata {
         guard !data.isEmpty, data.count <= Limits.plistBytes else { throw Failure.plistSizeLimit }
         let object: Any
         do { object = try PropertyListSerialization.propertyList(from: data, options: [], format: nil) }
         catch { throw Failure.malformedInfoPlist }
         guard let values = object as? [String: Any],
               let identifier = values["CFBundleIdentifier"] as? String, validIdentifier(identifier),
-              let executable = values["CFBundleExecutable"] as? String, validFileName(executable),
-              let version = values["CFBundleShortVersionString"] as? String, validToken(version, maximum: 64),
               let build = values["CFBundleVersion"] as? String, validToken(build, maximum: 64),
               let package = values["CFBundlePackageType"] as? String, validToken(package, maximum: 8) else {
             throw Failure.invalidInfoMetadata
+        }
+        let resourceMetadata = resourceBundle && package == "BNDL"
+            && values["CFBundleExecutable"] == nil && values["NSExtension"] == nil
+        let executable: String
+        let version: String
+        if resourceMetadata {
+            // SwiftPM resource bundles omit ShortVersionString. Empty here is
+            // an absence observation, never an executable name/version claim.
+            executable = ""
+            if let rawVersion = values["CFBundleShortVersionString"] {
+                guard let value = rawVersion as? String, validToken(value, maximum: 64) else {
+                    throw Failure.invalidInfoMetadata
+                }
+                version = value
+            } else { version = "" }
+        } else {
+            guard let name = values["CFBundleExecutable"] as? String, validFileName(name),
+                  let value = values["CFBundleShortVersionString"] as? String,
+                  validToken(value, maximum: 64) else { throw Failure.invalidInfoMetadata }
+            executable = name; version = value
         }
         let extensionPoint: String?
         if let raw = values["NSExtension"] {
@@ -203,7 +224,7 @@ enum SelfRenewalMaterialInventory {
         }
         var metadata: [String: Metadata] = [:]
         var issues: [Issue] = []
-        for (path, _) in componentPaths.sorted(by: { $0.0 < $1.0 }) {
+        for (path, kind) in componentPaths.sorted(by: { $0.0 < $1.0 }) {
             try Task.checkCancellation()
             let key = child("Info.plist", of: path)
             guard let entry = entries[key], !entry.directory else {
@@ -212,7 +233,7 @@ enum SelfRenewalMaterialInventory {
             }
             guard entry.bytes <= Int64(Limits.plistBytes) else { throw Failure.plistSizeLimit }
             let bytes = try readFile(entry, maximum: Limits.plistBytes, full: true, budget: &readBytes)
-            do { metadata[path] = try parseInfoPlist(bytes) }
+            do { metadata[path] = try parseInfoPlist(bytes, resourceBundle: kind == .bundle) }
             catch let error as Failure {
                 if path == "." { throw error }
                 issues.append(.missingOrInvalidInfo(path))
@@ -243,6 +264,13 @@ enum SelfRenewalMaterialInventory {
         var identifiers = Set<String>()
         for (path, kind) in componentPaths.sorted(by: { $0.0 < $1.0 }) {
             let info = metadata[path]
+            let prefix = path + "/"
+            let resourceOnly = kind == .bundle && info?.packageType == "BNDL"
+                && info?.executableName == "" && info?.extensionPointIdentifier == nil
+                && entries[child("embedded.mobileprovision", of: path)] == nil
+                && entries[child("_CodeSignature/CodeResources", of: path)] == nil
+                && !codes.keys.contains(where: { $0.hasPrefix(prefix) })
+                && !componentPaths.contains(where: { $0.0.hasPrefix(prefix) && $0.1 != .bundle })
             let role = role(for: info, kind: kind, root: path == ".")
             if let role {
                 roleCounts[role, default: 0] += 1
@@ -253,11 +281,13 @@ enum SelfRenewalMaterialInventory {
                         issues.append(.invalidParentIdentifier(path))
                     }
                 }
-            } else {
+            } else if !resourceOnly {
                 issues.append(.unexpectedComponent(path))
             }
-            if let info, !identifiers.insert(info.bundleIdentifier).inserted { issues.append(.duplicateBundleIdentifier) }
-            let executablePath = info.map { child($0.executableName, of: path) }
+            // Resource IDs are not code-signing identities; parent seals bind
+            // their exact Info bytes even when two resources share an ID.
+            if !resourceOnly, let info, !identifiers.insert(info.bundleIdentifier).inserted { issues.append(.duplicateBundleIdentifier) }
+            let executablePath = info.flatMap { $0.executableName.isEmpty ? nil : child($0.executableName, of: path) }
             let executable: CodeFile?
             if let executablePath, let entry = entries[executablePath], !entry.directory {
                 executable = codes[executablePath] ?? CodeFile(
@@ -265,14 +295,14 @@ enum SelfRenewalMaterialInventory {
                 if executable?.header == nil { issues.append(.unrecognizedExecutableHeader(path)) }
             } else {
                 executable = nil
-                issues.append(.missingExecutable(path))
+                if !resourceOnly { issues.append(.missingExecutable(path)) }
             }
             let pieces = path.split(separator: "/")
             let directChild = pieces.count == 2 && pieces.first == "PlugIns" && kind == .appExtension
             components.append(Component(relativePath: path, kind: kind, metadata: info, role: role,
                 parentBundleIdentifier: directChild ? main.bundleIdentifier : nil, executable: executable,
                 embeddedProvisioningProfile: fact("embedded.mobileprovision", in: path, entries: entries),
-                codeResources: fact("_CodeSignature/CodeResources", in: path, entries: entries)))
+                codeResources: fact("_CodeSignature/CodeResources", in: path, entries: entries), resourceOnly: resourceOnly))
         }
         for role in Role.allCases {
             if roleCounts[role, default: 0] == 0 { issues.append(.missingRole(role)) }

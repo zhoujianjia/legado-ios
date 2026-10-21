@@ -64,6 +64,55 @@ struct SelfRenewalMaterialInventoryTests {
                 #expect(component.metadata?.version == "1.0")
                 #expect(component.metadata?.build == "12")
             }
+            // Real SwiftPM resource shape: BNDL with no executable, extension
+            // dictionary or short-version key. This is classification only;
+            // the package verifier still authenticates its containing seal.
+            let bundle = root.appendingPathComponent("Resources/Owned.bundle")
+            try FileManager.default.createDirectory(at: bundle, withIntermediateDirectories: true)
+            let resourceInfo: [String: Any] = ["CFBundleIdentifier": "owned.resources",
+                "CFBundleVersion": "1", "CFBundlePackageType": "BNDL"]
+            func writeResourceInfo(_ values: [String: Any]) throws {
+                try PropertyListSerialization.data(fromPropertyList: values, format: .binary, options: 0)
+                    .write(to: bundle.appendingPathComponent("Info.plist"))
+            }
+            try writeResourceInfo(resourceInfo)
+            try Data("owned sealed resource".utf8).write(to: bundle.appendingPathComponent("value.txt"))
+            let resourceInventory = try await Reader.read(unpackedApplication: root)
+            let resource = try #require(resourceInventory.components.first { $0.relativePath == "Resources/Owned.bundle" })
+            #expect(resourceInventory.issues.isEmpty && resourceInventory.codeFiles.count == 3)
+            #expect(resourceInventory.components.count == 4 && resource.resourceOnly)
+            #expect(resource.kind == .bundle && resource.executable == nil && resource.role == nil)
+            #expect(resource.metadata?.version == "" && resource.metadata?.build == "1")
+            #expect(resource.codeResources == nil && resource.embeddedProvisioningProfile == nil)
+            #expect(resourceInventory.files.contains { $0.relativePath == "Resources/Owned.bundle/value.txt" })
+            var versioned = resourceInfo; versioned["CFBundleShortVersionString"] = "1.0"
+            try writeResourceInfo(versioned)
+            let versionedInventory = try await Reader.read(unpackedApplication: root)
+            #expect(versionedInventory.components.first { $0.relativePath == "Resources/Owned.bundle" }?.resourceOnly == true)
+            for (key, value) in [("CFBundleExecutable", "hidden" as Any),
+                                 ("NSExtension", ["NSExtensionPointIdentifier": "owned.extension"] as Any),
+                                 ("CFBundlePackageType", "APPL" as Any),
+                                 ("CFBundleShortVersionString", 17 as Any)] {
+                var changed = resourceInfo; changed[key] = value
+                try writeResourceInfo(changed)
+                let rejected = try await Reader.read(unpackedApplication: root)
+                #expect(rejected.components.first { $0.relativePath == "Resources/Owned.bundle" }?.resourceOnly == false)
+                #expect(!rejected.issues.isEmpty)
+            }
+            try writeResourceInfo(resourceInfo)
+            for path in ["embedded.mobileprovision", "_CodeSignature/CodeResources", "hidden-native"] {
+                let file = bundle.appendingPathComponent(path)
+                try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+                let bytes = path == "hidden-native" ? Data([0xCF, 0xFA, 0xED, 0xFE, 0, 0, 0, 0]) : Data([1])
+                try bytes.write(to: file)
+                let rejected = try await Reader.read(unpackedApplication: root)
+                #expect(rejected.components.first { $0.relativePath == "Resources/Owned.bundle" }?.resourceOnly == false)
+                #expect(!rejected.issues.isEmpty)
+                if path == "hidden-native" {
+                    #expect(rejected.codeFiles.contains { $0.file.relativePath == "Resources/Owned.bundle/hidden-native" })
+                }
+                try FileManager.default.removeItem(at: file)
+            }
         }
     }
 

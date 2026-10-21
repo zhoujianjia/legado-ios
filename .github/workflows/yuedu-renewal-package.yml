@@ -49,13 +49,11 @@ jobs:
           echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
           python -B scripts/reader-experience/renewal-package-tools.py prepare-device
       - name: Export only the source-bound unsigned compilation package
-        if: ${{ github.event.repository.private == true }}
         env:
-          YUEDU_PACKAGE_REPOSITORY_PRIVATE: 'true'
+          YUEDU_PACKAGE_REPOSITORY_PRIVATE: ${{ github.event.repository.private }}
         run: python -B scripts/reader-experience/renewal-package-tools.py export-unsigned
       # Early availability is device compilation only, not S3 or renewal success.
       - name: Retain the unsigned device build before the Simulator test
-        if: ${{ github.event.repository.private == true }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: yuedu-renewal-device-unsigned-${{ github.sha }}
@@ -64,6 +62,7 @@ jobs:
             .build/renewal-package-public/build-manifest.json
             .build/renewal-package-public/README.txt
             .build/renewal-package-public/delivery-binding.json
+            .build/renewal-package-public/source.zip
           if-no-files-found: error
           include-hidden-files: true
           retention-days: 1
@@ -102,12 +101,12 @@ jobs:
             .build/s3-full-application-signing/full-application-tests*
           if-no-files-found: warn
           include-hidden-files: true
-          retention-days: 7
+          retention-days: 1
       - name: Explain the isolated acceptance boundary
         if: always()
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
           This isolated tag builds one complete Release iPhoneOS reader with the fresh ordinary JAR and audited native runtime, then compiles one Simulator App/test host and executes the existing mandatory one-case complete-package signing and independent verification.
-          In a private repository, the early unsigned IPA is the device compilation input, not the controlled re-signed output. Public repositories cannot export it. Its availability does not mean S3 passed. Inspect the separate exact-source/run delivery binding and S3 result. Sign it with the original installation tool before initial device installation.
-          This job does not run or replace full SDK, book-source/MainJS/Original/cold regressions, and does not establish real Apple authorization, actual installation, automatic renewal or full compatibility. Existing full workflows and completion flags retain their meaning. No private producer directory, P12 or private key is uploaded. Temporary diagnostic unsigned packages expire after one day.
+          The early unsigned IPA is the device compilation input, not the controlled re-signed output. Public diagnostic export requires the current explicit temporary distribution policy authorization and includes the exact Git source snapshot. Its availability does not mean S3 passed. Inspect the separate exact-source/run delivery binding and S3 result. Sign it with the original installation tool before initial device installation.
+          This job does not run or replace full SDK, book-source/MainJS/Original/cold regressions, and does not establish real Apple authorization, actual installation, automatic renewal or full compatibility. Existing full workflows and completion flags retain their meaning. No private producer directory, P12 or private key is uploaded. Distribution follows the current bounded temporary diagnostic authorization, includes its exact Git source.zip and policy hashes, and expires after one day; this does not establish license clearance or public release readiness.
           TEXT

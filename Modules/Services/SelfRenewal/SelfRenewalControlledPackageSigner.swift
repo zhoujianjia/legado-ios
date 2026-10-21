@@ -66,6 +66,7 @@ enum SelfRenewalControlledPackageSigner {
             let inventory = original.resources.executableMaterials.inventory
             try await vault.validate(lease, for: original)
             try preflight(original, lease: lease)
+            let codeComponents = inventory.components.filter { !$0.resourceOnly }
             let originals = try await scope.hashes()
             var allowedChanges = Set<String>()
             var oldInfo: [String: Data] = [:]
@@ -74,7 +75,7 @@ enum SelfRenewalControlledPackageSigner {
             var profileInputs: [String: Data] = [:]
             // Read everything needed for authenticating original signatures
             // before any profile/resource/executable mutation takes place.
-            for component in inventory.components {
+            for component in codeComponents {
                 try Task.checkCancellation()
                 guard let executable = component.executable, let resources = component.codeResources,
                       let _ = component.metadata else {
@@ -103,7 +104,7 @@ enum SelfRenewalControlledPackageSigner {
             // rather than a nested requirement/cdhash (actual SDK frameworks do
             // both). Keep only fixed-size hashes of files this signer replaces.
             var changedResourceDigests: [String: [UInt8: Data]] = [:]
-            for component in inventory.components where component.kind != .framework {
+            for component in codeComponents where component.kind != .framework {
                 guard let profile = component.embeddedProvisioningProfile,
                       let bytes = profileInputs[component.relativePath], let oldHash = originals[profile.relativePath] else {
                     throw Failure.missingMaterial(component.relativePath)
@@ -113,7 +114,7 @@ enum SelfRenewalControlledPackageSigner {
             }
             var hashes: [String: Data] = [:]
             var changes: [ComponentChange] = []
-            let ordered = inventory.components.sorted {
+            let ordered = codeComponents.sorted {
                 let left = $0.relativePath == "." ? 0 : $0.relativePath.split(separator: "/").count
                 let right = $1.relativePath == "." ? 0 : $1.relativePath.split(separator: "/").count
                 return left == right ? $0.relativePath < $1.relativePath : left > right
@@ -203,6 +204,7 @@ enum SelfRenewalControlledPackageSigner {
     }
     private static func preflight(_ original: App.Materials, lease: Vault.Lease) throws {
         let inventory = original.resources.executableMaterials.inventory
+        let codeComponents = inventory.components.filter { !$0.resourceOnly }
         let expected: Set<Inventory.Role> = [.application, .widgetExtension, .shareExtension]
         let allowedInventoryIssues = inventory.issues.allSatisfy { issue in
             if case .unexpectedComponent(let path) = issue {
@@ -210,12 +212,23 @@ enum SelfRenewalControlledPackageSigner {
             }
             return false
         }
-        guard allowedInventoryIssues, (3...19).contains(inventory.components.count), inventory.codeFiles.count == inventory.components.count,
+        guard allowedInventoryIssues, inventory.components.count <= Inventory.Limits.components,
+              (3...19).contains(codeComponents.count), inventory.codeFiles.count == codeComponents.count,
               original.bundles.count == 3, Set(original.bundles.compactMap(\.role)) == expected,
               Set(lease.profileInputs.map(\.componentRelativePath)) == Set(original.bundles.map(\.componentRelativePath)),
               lease.profileInputs.count == 3, lease.profiles.count == 3 else { throw Failure.unsupportedComponents }
         try resolved(original)
         for component in inventory.components {
+            if component.resourceOnly {
+                guard component.kind == .bundle, component.metadata?.packageType == "BNDL",
+                      component.metadata?.executableName == "", component.metadata?.extensionPointIdentifier == nil,
+                      component.role == nil, component.executable == nil,
+                      component.embeddedProvisioningProfile == nil, component.codeResources == nil,
+                      !inventory.codeFiles.contains(where: { $0.file.relativePath.hasPrefix(component.relativePath + "/") }) else {
+                    throw Failure.unsupportedCode(component.relativePath)
+                }
+                continue
+            }
             guard component.kind == .application || component.kind == .appExtension || component.kind == .framework,
                   let code = component.executable, code.header == .thin64 || code.header == .fat32,
                   inventory.codeFiles.contains(code),
@@ -255,6 +268,18 @@ enum SelfRenewalControlledPackageSigner {
         for before in leftInventory.components {
             guard let after = rightInventory.components.first(where: { $0.relativePath == before.relativePath }),
                   before.kind == after.kind, before.metadata == after.metadata, before.role == after.role,
+                  before.resourceOnly == after.resourceOnly else { throw Failure.changedIdentity(before.relativePath) }
+            if before.resourceOnly {
+                guard before.executable == nil, after.executable == nil,
+                      before.codeResources == nil, after.codeResources == nil,
+                      before.embeddedProvisioningProfile == nil, after.embeddedProvisioningProfile == nil else {
+                    throw Failure.changedIdentity(before.relativePath)
+                }
+                // Every resource-bundle file remains outside allowedChanges;
+                // the existing whole-tree hashes below also require byte identity.
+                continue
+            }
+            guard
                   let path = before.executable?.file.relativePath, path == after.executable?.file.relativePath,
                   let old = original.resources.codeAttributes[path], let new = signed.resources.codeAttributes[path],
                   old.slices.count == new.slices.count else { throw Failure.changedIdentity(before.relativePath) }

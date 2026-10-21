@@ -12,6 +12,7 @@ import struct
 import tempfile
 from types import SimpleNamespace
 import unittest
+import zipfile
 from unittest.mock import patch
 
 HERE = Path(__file__).resolve().parent
@@ -38,6 +39,13 @@ class FullApplicationSigningProtocolTests(unittest.TestCase):
         quick = tools.load("package_only_protocol_guard", HERE / "renewal-package-tools.py")
         sha = "c" * 40
         tag = "yuedu-renewal-package-" + sha[:7]
+        workflow = (quick.REPO / ".github/workflows/yuedu-renewal-package.yml").read_text(encoding="utf-8")
+        self.assertIn("- 'yuedu-renewal-package-*'", workflow)
+        self.assertIn("YUEDU_PACKAGE_REPOSITORY_PRIVATE: ${{ github.event.repository.private }}", workflow)
+        self.assertNotIn("github.event.repository.private == true", workflow)
+        self.assertIn(".build/renewal-package-public/source.zip", workflow)
+        self.assertIn("retention-days: 1", workflow)
+        self.assertIn(quick.POLICY, quick.INPUTS)
         for pattern in ("reader-renewal-*", "legado-native-reader-test-*", "reader-legado-*"):
             self.assertFalse(fnmatch.fnmatchcase(tag, pattern))
         environment = {"GITHUB_SHA": sha, "GITHUB_RUN_ID": "1234", "GITHUB_REF_NAME": tag,
@@ -57,14 +65,48 @@ class FullApplicationSigningProtocolTests(unittest.TestCase):
                             {"GITHUB_RUN_ID": ""}):
                 with self.subTest(changes=changes), patch.dict(quick.os.environ, changes), self.assertRaises(ValueError):
                     quick.source()
-        with patch.dict(quick.os.environ, {"YUEDU_PACKAGE_REPOSITORY_PRIVATE": "false"}), \
-                patch.object(quick, "check_binding", side_effect=AssertionError("Public export read private files")):
-            with self.assertRaises(ValueError):
-                quick.export_unsigned()
         # Synthetic copy/admission protocol only: these bytes are not an IPA.
         # The production validator is delegated, never claimed executed here.
         with tempfile.TemporaryDirectory() as name:
             root = Path(name).resolve()
+            policy = json.loads((quick.REPO / quick.POLICY).read_bytes())
+            policy_path = root / quick.POLICY
+            policy_path.parent.mkdir(parents=True)
+            policy_bytes = json.dumps(policy).encode()
+            policy_path.write_bytes(policy_bytes)
+            with patch.dict(quick.os.environ, {"YUEDU_PACKAGE_REPOSITORY_PRIVATE": "false"}), \
+                    patch.object(quick, "REPO", root), \
+                    patch.object(quick, "check_binding", side_effect=AssertionError("Unauthorized export read private files")):
+                for changed in ({"publicRepositoryIPAUploadsEnabled": False},
+                        {"temporaryPublicUploadAuthorization": None},
+                        {"temporaryPublicUploadAuthorization": dict(policy["temporaryPublicUploadAuthorization"], artifactRetentionDays=2)},
+                        {"temporaryPublicUploadAuthorization": dict(policy["temporaryPublicUploadAuthorization"], exactGitSourceSnapshotIncluded=False)},
+                        {"temporaryPublicUploadAuthorization": dict(policy["temporaryPublicUploadAuthorization"], privateBookSourceUploadAuthorized=True)}):
+                    policy_path.write_text(json.dumps(dict(policy, **changed)))
+                    with self.subTest(policy=changed), self.assertRaises(ValueError):
+                        quick.export_unsigned()
+                policy_path.write_bytes(policy_bytes)
+                authorization = quick.upload_authorization()
+                self.assertFalse(authorization["repositoryPrivate"])
+                self.assertFalse(authorization["licenseClearanceEstablished"])
+                self.assertEqual(authorization["artifactRetentionDays"], 1)
+                self.assertEqual(authorization["sha256"], hashlib.sha256(policy_bytes).hexdigest())
+            def archive_bytes(path, *, commit=sha, include_policy=True, content=policy_bytes, private_pack=False):
+                with zipfile.ZipFile(path, "w") as archive:
+                    archive.comment = commit.encode()
+                    archive.writestr("README.md", b"SYNTHETIC-SOURCE-SNAPSHOT")
+                    if include_policy:
+                        archive.writestr(quick.POLICY, content)
+                    if private_pack:
+                        archive.writestr("Resources/BuiltInBookSources.json", b"[]")
+            with self.assertRaises(ValueError):
+                quick.verify_source_archive(root / "missing-source.zip", sha, authorization)
+            for index, options in enumerate(({"include_policy": False}, {"commit": "d" * 40},
+                    {"content": b"{}"}, {"private_pack": True})):
+                bad_archive = root / ("invalid-source-" + str(index) + ".zip")
+                archive_bytes(bad_archive, **options)
+                with self.subTest(source=options), self.assertRaises(ValueError):
+                    quick.verify_source_archive(bad_archive, sha, authorization)
             build = root / quick.full.PRIVATE / "device-build"
             output = build / "output"
             output.mkdir(parents=True)
@@ -84,19 +126,29 @@ class FullApplicationSigningProtocolTests(unittest.TestCase):
                 if produced in path.parents or path == produced:
                     raise AssertionError("Export read the private controlled producer directory")
                 return original_open(path, *args, **kwargs)
-            with patch.dict(quick.os.environ, {"YUEDU_PACKAGE_REPOSITORY_PRIVATE": "true"}), \
+            def synthetic_git_archive(argv, **kwargs):
+                self.assertEqual(argv, ["git", "-C", str(root), "archive", "--format=zip", "--output",
+                    str(root / "public/source.zip"), "HEAD"])
+                self.assertEqual(kwargs["timeout"], 60)
+                archive_bytes(Path(argv[-2]))
+                return SimpleNamespace(returncode=0)
+            with patch.dict(quick.os.environ, {"YUEDU_PACKAGE_REPOSITORY_PRIVATE": "false"}), \
                     patch.object(quick, "REPO", root), patch.object(quick, "PUBLIC", root / "public"), \
                     patch.object(quick, "check_binding", return_value=receipt), \
-                    patch.object(quick.full, "load", side_effect=[object(), validator]), patch.object(Path, "open", guarded_open):
+                    patch.object(quick.full, "load", side_effect=[object(), validator]), \
+                    patch.object(quick.subprocess, "run", side_effect=synthetic_git_archive), patch.object(Path, "open", guarded_open):
                 quick.export_unsigned()
             validator.validate_input.assert_called_once()
-            self.assertEqual({path.name for path in (root / "public").iterdir()}, set(quick.OUTPUTS) | {"delivery-binding.json"})
+            self.assertEqual({path.name for path in (root / "public").iterdir()}, set(quick.OUTPUTS) | {"delivery-binding.json", "source.zip"})
             for file, raw in expected.items():
                 self.assertEqual((root / "public" / file).read_bytes(), raw)
             delivery = json.loads((root / "public/delivery-binding.json").read_bytes())
             self.assertEqual(delivery["sourceCommit"], sha)
             self.assertEqual(delivery["S3Acceptance"], "pending-separate-result")
             self.assertFalse(delivery["controlledResignedOutputExported"])
+            self.assertEqual(delivery["distributionPolicy"], authorization)
+            self.assertEqual(delivery["exactGitSourceSnapshot"]["sourceCommit"], sha)
+            self.assertEqual(delivery["files"]["source.zip"], tools.fact(root / "public/source.zip"))
 
     def test_required_resource_hashes_and_cleanup_are_bound_without_minimal_substitution(self):
         # Bytes below are deliberately NOT an IPA; this guard tests staging

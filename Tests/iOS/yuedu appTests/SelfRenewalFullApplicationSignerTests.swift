@@ -23,8 +23,8 @@ struct SelfRenewalFullApplicationSignerTests {
             let date = Date(timeIntervalSince1970: TimeInterval(input.metadata.verificationEpochSeconds))
             let baseline = try await Unpacker.withOwnedApplication(ipa: input.archive,
                 codeAnchors: [input.metadata.anchor], profileAnchors: [input.metadata.anchor], at: date) { scope in
-                try #require(scope.originalArchiveBytes == input.metadata.archiveBytes)
-                try #require(scope.originalArchiveSHA256 == (try FullApplicationSigningInput.hash(input.metadata.archiveSHA256)))
+                try FullApplicationSigningInput.require(scope.originalArchiveBytes == input.metadata.archiveBytes)
+                try FullApplicationSigningInput.require(scope.originalArchiveSHA256 == (try FullApplicationSigningInput.hash(input.metadata.archiveSHA256)))
                 return (scope.original, try await FullApplicationSigningInput.verifyPackage(scope, metadata: input.metadata))
             }
             let original = baseline.0
@@ -35,8 +35,12 @@ struct SelfRenewalFullApplicationSignerTests {
             // real components; never insert a synthetic fourth Mach-O.
             var allowedChanges = Set<String>()
             for component in inventory.components {
-                let executable = try #require(component.executable)
-                let resources = try #require(component.codeResources)
+                if input.metadata.resourceBundlePaths.contains(component.relativePath) {
+                    try FullApplicationSigningInput.require(component.resourceOnly && component.kind == .bundle && component.executable == nil && component.codeResources == nil && component.embeddedProvisioningProfile == nil)
+                    continue
+                }
+                let executable = try FullApplicationSigningInput.require(component.executable)
+                let resources = try FullApplicationSigningInput.require(component.codeResources)
                 allowedChanges.formUnion([executable.file.relativePath, resources.relativePath])
                 if let profile = component.embeddedProvisioningProfile { allowedChanges.insert(profile.relativePath) }
             }
@@ -51,7 +55,7 @@ struct SelfRenewalFullApplicationSignerTests {
                 let key = try await vault.generateKey(in: namespace, expectedGeneration: generation)
                 let leaf = try PKI.certificate(for: key.privateKey, signedBy: issuer, at: date)
                 let profiles = try original.bundles.map { bundle -> Vault.ProfileInput in
-                    let prior = try #require(original.profiles.profiles.first { $0.file.relativePath == bundle.profileRelativePath })
+                    let prior = try FullApplicationSigningInput.require(original.profiles.profiles.first { $0.file.relativePath == bundle.profileRelativePath })
                     return .init(componentRelativePath: bundle.componentRelativePath,
                         bytes: try PKI.profile(from: prior, developerCertificate: leaf, issuer: issuer, at: date))
                 }
@@ -61,18 +65,18 @@ struct SelfRenewalFullApplicationSignerTests {
                 // unsupported real layouts/bounds remain a failing test.
                 let result = try await SelfRenewalControlledPackageSigner.resign(ipa: input.archive, vault: vault, lease: lease,
                     originalCodeAnchors: [input.metadata.anchor], originalProfileAnchors: [input.metadata.anchor])
-                #expect(result.originalArchiveSHA256 == (try FullApplicationSigningInput.hash(input.metadata.archiveSHA256)))
-                #expect(result.originalArchiveBytes == input.metadata.archiveBytes)
-                #expect(result.changes.count == inventory.components.count && result.signed.bundles.count == 3)
-                #expect(Set(result.changes.map(\.relativePath)) == Set(input.metadata.componentPaths))
-                #expect(result.signed.resources.resourceEnvelopesVerified)
-                #expect(!result.appleSigningAuthorityEstablished && !result.accountIdentityEstablished)
-                #expect(!result.deviceEligibilityEstablished && !result.replacementAuthorized)
+                try FullApplicationSigningInput.expect(result.originalArchiveSHA256 == (try FullApplicationSigningInput.hash(input.metadata.archiveSHA256)))
+                try FullApplicationSigningInput.expect(result.originalArchiveBytes == input.metadata.archiveBytes)
+                try FullApplicationSigningInput.expect(result.changes.count == input.metadata.signedComponentPaths.count && result.signed.bundles.count == 3)
+                try FullApplicationSigningInput.expect(Set(result.changes.map(\.relativePath)) == Set(input.metadata.signedComponentPaths))
+                try FullApplicationSigningInput.expect(result.signed.resources.resourceEnvelopesVerified)
+                try FullApplicationSigningInput.expect(!result.appleSigningAuthorityEstablished && !result.accountIdentityEstablished)
+                try FullApplicationSigningInput.expect(!result.deviceEligibilityEstablished && !result.replacementAuthorized)
                 for before in original.bundles {
-                    let after = try #require(result.signed.bundles.first { $0.componentRelativePath == before.componentRelativePath })
-                    #expect(before.bundleIdentifier == after.bundleIdentifier)
-                    #expect(before.slices.map(\.appGroups) == after.slices.map(\.appGroups))
-                    #expect(before.slices.map(\.keychainAccessGroups) == after.slices.map(\.keychainAccessGroups))
+                    let after = try FullApplicationSigningInput.require(result.signed.bundles.first { $0.componentRelativePath == before.componentRelativePath })
+                    try FullApplicationSigningInput.expect(before.bundleIdentifier == after.bundleIdentifier)
+                    try FullApplicationSigningInput.expect(before.slices.map(\.appGroups) == after.slices.map(\.appGroups))
+                    try FullApplicationSigningInput.expect(before.slices.map(\.keychainAccessGroups) == after.slices.map(\.keychainAccessGroups))
                 }
                 let output = directory.appendingPathComponent("independently-read-full.ipa")
                 guard FileManager.default.createFile(atPath: output.path, contents: nil, attributes: [.posixPermissions: 0o600]) else { throw CocoaError(.fileWriteUnknown) }
@@ -87,27 +91,33 @@ struct SelfRenewalFullApplicationSignerTests {
                         guard bytes.count == count else { throw CocoaError(.fileReadCorruptFile) }
                         try handle.write(contentsOf: bytes); digest.update(data: bytes); offset += bytes.count
                     }
-                    try #require(Data(digest.finalize()) == result.archive.sha256)
+                    try FullApplicationSigningInput.require(Data(digest.finalize()) == result.archive.sha256)
                     try handle.synchronize(); try handle.close()
-                } catch { do { try handle.close() } catch { Issue.record(error) }; throw error }
+                } catch {
+                    let primary = error
+                    do { try handle.close() }
+                    catch { throw FullApplicationSigningInput.CheckFailure("archive write: \(primary); close: \(error)") }
+                    throw primary
+                }
                 let independentlyRead = try await Unpacker.withOwnedApplication(ipa: output,
                     codeAnchors: issuer.certificateChainDER, profileAnchors: issuer.certificateChainDER, at: date) { scope in
-                    try #require(scope.originalArchiveSHA256 == result.archive.sha256 && scope.originalArchiveBytes == result.archive.byteCount)
-                    try #require(scope.original == result.signed)
+                    try FullApplicationSigningInput.require(scope.originalArchiveSHA256 == result.archive.sha256 && scope.originalArchiveBytes == result.archive.byteCount)
+                    try FullApplicationSigningInput.require(scope.original == result.signed)
                     return try await FullApplicationSigningInput.verifyPackage(scope, metadata: input.metadata)
                 }
                 // Every real JDK class, JAR, license and runtime resource is
                 // checked from the independently reopened replacement bytes.
-                #expect(independentlyRead.filter { FullApplicationSigningInput.isRuntimeResource($0.key) } == runtime)
-                #expect(Set(independentlyRead.keys) == Set(baseline.1.keys))
+                try FullApplicationSigningInput.expect(independentlyRead.filter { FullApplicationSigningInput.isRuntimeResource($0.key) } == runtime)
+                try FullApplicationSigningInput.expect(Set(independentlyRead.keys) == Set(baseline.1.keys))
                 for (path, hash) in baseline.1 where !allowedChanges.contains(path) {
-                    #expect(independentlyRead[path] == hash, "Unrelated signed-package file changed: \(path)")
+                    try FullApplicationSigningInput.expect(independentlyRead[path] == hash, "Unrelated signed-package file changed: \(path)")
                 }
                 print("YUEDU_FULL_APPLICATION_SIGNING source=\(input.metadata.sourceCommit) inputBytes=\(input.metadata.archiveBytes) outputBytes=\(result.archive.byteCount) classes=\(classes.count) components=\(inventory.components.count) runtimeFiles=\(runtime.count) independentlyVerified=true")
             } catch {
+                let primary = error
                 do { try await FullApplicationSigningInput.cleanup(vault: vault, namespace: namespace, directory: directory) }
-                catch { Issue.record(error) }
-                throw error
+                catch { throw FullApplicationSigningInput.CheckFailure("signing check: \(primary); cleanup: \(error)") }
+                throw primary
             }
             try await FullApplicationSigningInput.cleanup(vault: vault, namespace: namespace, directory: directory)
         }
@@ -116,6 +126,25 @@ struct SelfRenewalFullApplicationSignerTests {
 }
 
 private struct FullApplicationSigningInput: Sendable {
+    // Detached work returns ordinary errors. The parent @Test records them in
+    // its inherited test context, instead of emitting unassociated macro issues.
+    struct CheckFailure: Error, CustomStringConvertible, Sendable {
+        let description: String
+        init(_ description: String) { self.description = description }
+    }
+    nonisolated static func require<T>(_ expression: @autoclosure () throws -> T?,
+        file: StaticString = #fileID, line: UInt = #line) throws -> T {
+        guard let value = try expression() else { throw CheckFailure("required value missing at \(file):\(line)") }
+        return value
+    }
+    nonisolated static func require(_ expression: @autoclosure () throws -> Bool,
+        file: StaticString = #fileID, line: UInt = #line) throws {
+        guard try expression() else { throw CheckFailure("required condition failed at \(file):\(line)") }
+    }
+    nonisolated static func expect(_ expression: @autoclosure () throws -> Bool,
+        _ message: @autoclosure () -> String = "", file: StaticString = #fileID, line: UInt = #line) throws {
+        guard try expression() else { throw CheckFailure("check failed at \(file):\(line) \(message())") }
+    }
     struct Jar: Decodable, Sendable { let path: String; let bytes: Int; let sha256: String }
     struct PublicFileFact: Decodable, Sendable { let bytes: Int; let sha256: String }
     struct Metadata: Decodable, Sendable {
@@ -123,7 +152,8 @@ private struct FullApplicationSigningInput: Sendable {
         let archiveFile: String; let archiveBytes: Int; let archiveSHA256: String
         let anchor: Data; let verificationEpochSeconds: Int64
         let ordinaryJar: Jar; let realJavaClassResourceCount: Int
-        let componentPaths: [String]; let bundlePaths: [String]
+        let componentPaths: [String]; let signedComponentPaths: [String]
+        let resourceBundlePaths: [String]; let bundlePaths: [String]
         let originalBuildManifest: PublicFileFact; let sameJobNativeReuse: PublicFileFact
         let allUnrelatedDeviceBuildFilesPreserved: Bool
         let privateMaterialArtifacts: Int; let realAppleAccountUsed: Bool
@@ -157,10 +187,16 @@ private struct FullApplicationSigningInput: Sendable {
               metadata.realJavaClassResourceCount > 10_000,
               metadata.verificationEpochSeconds >= 315_532_800, metadata.verificationEpochSeconds < 4_354_819_200,
               Set(metadata.bundlePaths) == Set([".", "PlugIns/yuedu_app_Widget.appex", "PlugIns/yuedu_app_ShareExtension.appex"]),
-              metadata.bundlePaths.count == 3, (3...19).contains(metadata.componentPaths.count),
+              metadata.bundlePaths.count == 3, (3...SelfRenewalMaterialInventory.Limits.components).contains(metadata.componentPaths.count),
               Set(metadata.componentPaths).count == metadata.componentPaths.count,
               metadata.componentPaths.allSatisfy({ validComponent($0) }),
-              Set(metadata.bundlePaths).isSubset(of: Set(metadata.componentPaths)),
+              (3...19).contains(metadata.signedComponentPaths.count),
+              Set(metadata.signedComponentPaths).count == metadata.signedComponentPaths.count,
+              Set(metadata.resourceBundlePaths).count == metadata.resourceBundlePaths.count,
+              Set(metadata.signedComponentPaths).isDisjoint(with: Set(metadata.resourceBundlePaths)),
+              Set(metadata.signedComponentPaths).union(metadata.resourceBundlePaths) == Set(metadata.componentPaths),
+              metadata.resourceBundlePaths.allSatisfy({ $0.hasSuffix(".bundle") }),
+              Set(metadata.bundlePaths).isSubset(of: Set(metadata.signedComponentPaths)),
               metadata.originalBuildManifest.bytes > 0, metadata.sameJobNativeReuse.bytes > 0,
               metadata.allUnrelatedDeviceBuildFilesPreserved, metadata.privateMaterialArtifacts == 0,
               !metadata.realAppleAccountUsed, metadata.controlledOriginalSigningOnly, !metadata.realDeviceExecution else { throw CocoaError(.coderInvalidValue) }
@@ -198,45 +234,54 @@ private struct FullApplicationSigningInput: Sendable {
         defer { SourcePerfTrace.record("renewal.package.full-owned-verify",
             "files=\(inventory.files.count) bytes=\(inventory.declaredFileBytes) main=\(Thread.isMainThread)",
             since: started, thresholdMs: 0) }
-        try #require(original.resources.resourceEnvelopesVerified)
-        try #require(original.bundles.count == 3 && Set(original.bundles.map(\.componentRelativePath)) == Set(metadata.bundlePaths))
-        try #require(inventory.components.count == metadata.componentPaths.count && Set(inventory.components.map(\.relativePath)) == Set(metadata.componentPaths))
+        try FullApplicationSigningInput.require(original.resources.resourceEnvelopesVerified)
+        try FullApplicationSigningInput.require(original.bundles.count == 3 && Set(original.bundles.map(\.componentRelativePath)) == Set(metadata.bundlePaths))
+        let actualPaths = Set(inventory.components.map(\.relativePath))
+        try FullApplicationSigningInput.expect(inventory.components.count == metadata.componentPaths.count && actualPaths == Set(metadata.componentPaths),
+            "Component inventory actual=\(inventory.components.count) expected=\(metadata.componentPaths.count) actualPaths=\(actualPaths.sorted()) expectedPaths=\(metadata.componentPaths)")
+        var nativeExecutables = Set<String>()
         for component in inventory.components {
             try Task.checkCancellation()
-            let facts = try #require(component.metadata)
-            let executable = try #require(component.executable)
+            if metadata.resourceBundlePaths.contains(component.relativePath) {
+                try FullApplicationSigningInput.require(component.resourceOnly && component.kind == .bundle && component.executable == nil && component.codeResources == nil && component.embeddedProvisioningProfile == nil)
+                continue
+            }
+            let facts = try FullApplicationSigningInput.require(component.metadata)
+            let executable = try FullApplicationSigningInput.require(component.executable)
+            nativeExecutables.insert(executable.file.relativePath)
             let infoPath = component.relativePath == "." ? "Info.plist" : component.relativePath + "/Info.plist"
             let infoBytes = try await scope.read(infoPath, maximumBytes: SelfRenewalMaterialInventory.Limits.plistBytes)
-            let info = try #require(try PropertyListSerialization.propertyList(from: infoBytes, options: [], format: nil) as? [String: Any])
-            try #require(info["CFBundleIdentifier"] as? String == facts.bundleIdentifier)
-            try #require(info["CFBundleExecutable"] as? String == facts.executableName)
+            let info = try FullApplicationSigningInput.require(try PropertyListSerialization.propertyList(from: infoBytes, options: [], format: nil) as? [String: Any])
+            try FullApplicationSigningInput.require(info["CFBundleIdentifier"] as? String == facts.bundleIdentifier)
+            try FullApplicationSigningInput.require(info["CFBundleExecutable"] as? String == facts.executableName)
             if metadata.bundlePaths.contains(component.relativePath) {
-                try #require(info["CFBundleSupportedPlatforms"] as? [String] == ["iPhoneOS"])
-                try #require(info["YueduExperienceSourceCommit"] as? String == metadata.sourceCommit)
-                try #require(info["GitCommitSHA"] as? String == String(metadata.sourceCommit.prefix(7)))
+                try FullApplicationSigningInput.require(info["CFBundleSupportedPlatforms"] as? [String] == ["iPhoneOS"])
+                try FullApplicationSigningInput.require(info["YueduExperienceSourceCommit"] as? String == metadata.sourceCommit)
+                try FullApplicationSigningInput.require(info["GitCommitSHA"] as? String == String(metadata.sourceCommit.prefix(7)))
             } else {
-                try #require(component.kind == .framework && info["CFBundlePackageType"] as? String == "FMWK")
+                try FullApplicationSigningInput.require(component.kind == .framework && info["CFBundlePackageType"] as? String == "FMWK")
             }
-            let code = try #require(original.resources.executableMaterials.code.first { $0.file == executable.file })
-            try #require(code.structure.slices.count == 1 && code.structure.slices[0].cpuType == 0x0100000c && code.structure.slices[0].is64Bit)
-            try #require(code.signedCodeVerification?.allLoadedDirectoriesAuthenticated == true)
+            let code = try FullApplicationSigningInput.require(original.resources.executableMaterials.code.first { $0.file == executable.file })
+            try FullApplicationSigningInput.require(code.structure.slices.count == 1 && code.structure.slices[0].cpuType == 0x0100000c && code.structure.slices[0].is64Bit)
+            try FullApplicationSigningInput.require(code.signedCodeVerification?.allLoadedDirectoriesAuthenticated == true)
             let bytes = try await scope.read(executable.file.relativePath, maximumBytes: SelfRenewalControlledMachOSigner.Limits.fileBytes)
             try requireDevicePlatform(bytes)
         }
+        try FullApplicationSigningInput.require(Set(inventory.codeFiles.map(\.file.relativePath)) == nativeExecutables)
         let hashes = try await scope.hashes()
         let classes = hashes.keys.filter { $0.hasPrefix("lib/modules/") && $0.hasSuffix(".class") }
-        try #require(classes.count == metadata.realJavaClassResourceCount && classes.count > 10_000)
-        try #require(!hashes.keys.contains { $0.hasPrefix("LegadoRuntime/java-home/") })
-        try #require(hashes[metadata.ordinaryJar.path] == (try hash(metadata.ordinaryJar.sha256)))
-        try #require(inventory.files.first { $0.relativePath == metadata.ordinaryJar.path }?.byteCount == Int64(metadata.ordinaryJar.bytes))
-        try #require(hashes.keys.contains { $0.hasPrefix("LegadoRuntime/Notices/") })
+        try FullApplicationSigningInput.require(classes.count == metadata.realJavaClassResourceCount && classes.count > 10_000)
+        try FullApplicationSigningInput.require(!hashes.keys.contains { $0.hasPrefix("LegadoRuntime/java-home/") })
+        try FullApplicationSigningInput.require(hashes[metadata.ordinaryJar.path] == (try hash(metadata.ordinaryJar.sha256)))
+        try FullApplicationSigningInput.require(inventory.files.first { $0.relativePath == metadata.ordinaryJar.path }?.byteCount == Int64(metadata.ordinaryJar.bytes))
+        try FullApplicationSigningInput.require(hashes.keys.contains { $0.hasPrefix("LegadoRuntime/Notices/") })
         let manifest = try await scope.read("LegadoRuntime/runtime-manifest.json", maximumBytes: 1_048_576)
-        let staging = try #require(try JSONSerialization.jsonObject(with: manifest) as? [String: Any])
-        try #require(staging["jarSHA256"] as? String == metadata.ordinaryJar.sha256)
+        let staging = try FullApplicationSigningInput.require(try JSONSerialization.jsonObject(with: manifest) as? [String: Any])
+        try FullApplicationSigningInput.require(staging["jarSHA256"] as? String == metadata.ordinaryJar.sha256)
         // Class bytes are actual resources, not empty placeholder entries.
         for path in ["lib/modules/java.base/java/lang/Object.class", "lib/modules/java.base/java/lang/String.class"] {
             let bytes = try await scope.read(path, maximumBytes: 1_048_576)
-            try #require(bytes.count >= 8 && bytes.prefix(4) == Data([0xca, 0xfe, 0xba, 0xbe]))
+            try FullApplicationSigningInput.require(bytes.count >= 8 && bytes.prefix(4) == Data([0xca, 0xfe, 0xba, 0xbe]))
         }
         return hashes
     }
@@ -285,7 +330,10 @@ private struct FullApplicationSigningInput: Sendable {
             do { let current = try await vault.generation(in: namespace); try await vault.destroy(namespace, expectedGeneration: current) }
             catch { failure = error }
             do { if FileManager.default.fileExists(atPath: directory.path) { try FileManager.default.removeItem(at: directory) } }
-            catch { if failure == nil { failure = error } else { Issue.record(error) } }
+            catch {
+                if let primary = failure { failure = CheckFailure("Vault cleanup: \(primary); directory cleanup: \(error)") }
+                else { failure = error }
+            }
             if let failure { throw failure }
         }.value
     }
