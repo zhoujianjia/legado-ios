@@ -1,0 +1,170 @@
+name: Legado Native Main-App Product Chain
+
+on:
+  push:
+    tags:
+      - 'legado-native-reader-test-*'
+
+permissions:
+  contents: read
+  actions: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  native-reader:
+    runs-on: macos-15
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Build and audit this checkout's ordinary production runtime
+        run: |
+          mkdir -p .build/ci-logs .build/native-reader-test
+          python -B scripts/reader-experience/native-smoke-tools.py validate-tag
+          python -B scripts/reader-experience/test-smoke-tools.py -v 2>&1 | tee .build/ci-logs/native-reader-overlays.log
+          python -B scripts/reader-experience/test-native-smoke-tools.py -v 2>&1 | tee .build/ci-logs/native-reader-source-stamps.log
+          python -B scripts/reader-experience/test-original-cold-process-tools.py -v 2>&1 | tee .build/ci-logs/native-reader-cold-protocol-guards.log
+          python -B scripts/reader-experience/test-native-diagnostics.py -v 2>&1 | tee .build/ci-logs/native-reader-diagnostics-guards.log
+          python -B scripts/reader-experience/test-runtime-packaging.py -v 2>&1 | tee .build/ci-logs/native-reader-package-guards.log
+          python -B scripts/reader-experience/test-runtime-notices.py -v 2>&1 | tee .build/ci-logs/native-reader-notice-guards.log
+          python -B scripts/legado-ios/test-runtime-tools.py -v 2>&1 | tee .build/ci-logs/native-reader-staging-guards.log
+          bash Packages/LegadoRuntime/jvm/gradlew -p Packages/LegadoRuntime/jvm --no-daemon test runtimeJar runtimeSmoke 2>&1 | tee .build/ci-logs/native-reader-jvm.log
+          python -B scripts/reader-experience/runtime-packaging.py inspect-jar --output .build/native-reader-test/ordinary-jar.json
+      - name: Restore only the audited native interpreter
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python -B scripts/reader-experience/native-smoke-tools.py restore
+      - name: Prepare the Simulator payload and synthetic local application
+        run: |
+          test "$(uname -m)" = arm64
+          export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
+          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+          LEGADO_RUNTIME_SOURCE_ONLY=1 swift test --package-path Packages/LegadoRuntime \
+            --filter 'LegadoRuntimeTests.LegadoRuntimeTests/' \
+            2>&1 | tee .build/ci-logs/native-reader-saved-diagnostics-tests.log
+          export YUEDU_DEST="$(bash scripts/sim.sh dest)"
+          echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
+          xcodebuild -version > .build/native-reader-test/xcode-version.log
+          xcrun simctl bootstatus "$(bash scripts/sim.sh udid)" -b > .build/native-reader-test/simulator-boot.log 2>&1
+          python -B scripts/legado-ios/stage-runtime.py --java-home .build/legado-ios/simulator-static/java-home --jar Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar --destination Resources/LegadoRuntime
+          python -B scripts/reader-experience/native-smoke-tools.py prepare
+      - name: Execute1 MainJS and32 original methods in separate required hosts
+        run: |
+          unset LEGADO_RUNTIME_SOURCE_ONLY
+          ARGS=(
+            -configuration Debug -onlyUsePackageVersionsFromResolvedFile
+            CODE_SIGNING_ALLOWED=YES CODE_SIGNING_REQUIRED=YES CODE_SIGN_IDENTITY=-
+            CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= CODE_SIGN_ENTITLEMENTS=
+            GATEWAY_BASE_URL= YUEDU_LOCAL_EXPERIENCE=YES IPHONEOS_DEPLOYMENT_TARGET=18.0
+            ENABLE_DEBUG_DYLIB=NO
+            'SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) DEBUG LEGADO_REQUIRE_NATIVE_MAINJS'
+          )
+          # The static JVM belongs to the main executable. Check its real exports
+          # before launching the host, rather than checking an Xcode debug stub.
+          xcodebuild -project Yuedu-Reader.xcodeproj -scheme Yuedu-Reader -destination "$YUEDU_DEST" "${ARGS[@]}" build-for-testing 2>&1 | tee .build/native-reader-test/native-build.log
+          xcodebuild -project Yuedu-Reader.xcodeproj -scheme Yuedu-Reader -destination "$YUEDU_DEST" "${ARGS[@]}" -showBuildSettings -json > .build/native-reader-test/build-settings.json
+          APP=$(python3 -c 'import json; from pathlib import Path; s=[i["buildSettings"] for i in json.load(open(".build/native-reader-test/build-settings.json")) if i.get("target")=="yuedu app"]; assert len(s)==1; print(Path(s[0]["TARGET_BUILD_DIR"])/s[0]["FULL_PRODUCT_NAME"])')
+          python -B scripts/legado-ios/verify-native-exports.py --executable "$APP/YueduReader" --report .build/native-reader-test/native-exports.json
+          # Reuse the same prepared app for independent local-product checks.
+          # The two native groups below require separate host launches. MainJS
+          # sets tracing before its JVM starts; no suite-order assumption is safe.
+          set +e
+          bash scripts/xctest.sh -l .build/native-reader-test/configuration.log -t 900 -- \
+            "${ARGS[@]}" -resultBundlePath .build/native-reader-test/configuration.xcresult \
+            -only-testing:'yuedu appTests/AuthAndICloudConfigurationTests'
+          CONFIGURATION_STATUS=$?
+          bash scripts/xctest.sh -l .build/native-reader-test/local-product-regressions.log -t 1200 -- \
+            "${ARGS[@]}" -resultBundlePath .build/native-reader-test/local-product-regressions.xcresult \
+            -only-testing:'yuedu appTests/ReaderLocalProductTests' \
+            -only-testing:'yuedu appTests/ReaderFontCatalogTests' \
+            -only-testing:'yuedu appTests/CachedBookTXTExportTests' \
+            -only-testing:'yuedu appTests/UserFontSettingsTests' \
+            -only-testing:'yuedu appTests/SubscriptionPublicationTests' \
+            -only-testing:'yuedu appTests/PublicLibraryAvailabilityTests' \
+            -only-testing:'yuedu appTests/RemoteLibraryHTTPTests'
+          LOCAL_PRODUCT_STATUS=$?
+          bash scripts/xctest.sh -l .build/native-reader-test/cache-regressions.log -t 900 -- \
+            "${ARGS[@]}" -resultBundlePath .build/native-reader-test/cache-regressions.xcresult \
+            -only-testing:'yuedu appTests/ChapterCacheMigrationTests' \
+            -only-testing:'yuedu appTests/ChapterCacheRepositoryWriteTests'
+          CACHE_STATUS=$?
+          python -B scripts/reader-experience/native-smoke-tools.py run-group --group mainjs
+          NATIVE_STATUS=$?
+          python -B scripts/reader-experience/native-smoke-tools.py run-group --group original
+          ORIGINAL_STATUS=$?
+          # A pending receipt is not success. This controller runs exactly one
+          # producer and one consumer in separate frozen-binary App hosts, then
+          # validates fresh nonce/source/container/PID and raw case evidence.
+          python -B scripts/reader-experience/original-cold-process-tools.py --udid "$(bash scripts/sim.sh udid)"
+          COLD_STATUS=$?
+          # Export every available group's evidence before evaluating verdicts.
+          # Missing bundles and failed exports remain failures, not empty passes.
+          export_test_results() {
+            local bundle="$1" summary="$2" tests="$3"
+            if [[ ! -d "$bundle" ]]; then
+              echo "Missing test result bundle: $bundle" >&2
+              return 1
+            fi
+            xcrun xcresulttool get test-results summary --path "$bundle" > "$summary"
+            local summary_status=$?
+            xcrun xcresulttool get test-results tests --path "$bundle" > "$tests"
+            local tests_status=$?
+            [[ $summary_status == 0 && $tests_status == 0 ]]
+          }
+          export_test_results .build/native-reader-test/configuration.xcresult \
+            .build/native-reader-test/configuration-summary.json .build/native-reader-test/configuration-tests.json
+          CONFIGURATION_EXPORT_STATUS=$?
+          export_test_results .build/native-reader-test/local-product-regressions.xcresult \
+            .build/native-reader-test/local-product-summary.json .build/native-reader-test/local-product-tests.json
+          LOCAL_PRODUCT_EXPORT_STATUS=$?
+          export_test_results .build/native-reader-test/cache-regressions.xcresult \
+            .build/native-reader-test/cache-summary.json .build/native-reader-test/cache-tests.json
+          CACHE_EXPORT_STATUS=$?
+          # Both native runners already retain independent original exports,
+          # exact case gates and command/source ledgers, including on failure.
+          python -B scripts/reader-experience/smoke-tools.py verify-summary \
+            --summary .build/native-reader-test/configuration-summary.json --expected 9
+          CONFIGURATION_COUNT_STATUS=$?
+          python -B scripts/reader-experience/smoke-tools.py verify-local-product \
+            --summary .build/native-reader-test/local-product-summary.json \
+            --tests .build/native-reader-test/local-product-tests.json
+          LOCAL_PRODUCT_COUNT_STATUS=$?
+          python -B scripts/reader-experience/native-smoke-tools.py verify-cache \
+            --summary .build/native-reader-test/cache-summary.json \
+            --tests .build/native-reader-test/cache-tests.json
+          CACHE_COUNT_STATUS=$?
+          NATIVE_RESULT_STATUS=1
+          if [[ $NATIVE_STATUS == 0 && $ORIGINAL_STATUS == 0 ]]; then
+            python -B scripts/reader-experience/native-smoke-tools.py result
+            NATIVE_RESULT_STATUS=$?
+          fi
+          set -e
+          [[ $CONFIGURATION_STATUS == 0 && $LOCAL_PRODUCT_STATUS == 0 && $CACHE_STATUS == 0 && $NATIVE_STATUS == 0 && $ORIGINAL_STATUS == 0 \
+            && $CONFIGURATION_EXPORT_STATUS == 0 && $LOCAL_PRODUCT_EXPORT_STATUS == 0 && $CACHE_EXPORT_STATUS == 0 \
+            && $CONFIGURATION_COUNT_STATUS == 0 && $LOCAL_PRODUCT_COUNT_STATUS == 0 && $CACHE_COUNT_STATUS == 0 && $NATIVE_RESULT_STATUS == 0 && $COLD_STATUS == 0 ]]
+      - name: Preserve this Simulator run's JVM diagnostics and crash reports
+        if: ${{ always() && hashFiles('.build/native-reader-test/overlays.json') != '' }}
+        run: python -B scripts/reader-experience/collect-native-diagnostics.py --udid "$(bash scripts/sim.sh udid)"
+      - name: Retain actual test results, payload provenance and failures
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: legado-native-main-app-product-chain
+          path: |
+            .build/ci-logs/
+            .build/native-reader-test/
+            Packages/LegadoRuntime/jvm/build/test-results/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7

@@ -94,9 +94,8 @@ class OriginalRuleHttpPlatformTest {
                             assertThrows(UnsupportedRuleCapability::class.java) { rule.connect(url) }
                             assertThrows(UnsupportedRuleCapability::class.java) { rule.ajax(url) }
                         }
-                        assertThrows(UnsupportedRuleCapability::class.java) {
-                            rule.connect(peer.origin, "{\"proxy\":\"http://owned.invalid\"}")
-                        }
+                        // Proxy is supported by the original HTTP path. Its real owned
+                        // transport/credential/cancellation cases live in OriginalProxyExecutionTest.
                     }
                 }
                 assertTrue(peer.requests.isEmpty())

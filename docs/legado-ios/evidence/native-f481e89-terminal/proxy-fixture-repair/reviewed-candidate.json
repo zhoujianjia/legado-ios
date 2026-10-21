@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-21T02:37:48.203502+00:00",
+  "status": "test-only-stale-proxy-unsupported-expectation-repaired-one-actual-relevant-JVM-method-passed",
+  "sourceRoot": ".build/native-f481e89-proxy-fixture-repair-step/snapshot-v1/work",
+  "files": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRuleHttpPlatformTest.kt",
+      "baseline": {
+        "path": ".build/native-f481e89-proxy-fixture-repair-step/baseline/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRuleHttpPlatformTest.kt",
+        "bytes": 18289,
+        "sha256": "c282e96a3d4dd11fee7a6a7d8bd271a035bb7dc85c4217b11fa8c5e88a579964"
+      },
+      "candidate": {
+        "path": ".build/native-f481e89-proxy-fixture-repair-step/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRuleHttpPlatformTest.kt",
+        "bytes": 18282,
+        "sha256": "8302d974cd03e95291bf8a48283e429a502f99ebcca73917f3cca65f98790644"
+      },
+      "diff": {
+        "path": ".build/native-f481e89-proxy-fixture-repair-step/test-only.diff",
+        "bytes": 931,
+        "sha256": "618293bf596a32867fc631866eecef1e0d55b66b49ef045e8c457a84007cc721"
+      }
+    }
+  ],
+  "productionChanges": 0,
+  "newDefinitions": 0,
+  "reason": "Proxy support was implemented and already tested through owned real HTTP/SOCKS public paths. The obsolete rejection sent a reserved .invalid proxy into the actual supported path and expected UnsupportedRuleCapability; original connect returns a stack response for ordinary proxy IO failures.",
+  "retainedAssertions": "All three still-unsupported webView/binary/serverID connect+ajax checks and both no-transport assertions remain byte-identical. All other methods and helpers are byte-identical.",
+  "reusedProductionJar": {
+    "path": ".build/original-preupdate-refresh-step/ordinary-jar-v3/legado-runtime-preupdate-refresh.jar",
+    "bytes": 10961412,
+    "sha256": "2963249f7f2fdace332e76f4fd16982ebc3afe60e6b0f897999e97dc036841c1"
+  },
+  "productionInputsCheckedExactCanonical": 133,
+  "commands": {
+    "path": ".build/native-f481e89-proxy-fixture-repair-step/commands.json",
+    "bytes": 6216,
+    "sha256": "bb10c1679702ed600385ff30ea5b3f570d5e9fce04bcc20bff03000152979d5f"
+  },
+  "actualXML": {
+    "path": ".build/native-f481e89-proxy-fixture-repair-step/actual-tests.xml",
+    "bytes": 232,
+    "sha256": "b13c28f47671a6f4c213b47991fda886b1cd24f97a4dd5931cd1537cc4b2fd67"
+  },
+  "actualDistinctJVMMethodsPassed": 1,
+  "actualJVMExecutions": 1,
+  "mainK2Compiles": 0,
+  "testK2Compiles": 1,
+  "freshJavacCompiles": 0,
+  "SDKExecutions": 0,
+  "NativeJNIExecutions": 0,
+  "cloudActions": 0,
+  "limits": [
+    "No fresh full378-method run; the failed cloud run remains a failure.",
+    "The unchanged proxy-success regressions and all unchanged cloud377 passes are retained as separate source-specific evidence."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

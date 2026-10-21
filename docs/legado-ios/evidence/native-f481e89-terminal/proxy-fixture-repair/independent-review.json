@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "reviewedUTC": "2026-10-21T02:42:09.548055+00:00",
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "parent": {
+    "path": ".build/native-f481e89-proxy-fixture-repair-step/final-v1.json",
+    "bytes": 3106,
+    "sha256": "e7d976ac0dec4c2becc315b27c79ca64843e87696549557632fcf67a732dea84"
+  },
+  "source": {
+    "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRuleHttpPlatformTest.kt",
+    "baseline": {
+      "path": ".build/native-f481e89-proxy-fixture-repair-step/baseline/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRuleHttpPlatformTest.kt",
+      "bytes": 18289,
+      "sha256": "c282e96a3d4dd11fee7a6a7d8bd271a035bb7dc85c4217b11fa8c5e88a579964"
+    },
+    "candidate": {
+      "path": ".build/native-f481e89-proxy-fixture-repair-step/snapshot-v1/work/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRuleHttpPlatformTest.kt",
+      "bytes": 18282,
+      "sha256": "8302d974cd03e95291bf8a48283e429a502f99ebcca73917f3cca65f98790644"
+    },
+    "diff": {
+      "path": ".build/native-f481e89-proxy-fixture-repair-step/test-only.diff",
+      "bytes": 931,
+      "sha256": "618293bf596a32867fc631866eecef1e0d55b66b49ef045e8c457a84007cc721"
+    }
+  },
+  "actualCloudFailure": {
+    "source": "f481e89717b96df1d15d5c3f9a72c359d1fcef55",
+    "runID": 39533277157,
+    "jobID": 119003957102,
+    "ordinaryJVMTests": 378,
+    "passed": 377,
+    "failed": 1,
+    "errors": 0,
+    "skipped": 0,
+    "JNIExecuted": 0
+  },
+  "reviewFacts": [
+    "Frozen baseline is byte-identical to Git f481. Replacing only the obsolete three-line proxy assertThrows block with the two-line comment reproduces the entire candidate exactly; no other method/helper/definition changes.",
+    "Source proxy support is implemented in the existing original AnalyzeUrl/HTTP transport path; the reserved .invalid proxy call can return an ordinary IO stack response rather than UnsupportedRuleCapability. Expecting unsupported is obsolete; no new transport or production admission is added here.",
+    "All six connect/ajax typed-rejection assertions for webView, binary type and serverID remain exact, as do peer.requests.isEmpty and owned.session.requests.isEmpty. Successful proxy paths remain in separate existing OriginalProxyExecutionTest evidence, not fabricated by this deletion.",
+    "Only one changed test root is K2-compiled; actual selected runner executes only the failed method once. New test classes precede the exact unchanged 2963249f production Jar, and runner copies are hash-identical. One real JUnit identity passed with no skip/failure.",
+    "No producer/Jar/production compile change, new definition or compiler workaround. The original cloud failure remains a failure; this local1 is not a fresh378 or JNI/App/WK proof."
+  ],
+  "localEvidence": {
+    "commands": {
+      "path": ".build/native-f481e89-proxy-fixture-repair-step/commands.json",
+      "bytes": 6216,
+      "sha256": "bb10c1679702ed600385ff30ea5b3f570d5e9fce04bcc20bff03000152979d5f"
+    },
+    "actualXML": {
+      "path": ".build/native-f481e89-proxy-fixture-repair-step/actual-tests.xml",
+      "bytes": 232,
+      "sha256": "b13c28f47671a6f4c213b47991fda886b1cd24f97a4dd5931cd1537cc4b2fd67"
+    },
+    "reusedProductionJar": {
+      "path": ".build/original-preupdate-refresh-step/ordinary-jar-v3/legado-runtime-preupdate-refresh.jar",
+      "bytes": 10961412,
+      "sha256": "2963249f7f2fdace332e76f4fd16982ebc3afe60e6b0f897999e97dc036841c1"
+    },
+    "testK2Compiles": 1,
+    "distinctJVMMethods": 1,
+    "JVMExecutions": 1,
+    "passes": 1
+  },
+  "reviewExecution": {
+    "readOnlySourceAndExistingEvidence": true,
+    "newCompiles": 0,
+    "testReruns": 0,
+    "SwiftParser": 0,
+    "SDK": 0,
+    "cloudQueries": 0,
+    "canonicalWrites": 0
+  },
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

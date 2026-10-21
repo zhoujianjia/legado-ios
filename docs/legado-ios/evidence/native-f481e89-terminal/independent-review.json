@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "reviewer": "/root/login_info_v2_review",
+  "frozenUTC": "2026-10-21T02:44:55.572294+00:00",
+  "final": {
+    "path": ".build/native-f481e89-archive-candidate/final-v1.json",
+    "bytes": 23648,
+    "sha256": "5c253d1e87eaf8730c76444503023de14096dd957e1da2bb5b418d195ff7be70"
+  },
+  "approved": true,
+  "failedChecks": 0,
+  "remainingConfirmedSourceBlockers": [],
+  "approvalScope": "Local factual terminal archive and bounded plan-update proposal, not a runtime or future repair approval",
+  "checks": [
+    {
+      "check": "exact frozen archive manifest",
+      "passed": true
+    },
+    {
+      "check": "82 unique candidate text paths",
+      "passed": true
+    },
+    {
+      "check": "all declared candidates exactly match82 actual files",
+      "passed": true
+    },
+    {
+      "check": "ZIP bytes hash",
+      "passed": true
+    },
+    {
+      "check": "ZIP CRC and unique69 safe paths",
+      "passed": true
+    },
+    {
+      "check": "actual58 XML8 logs3 Gradle binary",
+      "passed": true
+    },
+    {
+      "check": "all69 memberfacts bound",
+      "passed": true
+    },
+    {
+      "check": "actual378 unique JUnit377pass1failure0error0skip",
+      "passed": true
+    },
+    {
+      "check": "only actual old unsupported proxy expectation fails",
+      "passed": true
+    },
+    {
+      "check": "actual frozen identity table agrees with all XML",
+      "passed": true
+    },
+    {
+      "check": "five historical sources exact Git f481 blobs only",
+      "passed": true
+    },
+    {
+      "check": "line97 is actual stale proxy assertThrows",
+      "passed": true
+    },
+    {
+      "check": "actual terminal handles and stage failure",
+      "passed": true
+    },
+    {
+      "check": "native downstream steps actually skipped",
+      "passed": true
+    },
+    {
+      "check": "actual task completion and failure exit1",
+      "passed": true
+    },
+    {
+      "check": "record preserves failure and zero native executions",
+      "passed": true
+    },
+    {
+      "check": "seven portable logs96 executed with one explicit notice skip",
+      "passed": true
+    },
+    {
+      "check": "proposed update retains SDK exact handle and original source",
+      "passed": true
+    },
+    {
+      "check": "proposal only closes known Native and protects historical handles",
+      "passed": true
+    }
+  ],
+  "facts": {
+    "source": "f481e89717b96df1d15d5c3f9a72c359d1fcef55",
+    "archiveTextFiles": 82,
+    "ZIP": {
+      "path": ".build/native-f481e89-terminal/evidence.zip",
+      "bytes": 75861,
+      "sha256": "418f01eed7fab7622ea5b7d2ddad04bbcb72f94978f027145e60baf0ec724068"
+    },
+    "ZIPMembers": 69,
+    "rawXML": 58,
+    "JUnitUnique": 378,
+    "JUnitPassed": 377,
+    "JUnitFailures": 1,
+    "JUnitErrors": 0,
+    "JUnitSkipped": 0,
+    "failedIdentity": "io.yuedu.legado.OriginalRuleHttpPlatformTest/unsupportedRulesStayTypedAndNeverReachTransport",
+    "GradleExit": 1,
+    "NativeOriginalExecuted": 0,
+    "MainJSExecuted": 0,
+    "ColdHostsExecuted": 0,
+    "historicalGitSourceFacts": 5,
+    "portableMethodExecutions": 96,
+    "portableNoticeSkipped": 1
+  },
+  "reviewedRecord": {
+    "path": ".build/native-f481e89-archive-candidate/work/docs/legado-ios/core-native-f481e89-terminal-result.json",
+    "bytes": 29058,
+    "sha256": "03275e8fef1b2f3bf8d8a878d69e04228b082ff429c67a81ac0b86066568c809"
+  },
+  "proposal": {
+    "path": ".build/native-f481e89-archive-candidate/proposed-plan-update.json",
+    "bytes": 1928,
+    "sha256": "4d1321d99efc5ad6d0ba0fceddd11439ee24a10f1d6834b40afb74dcfd0210c8"
+  },
+  "conclusions": [
+    "The originalZIP CRC/hash and all69 member facts match. Only58 XML and8 logs are archived raw; three Gradle binary files remain hash-bound in the ZIP and are excluded from82 UTF8 text candidates. No private signed download response or binary is staged.",
+    "Raw58 JUnit XML contain378 unique methods:377 passed and exactly one failure at OriginalRuleHttpPlatformTest.kt:97, the stale unsupported-proxy assertThrows expectation. No JUnit method was skipped. The separate seven portable logs run96 methods with one explicit notice guard skip, not a JUnit skip.",
+    "Gradle production/test compilation, jar tasks and runtimeSmoke completed, then test failed with exit1. Later restore/prepare/native-execute/diagnostic phases are skipped. Original32/MainJS1/cold2 were intended only; actual Native/JNI/UIKit execution is zero. No native source-before-after180 roster or runtime/SDK acceptance is inferred from five Git snapshots.",
+    "Five historical snapshots exactly match Git f481 blobs, including the failure source and selection/gating controls. Later one-method proxy repair evidence does not rewrite the cloud failure or establish fresh378 passing methods.",
+    "The proposed plan edit closes only Native39533277157/job119003957102, preserves the exact SDK39533277187/job119003957104 handle and original source, and expressly leaves historical initial handle observations unchanged. Root must reconcile any later SDK observation when applying the proposal."
+  ],
+  "integrationNotes": [
+    {
+      "kind": "git-ignore",
+      "XMLPathsMatchedByIgnore": 58,
+      "action": "Explicitly force-add all reviewed raw XML paths or preserve their exact bytes under an unignored canonical alias. Ordinary git add can omit raw/**/jvm/build XML; do not silently lose58 evidence files."
+    },
+    {
+      "kind": "raw-source-format",
+      "pathsWithExistingWhitespaceOrCRLF": [
+        "docs/legado-ios/evidence/native-f481e89-terminal/metadata/job.log",
+        "docs/legado-ios/evidence/native-f481e89-terminal/raw/.build/ci-logs/native-reader-jvm.log"
+      ],
+      "action": "These original raw bytes are hash-bound. If archive-only text normalization is needed, retain original member/source facts and disclose the transform; do not silently claim normalized text is original."
+    }
+  ],
+  "actualOperations": {
+    "cloudQueries": 0,
+    "downloads": 0,
+    "compilers": 0,
+    "tests": 0,
+    "canonicalWrites": false,
+    "GitWrites": false,
+    "GitReadOnlyCommands": [
+      "cat-file --batch (five blobs)",
+      "check-ignore --stdin (archive XML paths)"
+    ]
+  },
+  "limits": [
+    "This review does not query or independently refresh the still-live SDK state. It reviews the supplied local terminal evidence only.",
+    "The terminal run remains failure; source/test-only followup repair and later checkpoint success are separate claims.",
+    "Passing JVM methods and jar-task completion do not establish Apple signing/install/renewal or executed JNI/WK/cold-process product behavior."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

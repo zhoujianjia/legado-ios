@@ -1,0 +1,39 @@
+{
+  "notApplied": true,
+  "planBaseline": {
+    "path": "docs/legado-ios/completion-plan.json",
+    "bytes": 458671,
+    "sha256": "9853aa9eb942474062bdf7dae093d0c4083b6d61d86fe3801ee026c045a4a54c"
+  },
+  "updates": {
+    "/execution/cloudTriggerPolicy/onlyLiveSDKHandles": [
+      {
+        "runID": 39533277187,
+        "jobID": 119003957104,
+        "sourceCommit": "f481e89717b96df1d15d5c3f9a72c359d1fcef55",
+        "sourceTag": "reader-renewal-f481e89",
+        "workflow": ".github/workflows/reader-renewal-probe.yml",
+        "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39533277187",
+        "initialStatus": "in_progress"
+      }
+    ],
+    "/execution/cloudTriggerPolicy/alreadyRunningTasks": "Only f481e89 SDK39533277187/job119003957104 remains live at the last root observation. Native39533277157/job119003957102 is completed/failure and archived; queryAgain=false. Do not query any closed run.",
+    "/execution/cloudTriggerPolicy/latestOriginalNativeTerminal": {
+      "sourceCommit": "f481e89717b96df1d15d5c3f9a72c359d1fcef55",
+      "runID": 39533277157,
+      "jobID": 119003957102,
+      "status": "completed",
+      "conclusion": "failure",
+      "queryAgain": false,
+      "record": "docs/legado-ios/core-native-f481e89-terminal-result.json",
+      "actualOrdinaryJVMPassed": 377,
+      "actualOrdinaryJVMFailed": 1,
+      "actualOrdinaryJVMSkipped": 0,
+      "actualNativeSelectedMethodsExecuted": 0,
+      "actualColdHostsExecuted": 0,
+      "failure": "Gradle:test stale proxy unsupported expectation; native phases skipped"
+    }
+  },
+  "preserveHistoricalInitialObservation": "latestSubmittedCorePair.handles and core-sdk-f481e89-request.json are historical initial admission evidence; do not rewrite their original initialStatus.",
+  "concurrency": "Root must reconcile latest SDK observation at integration; proposal does not query or overwrite future SDK terminal/source state."
+}

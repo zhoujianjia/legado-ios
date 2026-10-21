@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T02:47:40.115481+00:00",
+  "status": "test-only-stale-proxy-unsupported-expectation-repaired-one-actual-relevant-JVM-method-passed",
+  "canonicalSources": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRuleHttpPlatformTest.kt",
+      "bytes": 18282,
+      "sha256": "8302d974cd03e95291bf8a48283e429a502f99ebcca73917f3cca65f98790644"
+    }
+  ],
+  "failedCloudRecord": "docs/legado-ios/core-native-f481e89-terminal-result.json",
+  "reason": "Proxy support was implemented and already tested through owned real HTTP/SOCKS public paths. The obsolete rejection sent a reserved .invalid proxy into the actual supported path and expected UnsupportedRuleCapability; original connect returns a stack response for ordinary proxy IO failures.",
+  "retainedAssertions": "All three still-unsupported webView/binary/serverID connect+ajax checks and both no-transport assertions remain byte-identical. All other methods and helpers are byte-identical.",
+  "productionChanges": 0,
+  "newDefinitions": 0,
+  "actualRelevantJVMMethodsPassed": 1,
+  "actualMainK2Compiles": 0,
+  "actualTestK2Compiles": 1,
+  "actualFull378Reruns": 0,
+  "actualSDKExecutions": 0,
+  "actualNativeJNIExecutions": 0,
+  "reusedExactProductionJar": {
+    "path": ".build/original-preupdate-refresh-step/ordinary-jar-v3/legado-runtime-preupdate-refresh.jar",
+    "bytes": 10961412,
+    "sha256": "2963249f7f2fdace332e76f4fd16982ebc3afe60e6b0f897999e97dc036841c1"
+  },
+  "productionInputsCheckedExactCanonical": 133,
+  "newCloudRunsOrTags": 0,
+  "evidence": [
+    {
+      "path": "docs/legado-ios/evidence/native-f481e89-terminal/proxy-fixture-repair/reviewed-candidate.json",
+      "bytes": 3106,
+      "sha256": "e7d976ac0dec4c2becc315b27c79ca64843e87696549557632fcf67a732dea84",
+      "original": {
+        "path": ".build/native-f481e89-proxy-fixture-repair-step/final-v1.json",
+        "bytes": 3106,
+        "sha256": "e7d976ac0dec4c2becc315b27c79ca64843e87696549557632fcf67a732dea84"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original facts preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-f481e89-terminal/proxy-fixture-repair/independent-review.json",
+      "bytes": 4012,
+      "sha256": "7f1cb4c01f60b09c8faad4b493c6a80cd1a0d02cfefb11618d5930291338ca21",
+      "original": {
+        "path": ".build/native-f481e89-proxy-fixture-independent-review/review-v1.json",
+        "bytes": 4012,
+        "sha256": "7f1cb4c01f60b09c8faad4b493c6a80cd1a0d02cfefb11618d5930291338ca21"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original facts preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-f481e89-terminal/proxy-fixture-repair/commands.json",
+      "bytes": 6216,
+      "sha256": "bb10c1679702ed600385ff30ea5b3f570d5e9fce04bcc20bff03000152979d5f",
+      "original": {
+        "path": ".build/native-f481e89-proxy-fixture-repair-step/commands.json",
+        "bytes": 6216,
+        "sha256": "bb10c1679702ed600385ff30ea5b3f570d5e9fce04bcc20bff03000152979d5f"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original facts preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-f481e89-terminal/proxy-fixture-repair/actual-tests.xml",
+      "bytes": 232,
+      "sha256": "b13c28f47671a6f4c213b47991fda886b1cd24f97a4dd5931cd1537cc4b2fd67",
+      "original": {
+        "path": ".build/native-f481e89-proxy-fixture-repair-step/actual-tests.xml",
+        "bytes": 232,
+        "sha256": "b13c28f47671a6f4c213b47991fda886b1cd24f97a4dd5931cd1537cc4b2fd67"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original facts preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-f481e89-terminal/proxy-fixture-repair/compile-test.log",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "original": {
+        "path": ".build/native-f481e89-proxy-fixture-repair-step/compile-test.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original facts preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-f481e89-terminal/proxy-fixture-repair/junit-selected.log",
+      "bytes": 42,
+      "sha256": "c7e59c70b5240f2b419313af976f23c6561bed8d794a00a449cb3e11ea843c84",
+      "original": {
+        "path": ".build/native-f481e89-proxy-fixture-repair-step/junit-selected.log",
+        "bytes": 43,
+        "sha256": "3cd72c68e8df7510bbaa5bf07e7bc389cd2ecc9945e6c0ff1cb18a587d62c166"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original facts preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-f481e89-terminal/proxy-fixture-repair/test-only.diff",
+      "bytes": 931,
+      "sha256": "618293bf596a32867fc631866eecef1e0d55b66b49ef045e8c457a84007cc721",
+      "original": {
+        "path": ".build/native-f481e89-proxy-fixture-repair-step/test-only.diff",
+        "bytes": 931,
+        "sha256": "618293bf596a32867fc631866eecef1e0d55b66b49ef045e8c457a84007cc721"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original facts preserved"
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-f481e89-terminal/proxy-fixture-repair/repair-and-execute.py",
+      "bytes": 6105,
+      "sha256": "dd5ab93da71020972a0ebdd29639031d3dc4b41a612ae6f87dba249bdc9532c0",
+      "original": {
+        "path": ".build/repair-native-f481e89-proxy-fixture.py",
+        "bytes": 6105,
+        "sha256": "dd5ab93da71020972a0ebdd29639031d3dc4b41a612ae6f87dba249bdc9532c0"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original facts preserved"
+    }
+  ],
+  "limits": [
+    "No fresh full378-method run; the failed cloud run remains a failure.",
+    "The unchanged proxy-success regressions and all unchanged cloud377 passes are retained as separate source-specific evidence."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

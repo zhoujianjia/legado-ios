@@ -170,7 +170,7 @@
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
       "nextPlannedCheckpoint": "This exact coherent pair is running. Continue the separate first-registration production draft. Do not submit another pair until current terminal evidence is classified and a necessary reviewed successor is ready; no per-change or IPA tag.",
-      "alreadyRunningTasks": "Only f481e89 SDK39533277187/job119003957104 and Native39533277157/job119003957102 are live. The f233 pair is fully closed and archived; never query it again.",
+      "alreadyRunningTasks": "Only SDK39533277187/job119003957104 remains live at its latest actual observation. Native f48139533277157/job119003957102 is terminal failure and fully archived; never query it or the f233 terminals again.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
         "sourceTag": "reader-renewal-8d934dd",
@@ -219,15 +219,6 @@
           "sourceTag": "reader-renewal-f481e89",
           "workflow": ".github/workflows/reader-renewal-probe.yml",
           "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39533277187",
-          "initialStatus": "in_progress"
-        },
-        {
-          "runID": 39533277157,
-          "jobID": 119003957102,
-          "sourceCommit": "f481e89717b96df1d15d5c3f9a72c359d1fcef55",
-          "sourceTag": "legado-native-reader-test-f481e89",
-          "workflow": ".github/workflows/legado-native-reader-test.yml",
-          "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39533277157",
           "initialStatus": "in_progress"
         }
       ],
@@ -365,6 +356,23 @@
           }
         ],
         "actualNewAcceptedTests": 0
+      },
+      "latestNativeTerminal": {
+        "sourceCommit": "f481e89717b96df1d15d5c3f9a72c359d1fcef55",
+        "record": "docs/legado-ios/core-native-f481e89-terminal-result.json",
+        "runID": 39533277157,
+        "conclusion": "failure",
+        "queryAgain": false,
+        "actualJVM": {
+          "XMLSuites": 58,
+          "uniqueCaseIdentities": 378,
+          "passed": 377,
+          "failed": 1,
+          "errors": 0,
+          "skipped": 0
+        },
+        "actualNativeExecuted": 0,
+        "separateSourceRepairRecord": "docs/legado-ios/core-native-f481e89-proxy-fixture-repair.json"
       }
     },
     "nextReadyBatch": [
@@ -559,6 +567,10 @@
             {
               "record": "docs/legado-ios/core-original-preupdate-refresh-step.json",
               "scope": "Original preUpdate reGetBook/refreshTocUrl to same Host and App URL handoff; four actual JVM methods and external Java public consumer. App/Native authored regressions await SDK."
+            },
+            {
+              "record": "docs/legado-ios/core-native-f481e89-terminal-result.json",
+              "scope": "Actual full Gradle378:377 pass/1 stale proxy expectation failure. Native0. The one affected method is separately repaired and passed on the exact unchanged production Jar; no fresh378 or iOS pass inferred."
             }
           ],
           "nextActionZh": "代理和map远程jsLib已合入并有联合JVM证据；继续完整preUpdateJs刷新与书籍身份回写、原WebJS对象返回的Android值转换合同。资源嗅探公共WK平台尚未实际执行，保持未启用；完整书源兼容仍未完成。",
@@ -697,6 +709,10 @@
             {
               "record": "docs/legado-ios/core-original-preupdate-refresh-step.json",
               "scope": "Original preUpdate reGetBook/refreshTocUrl to same Host and App URL handoff; four actual JVM methods and external Java public consumer. App/Native authored regressions await SDK."
+            },
+            {
+              "record": "docs/legado-ios/core-native-f481e89-terminal-result.json",
+              "scope": "Actual full Gradle378:377 pass/1 stale proxy expectation failure. Native0. The one affected method is separately repaired and passed on the exact unchanged production Jar; no fresh378 or iOS pass inferred."
             }
           ],
           "implementedSubtasksZh": [
@@ -793,6 +809,10 @@
             {
               "record": "docs/legado-ios/core-original-preupdate-refresh-step.json",
               "scope": "Original preUpdate reGetBook/refreshTocUrl to same Host and App URL handoff; four actual JVM methods and external Java public consumer. App/Native authored regressions await SDK."
+            },
+            {
+              "record": "docs/legado-ios/core-native-f481e89-terminal-result.json",
+              "scope": "Actual full Gradle378:377 pass/1 stale proxy expectation failure. Native0. The one affected method is separately repaired and passed on the exact unchanged production Jar; no fresh378 or iOS pass inferred."
             }
           ],
           "nextActionZh": "原版刷新两入口及App书籍URL交接已接线，JVM四方法与外部Java消费者已有真实成功证据；统一SDK执行新增Host与JNI/书库回归，资源嗅探及对象结果兼容继续未完成。",
@@ -896,6 +916,10 @@
             {
               "record": "docs/legado-ios/core-original-preupdate-refresh-step.json",
               "scope": "Original preUpdate reGetBook/refreshTocUrl to same Host and App URL handoff; four actual JVM methods and external Java public consumer. App/Native authored regressions await SDK."
+            },
+            {
+              "record": "docs/legado-ios/core-native-f481e89-terminal-result.json",
+              "scope": "Actual full Gradle378:377 pass/1 stale proxy expectation failure. Native0. The one affected method is separately repaired and passed on the exact unchanged production Jar; no fresh378 or iOS pass inferred."
             }
           ],
           "nextActionZh": "已修复88轮的两处SDK API编译错误及5项JVM旧预期；下一份统一源码为core349、Native161、去重365。只启动同一源码的一组SDK/Native，App463定义466叶、Native28产品加2平台验证、MainJS1及两个独立冷宿主；实际结果仍待取得，平台验证不等于生产书源兼容完成。",
@@ -986,6 +1010,10 @@
             {
               "record": "docs/legado-ios/core-original-preupdate-refresh-step.json",
               "scope": "Original preUpdate reGetBook/refreshTocUrl to same Host and App URL handoff; four actual JVM methods and external Java public consumer. App/Native authored regressions await SDK."
+            },
+            {
+              "record": "docs/legado-ios/core-native-f481e89-terminal-result.json",
+              "scope": "Actual full Gradle378:377 pass/1 stale proxy expectation failure. Native0. The one affected method is separately repaired and passed on the exact unchanged production Jar; no fresh378 or iOS pass inferred."
             }
           ],
           "implementedSubtasksZh": [
@@ -2278,7 +2306,7 @@
       },
       "queuedS2PreUpdateNativeResultCheckpoint": {
         "record": "docs/legado-ios/core-sdk-s2-preupdate-native-result-checkpoint.json",
-        "status": "submitted-awaiting-terminal-artifacts",
+        "status": "SDK-last-observed-live-Native-terminal-failure-archived",
         "sourceCounts": {
           "core": 364,
           "native": 180,
@@ -2322,6 +2350,23 @@
         "acceptanceBoundaryZh": "兼容率须基于明确书源样本的搜索、详情、目录、正文完整流程；源码覆盖、JVM通过数和测试定义数不能折算为90%。",
         "fullCompatibilityFlagRemainsFalse": true,
         "otherSeventeenItemsRemainDeferred": true
+      },
+      "currentF481NativeTerminal": {
+        "sourceCommit": "f481e89717b96df1d15d5c3f9a72c359d1fcef55",
+        "record": "docs/legado-ios/core-native-f481e89-terminal-result.json",
+        "runID": 39533277157,
+        "conclusion": "failure",
+        "queryAgain": false,
+        "actualJVM": {
+          "XMLSuites": 58,
+          "uniqueCaseIdentities": 378,
+          "passed": 377,
+          "failed": 1,
+          "errors": 0,
+          "skipped": 0
+        },
+        "actualNativeExecuted": 0,
+        "separateSourceRepairRecord": "docs/legado-ios/core-native-f481e89-proxy-fixture-repair.json"
       }
     }
   },
@@ -6704,7 +6749,9 @@
     "docs/legado-ios/core-original-preupdate-refresh-step.json",
     "docs/legado-ios/core-sdk-s2-preupdate-native-result-checkpoint.json",
     "docs/legado-ios/core-sdk-f481e89-request.json",
-    "docs/legado-ios/core-renewal-first-registration-step.json"
+    "docs/legado-ios/core-renewal-first-registration-step.json",
+    "docs/legado-ios/core-native-f481e89-terminal-result.json",
+    "docs/legado-ios/core-native-f481e89-proxy-fixture-repair.json"
   ],
   "userScopeAdjustments": [
     {
