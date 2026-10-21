@@ -1,0 +1,287 @@
+{
+  "schemaVersion": 1,
+  "reviewer": "/root/login_info_v2_review",
+  "frozenUTC": "2026-10-21T03:03:59.788862+00:00",
+  "final": {
+    "path": ".build/s3-full-application-signing-step/final-v2.json",
+    "bytes": 11431,
+    "sha256": "b7f18927b30064716402cfc0ff19882d5ac0e9b54c5c799de77480cce151510e"
+  },
+  "approved": true,
+  "failedChecks": 0,
+  "remainingConfirmedSourceBlockers": [],
+  "remainingConfirmedFindings": [],
+  "approvalScope": "Five producer/control Python and workflow sources only. The reviewer authored the sixth Swift source and does not independently approve that source here.",
+  "sourceRoot": ".build/s3-full-application-signing-step/snapshot-v1/work",
+  "sourceFacts": [
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "baseline": {
+        "path": ".build/s3-full-application-signing-step/rawbaseline/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "bytes": 72188,
+        "sha256": "562fa76eb6b4564b05a916354eb06c1cb554444b8c7b7b46f7ee7c7061b97d73"
+      },
+      "candidate": {
+        "path": ".build/s3-full-application-signing-step/snapshot-v1/work/scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+        "bytes": 73458,
+        "sha256": "d8144d8bd05fb3b1043f4a3b7212243ebe3849f231cd0494f51501d2b923b249"
+      },
+      "diff": {
+        "path": ".build/s3-full-application-signing-step/diffs/scripts__reader-experience__owned-package-fixture__generate-sdk-owned-package.py.diff",
+        "bytes": 18663,
+        "sha256": "9b70e465fdd95b8b2da4d077a2780c1f59d03417ba2bc5020a5671b7f8bd9736"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/full-application-package.py",
+      "baseline": null,
+      "candidate": {
+        "path": ".build/s3-full-application-signing-step/snapshot-v1/work/scripts/reader-experience/owned-package-fixture/full-application-package.py",
+        "bytes": 11840,
+        "sha256": "48b23fe98339680a29329108b04e85674a7ba8e5b554923b691a79bbc3579d52"
+      },
+      "diff": {
+        "path": ".build/s3-full-application-signing-step/diffs/scripts__reader-experience__owned-package-fixture__full-application-package.py.diff",
+        "bytes": 12112,
+        "sha256": "863c58db8d1e7a4501970d17c6e079d1559e189902088072621f302e25ec4790"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/full-application-signing-tools.py",
+      "baseline": null,
+      "candidate": {
+        "path": ".build/s3-full-application-signing-step/snapshot-v1/work/scripts/reader-experience/full-application-signing-tools.py",
+        "bytes": 18318,
+        "sha256": "135e1cce731fbdd65d7f4ab1d0d353734e13fbe304455e50b8ad13f32c8cc75a"
+      },
+      "diff": {
+        "path": ".build/s3-full-application-signing-step/diffs/scripts__reader-experience__full-application-signing-tools.py.diff",
+        "bytes": 18735,
+        "sha256": "63405fe3ce16ab322d4c86125809cd5db7a5ce3669105a2a3f9f21c52d5e8f99"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-full-application-signing-tools.py",
+      "baseline": null,
+      "candidate": {
+        "path": ".build/s3-full-application-signing-step/snapshot-v1/work/scripts/reader-experience/test-full-application-signing-tools.py",
+        "bytes": 7811,
+        "sha256": "5c4f742d4c6c9827043c9eadf29afc36c3945c2f27ab9b24cb2a5189895d3e61"
+      },
+      "diff": {
+        "path": ".build/s3-full-application-signing-step/diffs/scripts__reader-experience__test-full-application-signing-tools.py.diff",
+        "bytes": 8025,
+        "sha256": "5792ca134163f5489496d698218fcc03fc85e262d547057411906f1d6ffbfe47"
+      }
+    },
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "baseline": {
+        "path": ".build/s3-full-application-signing-step/rawbaseline/.github/workflows/legado-native-reader-test.yml",
+        "bytes": 11036,
+        "sha256": "092653522fc0a6e8d9741f664efe3bbee7251804954b383b0318d62ead9fa7f4"
+      },
+      "candidate": {
+        "path": ".build/s3-full-application-signing-step/snapshot-v1/work/.github/workflows/legado-native-reader-test.yml",
+        "bytes": 11827,
+        "sha256": "19409e77f7a9a24ac96328ebdf9b7afacb56499de59dd8bc36fb254ccbfec4f2"
+      },
+      "diff": {
+        "path": ".build/s3-full-application-signing-step/diffs/.github__workflows__legado-native-reader-test.yml.diff",
+        "bytes": 2363,
+        "sha256": "0f0564c3f0f768007fb6da8dbc57286410123e2b4ba35481582bcd171b72dd8e"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift",
+      "baseline": null,
+      "candidate": {
+        "path": ".build/s3-full-application-signing-step/snapshot-v1/work/Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift",
+        "bytes": 21683,
+        "sha256": "f5d74f9661ea4888a1f0096e94a7ac1958ce8874c94322b3b655c3cc29451ae9"
+      },
+      "diff": {
+        "path": ".build/s3-full-application-signing-step/diffs/Tests__iOS__yuedu appTests__SelfRenewalFullApplicationSignerTests.swift.diff",
+        "bytes": 22073,
+        "sha256": "c5dd38ec9d43de5bd8186ea635245ed4127f036f84c5aec611867cd0a856f2ff"
+      }
+    }
+  ],
+  "separateSwiftIndependentReview": {
+    "path": ".build/s3-full-application-signing-swift-independent-review/review-v1.json",
+    "bytes": 10111,
+    "sha256": "7c6d0074c1d00bc9870d687410f4328ac389d683f09599ceddeb4e9952e52c00"
+  },
+  "checks": [
+    {
+      "check": "exact whole final freeze",
+      "passed": true
+    },
+    {
+      "check": "exact frozen file and source diff:scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "passed": true
+    },
+    {
+      "check": "exact frozen file and source diff:scripts/reader-experience/owned-package-fixture/full-application-package.py",
+      "passed": true
+    },
+    {
+      "check": "exact frozen file and source diff:scripts/reader-experience/full-application-signing-tools.py",
+      "passed": true
+    },
+    {
+      "check": "exact frozen file and source diff:scripts/reader-experience/test-full-application-signing-tools.py",
+      "passed": true
+    },
+    {
+      "check": "exact frozen file and source diff:.github/workflows/legado-native-reader-test.yml",
+      "passed": true
+    },
+    {
+      "check": "exact frozen file and source diff:Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift",
+      "passed": true
+    },
+    {
+      "check": "106 unique explicit source/notice input facts",
+      "passed": true
+    },
+    {
+      "check": "whole existing signing owner family explicit",
+      "passed": true
+    },
+    {
+      "check": "actual38 public Java notice files are explicit",
+      "passed": true
+    },
+    {
+      "check": "minimal default body remains AST exact",
+      "passed": true
+    },
+    {
+      "check": "existing signing callback AST exact:cms",
+      "passed": true
+    },
+    {
+      "check": "existing signing callback AST exact:codesign",
+      "passed": true
+    },
+    {
+      "check": "same-job proof checks both native layouts and actual current ordinary JAR",
+      "passed": true
+    },
+    {
+      "check": "fresh complete iPhoneOS build and producer validation",
+      "passed": true
+    },
+    {
+      "check": "metadata and IPA split with original512MiB cap",
+      "passed": true
+    },
+    {
+      "check": "owned producer cleanup and source/bytes resources gate",
+      "passed": true
+    },
+    {
+      "check": "device overlays restore on both outcomes before Simulator overlay",
+      "passed": true
+    },
+    {
+      "check": "one explicit Swift selector and strict actual1leaf0skip",
+      "passed": true
+    },
+    {
+      "check": "IPA/private build omitted from artifact globs",
+      "passed": true
+    },
+    {
+      "check": "all runtime/JAR and target source changes checked through original tracked overlay gate",
+      "passed": true
+    },
+    {
+      "check": "supplied actual four portable guards pass once",
+      "passed": true
+    },
+    {
+      "check": "authored Swift separately independently reviewed exact source",
+      "passed": true
+    }
+  ],
+  "findings": [],
+  "evidence": [
+    {
+      "path": ".build/s3-full-application-signing-step/validation/portable-guards-tool-output.txt",
+      "bytes": 934,
+      "sha256": "0d68c02ac145b5e74a30c2e8f372b6790ea07e35b771599091667adef28036da"
+    },
+    {
+      "path": ".build/s3-full-application-signing-step/validation/portable-guards-tool-result.json",
+      "bytes": 586,
+      "sha256": "8d2927b283aeb434d2ab685df74d9dc2453324541e6212aacf07fc224536e572"
+    },
+    {
+      "path": ".build/s3-full-application-signing-step/validation/python-source-compile.json",
+      "bytes": 934,
+      "sha256": "66b51ef87589c9cb6d1e5b82aa0521998fa2571a96ba3eadc4a283135b06ce78"
+    },
+    {
+      "path": ".build/s3-full-application-signing-step/validation/workflow-source-check.json",
+      "bytes": 305,
+      "sha256": "0ec883f13235b96d355098950f405b7b4cb07e678f538c6e0e64deccd2027674"
+    },
+    {
+      "path": ".build/s3-full-application-signing-step/baseline-v1.json",
+      "bytes": 3076,
+      "sha256": "aa6011e927de05721154c6d0fe0179a7793714f0399dcbf3a0e41b20c3801220"
+    },
+    {
+      "path": ".build/s3-full-application-signing-step/swift-consumer-final-v1.json",
+      "bytes": 4510,
+      "sha256": "2d8821f7e64645eec092de4fc190bae5afb078cffbaf96d00624bf7a2fb04612"
+    },
+    {
+      "path": ".build/s3-full-application-signing-step/source-inputs-v2.json",
+      "bytes": 40832,
+      "sha256": "c46f1219f89a4c103ed67b383db756a6a89282c8e0e1e09e717d222a8691e901"
+    }
+  ],
+  "explicitOwnerSourceRoster": {
+    "fact": {
+      "path": ".build/s3-full-application-signing-step/source-inputs-v2.json",
+      "bytes": 40832,
+      "sha256": "c46f1219f89a4c103ed67b383db756a6a89282c8e0e1e09e717d222a8691e901"
+    },
+    "files": 106,
+    "JavaNoticeFiles": 38,
+    "scope": "Explicit conservative same-module signing/verification owner family and actual build/PKI/native/runtime/entitlement dependencies. Not a guessed full App target count; root must union the real compilation roster."
+  },
+  "conclusions": [
+    "Preparation admits only this current macOS Native-tag checkout and matching same-job source/run restored-native record. Existing audit_native checks both device/simulator layouts and exact newly built ordinary JAR; existing inspect_jar and source-overlay gates retain their source/provenance/tracked-file checks.",
+    "The real Release arm64 iPhoneOS main/widget/share and every actually present framework/JVM resource come from the existing build.sh output, not a minimal substitute. Input manifest, archive, bundle/runtime verification and source stamps are checked before copying into the existing owned temporary Keychain/CMS/codesign branch. Actual Mach-O device-platform inspection and deep original codesign verification are required.",
+    "Only allowed executable/profile/CodeResources changes are permitted while producing the complete controlled input. Separate small JSON and streamed full IPA keep existing512MiB and component/code bounds; unsupported full layouts fail. Original entitlements including original AppGroup, Apple-signin and CloudKit are retained. No authority or installation is inferred.",
+    "Device project overlay and the exact owned synthetic Google configuration restore through finally on success/failure. Existing Simulator preparation then replaces only manifest-owned runtime payload and owns its existing source overlay. Resource hashes and source/overlay facts are rechecked before and after the one required Swift selection.",
+    "The runner selects exactly one noargument method, retains real command exit/deadline and actual xcresult summary/tests exports even on failure, and gates1 definition/1 execution on exactly one device with0 failures/skips. Zero, wrong, duplicate, failed or skipped actual case trees reject. No inherited old minimal or source-only result is accepted.",
+    "Workflow upload adds only S3 JSON/log patterns. The complete IPA, built app, private producer directory, Keychain/P12/private key and S3 raw result-bundle tree are excluded. Public metadata contains hashes/certificates, not an archive body. Existing Native/MainJS/cold selections and prior budgets are otherwise unchanged.",
+    "Default minimal producer AST and the shared existing CMS/codesign callbacks are exact. Source-ready evidence is four actually passed portable methods and four Python syntax sources plus YAML parsing, not a real iPhoneOS build, codesign or production full-package execution."
+  ],
+  "limits": [
+    "106 explicit conservative owner/build/notice inputs are not a claim to enumerate every Xcode/SwiftPM/JVM transitive compilation dependency. Root must derive the final coherent compilation union; Java/JAR binary identity is also checked by existing actual native/runtime provenance owners.",
+    "An ephemeral CI failure can leave unneeded device-resource data in the isolated checkout, while tracked project/owned Google configuration restoration is enforced. This does not claim OS termination can run finally.",
+    "This reviewer did not rerun the four portable guards, execute the modified scripts, compile Swift or invoke any Apple tool. The independent peer review of the authored Swift source is separate.",
+    "The complete current App may exceed unchanged code/component/layout budgets or encounter a real signer/profile/resource limitation. Those are intended future failures, never fallback/skip.90-minute total job feasibility is unmeasured.",
+    "Real Apple account/capability permission, device route, installation/relaunch, data preservation, renewal extension and unattended renewal remain unverified."
+  ],
+  "actualReviewOperations": {
+    "portableRuns": 0,
+    "SwiftParser": 0,
+    "SwiftCompiler": 0,
+    "AppleSDK": 0,
+    "cloudQueries": 0,
+    "canonicalWrites": false,
+    "GitWrites": false,
+    "peerWrites": false,
+    "PythonASTSourceComparisonsOnly": true
+  },
+  "automaticSelfRenewalImplemented": false,
+  "allNonDeviceWorkComplete": false,
+  "deviceValidationPassed": false
+}

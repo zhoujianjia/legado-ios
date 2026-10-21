@@ -45,6 +45,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python -B scripts/reader-experience/native-smoke-tools.py restore
+      - name: Build and prepare the required complete current iPhoneOS JVM signing input
+        run: |
+          export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
+          python -B scripts/reader-experience/test-full-application-signing-tools.py -v
+          python -B scripts/reader-experience/full-application-signing-tools.py prepare
       - name: Prepare the Simulator payload and synthetic local application
         run: |
           test "$(uname -m)" = arm64
@@ -57,8 +62,12 @@ jobs:
           echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
           xcodebuild -version > .build/native-reader-test/xcode-version.log
           xcrun simctl bootstatus "$(bash scripts/sim.sh udid)" -b > .build/native-reader-test/simulator-boot.log 2>&1
-          python -B scripts/legado-ios/stage-runtime.py --java-home .build/legado-ios/simulator-static/java-home --jar Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar --destination Resources/LegadoRuntime
+          # Replace only the manifest-owned device payload staged by S3 above;
+          # the complete iPhoneOS IPA remains a separate immutable test resource.
+          python -B scripts/legado-ios/stage-runtime.py --java-home .build/legado-ios/simulator-static/java-home --jar Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar --destination Resources/LegadoRuntime --replace
           python -B scripts/reader-experience/native-smoke-tools.py prepare
+      - name: Re-sign and independently verify the required complete device package
+        run: python -B scripts/reader-experience/full-application-signing-tools.py run
       - name: Execute1 MainJS and32 original methods in separate required hosts
         run: |
           unset LEGADO_RUNTIME_SOURCE_ONLY
@@ -164,6 +173,8 @@ jobs:
           path: |
             .build/ci-logs/
             .build/native-reader-test/
+            .build/s3-full-application-signing/*.json
+            .build/s3-full-application-signing/*.log
             Packages/LegadoRuntime/jvm/build/test-results/
           include-hidden-files: true
           if-no-files-found: error

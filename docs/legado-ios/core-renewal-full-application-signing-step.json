@@ -1,0 +1,225 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T03:05:16.290072+00:00",
+  "status": "source-integrated-independent-reviews-approved-actual-Apple-execution-pending",
+  "reviewedCandidate": {
+    "path": ".build/s3-full-application-signing-step/final-v2.json",
+    "bytes": 11431,
+    "sha256": "b7f18927b30064716402cfc0ff19882d5ac0e9b54c5c799de77480cce151510e"
+  },
+  "canonicalSources": [
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/generate-sdk-owned-package.py",
+      "bytes": 73458,
+      "sha256": "d8144d8bd05fb3b1043f4a3b7212243ebe3849f231cd0494f51501d2b923b249"
+    },
+    {
+      "path": "scripts/reader-experience/owned-package-fixture/full-application-package.py",
+      "bytes": 11840,
+      "sha256": "48b23fe98339680a29329108b04e85674a7ba8e5b554923b691a79bbc3579d52"
+    },
+    {
+      "path": "scripts/reader-experience/full-application-signing-tools.py",
+      "bytes": 18318,
+      "sha256": "135e1cce731fbdd65d7f4ab1d0d353734e13fbe304455e50b8ad13f32c8cc75a"
+    },
+    {
+      "path": "scripts/reader-experience/test-full-application-signing-tools.py",
+      "bytes": 7811,
+      "sha256": "5c4f742d4c6c9827043c9eadf29afc36c3945c2f27ab9b24cb2a5189895d3e61"
+    },
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "bytes": 11827,
+      "sha256": "19409e77f7a9a24ac96328ebdf9b7afacb56499de59dd8bc36fb254ccbfec4f2"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift",
+      "bytes": 21683,
+      "sha256": "f5d74f9661ea4888a1f0096e94a7ac1958ce8874c94322b3b655c3cc29451ae9"
+    }
+  ],
+  "sourceInputCount": 106,
+  "sourceInputs": {
+    "path": "docs/legado-ios/evidence/renewal-full-application-signing-step/source-inputs.json",
+    "bytes": 39872,
+    "sha256": "31edb2541c6ba1ee128cc890dcb0948afd8d5a572629cdc8a8920c99f09ba736"
+  },
+  "productionPath": [
+    "existing same-job fresh ordinary runtimeJar + audited source-built native restore with current source/GITHUB_RUN_ID and both device/simulator layouts",
+    "existing stage-runtime device payload then build.sh actual Release arm64 iPhoneOS full App, main/widget/share and all actual native/JVM resources",
+    "existing owned producer full-app opt-in branch: source entitlements preserved, same temporary controlled Keychain/CMS/codesign callbacks, Apple deep verification, complete stream ZIP and separate small metadata",
+    "precise restoration of only this build project overlay and owned synthetic configuration, then existing Simulator preparation with manifest-owned runtime replacement",
+    "mandatory same-job independently selected Swift test: existing Vault/PackageSigner/stream archive/whole independent Unpacker and verifier; exact1 definition/1 leaf/zero failures and skips, resource and owner source binding before/after"
+  ],
+  "newDefinitions": {
+    "App": [
+      {
+        "suite": "SelfRenewalFullApplicationSignerTests",
+        "method": "signsFullCurrentIPhoneOSJVMApplicationThroughSameProductionOwners",
+        "selector": "yuedu appTests/SelfRenewalFullApplicationSignerTests/signsFullCurrentIPhoneOSJVMApplicationThroughSameProductionOwners()"
+      }
+    ],
+    "NativeOriginal": 0,
+    "Package": 0,
+    "portableProtocolMethods": 4,
+    "currentcoreSelectionChanged": false,
+    "separateNativeJobFullPackageSelection": {
+      "definitions": 1,
+      "leaves": 1
+    }
+  },
+  "actualExecutions": {
+    "portableProtocolTests": 4,
+    "portableFailures": 0,
+    "PythonSyntaxSources": 4,
+    "workflowYAMLParsed": true,
+    "SwiftParser": 0,
+    "SwiftCompiler": 0,
+    "AppleSDKBuild": 0,
+    "AppleCodesign": 0,
+    "FullPackageSignerAcceptance": 0,
+    "SimulatorTest": 0,
+    "realAppleAccountOrDeviceRequests": 0,
+    "cloudQueries": 0,
+    "canonicalWrites": false,
+    "GitWrites": false
+  },
+  "independentSourceReviews": [
+    {
+      "path": "docs/legado-ios/evidence/renewal-full-application-signing-step/producer-independent-review.json",
+      "bytes": 14154,
+      "sha256": "474e86857781a057c4abc6b6a576fa992815bd7a54e976208d854b7711142e4a"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-full-application-signing-step/swift-independent-review.json",
+      "bytes": 10111,
+      "sha256": "7c6d0074c1d00bc9870d687410f4328ac389d683f09599ceddeb4e9952e52c00"
+    }
+  ],
+  "preservedBoundaries": [
+    "No old build14 IPA opened, hashed, rebuilt or uploaded; this candidate has not produced an IPA on Windows.",
+    "No Simulator MachO is relabeled iPhoneOS; the real device build is data, not launched in Simulator.",
+    "Minimal producer default body and existing CMS/codesign callbacks retain exact AST; no fallback/skip/minimal substitution in full mode.",
+    "All real bundle IDs, original AppGroup, authored Apple-signin and CloudKit entitlements/resources are retained; controlled anchors do not grant Apple capability authority.",
+    "Existing 512MiB archive,64MiB code file,3..19 supported signing components and strict signature/resource/profile/trust checks are not raised. Actual unsupported complete layouts are genuine future failures.",
+    "No IPA, native app, private Keychain/P12/key or user binary is added to artifact upload; only bounded public JSON/log evidence.",
+    "Existing Native 90-minute job and test budgets unchanged apart from explicit bounded S3 prepare/build and separate1800s test phase; runtime budget viability remains to be observed.",
+    "Existing currentcore selections/Bool matrices/Package modes are not modified. The new resource-dependent App method must stay an explicit same-job required S3 selection in later controls."
+  ],
+  "proofLimits": [
+    "Local portable protocol guards do not build a real full App or run production signing; future real Apple build/sign/stream/verify failure remains fail-closed.",
+    "sameJobNativeReuse and build-manifest facts are owned by runner/producer; the consumer parses their hash shape and verifies current host/device product/source and payload bytes, not absent record contents.",
+    "Public code-source roster binds the full existing SelfRenewal family conservatively; the parent must derive the actual final SDK/Native compilation union rather than reuse an estimated count.",
+    "No evidence of real Apple account authority, installation authorization, same physical device,7-day renewal extension, no-PC/no-VPN autonomous installation, or background scheduling is produced."
+  ],
+  "rootAdditionalSourceReview": [
+    "Current controlled producer intentionally uses leaf=root; original profile DeveloperCertificates hash(root) therefore matches its actual codesign identity. Production signer still enforces signer-in-profile.",
+    "Actual S3 test is selected only by the same Native job holding the complete package resource; currentcore has no resource fallback or extra selected case."
+  ],
+  "evidence": [
+    {
+      "path": "docs/legado-ios/evidence/renewal-full-application-signing-step/reviewed-candidate.json",
+      "bytes": 11431,
+      "sha256": "b7f18927b30064716402cfc0ff19882d5ac0e9b54c5c799de77480cce151510e",
+      "original": {
+        "path": ".build/s3-full-application-signing-step/final-v2.json",
+        "bytes": 11431,
+        "sha256": "b7f18927b30064716402cfc0ff19882d5ac0e9b54c5c799de77480cce151510e"
+      },
+      "normalization": "Public UTF8/LF; only trailing horizontal whitespace and extra EOF blank lines normalized; original facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-full-application-signing-step/producer-independent-review.json",
+      "bytes": 14154,
+      "sha256": "474e86857781a057c4abc6b6a576fa992815bd7a54e976208d854b7711142e4a",
+      "original": {
+        "path": ".build/s3-full-application-signing-producer-independent-review/review-v1.json",
+        "bytes": 14154,
+        "sha256": "474e86857781a057c4abc6b6a576fa992815bd7a54e976208d854b7711142e4a"
+      },
+      "normalization": "Public UTF8/LF; only trailing horizontal whitespace and extra EOF blank lines normalized; original facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-full-application-signing-step/swift-independent-review.json",
+      "bytes": 10111,
+      "sha256": "7c6d0074c1d00bc9870d687410f4328ac389d683f09599ceddeb4e9952e52c00",
+      "original": {
+        "path": ".build/s3-full-application-signing-swift-independent-review/review-v1.json",
+        "bytes": 10111,
+        "sha256": "7c6d0074c1d00bc9870d687410f4328ac389d683f09599ceddeb4e9952e52c00"
+      },
+      "normalization": "Public UTF8/LF; only trailing horizontal whitespace and extra EOF blank lines normalized; original facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-full-application-signing-step/source-inputs.json",
+      "bytes": 39872,
+      "sha256": "31edb2541c6ba1ee128cc890dcb0948afd8d5a572629cdc8a8920c99f09ba736",
+      "original": {
+        "path": ".build/s3-full-application-signing-step/source-inputs-v2.json",
+        "bytes": 40832,
+        "sha256": "c46f1219f89a4c103ed67b383db756a6a89282c8e0e1e09e717d222a8691e901"
+      },
+      "normalization": "Public UTF8/LF; only trailing horizontal whitespace and extra EOF blank lines normalized; original facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-full-application-signing-step/portable-guards.log",
+      "bytes": 934,
+      "sha256": "0d68c02ac145b5e74a30c2e8f372b6790ea07e35b771599091667adef28036da",
+      "original": {
+        "path": ".build/s3-full-application-signing-step/validation/portable-guards-tool-output.txt",
+        "bytes": 934,
+        "sha256": "0d68c02ac145b5e74a30c2e8f372b6790ea07e35b771599091667adef28036da"
+      },
+      "normalization": "Public UTF8/LF; only trailing horizontal whitespace and extra EOF blank lines normalized; original facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-full-application-signing-step/portable-guards-result.json",
+      "bytes": 572,
+      "sha256": "9906b827719519ae20002f511a237458c17a880e3506d2cd94f85b962e028362",
+      "original": {
+        "path": ".build/s3-full-application-signing-step/validation/portable-guards-tool-result.json",
+        "bytes": 586,
+        "sha256": "8d2927b283aeb434d2ab685df74d9dc2453324541e6212aacf07fc224536e572"
+      },
+      "normalization": "Public UTF8/LF; only trailing horizontal whitespace and extra EOF blank lines normalized; original facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-full-application-signing-step/python-source-compile.json",
+      "bytes": 908,
+      "sha256": "21f3e577c954aa89ef7e34eeef29297b130bc1e2117998fb8264d9d9cc49f2c3",
+      "original": {
+        "path": ".build/s3-full-application-signing-step/validation/python-source-compile.json",
+        "bytes": 934,
+        "sha256": "66b51ef87589c9cb6d1e5b82aa0521998fa2571a96ba3eadc4a283135b06ce78"
+      },
+      "normalization": "Public UTF8/LF; only trailing horizontal whitespace and extra EOF blank lines normalized; original facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-full-application-signing-step/workflow-source-check.json",
+      "bytes": 297,
+      "sha256": "bd91880d8c36c1ddd3378f9b507a0044eb1d78a1a31d4189c66ddbd083e697ff",
+      "original": {
+        "path": ".build/s3-full-application-signing-step/validation/workflow-source-check.json",
+        "bytes": 305,
+        "sha256": "0ec883f13235b96d355098950f405b7b4cb07e678f538c6e0e64deccd2027674"
+      },
+      "normalization": "Public UTF8/LF; only trailing horizontal whitespace and extra EOF blank lines normalized; original facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-full-application-signing-step/root-integration.py",
+      "bytes": 6515,
+      "sha256": "9d18215b050de9392c26ba9e86eec8274b10cbb87b01265a7a128e094945f301",
+      "original": {
+        "path": ".build/integrate-s3-full-application-reviewed.py",
+        "bytes": 6515,
+        "sha256": "9d18215b050de9392c26ba9e86eec8274b10cbb87b01265a7a128e094945f301"
+      },
+      "normalization": "Public UTF8/LF; only trailing horizontal whitespace and extra EOF blank lines normalized; original facts retained."
+    }
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

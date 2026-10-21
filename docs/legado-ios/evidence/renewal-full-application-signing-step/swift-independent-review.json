@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "reviewedUTC": "2026-10-21T03:01:25.444453+00:00",
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "approvalScope": "One frozen Swift source-authored consumer and compatibility with current production APIs; not whole producer/controls integration or an SDK execution pass.",
+  "parent": {
+    "path": ".build/s3-full-application-signing-step/swift-consumer-final-v1.json",
+    "bytes": 4510,
+    "sha256": "2d8821f7e64645eec092de4fc190bae5afb078cffbaf96d00624bf7a2fb04612"
+  },
+  "sourceRoot": ".build/s3-full-application-signing-step/swift-consumer-snapshot-v1/work",
+  "sourceFiles": [
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift",
+      "baseline": null,
+      "candidate": {
+        "path": ".build/s3-full-application-signing-step/swift-consumer-snapshot-v1/work/Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift",
+        "bytes": 21683,
+        "sha256": "f5d74f9661ea4888a1f0096e94a7ac1958ce8874c94322b3b655c3cc29451ae9"
+      }
+    }
+  ],
+  "existingAPISourceFacts": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalControlledPackageSigner.swift",
+      "bytes": 18839,
+      "sha256": "62a4c1d185253d5498f74a9875d18ac0b1f56ce0e8c5b1a08866f3097d4b715c"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "bytes": 61427,
+      "sha256": "eacba522c47a405fd8d47f9547b6a9f2f2286f2f2fb9183242be0c3dbcd99380"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalIPAUnpacker.swift",
+      "bytes": 61558,
+      "sha256": "fe195fe934a3767c62e586667242c9737d144a7c3ab9e89cf40ef2061c2bfff0"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalIPAArchiveValidator.swift",
+      "bytes": 15201,
+      "sha256": "cfb319c0a3d32e5bc8a98ba900aa40f566dca0aac37611fbdb48cfcaf3af2287"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalMaterialInventory.swift",
+      "bytes": 21268,
+      "sha256": "8aac99356d13991803f5e2db10882622fc1c9c176b0b8201b521358f4f95dbd0"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalMachOSignatureReader.swift",
+      "bytes": 35801,
+      "sha256": "503ccc6ccf2916be26100095e01760416f80db52fee1744a422596a6480eace9"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalSignedCodeVerifier.swift",
+      "bytes": 12752,
+      "sha256": "f62872ca82474ddfad24ef7a588312f4db78e6ddbe55e7541120d7fb3884ba3d"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalSigningOwnedPKIFixture.swift",
+      "bytes": 9819,
+      "sha256": "e97757b283bf11a5c6041506e6c2118aef198318299109440c9e56958182bc3e"
+    },
+    {
+      "path": "scripts/reader-experience/stage-config.py",
+      "bytes": 26146,
+      "sha256": "63b19c420f3f55dfb7d4d2f45ad98e2b8cf0a9cf881586bc409a6bf8cd100841"
+    },
+    {
+      "path": "scripts/reader-experience/smoke-tools.py",
+      "bytes": 27526,
+      "sha256": "2aef24263e9f7f52287a3704f539a038009c768c2f9a2296752e5cddff424765"
+    }
+  ],
+  "additionalReadSourceFacts": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalApplicationMaterialVerifier.swift",
+      "bytes": 12873,
+      "sha256": "395fb5baf2b0f0c093cc0d2eb8ac0526a1e0080f0f3b8ada06aa3996b69913f1"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalControlledMachOSigner.swift",
+      "bytes": 38420,
+      "sha256": "589d216940be5c7a07cf0f3705c84d2a4e71b89d3f207baa1d87df24f7c6b72f"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalProvisioningProfileVerifier.swift",
+      "bytes": 16456,
+      "sha256": "e7fc2366b6149ff5a5b1dde04e3f0c854cc3a8205135a8ed4dd60c42c934b8d2"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalControlledPackageSignerTests.swift",
+      "bytes": 27606,
+      "sha256": "4c7203df3802cb9280fe3652ceb41ef5f936db033b1a9ec9e7dcb65d5ae72abc"
+    }
+  ],
+  "definitions": {
+    "newAppDefinitions": 1,
+    "method": "SelfRenewalFullApplicationSignerTests/signsFullCurrentIPhoneOSJVMApplicationThroughSameProductionOwners",
+    "parameters": [],
+    "newNative": 0,
+    "newPackage": 0
+  },
+  "inputAdmission": [
+    "Required separate Bundle JSON and URL IPA; missing metadata/archive throws, with no skip, embedded base64 fallback or synthetic minimal-app substitution. Metadata is a regular file bounded1MiB; archive retains existing536870912-byte budget.",
+    "Metadata source hash is lower-hex and matches actual main Simulator host full40/short7 stamps. Input and output actual main/widget/share Info plists match that source and iPhoneOS platform; exact three bundle paths and unique bounded actual component paths are required.",
+    "Existing Unpacker first verifies actual archive hash/size, code/profile signatures, resource envelopes and nested component inventories under the supplied controlled trust. Each component must be a single arm64 thin64 Mach-O with actual LC_BUILD_VERSION platform IOS; no platform bytes are rewritten.",
+    "JDK class count exactly equals metadata and exceeds10000, ordinary Jar exactSHA/size plus runtime-manifest match, Notices exist, two actual java.base classes have CAFEBABE headers, and packaged java-home directory is rejected."
+  ],
+  "productionPathAndOutput": [
+    "Exactly one existing production Vault creates an owned namespace and permanent key, derives a public certificate/profile set using the existing ephemeral PKI fixture, publishes the same original three bundle identities, then invokes SelfRenewalControlledPackageSigner.resign on the actual IPA. No new signer/store/HTTP/VM or exported private key.",
+    "The production signer itself validates the live Lease, preserves identity/entitlements, signs actual nested code, re-verifies whole resources and emits a pinned ControlledArchive. The test checks original archive binding, all component changes, app-group/keychain identity preservation and explicit false authority flags.",
+    "Actual output is read through ControlledArchive.read in existing65536-byte chunks, with exact lengths and incremental SHA256 equal to output archive.sha256, then synchronized/closed as a real file.",
+    "A separate new Unpacker.withOwnedApplication invocation opens that output URL under replacement anchors and verifies its exact archive hash/size and complete Materials equality. It repeats device/JVM/resource checks from those newly read bytes.",
+    "Input and output full file-path sets must match. All runtime hashes match; every file outside actual executable, embedded profile and CodeResources paths must retain its input hash. Frameworks are accepted only if actually present and must be preserved; none is synthesized to claim a fourth component."
+  ],
+  "lifecycleAndAPIReview": [
+    "Heavy work runs in Task.detached utility, with main-thread precondition and bounded SourcePerfTrace details. Task cancellation propagates to that worker; streaming and component loops check cancellation; existing Unpacker/Signer worker cancellation/drain semantics are retained.",
+    "Output FileHandle closes on both success/error. After namespace creation, all failure/cancellation paths attempt the same cleanup; cleanup uses an independent uncancelled detached Task, obtains current Vault generation and destroys only that namespace, removes only its UUID-owned temporary directory, and surfaces cleanup errors.",
+    "Existing PKI issuer is explicitly nonpersistent. The signing key is the Vault-owned permanent key and is destroyed through that owner. ControlledArchive retains a read-only Snapshot whose deinit closes the descriptor; no mutable staging path escapes its owned scope.",
+    "Called APIs, labels and inspected fields exist in the exact current10 declared dependency sources plus four additional read sources. Generic OwnedApplication closure return values are Sendable tuples/dictionaries/materials. No definite Swift symbol, static-helper qualification, short-circuit throwing RHS or actor-call mismatch was found from source inspection; this is not typechecking."
+  ],
+  "producerAndMetadataBoundary": [
+    "originalBuildManifest and sameJobNativeReuse are only bounded size/hash facts in this Swift resource. Actual manifest bytes, same-job provenance and device-build preservation must be enforced by the separately frozen producer/controller; this consumer alone does not authenticate unseen records.",
+    "Producer wire was compared only for the exact currently stated metadata/body/resource names; mutable producer code was not approved here. Whole production/controller snapshot, compulsory resource installation and exact selector/source closure still require independent integration review.",
+    "The input controlled trust and replacement PKI are test-only synthetic authority. They do not establish Apple certificate/team permission, provisioning service approval, installed device eligibility, code replacement permission or automatic renewal."
+  ],
+  "actualReviewActions": {
+    "sourceReadAndHashChecksOnly": true,
+    "newSwiftCompiles": 0,
+    "SwiftParser": 0,
+    "AppTestExecutions": 0,
+    "controlledSignerExecutions": 0,
+    "newPortableTests": 0,
+    "JVMTests": 0,
+    "deviceExecutions": 0,
+    "cloudQueries": 0,
+    "canonicalOrGitWrites": 0
+  },
+  "remainingExecutionLimits": [
+    "Apple SDK still must compile and execute this exact new method against the full current-source iPhoneOS/JVM package; possible real-layout/budget/CodeResources/entitlement rejection remains a failure, not a skip or unsupported acceptance.",
+    "No deliberate mid-sign cancellation is driven by this one new positive method; source cleanup/cancellation uses existing production behavior, and the existing controlled signer cancellation regressions remain separate evidence.",
+    "A pass would establish controlled complete-package signing and independent byte verification only, not install/session/physical-device/unattended renewal."
+  ],
+  "automaticSelfRenewalImplemented": false,
+  "automaticSelfRenewalVerified": false,
+  "allNonDeviceWorkComplete": false,
+  "fullLegadoCompatibilityEstablished": false
+}

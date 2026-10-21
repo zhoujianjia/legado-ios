@@ -5,6 +5,7 @@ The JSON output is an XCTest resource, not a source file mutation.
 """
 from pathlib import Path, PurePosixPath
 from datetime import datetime,timezone,timedelta
+import importlib.util
 import argparse, base64, hashlib, io, json, os, plistlib, re, secrets, shutil, stat, struct, subprocess, sys, tempfile, zipfile, math, signal, time
 HERE=Path(__file__).resolve().parent
 RECORDS=[]
@@ -823,7 +824,7 @@ def export_owned_signing_identity(key, certificate_pem, password):
         '-certpbe','PBE-SHA1-3DES','-macalg','SHA1','-iter','2048'],input=key,env=env,private=True)
 
 def main():
-    a=argparse.ArgumentParser();a.add_argument('--output',type=Path,required=True);args=a.parse_args()
+    a=argparse.ArgumentParser();a.add_argument('--output',type=Path,required=True);a.add_argument('--full-application-build',type=Path);args=a.parse_args()
     if sys.platform!='darwin':raise SystemExit('Requires macOS/Xcode; no SDK execution was attempted.')
     require_owned_hosted_runner()
     # An outer producer deadline may request graceful termination. Let finally
@@ -844,8 +845,15 @@ def main():
     else:raise RuntimeError('Existing OpenSSL 3 required; no package installation attempted')
     out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
     if any(out.iterdir()):raise RuntimeError('Output must be an empty controlled directory')
+    full=None;prepared_full=None
+    if args.full_application_build is not None:
+        spec=importlib.util.spec_from_file_location('owned_full_application_fixture',HERE/'full-application-package.py')
+        full=importlib.util.module_from_spec(spec);spec.loader.exec_module(full)
+        prepared_full=full.validate_input(sys.modules[__name__],args.full_application_build)
+
     records=[]
     source_files=['generate-sdk-owned-package.py','ImportOwnedIdentity.swift','OwnedIdentitySearch.h','OwnedIdentitySearch.c','main.c','extension.c','framework.c']
+    if full is not None:source_files += ['full-application-package.py']
     for name in source_files:
         raw=(HERE/name).read_bytes();records.append({'path':name,'bytes':len(raw),'sha256':fingerprint(raw)})
     run(['openssl','version'],public_log=out/'openssl-version.log')
@@ -912,13 +920,6 @@ def main():
             del request,p12
             root_key_memory=signing_key
             del signing_key
-            app=owned/'Payload/Owned.app';app.mkdir(parents=True)
-            framework=app/'Frameworks/OwnedFramework.framework';framework.mkdir(parents=True)
-            common=['xcrun','--sdk','iphoneos','clang','-target','arm64-apple-ios17.0','-isysroot',sdk,'-O0','-g0']
-            run(common+['-dynamiclib',HERE/'framework.c','-Wl,-install_name,@rpath/OwnedFramework.framework/OwnedFramework','-o',framework/'OwnedFramework'],public_log=out/'framework-clang.log')
-            info={'CFBundleIdentifier':'test.owned.reader.framework','CFBundleExecutable':'OwnedFramework','CFBundlePackageType':'FMWK','CFBundleShortVersionString':'1.0','CFBundleVersion':'12'}
-            (framework/'Info.plist').write_bytes(plistlib.dumps(info));(framework/'chapter.txt').write_bytes(b'abc')
-            entries=[('.', 'test.owned.reader', None),('PlugIns/OwnedShare.appex','test.owned.reader.share','com.apple.share-services'),('PlugIns/OwnedWidget.appex','test.owned.reader.widget','com.apple.widgetkit-extension')]
             def cms(content,label):
                 raw=owned/(label+'.public.content');raw.write_bytes(content)
                 result=run(['openssl','cms','-sign','-binary','-nodetach','-noattr','-md','sha256','-signer',root_pem,'-inkey','/dev/stdin','-in',raw,'-outform','DER'],input=root_key_memory,private=True)
@@ -929,65 +930,80 @@ def main():
                 if entitlements:cmd+=['--generate-entitlement-der','--entitlements',entitlements]
                 cmd += [bundle]
                 run(cmd,public_log=out/(identifier+'.codesign.log'))
-            codesign(framework,'test.owned.reader.framework')
-            for i,(path,identifier,point) in reversed(list(enumerate(entries))):
-                bundle=app if path=='.' else app/path;bundle.mkdir(parents=True,exist_ok=True)
-                flags=[] if path=='.' else ['-fapplication-extension']
-                rpath='@executable_path/Frameworks' if path=='.' else '@executable_path/../../Frameworks'
-                run(common+flags+[HERE/('main.c' if path=='.' else 'extension.c'),'-F',app/'Frameworks','-framework','OwnedFramework','-Wl,-rpath,'+rpath,'-o',bundle/'Owned'],public_log=out/(identifier+'.clang.log'))
-                info={'CFBundleIdentifier':identifier,'CFBundleExecutable':'Owned','CFBundlePackageType':'APPL' if path=='.' else 'XPC!','CFBundleShortVersionString':'1.0','CFBundleVersion':'12'}
-                if point:info['NSExtension']={'NSExtensionPointIdentifier':point}
-                (bundle/'Info.plist').write_bytes(plistlib.dumps(info));(bundle/'chapter.txt').write_bytes(b'abc')
-                claims={'application-identifier':'OLDPREFIX.'+identifier,'com.apple.developer.team-identifier':'FIXTURE123','com.apple.security.application-groups':['group.test.owned.reader'],'keychain-access-groups':['OLDPREFIX.'+identifier,'OLDPREFIX.shared'],'get-task-allow':True}
-                props={'UUID':f'99999999-2222-3333-4444-{i:012d}','CreationDate':at-timedelta(minutes=5),'ExpirationDate':at+timedelta(days=2),'Platform':['iOS'],'TeamIdentifier':['FIXTURE123'],'ApplicationIdentifierPrefix':['OLDPREFIX'],'DeveloperCertificates':[hashlib.sha256(leaf).digest()],'Entitlements':claims}
-                profile=cms(plistlib.dumps({'DER-Encoded-Profile':cms(der(props),str(i)+'-inner')}),str(i)+'-outer')
-                (bundle/'embedded.mobileprovision').write_bytes(profile)
-                ent=owned/(str(i)+'.public-entitlements.plist');ent.write_bytes(plistlib.dumps(claims))
-                codesign(bundle,identifier,ent)
-            # Existing CMS gate is exercised on actual codesign-produced CMS,
-            # with its exact detached primary CD and explicit owned root.
-            parsed=[]
-            for label,binary in [('main',app/'Owned'),('share',app/'PlugIns/OwnedShare.appex/Owned'),('widget',app/'PlugIns/OwnedWidget.appex/Owned'),('framework',framework/'OwnedFramework')]:
-                raw=binary.read_bytes();assert len(raw)<=67_108_864
-                magic,cpu,sub,filetype,count,size=struct.unpack_from('<6I',raw)
-                assert (magic,cpu,sub)==(0xfeedfacf,0x100000c,0) and filetype in (2,6)
-                cursor=32;commands=[];signature=None
-                for _ in range(count):
-                    cmd,n=struct.unpack_from('<II',raw,cursor);assert n>=8 and cursor+n<=32+size;commands.append(cmd)
-                    if cmd==0x1d:signature=struct.unpack_from('<II',raw,cursor+8)
-                    cursor+=n
-                assert cursor==32+size and 0xb in commands and signature
-                offset,length=signature;assert offset+length==len(raw)
-                magic,n,count=struct.unpack_from('>III',raw,offset);assert magic==0xfade0cc0
-                blobs={}
-                for index in range(count):
-                    slot,pos=struct.unpack_from('>II',raw,offset+12+8*index);length=struct.unpack_from('>I',raw,offset+pos+4)[0];blobs[slot]=raw[offset+pos:offset+pos+length]
-                cd=blobs[0];cms_bytes=blobs[0x10000][8:]
-                cd_path=out/(label+'.primary.cd');cd_path.write_bytes(cd)
-                cms_path=out/(label+'.detached.cms');cms_path.write_bytes(cms_bytes)
-                verified=out/(label+'.verified.cd')
-                run(['openssl','cms','-verify','-binary','-inform','DER','-in',cms_path,'-content',cd_path,'-CAfile',root_pem,'-purpose','any','-attime',str(int(at.timestamp())),'-out',verified],public_log=out/(label+'.original-cms.log'))
-                assert verified.read_bytes()==cd
-                (out/(label+'.macho')).write_bytes(raw)
-                run(['xcrun','otool','-l',binary],public_log=out/(label+'.otool.log'))
-                parsed.append({'role':label,'bytes':len(raw),'sha256':fingerprint(raw),'fileType':filetype,'loadCommands':commands,'originalDetachedCMSActuallyVerified':True})
-            stream=io.BytesIO()
-            with zipfile.ZipFile(stream,'w',compression=zipfile.ZIP_STORED) as z:
-                for path in sorted(app.rglob('*')):
-                    if path.is_symlink():raise RuntimeError('Unexpected generated symlink')
-                    if path.is_file():
-                        item=zipfile.ZipInfo('Payload/Owned.app/'+path.relative_to(app).as_posix(),(2026,10,21,0,0,0));item.create_system=3;item.external_attr=(0o100755 if path.name in ["Owned", "OwnedFramework"] else 0o100644)<<16;z.writestr(item,path.read_bytes())
-            raw=stream.getvalue();assert len(raw)<=67_108_864
-            with zipfile.ZipFile(io.BytesIO(raw)) as z:assert z.testzip() is None
-            (out/'owned-sdk-package.ipa').write_bytes(raw)
-            resource={'schema':1,'archive':base64.b64encode(raw).decode(),'anchor':base64.b64encode(root).decode(),'verificationEpochSeconds':int(at.timestamp()),'archiveSHA256':fingerprint(raw),'actualSDKProducedMachOs':parsed}
-            (out/'owned-sdk-package.json').write_text(json.dumps(resource,separators=(',',':'))+'\n')
+            full_extra=None
+            if full is not None:
+                full_extra=full.produce(sys.modules[__name__],out,owned,prepared_full,cms,codesign,root,at)
+                parsed=[]
+                raw=None
+            else:
+                app=owned/'Payload/Owned.app';app.mkdir(parents=True)
+                framework=app/'Frameworks/OwnedFramework.framework';framework.mkdir(parents=True)
+                common=['xcrun','--sdk','iphoneos','clang','-target','arm64-apple-ios17.0','-isysroot',sdk,'-O0','-g0']
+                run(common+['-dynamiclib',HERE/'framework.c','-Wl,-install_name,@rpath/OwnedFramework.framework/OwnedFramework','-o',framework/'OwnedFramework'],public_log=out/'framework-clang.log')
+                info={'CFBundleIdentifier':'test.owned.reader.framework','CFBundleExecutable':'OwnedFramework','CFBundlePackageType':'FMWK','CFBundleShortVersionString':'1.0','CFBundleVersion':'12'}
+                (framework/'Info.plist').write_bytes(plistlib.dumps(info));(framework/'chapter.txt').write_bytes(b'abc')
+                entries=[('.', 'test.owned.reader', None),('PlugIns/OwnedShare.appex','test.owned.reader.share','com.apple.share-services'),('PlugIns/OwnedWidget.appex','test.owned.reader.widget','com.apple.widgetkit-extension')]
+                codesign(framework,'test.owned.reader.framework')
+                for i,(path,identifier,point) in reversed(list(enumerate(entries))):
+                    bundle=app if path=='.' else app/path;bundle.mkdir(parents=True,exist_ok=True)
+                    flags=[] if path=='.' else ['-fapplication-extension']
+                    rpath='@executable_path/Frameworks' if path=='.' else '@executable_path/../../Frameworks'
+                    run(common+flags+[HERE/('main.c' if path=='.' else 'extension.c'),'-F',app/'Frameworks','-framework','OwnedFramework','-Wl,-rpath,'+rpath,'-o',bundle/'Owned'],public_log=out/(identifier+'.clang.log'))
+                    info={'CFBundleIdentifier':identifier,'CFBundleExecutable':'Owned','CFBundlePackageType':'APPL' if path=='.' else 'XPC!','CFBundleShortVersionString':'1.0','CFBundleVersion':'12'}
+                    if point:info['NSExtension']={'NSExtensionPointIdentifier':point}
+                    (bundle/'Info.plist').write_bytes(plistlib.dumps(info));(bundle/'chapter.txt').write_bytes(b'abc')
+                    claims={'application-identifier':'OLDPREFIX.'+identifier,'com.apple.developer.team-identifier':'FIXTURE123','com.apple.security.application-groups':['group.test.owned.reader'],'keychain-access-groups':['OLDPREFIX.'+identifier,'OLDPREFIX.shared'],'get-task-allow':True}
+                    props={'UUID':f'99999999-2222-3333-4444-{i:012d}','CreationDate':at-timedelta(minutes=5),'ExpirationDate':at+timedelta(days=2),'Platform':['iOS'],'TeamIdentifier':['FIXTURE123'],'ApplicationIdentifierPrefix':['OLDPREFIX'],'DeveloperCertificates':[hashlib.sha256(leaf).digest()],'Entitlements':claims}
+                    profile=cms(plistlib.dumps({'DER-Encoded-Profile':cms(der(props),str(i)+'-inner')}),str(i)+'-outer')
+                    (bundle/'embedded.mobileprovision').write_bytes(profile)
+                    ent=owned/(str(i)+'.public-entitlements.plist');ent.write_bytes(plistlib.dumps(claims))
+                    codesign(bundle,identifier,ent)
+                # Existing CMS gate is exercised on actual codesign-produced CMS,
+                # with its exact detached primary CD and explicit owned root.
+                parsed=[]
+                for label,binary in [('main',app/'Owned'),('share',app/'PlugIns/OwnedShare.appex/Owned'),('widget',app/'PlugIns/OwnedWidget.appex/Owned'),('framework',framework/'OwnedFramework')]:
+                    raw=binary.read_bytes();assert len(raw)<=67_108_864
+                    magic,cpu,sub,filetype,count,size=struct.unpack_from('<6I',raw)
+                    assert (magic,cpu,sub)==(0xfeedfacf,0x100000c,0) and filetype in (2,6)
+                    cursor=32;commands=[];signature=None
+                    for _ in range(count):
+                        cmd,n=struct.unpack_from('<II',raw,cursor);assert n>=8 and cursor+n<=32+size;commands.append(cmd)
+                        if cmd==0x1d:signature=struct.unpack_from('<II',raw,cursor+8)
+                        cursor+=n
+                    assert cursor==32+size and 0xb in commands and signature
+                    offset,length=signature;assert offset+length==len(raw)
+                    magic,n,count=struct.unpack_from('>III',raw,offset);assert magic==0xfade0cc0
+                    blobs={}
+                    for index in range(count):
+                        slot,pos=struct.unpack_from('>II',raw,offset+12+8*index);length=struct.unpack_from('>I',raw,offset+pos+4)[0];blobs[slot]=raw[offset+pos:offset+pos+length]
+                    cd=blobs[0];cms_bytes=blobs[0x10000][8:]
+                    cd_path=out/(label+'.primary.cd');cd_path.write_bytes(cd)
+                    cms_path=out/(label+'.detached.cms');cms_path.write_bytes(cms_bytes)
+                    verified=out/(label+'.verified.cd')
+                    run(['openssl','cms','-verify','-binary','-inform','DER','-in',cms_path,'-content',cd_path,'-CAfile',root_pem,'-purpose','any','-attime',str(int(at.timestamp())),'-out',verified],public_log=out/(label+'.original-cms.log'))
+                    assert verified.read_bytes()==cd
+                    (out/(label+'.macho')).write_bytes(raw)
+                    run(['xcrun','otool','-l',binary],public_log=out/(label+'.otool.log'))
+                    parsed.append({'role':label,'bytes':len(raw),'sha256':fingerprint(raw),'fileType':filetype,'loadCommands':commands,'originalDetachedCMSActuallyVerified':True})
+                stream=io.BytesIO()
+                with zipfile.ZipFile(stream,'w',compression=zipfile.ZIP_STORED) as z:
+                    for path in sorted(app.rglob('*')):
+                        if path.is_symlink():raise RuntimeError('Unexpected generated symlink')
+                        if path.is_file():
+                            item=zipfile.ZipInfo('Payload/Owned.app/'+path.relative_to(app).as_posix(),(2026,10,21,0,0,0));item.create_system=3;item.external_attr=(0o100755 if path.name in ["Owned", "OwnedFramework"] else 0o100644)<<16;z.writestr(item,path.read_bytes())
+                raw=stream.getvalue();assert len(raw)<=67_108_864
+                with zipfile.ZipFile(io.BytesIO(raw)) as z:assert z.testzip() is None
+                (out/'owned-sdk-package.ipa').write_bytes(raw)
+                resource={'schema':1,'archive':base64.b64encode(raw).decode(),'anchor':base64.b64encode(root).decode(),'verificationEpochSeconds':int(at.timestamp()),'archiveSHA256':fingerprint(raw),'actualSDKProducedMachOs':parsed}
+                (out/'owned-sdk-package.json').write_text(json.dumps(resource,separators=(',',':'))+'\n')
             search_scope.cleanup()
             run(['security','delete-keychain',keychain],private=True,timeout_seconds=CLEANUP_TIMEOUT_SECONDS,cleanup=True)
             keychain=None
-            record={'schema':1,'sourceInputs':records,'commands':RECORDS,'actualSDKProducedMachOs':parsed,'generatedAt':at.isoformat(),'archiveSHA256':fingerprint(raw),'archiveBytes':len(raw),'privateKeyFilesOutsideKeychain':0,'temporaryOwnedKeychainDeleted':True,'temporaryUserSearchListRegistered':search_scope.registered,'temporaryUserSearchListRestoredAndOwnedAbsent':search_scope.restored,'userAdminSystemTrustChanged':False,'privateMaterialArtifacts':0,'realAppleAccountUsed':False,'SwiftPackageCoordinatorExecuted':False,'producerToolBudgetSeconds':PRODUCER_TIMEOUT_SECONDS,'ownedToolBudgetsSeconds':TOOL_TIMEOUT_SECONDS,'cleanupToolBudgetSeconds':CLEANUP_TIMEOUT_SECONDS}
-            record['publicOutputs']=[{'path':p.name,'bytes':p.stat().st_size,'sha256':fingerprint(p.read_bytes())} for p in sorted(out.iterdir()) if p.is_file()]
-            (out/'sdk-produced-fixture-manifest.json').write_text(json.dumps(record,indent=2)+'\n')
+            record={'schema':1,'sourceInputs':records,'commands':RECORDS,'actualSDKProducedMachOs':parsed,'generatedAt':at.isoformat(),'archiveSHA256':full_extra['archiveSHA256'] if full_extra else fingerprint(raw),'archiveBytes':full_extra['archiveBytes'] if full_extra else len(raw),'privateKeyFilesOutsideKeychain':0,'temporaryOwnedKeychainDeleted':True,'temporaryUserSearchListRegistered':search_scope.registered,'temporaryUserSearchListRestoredAndOwnedAbsent':search_scope.restored,'userAdminSystemTrustChanged':False,'privateMaterialArtifacts':0,'realAppleAccountUsed':False,'SwiftPackageCoordinatorExecuted':False,'producerToolBudgetSeconds':PRODUCER_TIMEOUT_SECONDS,'ownedToolBudgetsSeconds':TOOL_TIMEOUT_SECONDS,'cleanupToolBudgetSeconds':CLEANUP_TIMEOUT_SECONDS}
+            if full_extra:record.update(full_extra)
+            record['publicOutputs']=[{'path':p.name,'bytes':p.stat().st_size,'sha256':full.digest(p) if full else fingerprint(p.read_bytes())} for p in sorted(out.iterdir()) if p.is_file()]
+            manifest_name='full-sdk-produced-fixture-manifest.json' if full else 'sdk-produced-fixture-manifest.json'
+            (out/manifest_name).write_text(json.dumps(record,indent=2)+'\n')
         except BaseException as error:
             primary_error=error
             raise
