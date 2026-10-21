@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+  "sourceTag": "reader-renewal-f330274",
+  "runID": 39578204127,
+  "jobID": 119148925693,
+  "status": "completed",
+  "conclusion": "failure",
+  "queryAgain": false,
+  "actualApp": {
+    "selectedDefinitions": 479,
+    "selectedArgumentLeaves": 482,
+    "selectedBoolPairs": 3,
+    "actualExecutedDefinitions": 479,
+    "actualExecutedLeaves": 482,
+    "selectedDefinitionPassed": 477,
+    "selectedDefinitionFailed": 2,
+    "selectedLeafPassed": 480,
+    "selectedLeafFailed": 2,
+    "skipped": 0,
+    "BoolPairs": [
+      {
+        "identity": "AozoraTXTTests/storedV6LocationsMigrateOnce",
+        "rawIdentifier": "AozoraTXTTests/storedV6LocationsMigrateOnce(interrupt:)",
+        "values": [
+          {
+            "name": "false",
+            "result": "Passed"
+          },
+          {
+            "name": "true",
+            "result": "Passed"
+          }
+        ]
+      },
+      {
+        "identity": "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll",
+        "rawIdentifier": "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll(nestedBackdrop:)",
+        "values": [
+          {
+            "name": "false",
+            "result": "Passed"
+          },
+          {
+            "name": "true",
+            "result": "Passed"
+          }
+        ]
+      },
+      {
+        "identity": "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit",
+        "rawIdentifier": "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit(interrupt:)",
+        "values": [
+          {
+            "name": "false",
+            "result": "Passed"
+          },
+          {
+            "name": "true",
+            "result": "Passed"
+          }
+        ]
+      }
+    ],
+    "unassociatedFailureCases": 1,
+    "unassociatedDistinctLocations": 2,
+    "unassociatedRawIssueOccurrences": 3,
+    "rawSummaryCases": 480,
+    "rawDeviceExecutions": 483,
+    "compileBlocked": false,
+    "uniqueCompilerErrors": 0,
+    "cleanSuiteAcceptance": false
+  },
+  "firstFailure": {
+    "phase": "native",
+    "pipelineExitCode": 1,
+    "commandExitCode": 1,
+    "actualXcodeExitCode": 65,
+    "timedOut": false,
+    "phaseBudgetSeconds": 3720,
+    "elapsedSeconds": 2123.073311,
+    "cause": "Two qualified Cookie failures plus one unassociated failure case containing three issue occurrences at two renewal-related source locations"
+  },
+  "extraction": {
+    "summaryBytes": 3326,
+    "testsBytes": 299825,
+    "summaryCommandExitCode": 0,
+    "testsCommandExitCode": 0,
+    "validNonemptyActualTestJSON": true,
+    "parameterExports": [
+      {
+        "error": "Ambiguous qualified test identifier"
+      }
+    ],
+    "parameterAmbiguityCause": "Synthetic orphan Test Case has no qualified method; existing fail-closed _qualified_method rejects it. No selector or gate change.",
+    "casesGatePassed": false,
+    "afterTestsState": "blocked",
+    "resultProduced": false
+  },
+  "actualPackage": {
+    "methods": 24,
+    "passed": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "XMLVerboseResultSelectedIdentitiesExact": true,
+    "packageInputs": 23,
+    "AppOrJNIProof": false
+  },
+  "minimalProducer": {
+    "commands": 48,
+    "publicOutputs": 43,
+    "MachOs": 4,
+    "allCommandExitZeroNonTimeout": true,
+    "allPublicOutputBytesHashesVerified": true,
+    "ownedKeychainDeleted": true,
+    "originalSearchListRestoredOwnedAbsent": true,
+    "AppSignerExecutedByProducer": false
+  },
+  "requiredPortableMethodsPassed": 200,
+  "sourceInputs": {
+    "historicalCore": 418,
+    "all418GitBytesMatched": true,
+    "Package23Subset": true,
+    "producer7Subset": true,
+    "uniqueRepositoryInputs": 418,
+    "all11PhaseStatesSameSource": true,
+    "notAllXcodeTransitiveDependencies": true
+  },
+  "resultProduced": false,
+  "evidence": "docs/legado-ios/evidence/sdk-f330274-terminal/factual-review-v1.json",
+  "actualFailures": "docs/legado-ios/evidence/sdk-f330274-terminal/actual-failure-signatures.json",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "temporaryCompatibilityTargetPercent": 90,
+  "measuredCompatibilityPercent": null,
+  "otherSeventeenItemsRemainDeferred": true,
+  "limits": [
+    "Actual479 definitions/482 leaves completed; two selected failures and one orphan failure case remain. This is not clean suite acceptance.",
+    "Associated renewal methods may reportPassed while unknown-context assertions fail; retain all three issue occurrences/two source locations.",
+    "All three actual Bool pairs passed, but strict parameter extraction remained ambiguous and cases/result gates failed; no gate was weakened.",
+    "Package24/minimal producer48,43,4/portable200 are separate scopes, not full Native App signing/real Apple/physical installation/unattended proof.",
+    "Historical418 is an evidence inventory, not all Xcode transitive dependencies; current440 was not substituted.",
+    "Separate full Native is independently owned; no query, status inference or mutation for that handle.",
+    "No reviewer test/compiler/parser/cloud query/download; subsequent repairs cannot relabel this closed source result."
+  ]
+}

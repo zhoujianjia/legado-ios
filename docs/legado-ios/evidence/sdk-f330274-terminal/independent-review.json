@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "status": "independent-read-only-review-passed-no-blocking-findings",
+  "frozenAtUTC": "2026-10-21T10:35:33.817409+00:00",
+  "candidate": {
+    "path": ".build/sdk-f330274-terminal-archive-candidate/final-v2.json",
+    "bytes": 13370,
+    "sha256": "ac9b869706dede3bfe1a72b9257156fc3552d6b432bdf1ace886eb39465c98be"
+  },
+  "sourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+  "runID": 39578204127,
+  "jobID": 119148925693,
+  "readExistingTerminalJob": {
+    "path": ".build/sdk-f330274-observations/20261021102143Z-jobs.json",
+    "bytes": 3625,
+    "sha256": "3ed3e102bf2b8564b0a37a95172c8a24cabd37c5a5de12560b41aad616df6aeb"
+  },
+  "skillsRead": [
+    ".agents/skills/yuedu-swift/SKILL.md",
+    "CLAUDE.md"
+  ],
+  "findings": [],
+  "verified": {
+    "publicRosterFiles": 37,
+    "publicRosterBytes": 658498,
+    "allManifestBytesSHA256AndExactSnapshotRosterMatched": true,
+    "allPublicPathsRelativeWithinSnapshotCasefoldUniqueAndNoSymlink": true,
+    "allPublicFilesUTF8WithoutNULAndNoSignedURLPatterns": true,
+    "bothOriginalZIPDigestsMatchRetainedGitHubAPI": true,
+    "ZIPMemberCounts": [
+      1098,
+      10
+    ],
+    "ZIPCRCsSafeRelativePathsCasefoldUniquenessNoSymlinkNoEncryptionChecked": true,
+    "selectedDefinitions": 479,
+    "selectedDefinitionResults": {
+      "Passed": 477,
+      "Failed": 2
+    },
+    "selectedLeaves": 482,
+    "selectedLeafResults": {
+      "Passed": 480,
+      "Failed": 2
+    },
+    "rawTestCaseNodes": 480,
+    "rawDeviceExecutions": 483,
+    "unassociatedFailureCases": 1,
+    "unassociatedDistinctLocations": 2,
+    "unassociatedIssueOccurrences": 3,
+    "allSelectedIdentitiesMatchHistoricalIntendedRoster": true,
+    "allThreeActualBoolPairsPassed": true,
+    "twoAssociatedRenewalMethodsReportedPassedDoesNotRemoveOrphanFailure": true,
+    "strictExportStillFailsClosedOnUnqualifiedOrphan": true,
+    "casesAndResultGatesRemainFailedOrBlocked": true,
+    "packageXMLMethods": 24,
+    "packageXMLPassed": 24,
+    "packageXMLIdentitiesMatchHistoricalSelection": true,
+    "portableCountsReadFromExistingLogs": [
+      24,
+      76,
+      22,
+      6,
+      9,
+      28,
+      35
+    ],
+    "portableTotal": 200,
+    "producerCommands": 48,
+    "producerPublicOutputs": 43,
+    "producerMachOs": 4,
+    "allProducerCommandsZeroNonTimeoutAndProjectionOmitsArgv": true,
+    "all43ProducerOutputBytesSHA256Matched": true,
+    "historicalGitSourceBlobsByteAndSHA256AndOIDMatched": 418,
+    "historicalSourceVerifiedWithOneReadOnlyGitCatFileBatch": true,
+    "package23AndProducer7AreHistorical418Subsets": true,
+    "current440NotSubstitutedForHistorical418": true,
+    "rawToPublicNormalizationMappingsMatched": 24,
+    "rawBinaryBigLogsAndEmbeddedIPAOmissionsRemainExplicitlyInventoried": true,
+    "archiveRetainsFailureAndNoCleanSuiteAcceptance": true
+  },
+  "interpretation": "The failed f330 source result is accurately archived. The synthetic XCResult orphan is preserved alongside all qualified passes and failures; its unqualified identity explains the existing strict parameter export rejection without relaxing any gate. Package, producer and portable successes retain their separate scope.",
+  "reviewerActions": {
+    "executedTestsOrCompiler": 0,
+    "cloudQueriesOrDownloads": 0,
+    "productionTestOrGateEdits": 0,
+    "onlyLocalArchivedBytesAndHistoricalGitObjectsRead": true
+  },
+  "limits": [
+    "This review does not convert the failed run into clean acceptance or establish full Native JNI/product execution.",
+    "Historical418 is an evidence inventory, not every transitive Xcode dependency.",
+    "The two renewal locations identify existing orphan assertions; their exact dynamic error type and URL-cache causality were not measured by this review.",
+    "No IPA, physical installation, real Apple account or unattended renewal proof follows."
+  ]
+}

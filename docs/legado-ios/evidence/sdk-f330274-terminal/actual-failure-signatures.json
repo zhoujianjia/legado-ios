@@ -1,0 +1,75 @@
+{
+  "qualifiedFailures": [
+    {
+      "identity": "LegadoCookieOwnerTests/staleWebViewCookieDecisionCannotEndReusedLease",
+      "source": "Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift:420:6",
+      "rawLogLines": [
+        38922,
+        38923
+      ],
+      "failure": "TEST_NAVIGATION_FINISHED: The owned navigation finished before its Cookie response commit gate"
+    },
+    {
+      "identity": "LegadoCookieTextHostTests/responseTextPrecedenceAndNativeMetadataSurviveTheirCorrectLifetimes",
+      "source": "Tests/iOS/yuedu appTests/LegadoCookieTextHostTests.swift:125:6",
+      "rawLogLines": [
+        38960,
+        38961
+      ],
+      "failure": "UNSUPPORTED_CAPABILITY: Parsed original Cookie [expiry]; persistent=true seedSession=false seedExpiry=true nativeSession=false nativeExpiry=true"
+    }
+  ],
+  "unassociatedIssues": [
+    {
+      "source": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift:324:13",
+      "sourceExpression": "#expect(error as? Transport.Failure == .cancelled)",
+      "rawLogLines": [
+        51583
+      ],
+      "shortFailure": "error as? Transport.Failure is nil; expected cancelled",
+      "associatedSelectedMethod": "SelfRenewalAuthenticatedInstallationClientTests/cancellationWakesActualStalledTLSHandshakeWithoutLateWrites",
+      "rawContext": "unknown",
+      "methodReportedPassed": true,
+      "cleanAcceptance": false,
+      "scenario": "Later pending installation_proxy Lookup reply cancellation; the earlier stalled TLS-session wrapped cancellation did not report an issue"
+    },
+    {
+      "source": "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift:115:17",
+      "sourceExpression": "#expect(target.isDirectory == true)",
+      "rawLogLines": [
+        151180,
+        151181
+      ],
+      "shortFailure": "target.isDirectory is false; expected true",
+      "associatedSelectedMethod": "SelfRenewalUserDataHandoffTests/actualSourceWriteFailurePreventsUpgradeAndKeepsPendingOwnership",
+      "rawContext": "unknown",
+      "methodReportedPassed": true,
+      "cleanAcceptance": false,
+      "scenario": "Post-failed source replacement inspection; preserving strict upload-stage/cleanup/0Upgrade facts does not excuse this failed filesystem assertion"
+    }
+  ],
+  "rawUnknownOccurrences": [
+    {
+      "rawLogLine": 51583,
+      "rawText": "✘ Test «unknown» recorded an issue at SelfRenewalAuthenticatedInstallationClientTests.swift:324:13: Expectation failed: (error as? Transport.Failure → nil) == .cancelled"
+    },
+    {
+      "rawLogLine": 151180,
+      "rawText": "✘ Test «unknown» recorded an issue at SelfRenewalUserDataHandoffTests.swift:115:17: Expectation failed: (target.isDirectory → false) == true"
+    },
+    {
+      "rawLogLine": 151181,
+      "rawText": "✘ Test «unknown» recorded an issue at SelfRenewalUserDataHandoffTests.swift:115:17: Expectation failed: (target.isDirectory → false) == true"
+    }
+  ],
+  "uniqueStructuredSwiftCompilerErrors": [],
+  "rawBuildLog": {
+    "path": ".build/sdk-f330274-terminal/artifact-12338237542/reader-renewal-probe/currentcore-tests.log",
+    "bytes": 20664756,
+    "sha256": "bed8dafbf470cb839c99e3c818aa2cd438e25cc39ef94bcb367bd67108e6e03a"
+  },
+  "noCompilerBlock": true,
+  "all479SelectedDefinitionsObserved": true,
+  "all482SelectedLeavesObserved": true,
+  "unknownIssuesCannotBeDiscardedOrConvertedToPassingEvidence": true
+}

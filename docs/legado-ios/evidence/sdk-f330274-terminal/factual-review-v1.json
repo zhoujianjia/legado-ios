@@ -1,0 +1,264 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "f330274cb96a497c0ac9c210fcd6e31b8d28bfdd",
+  "sourceTag": "reader-renewal-f330274",
+  "runID": 39578204127,
+  "jobID": 119148925693,
+  "status": "completed",
+  "conclusion": "failure",
+  "queryAgain": false,
+  "actualApp": {
+    "selectedDefinitions": 479,
+    "selectedArgumentLeaves": 482,
+    "selectedBoolPairs": 3,
+    "actualExecutedDefinitions": 479,
+    "actualExecutedLeaves": 482,
+    "selectedDefinitionPassed": 477,
+    "selectedDefinitionFailed": 2,
+    "selectedLeafPassed": 480,
+    "selectedLeafFailed": 2,
+    "skipped": 0,
+    "BoolPairs": [
+      {
+        "identity": "AozoraTXTTests/storedV6LocationsMigrateOnce",
+        "rawIdentifier": "AozoraTXTTests/storedV6LocationsMigrateOnce(interrupt:)",
+        "values": [
+          {
+            "name": "false",
+            "result": "Passed"
+          },
+          {
+            "name": "true",
+            "result": "Passed"
+          }
+        ]
+      },
+      {
+        "identity": "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll",
+        "rawIdentifier": "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll(nestedBackdrop:)",
+        "values": [
+          {
+            "name": "false",
+            "result": "Passed"
+          },
+          {
+            "name": "true",
+            "result": "Passed"
+          }
+        ]
+      },
+      {
+        "identity": "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit",
+        "rawIdentifier": "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit(interrupt:)",
+        "values": [
+          {
+            "name": "false",
+            "result": "Passed"
+          },
+          {
+            "name": "true",
+            "result": "Passed"
+          }
+        ]
+      }
+    ],
+    "unassociatedFailureCases": 1,
+    "unassociatedDistinctLocations": 2,
+    "unassociatedRawIssueOccurrences": 3,
+    "rawSummaryCases": 480,
+    "rawDeviceExecutions": 483,
+    "compileBlocked": false,
+    "uniqueCompilerErrors": 0,
+    "cleanSuiteAcceptance": false
+  },
+  "firstFailure": {
+    "phase": "native",
+    "pipelineExitCode": 1,
+    "commandExitCode": 1,
+    "actualXcodeExitCode": 65,
+    "timedOut": false,
+    "phaseBudgetSeconds": 3720,
+    "elapsedSeconds": 2123.073311,
+    "cause": "Two qualified Cookie failures plus one unassociated failure case containing three issue occurrences at two renewal-related source locations"
+  },
+  "extraction": {
+    "summaryBytes": 3326,
+    "testsBytes": 299825,
+    "summaryCommandExitCode": 0,
+    "testsCommandExitCode": 0,
+    "validNonemptyActualTestJSON": true,
+    "parameterExports": [
+      {
+        "error": "Ambiguous qualified test identifier"
+      }
+    ],
+    "parameterAmbiguityCause": "Synthetic orphan Test Case has no qualified method; existing fail-closed _qualified_method rejects it. No selector or gate change.",
+    "casesGatePassed": false,
+    "afterTestsState": "blocked",
+    "resultProduced": false
+  },
+  "actualPackage": {
+    "methods": 24,
+    "passed": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "XMLVerboseResultSelectedIdentitiesExact": true,
+    "packageInputs": 23,
+    "AppOrJNIProof": false
+  },
+  "minimalProducer": {
+    "commands": 48,
+    "publicOutputs": 43,
+    "MachOs": 4,
+    "allCommandExitZeroNonTimeout": true,
+    "allPublicOutputBytesHashesVerified": true,
+    "ownedKeychainDeleted": true,
+    "originalSearchListRestoredOwnedAbsent": true,
+    "AppSignerExecutedByProducer": false
+  },
+  "requiredPortableMethodsPassed": 200,
+  "sourceInputs": {
+    "historicalCore": 418,
+    "all418GitBytesMatched": true,
+    "Package23Subset": true,
+    "producer7Subset": true,
+    "uniqueRepositoryInputs": 418,
+    "all11PhaseStatesSameSource": true,
+    "notAllXcodeTransitiveDependencies": true
+  },
+  "resultProduced": false,
+  "evidence": "docs/legado-ios/evidence/sdk-f330274-terminal/factual-review-v1.json",
+  "actualFailures": "docs/legado-ios/evidence/sdk-f330274-terminal/actual-failure-signatures.json",
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "temporaryCompatibilityTargetPercent": 90,
+  "measuredCompatibilityPercent": null,
+  "otherSeventeenItemsRemainDeferred": true,
+  "limits": [
+    "Actual479 definitions/482 leaves completed; two selected failures and one orphan failure case remain. This is not clean suite acceptance.",
+    "Associated renewal methods may reportPassed while unknown-context assertions fail; retain all three issue occurrences/two source locations.",
+    "All three actual Bool pairs passed, but strict parameter extraction remained ambiguous and cases/result gates failed; no gate was weakened.",
+    "Package24/minimal producer48,43,4/portable200 are separate scopes, not full Native App signing/real Apple/physical installation/unattended proof.",
+    "Historical418 is an evidence inventory, not all Xcode transitive dependencies; current440 was not substituted.",
+    "Separate full Native is independently owned; no query, status inference or mutation for that handle.",
+    "No reviewer test/compiler/parser/cloud query/download; subsequent repairs cannot relabel this closed source result."
+  ],
+  "metadata": {
+    "run": {
+      "path": ".build/sdk-f330274-terminal/run.json",
+      "bytes": 12496,
+      "sha256": "1fb729807b20fb2a2e61174816a109a541c4ee712d615cfff2854f09ae61bfcc"
+    },
+    "jobs": {
+      "path": ".build/sdk-f330274-observations/20261021102143Z-jobs.json",
+      "bytes": 3625,
+      "sha256": "3ed3e102bf2b8564b0a37a95172c8a24cabd37c5a5de12560b41aad616df6aeb"
+    }
+  },
+  "portableGroups": [
+    {
+      "path": "reader-renewal-existing-guards.log",
+      "actualMethods": 24,
+      "elapsedSeconds": 0.168,
+      "allPassed": true,
+      "raw": {
+        "path": ".build/sdk-f330274-terminal/artifact-12338237542/ci-logs/reader-renewal-existing-guards.log",
+        "bytes": 4221,
+        "sha256": "7c2877bc25b86078700e69b1496d10506069d280696689ceb38ebb7d754d385c"
+      }
+    },
+    {
+      "path": "reader-renewal-guards.log",
+      "actualMethods": 76,
+      "elapsedSeconds": 25.438,
+      "allPassed": true,
+      "raw": {
+        "path": ".build/sdk-f330274-terminal/artifact-12338237542/ci-logs/reader-renewal-guards.log",
+        "bytes": 15529,
+        "sha256": "94336f4a111f1633fa899d9e0340f681769c1e240fb38be80ae7ce5eb3266b32"
+      }
+    },
+    {
+      "path": "reader-renewal-original-api-guards.log",
+      "actualMethods": 22,
+      "elapsedSeconds": 0.51,
+      "allPassed": true,
+      "raw": {
+        "path": ".build/sdk-f330274-terminal/artifact-12338237542/ci-logs/reader-renewal-original-api-guards.log",
+        "bytes": 4701,
+        "sha256": "004e25280e9a68ca64225e3e5a3123d2cae1a9def6896d276bcd3f66cbe2c5d6"
+      }
+    },
+    {
+      "path": "reader-renewal-producer-guards.log",
+      "actualMethods": 6,
+      "elapsedSeconds": 0.11,
+      "allPassed": true,
+      "raw": {
+        "path": ".build/sdk-f330274-terminal/artifact-12338237542/ci-logs/reader-renewal-producer-guards.log",
+        "bytes": 1142,
+        "sha256": "012f950e71c8debf7ad22f4803287f17f009f85ac000f261da887723aea50ed2"
+      }
+    },
+    {
+      "path": "reader-renewal-producer-timeout-guards.log",
+      "actualMethods": 9,
+      "elapsedSeconds": 3.869,
+      "allPassed": true,
+      "raw": {
+        "path": ".build/sdk-f330274-terminal/artifact-12338237542/ci-logs/reader-renewal-producer-timeout-guards.log",
+        "bytes": 1689,
+        "sha256": "2be9afabd03cb0806142e0d2357727237f1a44838fa7c9487abef582ebed4b79"
+      }
+    },
+    {
+      "path": "reader-renewal-producer-user-trust-guards.log",
+      "actualMethods": 28,
+      "elapsedSeconds": 3.97,
+      "allPassed": true,
+      "raw": {
+        "path": ".build/sdk-f330274-terminal/artifact-12338237542/ci-logs/reader-renewal-producer-user-trust-guards.log",
+        "bytes": 5662,
+        "sha256": "a9d335ec1718418eaf610591532f96a03ecca397ab1bf43b10d8b216eec1e3a5"
+      }
+    },
+    {
+      "path": "reader-renewal-report-inspector-guards.log",
+      "actualMethods": 35,
+      "elapsedSeconds": 0.112,
+      "allPassed": true,
+      "raw": {
+        "path": ".build/sdk-f330274-terminal/artifact-12338237542/ci-logs/reader-renewal-report-inspector-guards.log",
+        "bytes": 6403,
+        "sha256": "c6e65f085b215c9a575613503b207b6a8b1192d0780a237513546ea627af7557"
+      }
+    }
+  ],
+  "downloadValidation": [
+    {
+      "artifactID": 12338237542,
+      "zipBytes": 6233230,
+      "zipSHA256": "c6c9ce1bc9dd1270d05bb03bc8c7dae3d594f1137e71ec07137b0aaa8b387750",
+      "memberCount": 1098,
+      "uncompressedBytes": 28126293,
+      "crcVerified": true,
+      "safePathsCasefoldUniquenessNoSymlinkNoEncryption": true,
+      "windowsExtendedAbsolutePathUsed": true,
+      "downloadAttempts": 1
+    },
+    {
+      "artifactID": 12337847686,
+      "zipBytes": 30232,
+      "zipSHA256": "7d327c8cf27cd7a2a34fd75d841d0fb29b99e9ca96c665b46ef157f56ccf7be9",
+      "memberCount": 10,
+      "uncompressedBytes": 338258,
+      "crcVerified": true,
+      "safePathsCasefoldUniquenessNoSymlinkNoEncryption": true,
+      "windowsExtendedAbsolutePathUsed": true,
+      "downloadAttempts": 1
+    }
+  ]
+}
