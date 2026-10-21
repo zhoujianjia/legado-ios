@@ -1,0 +1,113 @@
+name: Yuedu Renewal Package Only
+
+on:
+  push:
+    tags:
+      - 'yuedu-renewal-package-*'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: yuedu-renewal-package-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  package:
+    runs-on: macos-15
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Bind the isolated tag and build this source's ordinary production JAR
+        run: |
+          mkdir -p .build/ci-logs
+          python -B scripts/reader-experience/renewal-package-tools.py validate-tag
+          bash Packages/LegadoRuntime/jvm/gradlew -p Packages/LegadoRuntime/jvm --no-daemon runtimeJar 2>&1 | tee .build/ci-logs/renewal-package-jar.log
+          python -B scripts/reader-experience/runtime-packaging.py inspect-jar --output .build/ci-logs/renewal-package-jar.json
+      - name: Restore only the existing audited native interpreter
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python -B scripts/reader-experience/renewal-package-tools.py restore
+      - name: Compile the complete Release device package and prepare the original S3 input
+        id: device
+        run: |
+          export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
+          echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
+          python -B scripts/reader-experience/renewal-package-tools.py prepare-device
+      - name: Export only the source-bound unsigned compilation package
+        if: ${{ github.event.repository.private == true }}
+        env:
+          YUEDU_PACKAGE_REPOSITORY_PRIVATE: 'true'
+        run: python -B scripts/reader-experience/renewal-package-tools.py export-unsigned
+      # Early availability is device compilation only, not S3 or renewal success.
+      - name: Retain the unsigned device build before the Simulator test
+        if: ${{ github.event.repository.private == true }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: yuedu-renewal-device-unsigned-${{ github.sha }}
+          path: |
+            .build/renewal-package-public/YueduReader-experience-unsigned.ipa
+            .build/renewal-package-public/build-manifest.json
+            .build/renewal-package-public/README.txt
+            .build/renewal-package-public/delivery-binding.json
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 1
+          compression-level: 0
+      - name: Prepare this source's actual Simulator payload
+        run: |
+          test "$(uname -m)" = arm64
+          export YUEDU_DEST="$(bash scripts/sim.sh dest)"
+          echo "YUEDU_DEST=$YUEDU_DEST" >> "$GITHUB_ENV"
+          xcrun simctl bootstatus "$(bash scripts/sim.sh udid)" -b > .build/ci-logs/renewal-package-simulator-boot.log 2>&1
+          python -B scripts/legado-ios/stage-runtime.py --java-home .build/legado-ios/simulator-static/java-home --jar Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar --destination Resources/LegadoRuntime --replace
+          python -B scripts/reader-experience/renewal-package-tools.py prepare-simulator
+      - name: Compile the Simulator host once and run the unchanged complete-package S3 case
+        run: python -B scripts/reader-experience/renewal-package-tools.py run
+      - name: Bind the actual S3 result without changing its outcome
+        if: ${{ always() && !cancelled() && steps.device.outcome == 'success' }}
+        run: python -B scripts/reader-experience/renewal-package-tools.py collect
+      - name: Retain exact-source public failure/build evidence, never private signing files
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: yuedu-renewal-package-evidence-${{ github.sha }}
+          path: |
+            .build/ci-logs/renewal-package-*
+            .build/renewal-package/*.json
+            .build/s3-full-application-signing/prepared.json
+            .build/s3-full-application-signing/preparation-failure.json
+            .build/s3-full-application-signing/result.json
+            .build/s3-full-application-signing/native-reuse-binding.json
+            .build/s3-full-application-signing/device-source-overlay-restoration*.json
+            .build/s3-full-application-signing/full-device-build.log
+            .build/s3-full-application-signing/full-owned-producer.log
+            .build/s3-full-application-signing/full-application-test-build.log
+            .build/s3-full-application-signing/full-application-test-execution.json
+            .build/s3-full-application-signing/full-application-summary*
+            .build/s3-full-application-signing/full-application-tests*
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 7
+      - name: Explain the isolated acceptance boundary
+        if: always()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
+          This isolated tag builds one complete Release iPhoneOS reader with the fresh ordinary JAR and audited native runtime, then compiles one Simulator App/test host and executes the existing mandatory one-case complete-package signing and independent verification.
+          In a private repository, the early unsigned IPA is the device compilation input, not the controlled re-signed output. Public repositories cannot export it. Its availability does not mean S3 passed. Inspect the separate exact-source/run delivery binding and S3 result. Sign it with the original installation tool before initial device installation.
+          This job does not run or replace full SDK, book-source/MainJS/Original/cold regressions, and does not establish real Apple authorization, actual installation, automatic renewal or full compatibility. Existing full workflows and completion flags retain their meaning. No private producer directory, P12 or private key is uploaded. Temporary diagnostic unsigned packages expire after one day.
+          TEXT

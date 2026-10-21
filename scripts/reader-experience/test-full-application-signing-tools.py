@@ -2,6 +2,7 @@
 """Portable protocol guards only: no Apple build/signing/Swift execution."""
 import ast
 import copy
+import fnmatch
 import hashlib
 import importlib.util
 import json
@@ -34,6 +35,68 @@ class FullApplicationSigningProtocolTests(unittest.TestCase):
         for changes in variants:
             with self.subTest(changes=changes), self.assertRaises(ValueError):
                 tools.validate_reuse(dict(proof, **changes), "c" * 40, "1234", audited, pin)
+        quick = tools.load("package_only_protocol_guard", HERE / "renewal-package-tools.py")
+        sha = "c" * 40
+        tag = "yuedu-renewal-package-" + sha[:7]
+        for pattern in ("reader-renewal-*", "legado-native-reader-test-*", "reader-legado-*"):
+            self.assertFalse(fnmatch.fnmatchcase(tag, pattern))
+        environment = {"GITHUB_SHA": sha, "GITHUB_RUN_ID": "1234", "GITHUB_REF_NAME": tag,
+                       "GITHUB_REF": "refs/tags/" + tag}
+        with patch.object(quick.sys, "platform", "darwin"), patch.object(quick.native.smoke, "source_sha", return_value=sha), \
+                patch.dict(quick.os.environ, environment, clear=True):
+            self.assertEqual(quick.source(), sha)
+            # Private imported callers opt into the new validator. Original
+            # Native/full-signing command-line admissions still reject this tag.
+            with self.assertRaises(ValueError):
+                quick.native.validate_tag()
+            with patch.object(quick.full.subprocess, "check_output", return_value=sha):
+                with self.assertRaises(ValueError):
+                    quick.full.admission()
+            for changes in ({"GITHUB_SHA": "d" * 40}, {"GITHUB_REF": "refs/heads/" + tag},
+                            {"GITHUB_REF_NAME": "reader-renewal-package-" + sha[:7]},
+                            {"GITHUB_RUN_ID": ""}):
+                with self.subTest(changes=changes), patch.dict(quick.os.environ, changes), self.assertRaises(ValueError):
+                    quick.source()
+        with patch.dict(quick.os.environ, {"YUEDU_PACKAGE_REPOSITORY_PRIVATE": "false"}), \
+                patch.object(quick, "check_binding", side_effect=AssertionError("Public export read private files")):
+            with self.assertRaises(ValueError):
+                quick.export_unsigned()
+        # Synthetic copy/admission protocol only: these bytes are not an IPA.
+        # The production validator is delegated, never claimed executed here.
+        with tempfile.TemporaryDirectory() as name:
+            root = Path(name).resolve()
+            build = root / quick.full.PRIVATE / "device-build"
+            output = build / "output"
+            output.mkdir(parents=True)
+            expected = {file: ("SYNTHETIC-" + file).encode() for file in quick.OUTPUTS}
+            for file, raw in expected.items():
+                (output / file).write_bytes(raw)
+            produced = root / quick.full.PRIVATE / "produced"
+            produced.mkdir()
+            (produced / "never-export.p12").write_bytes(b"SYNTHETIC-PRIVATE-NEVER-READ")
+            work = root / quick.full.WORK
+            work.mkdir(parents=True)
+            (work / "prepared.json").write_text(json.dumps({"sourceCommit": sha, "workflowRunID": "1234", "completeApplicationBuilt": True}))
+            receipt = {"sourceCommit": sha, "workflowRunID": "1234"}
+            validator = SimpleNamespace(validate_input=unittest.mock.Mock(return_value={}))
+            original_open = Path.open
+            def guarded_open(path, *args, **kwargs):
+                if produced in path.parents or path == produced:
+                    raise AssertionError("Export read the private controlled producer directory")
+                return original_open(path, *args, **kwargs)
+            with patch.dict(quick.os.environ, {"YUEDU_PACKAGE_REPOSITORY_PRIVATE": "true"}), \
+                    patch.object(quick, "REPO", root), patch.object(quick, "PUBLIC", root / "public"), \
+                    patch.object(quick, "check_binding", return_value=receipt), \
+                    patch.object(quick.full, "load", side_effect=[object(), validator]), patch.object(Path, "open", guarded_open):
+                quick.export_unsigned()
+            validator.validate_input.assert_called_once()
+            self.assertEqual({path.name for path in (root / "public").iterdir()}, set(quick.OUTPUTS) | {"delivery-binding.json"})
+            for file, raw in expected.items():
+                self.assertEqual((root / "public" / file).read_bytes(), raw)
+            delivery = json.loads((root / "public/delivery-binding.json").read_bytes())
+            self.assertEqual(delivery["sourceCommit"], sha)
+            self.assertEqual(delivery["S3Acceptance"], "pending-separate-result")
+            self.assertFalse(delivery["controlledResignedOutputExported"])
 
     def test_required_resource_hashes_and_cleanup_are_bound_without_minimal_substitution(self):
         # Bytes below are deliberately NOT an IPA; this guard tests staging
