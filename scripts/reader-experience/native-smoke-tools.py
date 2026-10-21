@@ -957,8 +957,8 @@ def verify_full_application_signing(work, source):
             or smoke.read_json(evidence / "device-source-overlay-restoration.json").get("restored") is not True):
         raise ValueError("Complete signing resources, owners or device overlay restoration changed")
     commands = []
-    phases = (("device-runtime-stage", 300), ("full-device-build", 1800), ("full-owned-producer", 360),
-        ("full-application-test", 1860), ("full-application-summary", 60), ("full-application-tests", 60))
+    phases = (("device-runtime-stage", 300), ("full-device-build", 3600), ("full-owned-producer", 360),
+        ("full-application-test", 3660), ("full-application-summary", 60), ("full-application-tests", 60))
     for phase, budget in phases:
         path = evidence / (phase + "-execution.json")
         row = smoke.read_json(path)
@@ -972,7 +972,7 @@ def verify_full_application_signing(work, source):
         if phase == "full-application-test":
             selected = [arg for arg in argv if isinstance(arg, str) and arg.startswith("-only-testing:")]
             if (selected != ["-only-testing:yuedu appTests/" + full.CASE + "()"]
-                    or argv.count("-t") != 1 or argv[argv.index("-t") + 1] != "1800"
+                    or argv.count("-t") != 1 or argv[argv.index("-t") + 1] != "3600"
                     or argv.count("-resultBundlePath") != 1
                     or argv[argv.index("-resultBundlePath") + 1] != str(evidence / "full-application.xcresult")):
                 raise ValueError("Complete signing requires its exact independent test and bounded invocation")

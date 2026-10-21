@@ -1,0 +1,39 @@
+--- a/scripts/reader-experience/test-native-smoke-tools.py
++++ b/scripts/reader-experience/test-native-smoke-tools.py
+@@ -377,13 +377,13 @@
+             'device-source-overlay-restoration.json': {'restored': True}}
+         for name, value in payloads.items():
+             (evidence / name).write_text(json.dumps(value))
+-        for phase, budget in [('device-runtime-stage',300),('full-device-build',1800),('full-owned-producer',360),
+-                             ('full-application-test',1860),('full-application-summary',60),('full-application-tests',60)]:
++        for phase, budget in [('device-runtime-stage',300),('full-device-build',3600),('full-owned-producer',360),
++                             ('full-application-test',3660),('full-application-summary',60),('full-application-tests',60)]:
+             output = evidence / (phase + '.log')
+             if not output.exists(): output.write_text('protocol-only\n')
+             argv = ['protocol-only']
+             if phase == 'full-application-test':
+-                argv = ['bash', 'scripts/xctest.sh', '-t', '1800', '--', '-resultBundlePath', str(evidence / 'full-application.xcresult'),
++                argv = ['bash', 'scripts/xctest.sh', '-t', '3600', '--', '-resultBundlePath', str(evidence / 'full-application.xcresult'),
+                     '-only-testing:yuedu appTests/' + full.CASE + '()']
+             elif phase in ('full-application-summary','full-application-tests'):
+                 argv = ['xcrun','xcresulttool','get','test-results','summary' if phase.endswith('summary') else 'tests','--path',str(evidence/'full-application.xcresult')]
+@@ -401,12 +401,18 @@
+         with patch.object(native,'load',return_value=full), patch.object(native.smoke.config,'REPO',self.root), \
+                 patch.object(full,'signing_source_inputs',return_value=[]), patch.dict(os.environ,{'GITHUB_RUN_ID':'same-job'}):
+             self.assertEqual(native.verify_full_application_signing(self.root/'native',SOURCE)['summary']['expectedExecutions'],1)
+-            for fault in ('source','job','result','timeout','exit','output','selector','summaryGrain','skip','duplicate','resources','owners','restoration'):
++            for fault in ('source','job','result','timeout','exit','output','selector','summaryGrain','skip','duplicate','resources','owners','restoration','oldDeviceBudget','oldParentBudget','oldWrapperBudget'):
+                 for name, value in originals.items(): (evidence/name).write_bytes(value)
+                 name='result.json'; value=copy.deepcopy(result)
+                 if fault=='source':value['sourceCommit']='b'*40
+                 elif fault=='job':value['workflowRunID']='other-job'
+                 elif fault=='result':value['status']='failed'
++                elif fault in ('oldDeviceBudget','oldParentBudget','oldWrapperBudget'):
++                    name = 'full-device-build-execution.json' if fault == 'oldDeviceBudget' else 'full-application-test-execution.json'
++                    value = json.loads(originals[name])
++                    if fault == 'oldDeviceBudget': value['timeoutSeconds'] = 1800
++                    elif fault == 'oldParentBudget': value['timeoutSeconds'] = 1860
++                    else: value['argv'][value['argv'].index('-t') + 1] = '1800'
+                 elif fault in ('timeout','exit','output','selector'):
+                     name='full-application-test-execution.json';value=json.loads(originals[name])
+                     if fault=='timeout':value['timedOut']=True

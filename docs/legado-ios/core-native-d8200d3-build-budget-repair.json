@@ -1,0 +1,264 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T05:17:05.532450+00:00",
+  "status": "actual-failure-repair-integrated-Apple-revalidation-pending",
+  "baselineCommit": "592553a24a998e3fa0376e0d38fa00dd30cf868f",
+  "parentColdCISourceRecord": "docs/legado-ios/core-renewal-cold-only-native-ci-step.json",
+  "actualFailureRecord": "docs/legado-ios/core-native-d8200d3-terminal-result.json",
+  "changedSources": [
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "bytes": 14745,
+      "sha256": "59fc0da0fc2944b7f9e96d21203e19af052fbaa135e94d4ee766890f122f4c1b"
+    },
+    {
+      "path": "scripts/reader-experience/full-application-signing-tools.py",
+      "bytes": 18444,
+      "sha256": "9d5dc206f766351cdb10fc0e9029774880f1560b0e9188c39fe178760abf966d"
+    },
+    {
+      "path": "scripts/reader-experience/native-smoke-tools.py",
+      "bytes": 83544,
+      "sha256": "b33c11517667fbbd41b64a95eda41afd39e5f576b4bb853919dc8e449e814cee"
+    },
+    {
+      "path": "scripts/reader-experience/test-full-application-signing-tools.py",
+      "bytes": 10850,
+      "sha256": "7d51841496234b4104d1e6fd753ae028f26b107e49828ad3d585bee3bbad8724"
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "bytes": 44808,
+      "sha256": "0957733b85bcc2c9e6c0f7fba91de5342fd2e4835b8dc72e8b5e1a57ef80445d"
+    }
+  ],
+  "productionSwiftChanges": 0,
+  "newMethodsOrHosts": 0,
+  "budgetDelta": {
+    "fullDeviceBuildSeconds": [
+      1800,
+      3600
+    ],
+    "fullSignerTestWrapperSeconds": [
+      1800,
+      3600
+    ],
+    "fullSignerTestParentSeconds": [
+      1860,
+      3660
+    ],
+    "fullJobMinutes": [
+      90,
+      150
+    ],
+    "coldJobMinutes": [
+      120,
+      120
+    ],
+    "reason": "Two bounded compile-capable stages alone receive3600+3600 seconds, already120min before runtime/producer/exports/other required groups. Full150min remains finite; no result is promoted by a larger budget."
+  },
+  "streamingFactFix": {
+    "contract": "One bounded1MiB read loop updates SHA256 and byte count from identical chunks, without stat-before-read or whole-IPA read_bytes.",
+    "growthVector": "Owned file wrapper advertises stale stat size; open appends24 bytes. Returned count and hash match the actual same read bytes.",
+    "limit": "Does not freeze concurrent files or prove whole-process-group drain."
+  },
+  "actualPortable": {
+    "distinctMethods": 2,
+    "executions": 3,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "initialNativeBudgetPassReused": true,
+    "onlyChangedFullProtocolMethodRerun": 1,
+    "priorCIFourMethodsReplayed": 0,
+    "methodHistory": [
+      "NativeSmokeProvenanceTests.test_complete_application_result_requires_actual_same_job_case_outputs_and_resources",
+      "FullApplicationSigningProtocolTests.test_producer_minimal_default_body_is_unchanged_and_full_branch_is_explicit",
+      "FullApplicationSigningProtocolTests.test_producer_minimal_default_body_is_unchanged_and_full_branch_is_explicit"
+    ]
+  },
+  "historicalFailureUnchanged": true,
+  "originalLogByteDiscrepancyUnchanged": true,
+  "actualNewAppleCompiles": 0,
+  "actualNewFullApplicationSigners": 0,
+  "actualNewNativeOrColdHosts": 0,
+  "newCloudTagsOrRuns": 0,
+  "sourceCounts": {
+    "core": 418,
+    "native": 263,
+    "union": 427,
+    "package": 23
+  },
+  "all427WorkingInputsVerified": true,
+  "Package23InputsUnchanged": true,
+  "sourceRosterDelta": {
+    "path": "docs/legado-ios/evidence/native-d8200d3-build-budget-repair/source-roster-five-path-delta.json",
+    "bytes": 2854,
+    "sha256": "8678b6dd33753f4ba326d8f06011da0c34704fba3cb2d10c3d5797b7858d1d33"
+  },
+  "evidence": [
+    {
+      "path": "docs/legado-ios/evidence/native-d8200d3-build-budget-repair/source-candidate-v1.json",
+      "bytes": 10449,
+      "sha256": "6615ff17eca6b857dd533c9832e24542f08fbf67bbbae8c18816a96f7890c350",
+      "original": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/final-v1.json",
+        "bytes": 10449,
+        "sha256": "6615ff17eca6b857dd533c9832e24542f08fbf67bbbae8c18816a96f7890c350"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-d8200d3-build-budget-repair/independent-review.json",
+      "bytes": 11200,
+      "sha256": "d4fd0b7b00513f7036fe72c92914153588a8787deff80797052db08db2a5b4c8",
+      "original": {
+        "path": ".build/native-d8200d3-full-build-budget-independent-review/review-v1.json",
+        "bytes": 11200,
+        "sha256": "d4fd0b7b00513f7036fe72c92914153588a8787deff80797052db08db2a5b4c8"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-d8200d3-build-budget-repair/actual-failure-binding-v2.json",
+      "bytes": 2369,
+      "sha256": "81a3f3acad2b902d1d8eaef66f8964937faeae0372fa6b412cbeb21b1a91f8cb",
+      "original": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/actual-failure-binding-v2.json",
+        "bytes": 2369,
+        "sha256": "81a3f3acad2b902d1d8eaef66f8964937faeae0372fa6b412cbeb21b1a91f8cb"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-d8200d3-build-budget-repair/source-checks-v2.json",
+      "bytes": 594,
+      "sha256": "d1210522dac27b947b17fafa34a538eb501427d78fb98f66e9d2211446aaefcc",
+      "original": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/source-checks-v2.json",
+        "bytes": 594,
+        "sha256": "d1210522dac27b947b17fafa34a538eb501427d78fb98f66e9d2211446aaefcc"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-d8200d3-build-budget-repair/affected-1-execution.json",
+      "bytes": 2748,
+      "sha256": "37172bb24c47620d4b569f8f9b200240d9d08e57fbf7b386f382f539d441f1ca",
+      "original": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/affected-native-budget-v1.json",
+        "bytes": 2748,
+        "sha256": "37172bb24c47620d4b569f8f9b200240d9d08e57fbf7b386f382f539d441f1ca"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-d8200d3-build-budget-repair/affected-1.log",
+      "bytes": 312,
+      "sha256": "6f38b429157f16648d5a0e2a36c1872f1e0ba855937b1030d9746126532a370e",
+      "original": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/affected-native-budget-v1.log",
+        "bytes": 318,
+        "sha256": "c3e557a8cdd81ef20922fd0b28b21d60998e1bdcd65ad537b5738f29255cb825"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-d8200d3-build-budget-repair/affected-2-execution.json",
+      "bytes": 2758,
+      "sha256": "7a3d5cca43296f74f941fe59c5164ea286688b6459e5725a4020a441cdb6b2c0",
+      "original": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/affected-full-budget-v1.json",
+        "bytes": 2758,
+        "sha256": "7a3d5cca43296f74f941fe59c5164ea286688b6459e5725a4020a441cdb6b2c0"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-d8200d3-build-budget-repair/affected-2.log",
+      "bytes": 303,
+      "sha256": "eadffc5f0721a7a4926ef778bcfef55f866ba991d38538c64799fcaf58c19856",
+      "original": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/affected-full-budget-v1.log",
+        "bytes": 309,
+        "sha256": "1a6d7c5a6a05ae5a38805c59fb5e812b9ba80928c3ae96afef7859f7e6535616"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-d8200d3-build-budget-repair/affected-3-execution.json",
+      "bytes": 2923,
+      "sha256": "9aa348fd6a1c6e7f1c1eb3dc6ee6c487aa71fb1ee6a2f4bdfad9f805fecb6de0",
+      "original": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/affected-full-fact-v2.json",
+        "bytes": 2923,
+        "sha256": "9aa348fd6a1c6e7f1c1eb3dc6ee6c487aa71fb1ee6a2f4bdfad9f805fecb6de0"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-d8200d3-build-budget-repair/affected-3.log",
+      "bytes": 303,
+      "sha256": "110b1443f0e8d9a6939f06539d01e037f30b8f62cd182f8a90bffa70133cc1ae",
+      "original": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/affected-full-fact-v2.log",
+        "bytes": 309,
+        "sha256": "f7c78ee591174ac20ec0d585e5547d4dd4b71f72caca1014e9b37dc2407261fa"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-d8200d3-build-budget-repair/diffs/.github/workflows/legado-native-reader-test.yml.diff",
+      "bytes": 494,
+      "sha256": "5d98b227a0bc092c267fc1f150a8560bdea2ab1f13cb52a55578aa607fcca3e9",
+      "original": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/diffs-v2/.github/workflows/legado-native-reader-test.yml.diff",
+        "bytes": 494,
+        "sha256": "5d98b227a0bc092c267fc1f150a8560bdea2ab1f13cb52a55578aa607fcca3e9"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-d8200d3-build-budget-repair/diffs/scripts/reader-experience/full-application-signing-tools.py.diff",
+      "bytes": 1919,
+      "sha256": "1d1c5b7a34162c5e8205c5a30e67014f7b8500adcee6af6fa08485c74c582e81",
+      "original": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/diffs-v2/scripts/reader-experience/full-application-signing-tools.py.diff",
+        "bytes": 1923,
+        "sha256": "34769666398b30bcc5c78b76271418e2ebdcb853dce4a78d6e001a02edc9b575"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-d8200d3-build-budget-repair/diffs/scripts/reader-experience/native-smoke-tools.py.diff",
+      "bytes": 1632,
+      "sha256": "85edd6d692ffed5249a340bfb2f3751775b41f0aee53efb4a97a4cd74975ee39",
+      "original": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/diffs-v2/scripts/reader-experience/native-smoke-tools.py.diff",
+        "bytes": 1632,
+        "sha256": "85edd6d692ffed5249a340bfb2f3751775b41f0aee53efb4a97a4cd74975ee39"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-d8200d3-build-budget-repair/diffs/scripts/reader-experience/test-full-application-signing-tools.py.diff",
+      "bytes": 3430,
+      "sha256": "5cc216024073f7f72899b253bd83f4749845d89691b5af7c3b19806425099e29",
+      "original": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/diffs-v2/scripts/reader-experience/test-full-application-signing-tools.py.diff",
+        "bytes": 3432,
+        "sha256": "b3307a3fea937a8f35bc416d0820b820512f8f325e64ab4be4acb4608cc3c5c3"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/native-d8200d3-build-budget-repair/diffs/scripts/reader-experience/test-native-smoke-tools.py.diff",
+      "bytes": 3515,
+      "sha256": "11b21ed1999b2d470638f3034d132195744779e8c18dc35c27c524b68f31b647",
+      "original": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/diffs-v2/scripts/reader-experience/test-native-smoke-tools.py.diff",
+        "bytes": 3515,
+        "sha256": "11b21ed1999b2d470638f3034d132195744779e8c18dc35c27c524b68f31b647"
+      }
+    }
+  ],
+  "temporaryBookSourceTargetPercent": 90,
+  "measuredCompatibilityPercent": null,
+  "otherSeventeenItemsRemainDeferred": true,
+  "limits": [
+    "Actual d820 timeout remains failure; raising limits is a candidate fix, not proof of compilation or signing success.",
+    "ColdCIv1 initially preserved full timeout policy byte exact; this separate actual-failure successor is the only budget modification.",
+    "No failed or missing fullS3/native/core scope can be bypassed or reclassified by focused cold success.",
+    "Same-stream count/hash does not freeze concurrent files or establish whole-process-group draining."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

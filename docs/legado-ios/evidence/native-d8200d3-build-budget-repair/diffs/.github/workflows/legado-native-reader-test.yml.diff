@@ -1,0 +1,11 @@
+--- a/.github/workflows/legado-native-reader-test.yml
++++ b/.github/workflows/legado-native-reader-test.yml
+@@ -16,7 +16,7 @@
+ jobs:
+   native-reader:
+     runs-on: macos-15
+-    timeout-minutes: ${{ startsWith(github.ref_name, 'legado-native-reader-test-cold-') && 120 || 90 }}
++    timeout-minutes: ${{ startsWith(github.ref_name, 'legado-native-reader-test-cold-') && 120 || 150 }}
+     steps:
+       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+         with:

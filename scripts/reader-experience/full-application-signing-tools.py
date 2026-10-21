@@ -35,8 +35,13 @@ def load(name, path):
 
 
 def fact(path):
+    digest = hashlib.sha256()
+    count = 0
     with path.open("rb") as stream:
-        return {"bytes": path.stat().st_size, "sha256": hashlib.file_digest(stream, "sha256").hexdigest()}
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            count += len(chunk)
+            digest.update(chunk)
+    return {"bytes": count, "sha256": digest.hexdigest()}
 
 
 def write_new(path, value):
@@ -191,7 +196,7 @@ def prepare(native_record):
             "--java-home", REPO / runtime.native.HOMES["device"], "--jar", runtime.JAR,
             "--destination", REPO / "Resources/LegadoRuntime", "--replace"], 300)
         environment = dict(os.environ, LEGADO_READER_WITH_JVM="1", YUEDU_READER_BUILD_DIR=str(build))
-        command(work, "full-device-build", ["bash", HERE / "build.sh"], 1800, environment)
+        command(work, "full-device-build", ["bash", HERE / "build.sh"], 3600, environment)
         command(work, "full-owned-producer", [sys.executable, HERE / "owned-package-fixture/generate-sdk-owned-package.py",
             "--output", produced, "--full-application-build", build], 360)
         producer = json.loads((produced / "full-sdk-produced-fixture-manifest.json").read_bytes())
@@ -276,7 +281,7 @@ def run():
     failed = None
     try:
         command(work, "full-application-test", ["bash", REPO / "scripts/xctest.sh", "-l", work / "full-application-test-build.log",
-            "-t", "1800", "--", *args, "-resultBundlePath", bundle, "-only-testing:yuedu appTests/" + CASE + "()"], 1860)
+            "-t", "3600", "--", *args, "-resultBundlePath", bundle, "-only-testing:yuedu appTests/" + CASE + "()"], 3660)
     except Exception as error:
         failed = error
     # Export actual evidence even when the App build or test failed.

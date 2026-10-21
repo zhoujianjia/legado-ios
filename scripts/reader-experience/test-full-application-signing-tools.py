@@ -2,6 +2,7 @@
 """Portable protocol guards only: no Apple build/signing/Swift execution."""
 import ast
 import copy
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -107,6 +108,48 @@ class FullApplicationSigningProtocolTests(unittest.TestCase):
         self.assertIn("--full-application-build", text)
         self.assertIn("full.validate_input", text)
         self.assertIn("full.produce", text)
+        # These are execution-policy contracts, not completed Apple builds.
+        # Device compilation and the independently compiled one-case Simulator
+        # signer both receive a bounded hour; its parent retains 60s headroom.
+        orchestration = ast.parse((HERE / 'full-application-signing-tools.py').read_text())
+        calls = {call.args[1].value: call for call in ast.walk(orchestration)
+            if isinstance(call, ast.Call) and isinstance(call.func, ast.Name) and call.func.id == 'command'
+            and len(call.args) >= 4 and isinstance(call.args[1], ast.Constant)}
+        self.assertEqual(calls['full-device-build'].args[3].value, 3600)
+        test = calls['full-application-test']
+        self.assertEqual(test.args[3].value, 3660)
+        argv = test.args[2].elts
+        flag = next(i for i, value in enumerate(argv) if isinstance(value, ast.Constant) and value.value == '-t')
+        self.assertEqual(argv[flag + 1].value, '3600')
+        self.assertIn("'-only-testing:yuedu appTests/' + CASE + '()'", ast.unparse(test))
+        workflow = (HERE.parents[1] / '.github/workflows/legado-native-reader-test.yml').read_text()
+        self.assertIn("timeout-minutes: ${{ startsWith(github.ref_name, 'legado-native-reader-test-cold-') && 120 || 150 }}", workflow)
+        # Exports and all non-compilation stage budgets retain their values.
+        self.assertEqual(calls['device-runtime-stage'].args[3].value, 300)
+        self.assertEqual(calls['full-owned-producer'].args[3].value, 360)
+        self.assertEqual(next(call for call in ast.walk(orchestration) if isinstance(call, ast.Call)
+            and isinstance(call.func, ast.Name) and call.func.id == 'command'
+            and len(call.args) >= 4 and isinstance(call.args[1], ast.BinOp)).args[3].value, 60)
+        # Reproduce a file growing after its stale stat sample, before the
+        # read stream opens. Both returned values must describe that one stream.
+        with tempfile.TemporaryDirectory() as name:
+            path = Path(name) / 'growing.log'
+            path.write_bytes(b'active compiler\n')
+            previous_size = path.stat().st_size
+            trailer = b'** BUILD INTERRUPTED **\n'
+            self.assertEqual(len(trailer), 24)
+            class GrowingFile:
+                def stat(self):
+                    return SimpleNamespace(st_size=previous_size)
+                def open(self, mode):
+                    self_mode = mode
+                    with path.open('ab') as output:
+                        output.write(trailer)
+                    return path.open(self_mode)
+            value = tools.fact(GrowingFile())
+            actual = path.read_bytes()
+            self.assertNotEqual(previous_size, len(actual))
+            self.assertEqual(value, {'bytes': len(actual), 'sha256': hashlib.sha256(actual).hexdigest()})
 
 
 if __name__ == "__main__":

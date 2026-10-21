@@ -1,0 +1,255 @@
+{
+  "schemaVersion": 1,
+  "final": {
+    "path": ".build/native-d8200d3-full-build-budget-repair/final-v1.json",
+    "bytes": 10449,
+    "sha256": "6615ff17eca6b857dd533c9832e24542f08fbf67bbbae8c18816a96f7890c350"
+  },
+  "parent": {
+    "path": ".build/s5-cold-only-native-ci-step/final-v1.json",
+    "bytes": 10629,
+    "sha256": "1abdc8e4582b0a3e513552fb85a917cd9713139e5395808d3a972d0c4449b9e8"
+  },
+  "sourceRoot": ".build/native-d8200d3-full-build-budget-repair/snapshot-v2/work",
+  "scope": "Five control/protocol sources only; no Swift consumer self-review, no Apple execution approval",
+  "approved": true,
+  "failedChecks": 0,
+  "remainingConfirmedSourceBlockers": [],
+  "remainingConfirmedFindings": [],
+  "unresolvedFindings": [],
+  "checks": [
+    {
+      "check": "exact final6615 manifest identity",
+      "passed": true
+    },
+    {
+      "check": "five sources/diffs exact; three baseline from frozen coldCI parent and two historical canonical e0c",
+      "passed": true
+    },
+    {
+      "check": "full production helper restores exactly by fact + three budget numbers",
+      "passed": true
+    },
+    {
+      "check": "fact reads one stream in 1MiB chunks and counts same hashed chunks, no stat/read_bytes",
+      "passed": true
+    },
+    {
+      "check": "Native verifier only matching three budgets changed; all other source exact",
+      "passed": true
+    },
+    {
+      "check": "workflow only full90->150, cold120 exact",
+      "passed": true
+    },
+    {
+      "check": "no new or removed test definitions: scripts/reader-experience/test-native-smoke-tools.py",
+      "passed": true
+    },
+    {
+      "check": "no new or removed test definitions: scripts/reader-experience/test-full-application-signing-tools.py",
+      "passed": true
+    },
+    {
+      "check": "same-job source/result/exit/skip/resource/restoration negative vectors retained with three old-budget rejection vectors",
+      "passed": true
+    },
+    {
+      "check": "growth vector uses actual owned file append24 in same existing method",
+      "passed": true
+    },
+    {
+      "check": "actual two distinct methods / three executions all pass; no re-execution by reviewer",
+      "passed": true
+    },
+    {
+      "check": "first Native budget pass remains exact for verifier/test/workflow; final fact/full method independently passed",
+      "passed": true
+    },
+    {
+      "check": "actual historical timeout and24-byte mismatch retained unmodified",
+      "passed": true
+    }
+  ],
+  "files": [
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "origin": "frozen-cold-CI-v1",
+      "baseline": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/rawbaseline/.github/workflows/legado-native-reader-test.yml",
+        "bytes": 14744,
+        "sha256": "b42ade967b5156ee8243f0fd26e3f991b7a63028a02678e709cb4566cfd77aad"
+      },
+      "candidate": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/snapshot-v2/work/.github/workflows/legado-native-reader-test.yml",
+        "bytes": 14745,
+        "sha256": "59fc0da0fc2944b7f9e96d21203e19af052fbaa135e94d4ee766890f122f4c1b"
+      },
+      "diff": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/diffs-v2/.github/workflows/legado-native-reader-test.yml.diff",
+        "bytes": 494,
+        "sha256": "5d98b227a0bc092c267fc1f150a8560bdea2ab1f13cb52a55578aa607fcca3e9"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/full-application-signing-tools.py",
+      "origin": "canonical-unchanged",
+      "baseline": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/rawbaseline/scripts/reader-experience/full-application-signing-tools.py",
+        "bytes": 18318,
+        "sha256": "135e1cce731fbdd65d7f4ab1d0d353734e13fbe304455e50b8ad13f32c8cc75a"
+      },
+      "candidate": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/snapshot-v2/work/scripts/reader-experience/full-application-signing-tools.py",
+        "bytes": 18444,
+        "sha256": "9d5dc206f766351cdb10fc0e9029774880f1560b0e9188c39fe178760abf966d"
+      },
+      "diff": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/diffs-v2/scripts/reader-experience/full-application-signing-tools.py.diff",
+        "bytes": 1923,
+        "sha256": "34769666398b30bcc5c78b76271418e2ebdcb853dce4a78d6e001a02edc9b575"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/native-smoke-tools.py",
+      "origin": "frozen-cold-CI-v1",
+      "baseline": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/rawbaseline/scripts/reader-experience/native-smoke-tools.py",
+        "bytes": 83544,
+        "sha256": "d450f98cf38ff71ce750849752b8b54d33e87c2bbeb2e8a643bb93519639e80c"
+      },
+      "candidate": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/snapshot-v2/work/scripts/reader-experience/native-smoke-tools.py",
+        "bytes": 83544,
+        "sha256": "b33c11517667fbbd41b64a95eda41afd39e5f576b4bb853919dc8e449e814cee"
+      },
+      "diff": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/diffs-v2/scripts/reader-experience/native-smoke-tools.py.diff",
+        "bytes": 1632,
+        "sha256": "85edd6d692ffed5249a340bfb2f3751775b41f0aee53efb4a97a4cd74975ee39"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-full-application-signing-tools.py",
+      "origin": "canonical-unchanged",
+      "baseline": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/rawbaseline/scripts/reader-experience/test-full-application-signing-tools.py",
+        "bytes": 7991,
+        "sha256": "66c3e27dc14ba817dc9913c1dc26aea455b93d9161e53cab7ee1afbf13471946"
+      },
+      "candidate": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/snapshot-v2/work/scripts/reader-experience/test-full-application-signing-tools.py",
+        "bytes": 10850,
+        "sha256": "7d51841496234b4104d1e6fd753ae028f26b107e49828ad3d585bee3bbad8724"
+      },
+      "diff": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/diffs-v2/scripts/reader-experience/test-full-application-signing-tools.py.diff",
+        "bytes": 3432,
+        "sha256": "b3307a3fea937a8f35bc416d0820b820512f8f325e64ab4be4acb4608cc3c5c3"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "origin": "frozen-cold-CI-v1",
+      "baseline": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/rawbaseline/scripts/reader-experience/test-native-smoke-tools.py",
+        "bytes": 44227,
+        "sha256": "fe235a576c87be26d15dd450c383f8670a5d7e5beebb940134420d0c728092a6"
+      },
+      "candidate": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/snapshot-v2/work/scripts/reader-experience/test-native-smoke-tools.py",
+        "bytes": 44808,
+        "sha256": "0957733b85bcc2c9e6c0f7fba91de5342fd2e4835b8dc72e8b5e1a57ef80445d"
+      },
+      "diff": {
+        "path": ".build/native-d8200d3-full-build-budget-repair/diffs-v2/scripts/reader-experience/test-native-smoke-tools.py.diff",
+        "bytes": 3515,
+        "sha256": "11b21ed1999b2d470638f3034d132195744779e8c18dc35c27c524b68f31b647"
+      }
+    }
+  ],
+  "actualEvidence": {
+    "distinctPortableMethods": 2,
+    "actualPortableExecutions": 3,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "executions": [
+      {
+        "execution": {
+          "path": ".build/native-d8200d3-full-build-budget-repair/affected-native-budget-v1.json",
+          "bytes": 2748,
+          "sha256": "37172bb24c47620d4b569f8f9b200240d9d08e57fbf7b386f382f539d441f1ca"
+        },
+        "stdout": {
+          "path": ".build/native-d8200d3-full-build-budget-repair/affected-native-budget-v1.log",
+          "bytes": 318,
+          "sha256": "c3e557a8cdd81ef20922fd0b28b21d60998e1bdcd65ad537b5738f29255cb825"
+        },
+        "methods": [
+          "NativeSmokeProvenanceTests.test_complete_application_result_requires_actual_same_job_case_outputs_and_resources"
+        ],
+        "exitCode": 0,
+        "timedOut": false,
+        "sourceSnapshot": ".build/native-d8200d3-full-build-budget-repair/snapshot-v1/work"
+      },
+      {
+        "execution": {
+          "path": ".build/native-d8200d3-full-build-budget-repair/affected-full-budget-v1.json",
+          "bytes": 2758,
+          "sha256": "7a3d5cca43296f74f941fe59c5164ea286688b6459e5725a4020a441cdb6b2c0"
+        },
+        "stdout": {
+          "path": ".build/native-d8200d3-full-build-budget-repair/affected-full-budget-v1.log",
+          "bytes": 309,
+          "sha256": "1a6d7c5a6a05ae5a38805c59fb5e812b9ba80928c3ae96afef7859f7e6535616"
+        },
+        "methods": [
+          "FullApplicationSigningProtocolTests.test_producer_minimal_default_body_is_unchanged_and_full_branch_is_explicit"
+        ],
+        "exitCode": 0,
+        "timedOut": false,
+        "sourceSnapshot": ".build/native-d8200d3-full-build-budget-repair/snapshot-v1/work"
+      },
+      {
+        "execution": {
+          "path": ".build/native-d8200d3-full-build-budget-repair/affected-full-fact-v2.json",
+          "bytes": 2923,
+          "sha256": "9aa348fd6a1c6e7f1c1eb3dc6ee6c487aa71fb1ee6a2f4bdfad9f805fecb6de0"
+        },
+        "stdout": {
+          "path": ".build/native-d8200d3-full-build-budget-repair/affected-full-fact-v2.log",
+          "bytes": 309,
+          "sha256": "f7c78ee591174ac20ec0d585e5547d4dd4b71f72caca1014e9b37dc2407261fa"
+        },
+        "methods": [
+          "FullApplicationSigningProtocolTests.test_producer_minimal_default_body_is_unchanged_and_full_branch_is_explicit"
+        ],
+        "exitCode": 0,
+        "timedOut": false,
+        "sourceSnapshot": ".build/native-d8200d3-full-build-budget-repair/snapshot-v2/work"
+      }
+    ],
+    "parentColdCIFourNotRerun": true
+  },
+  "conclusions": [
+    "The complete-device build now has3600 seconds; independent S3 signer wrapper3600/parent3660 agree with Native evidence validation. Full job150min remains finite and cold-only120min is unchanged.",
+    "Exact single S3 case/one leaf/no skip, same job/source/resources, source overlay restoration and existing non-target budgets/gates are retained. Larger timeouts never transform a historical failure into acceptance.",
+    "Full helper fact counts and hashes identical chunks from one stream; no whole512MiB IPA allocation was introduced.",
+    "Original d8201800timeout remains failure;24-byte bytes/hash sampling discrepancy is retained in raw facts."
+  ],
+  "limits": [
+    "No Apple build, Simulator test, full IPA producer, production signer or device installation was executed by this review.",
+    "Streaming facts do not freeze a changing file, prove all descendants/process groups are drained, or make future build/signing success certain.",
+    "First Native budget evidence predates fact-only helper change; verifier/test/workflow exact reuse plus final fullprotocol rerun is explicitly separated.",
+    "Full150min is a job-wide finite budget, not proof all individual maximum stage budgets can be exhausted consecutively."
+  ],
+  "reviewerExecution": {
+    "tests": 0,
+    "Swift": 0,
+    "compiler": 0,
+    "cloud": 0,
+    "canonicalMutations": 0,
+    "gitMutations": 0
+  }
+}
