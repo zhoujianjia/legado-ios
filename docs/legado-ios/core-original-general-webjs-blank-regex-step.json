@@ -1,0 +1,400 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T00:10:45.045678+00:00",
+  "status": "reviewed-Kotlin-blank-regex-wire-successor-integrated-Apple-SDK-pending",
+  "parentRecord": "docs/legado-ios/core-original-general-webjs-step.json",
+  "closedFinding": {
+    "id": "P2-KOTLIN-BLANK-REGEX-WIRE",
+    "originalContract": "BackstageWebView.kt172 isNullOrBlank selects ordinary evaluator; original policy already uses same Kotlin classifier",
+    "fix": "Only source.webview two packet fields use nullable takeUnless(String::isBlank); nonblank bytes untouched",
+    "actualRegression": "public empty/2spaces/NBSP for source and override,6cases adds18public and6Host calls; raw packet fields asserted JSONnull",
+    "authority": "No Swift Unicode parser or changed admission flag"
+  },
+  "sourceBindings": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "baseline": {
+        "bytes": 42210,
+        "sha256": "1e4e373d8aba208f96263c67bd4b77c6c1fe0ebf593c3c24452ae9ff04e145fe"
+      },
+      "candidate": {
+        "bytes": 42284,
+        "sha256": "4dcde69dcff04b5181ae369dddcb9d5f114f2ee2aae0ee62eb8ab23d30c39278"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-blank-regex-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt.diff",
+        "bytes": 1099,
+        "sha256": "426b3b8fb4223e8a631d98adb737c056713d282cf5cdcba8741f992a39f374e5"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalGeneralWebJsTest.kt",
+      "baseline": {
+        "bytes": 4564,
+        "sha256": "8c1a8fdaade7221b16904f059977d16809bf20931054b12c30a85a5c32aab172"
+      },
+      "candidate": {
+        "bytes": 5110,
+        "sha256": "1d1e8c2ddd9aa277b4b3e4bc081faa9dedbd9268916029e89ba45469109b2955"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-blank-regex-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalGeneralWebJsTest.kt.diff",
+        "bytes": 1144,
+        "sha256": "bbf4fcdefc6b8705e3370415ba594231ba1b9e4e323509d68fb81d51bd6eb85d"
+      }
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "baseline": {
+        "bytes": 136836,
+        "sha256": "2b96be6b9f480b89ff17a9973b14b2fa658b880bb7f0738558fe73cc60568681"
+      },
+      "candidate": {
+        "bytes": 136836,
+        "sha256": "2641d7f27c81e63d8ee4511ee54686f01a65f3525b6b2f93bd5fbecb95eef0d7"
+      },
+      "diff": {
+        "path": ".build/original-general-webjs-blank-regex-step/snapshot-v1/diffs/Packages/LegadoRuntime/vendor/original-rule/manifest.json.diff",
+        "bytes": 615,
+        "sha256": "f011ced67b0e75117c67ecee2bbf6b2659893a067d90125687a73b73410192da"
+      }
+    }
+  ],
+  "implementation": "Only two producer source.webview input fields are normalized with existing Kotlin String.isBlank via takeUnless. The policy constructor, direct API delay, nonblank regex text, HTTP/owner/ABI/cancel/effects and Swift Host code are untouched.",
+  "actualValidation": {
+    "productionSourcesChanged": 1,
+    "existingTestSourceChanged": 1,
+    "changedExistingTestMethods": 1,
+    "newDefinitions": 0,
+    "existingJUnitDefinitions": 4,
+    "JUnitActualExecuted": 1,
+    "JUnitFailures": 0,
+    "compileMainRoots": 1,
+    "recompiledProductionClasses": 11,
+    "retainedProductionClasses": 401,
+    "totalProductionClasses": 412,
+    "unchangedResources": 391,
+    "portedSources": 60,
+    "totalMainAndBuildInputs": 129,
+    "mainInputs": 126,
+    "retainedMainInputs": 125,
+    "generalPublicExecuteCalls": 64,
+    "syntheticBrowserHostCalls": 17,
+    "realHTTP": 7,
+    "POST": 3,
+    "GET": 4,
+    "cookieTagMutations": 1,
+    "stateACKs": 2,
+    "packagingGuards": 6,
+    "SDK": 0,
+    "JNI": 0,
+    "WK": 0
+  },
+  "ordinaryJar": {
+    "path": ".build/original-general-webjs-blank-regex-step/ordinary-jar/legado-runtime-general-base64.jar",
+    "bytes": 10915918,
+    "sha256": "6b759cb645a2a033edd51a29d3f34f1d61d34ceadbe2b3ac960ea2a35df0b5e4",
+    "kind": "Precise single-root bounded K2 overlay on jointd1c0; NOT fullGradle",
+    "binding": {
+      "path": ".build/original-general-webjs-blank-regex-step/ordinary-jar/production-binding.json",
+      "bytes": 163637,
+      "sha256": "51e1c245d8435ea6cd8a923d94134bcfc5611d80172af629d55b2d62d8dc25ea"
+    }
+  },
+  "actualVectors": {
+    "blankOverride": [
+      "empty String",
+      "two U+0020 spaces",
+      "U+00A0 NBSP"
+    ],
+    "blankSource": [
+      "empty String",
+      "two U+0020 spaces",
+      "U+00A0 NBSP"
+    ],
+    "productionProof": "Each vector calls actual public original RuleJsExtensions API, enters actual source.webview producer, asserts both regex fields are JSON null, configures ordinary same-session policy and accepts its actual JVM policy result. Six cases add18public calls/6Host calls to prior46/11. Positive nonblank override and nonblank resource typedunsupported cases retained.",
+    "ordinaryOutput": "GENERAL_WEBJS_PUBLIC_OK sessions=3 publicCalls=64 syntheticBrowserHostCalls=17 realHTTP=7 POST=3 GET=4 cookieTagMutations=1 sameOwnerStateACKs=2 JUnit=0 WK=0 SDK=0",
+    "targetedJUnit": "actualRuleHtmlAndRegisteredSourceControlInterfacesWithoutGrantingBasicPages",
+    "otherThreeJUnit": "Not rerun; exact unchanged methods reuse parent4pass with changed method separately executed on newJAR.",
+    "Base64": "Not rerun; all Base64/RulePlatform ABI class bytes among401 retainedexact parent jointd1c0. No12root/fullGradle/history349 rerun."
+  },
+  "independentReadOnlyChecks": 1804,
+  "preservedEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/preparation.json",
+      "bytes": 10457,
+      "sha256": "7e725827274861758270ca4a8f64908df3b1d968482e9e594b6f98f8a47ee9ba",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/final-v1.json",
+        "bytes": 10457,
+        "sha256": "7e725827274861758270ca4a8f64908df3b1d968482e9e594b6f98f8a47ee9ba"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/independent-review.json",
+      "bytes": 221316,
+      "sha256": "70af21093603a1cfdedfaedfabef005d14e80233ad119064cf04a00d9ec41758",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-independent-review/review-v1.json",
+        "bytes": 228601,
+        "sha256": "7fb18495a0595df76ec172a582a9abcbfc0c4765f47325a637076956091049d9"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/scripts/integrate-reviewed-general-webjs-blank-regex.py",
+      "bytes": 5623,
+      "sha256": "ea84a99bf1d19608ebea2629f354fcd426bb70b477871dec13f10eb7838d2737",
+      "original": {
+        "path": ".build/integrate-reviewed-general-webjs-blank-regex.py",
+        "bytes": 5623,
+        "sha256": "ea84a99bf1d19608ebea2629f354fcd426bb70b477871dec13f10eb7838d2737"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/scripts/verify-v1.py",
+      "bytes": 8277,
+      "sha256": "460039a5d29ef824fdd32837960088d4723e8731b29224694d9e475ab3b371c6",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-independent-review/verify-v1.py",
+        "bytes": 8277,
+        "sha256": "460039a5d29ef824fdd32837960088d4723e8731b29224694d9e475ab3b371c6"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/actual/compile-v1/commands.json",
+      "bytes": 6321,
+      "sha256": "a2015583436cb0dc33c45ed1200ad757f411ccb5d2afc2e31d2bd57c9e18569b",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/compile-v1/commands.json",
+        "bytes": 6321,
+        "sha256": "a2015583436cb0dc33c45ed1200ad757f411ccb5d2afc2e31d2bd57c9e18569b"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/actual/compile-v1/compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/compile-v1/compile.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/actual/actual-jvm-compilation-inputs.json",
+      "bytes": 28575,
+      "sha256": "4011c46c8d96dba188d6cbd9c455194f93291111fba93a40ec9b90b5f1afc2e0",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/actual-jvm-compilation-inputs.json",
+        "bytes": 28575,
+        "sha256": "4011c46c8d96dba188d6cbd9c455194f93291111fba93a40ec9b90b5f1afc2e0"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/actual/ordinary-jar/production-binding.json",
+      "bytes": 163637,
+      "sha256": "51e1c245d8435ea6cd8a923d94134bcfc5611d80172af629d55b2d62d8dc25ea",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/ordinary-jar/production-binding.json",
+        "bytes": 163637,
+        "sha256": "51e1c245d8435ea6cd8a923d94134bcfc5611d80172af629d55b2d62d8dc25ea"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/actual/ordinary-jar/ordinary-commands.json",
+      "bytes": 2325,
+      "sha256": "e756118c6d673516b9a940bd817e789ad1ce19b2583d5455caaead95c0cedee7",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/ordinary-jar/ordinary-commands.json",
+        "bytes": 2325,
+        "sha256": "e756118c6d673516b9a940bd817e789ad1ce19b2583d5455caaead95c0cedee7"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/actual/ordinary-jar/compile-consumer.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/ordinary-jar/compile-consumer.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/actual/ordinary-jar/execute-consumer.log",
+      "bytes": 164,
+      "sha256": "cb608bfeab3a40445c4856f063e1680744977b534b528c429bc265fa680e6b0a",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/ordinary-jar/execute-consumer.log",
+        "bytes": 165,
+        "sha256": "74b10336b7b2bec8343584df0114abd8c9d764e5051e6b2d9499dd86b4c7b101"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/actual/OrdinaryGeneralWebJs.java",
+      "bytes": 17238,
+      "sha256": "72fb14c24143dcbee0a53b46eb1c0b0566ca76ba7aa76dad412664ee85a4163d",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/OrdinaryGeneralWebJs.java",
+        "bytes": 17238,
+        "sha256": "72fb14c24143dcbee0a53b46eb1c0b0566ca76ba7aa76dad412664ee85a4163d"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/actual/PolicyJUnitRunner.java",
+      "bytes": 1422,
+      "sha256": "c1424ed0f64371ab182bb81bdd7b89da318bdf26f5a50dca1a94ae391898b9c1",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/PolicyJUnitRunner.java",
+        "bytes": 1422,
+        "sha256": "c1424ed0f64371ab182bb81bdd7b89da318bdf26f5a50dca1a94ae391898b9c1"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/actual/policy-tests-v1/commands.json",
+      "bytes": 6229,
+      "sha256": "137cda95d21f0c6a6d922ac892a2a300418d8adc51bb4ff6f353f6b4c841b07b",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/policy-tests-v1/commands.json",
+        "bytes": 6229,
+        "sha256": "137cda95d21f0c6a6d922ac892a2a300418d8adc51bb4ff6f353f6b4c841b07b"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/actual/policy-tests-v1/actual-tests.xml",
+      "bytes": 256,
+      "sha256": "c0d31624411187fb299c0f01f88d9cf9c761f1ea72a27c896ccfe050ce7624eb",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/policy-tests-v1/actual-tests.xml",
+        "bytes": 256,
+        "sha256": "c0d31624411187fb299c0f01f88d9cf9c761f1ea72a27c896ccfe050ce7624eb"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/actual/policy-tests-v1/actual-tests.log",
+      "bytes": 42,
+      "sha256": "c7e59c70b5240f2b419313af976f23c6561bed8d794a00a449cb3e11ea843c84",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/policy-tests-v1/actual-tests.log",
+        "bytes": 43,
+        "sha256": "3cd72c68e8df7510bbaa5bf07e7bc389cd2ecc9945e6c0ff1cb18a587d62c166"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/actual/policy-tests-v1/compile-test.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/policy-tests-v1/compile-test.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/actual/policy-tests-v1/compile-runner.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/policy-tests-v1/compile-runner.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/actual/packaging-tests.log",
+      "bytes": 1232,
+      "sha256": "f1a3cebd10f801ab25acae72a9371ea6711ac063ac26e4eb1c61adaa4fd00102",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/packaging-tests.log",
+        "bytes": 1243,
+        "sha256": "33cb24ec0f156bd78d852cc150962bc2ec79f54f4ac1230d476b4faff730a7f7"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/actual/ordinary-jar-inspected.json",
+      "bytes": 81074,
+      "sha256": "283ec17bf9363c0955cbe6fd2c5034d1a6d155e269d867b029f03c8bffb28a79",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/ordinary-jar-inspected.json",
+        "bytes": 81074,
+        "sha256": "283ec17bf9363c0955cbe6fd2c5034d1a6d155e269d867b029f03c8bffb28a79"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/actual/snapshot-v1/contract-v1.json",
+      "bytes": 958,
+      "sha256": "9e5d81d1e0f6e35f70bf4bdd7829ce0cb925201ff57ad4b2b40049f89e70df28",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/snapshot-v1/contract-v1.json",
+        "bytes": 958,
+        "sha256": "9e5d81d1e0f6e35f70bf4bdd7829ce0cb925201ff57ad4b2b40049f89e70df28"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt.diff.patch",
+      "bytes": 1099,
+      "sha256": "426b3b8fb4223e8a631d98adb737c056713d282cf5cdcba8741f992a39f374e5",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt.diff",
+        "bytes": 1099,
+        "sha256": "426b3b8fb4223e8a631d98adb737c056713d282cf5cdcba8741f992a39f374e5"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/diffs/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalGeneralWebJsTest.kt.diff.patch",
+      "bytes": 1144,
+      "sha256": "bbf4fcdefc6b8705e3370415ba594231ba1b9e4e323509d68fb81d51bd6eb85d",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/snapshot-v1/diffs/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalGeneralWebJsTest.kt.diff",
+        "bytes": 1144,
+        "sha256": "bbf4fcdefc6b8705e3370415ba594231ba1b9e4e323509d68fb81d51bd6eb85d"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-general-webjs-blank-regex-step/diffs/Packages/LegadoRuntime/vendor/original-rule/manifest.json.diff.patch",
+      "bytes": 615,
+      "sha256": "f011ced67b0e75117c67ecee2bbf6b2659893a067d90125687a73b73410192da",
+      "original": {
+        "path": ".build/original-general-webjs-blank-regex-step/snapshot-v1/diffs/Packages/LegadoRuntime/vendor/original-rule/manifest.json.diff",
+        "bytes": 615,
+        "sha256": "f011ced67b0e75117c67ecee2bbf6b2659893a067d90125687a73b73410192da"
+      },
+      "normalization": "UTF8/LF/trailing whitespace only; raw facts retained"
+    }
+  ],
+  "newDefinitions": 0,
+  "newSourcePaths": 0,
+  "limits": [
+    "Synthetic Host exercises actual emitted wire/policy, not actual WK rendering.",
+    "Actual Apple SDK/JNI/WK tests remain0; future frozen controls must bind this successor source+manifest/test bytes.",
+    "Current general public limits for ordered object results/resource interception and platform TLS/cache differences remain."
+  ],
+  "newCloudTags": 0,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

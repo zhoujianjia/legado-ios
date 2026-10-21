@@ -370,7 +370,8 @@ internal class ProductionRulePlatform(
                 "userAgent" to userAgent, "additionalHeaders" to additional, "cookieTag" to tag,
                 "isRule" to isRule, "cacheFirst" to cacheFirst, "delayTime" to delayTime,
                 "initialDelayMs" to policy.initialDelayMs, "timeoutMs" to (deadline - now).coerceAtLeast(1),
-                "browserDeadlineEpochMs" to deadline, "sourceRegex" to sourceRegex, "overrideUrlRegex" to overrideUrlRegex,
+                "browserDeadlineEpochMs" to deadline, "sourceRegex" to sourceRegex?.takeUnless(String::isBlank),
+                "overrideUrlRegex" to overrideUrlRegex?.takeUnless(String::isBlank),
                 "resultJSON" to resultJSON, "injectionString" to if (isRule) page.ruleInjectionString() else null,
                 "page" to page.metadata())
             ensureOwnerOpen(); task.ensureActiveForRuntime(); policy.ensureDeadline()

@@ -39,6 +39,14 @@ class OriginalGeneralWebJsTest {
         val empty=policy(html="",rule=true);empty.configure(true)
         code("UNSUPPORTED_CAPABILITY") { empty.checkBridge("cache.get") }
         code("INVALID_WEBVIEW_POLICY") { registered.configure(true) }
+        // Locked Backstage treats Kotlin-blank regexes as ordinary evaluation,
+        // including NBSP; no independent Swift Unicode classification is used.
+        for (blank in listOf("", "  ", "\u00a0")) {
+            val ordinary = policy(resource=blank,navigation=blank)
+            assertFalse(ordinary.sniffer);ordinary.configure(false)
+            val result=com.google.gson.JsonParser.parseString(ordinary.evaluate("\"ordinary\"")["value"].asString).asJsonObject
+            assertEquals("ordinary",result["body"].asString)
+        }
     }
     @Test fun javaFullMatchesRetainSnifferIdentityAndGuardBacktracking() {
         val p=policy(navigation="https://synthetic\\.invalid/(?:capture|other)/[0-9]+")
