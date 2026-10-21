@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "d8200d32f881e1b09399110905d43545cfd0c9f9",
+  "runID": 39543887707,
+  "jobID": 119037579000,
+  "terminal": "failure",
+  "queryAgain": false,
+  "actualJVM": {
+    "xmlFiles": 58,
+    "tests": 378,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "uniqueCases": 378
+  },
+  "ordinaryJar": {
+    "recorded": {
+      "sha256": "3f6b97a8793247be01dda158efd2735cab8cb6d9469ad5ae6e4e4685bc6b54b1",
+      "bytes": 10960540,
+      "maximumBaseClassMajor": 65,
+      "requiredClasses": [
+        "io/yuedu/legado/LegadoRuntime.class",
+        "io/yuedu/legado/NativeHost.class",
+        "io/yuedu/legado/ProductionHttpTransport.class",
+        "io/yuedu/legado/RuntimeSessionOptions.class",
+        "io/yuedu/legado/StaticScalarSelectorRule.class",
+        "org/htmlunit/corejs/javascript/Context.class",
+        "okhttp3/OkHttpClient.class",
+        "org/brotli/dec/BrotliInputStream.class",
+        "org/apache/commons/text/StringEscapeUtils.class",
+        "org/apache/commons/lang3/StringUtils.class",
+        "io/legado/app/model/analyzeRule/AnalyzeRule.class",
+        "io/legado/app/data/entities/Book.class",
+        "io/legado/app/data/entities/BookChapter.class",
+        "io/legado/app/data/entities/BookSource.class"
+      ],
+      "testClassesIncluded": false
+    },
+    "rawJarPresentInArtifact": false,
+    "independentRawJarRehashPerformed": false,
+    "sameJarRecordedInOrdinaryRestoreAndS3Reuse": true
+  },
+  "nativeRestore": {
+    "sameSourceAndRun": true,
+    "status": "restored",
+    "nativeRuntimeRecompiled": false,
+    "nativeExecutionVerified": false
+  },
+  "firstFailure": {
+    "stepNumber": 7,
+    "step": "Build and prepare the required complete current iPhoneOS JVM signing input",
+    "errorType": "RuntimeError",
+    "message": "Full-application phase failed: full-device-build",
+    "buildAttempted": 1,
+    "buildSucceeded": 0,
+    "timeoutSeconds": 1800,
+    "timedOut": true,
+    "recordedBuildExitCode": -15,
+    "workflowExitCode": 1,
+    "compilerDiagnostics": 0,
+    "classification": "configured complete-device-build time budget exceeded; build interrupted, not a proven compile error",
+    "durationLimits": "No exact phase duration written by execution metadata. Overall prepare step includes successful guards/staging; do not label all of it build time."
+  },
+  "restoration": {
+    "deviceRuntimeStageExit": 0,
+    "sourceOverlayRestored": true,
+    "restoredProjectMatchesHistoricalGit": true
+  },
+  "actualAcceptanceExecutions": {
+    "fullApplicationFixtureProducer": 0,
+    "AppSigner": 0,
+    "SimulatorPreparation": 0,
+    "AppTests": 0,
+    "MainJS": 0,
+    "ordinaryOriginalMethods": 0,
+    "platformCharacterizations": 0,
+    "coldProducer": 0,
+    "coldConsumer": 0
+  },
+  "portableBeforeStop": [
+    {
+      "log": "native-reader-cold-protocol-guards.log",
+      "executions": 5,
+      "summary": "Ran 5 tests in 0.005s",
+      "failed": false,
+      "selectedCases": 5,
+      "passedCases": 5,
+      "skippedCases": 0,
+      "failedCases": 0,
+      "errorCases": 0
+    },
+    {
+      "log": "native-reader-diagnostics-guards.log",
+      "executions": 16,
+      "summary": "Ran 16 tests in 0.063s",
+      "failed": false,
+      "selectedCases": 16,
+      "passedCases": 16,
+      "skippedCases": 0,
+      "failedCases": 0,
+      "errorCases": 0
+    },
+    {
+      "log": "native-reader-notice-guards.log",
+      "executions": 15,
+      "summary": "Ran 15 tests in 0.735s",
+      "failed": false,
+      "selectedCases": 15,
+      "passedCases": 14,
+      "skippedCases": 1,
+      "failedCases": 0,
+      "errorCases": 0
+    },
+    {
+      "log": "native-reader-overlays.log",
+      "executions": 24,
+      "summary": "Ran 24 tests in 0.102s",
+      "failed": false,
+      "selectedCases": 24,
+      "passedCases": 24,
+      "skippedCases": 0,
+      "failedCases": 0,
+      "errorCases": 0
+    },
+    {
+      "log": "native-reader-package-guards.log",
+      "executions": 6,
+      "summary": "Ran 6 tests in 0.196s",
+      "failed": false,
+      "selectedCases": 6,
+      "passedCases": 6,
+      "skippedCases": 0,
+      "failedCases": 0,
+      "errorCases": 0
+    },
+    {
+      "log": "native-reader-source-stamps.log",
+      "executions": 10,
+      "summary": "Ran 10 tests in 0.085s",
+      "failed": false,
+      "selectedCases": 10,
+      "passedCases": 10,
+      "skippedCases": 0,
+      "failedCases": 0,
+      "errorCases": 0
+    },
+    {
+      "log": "native-reader-staging-guards.log",
+      "executions": 21,
+      "summary": "Ran 21 tests in 1.866s",
+      "failed": false,
+      "selectedCases": 21,
+      "passedCases": 21,
+      "skippedCases": 0,
+      "failedCases": 0,
+      "errorCases": 0
+    },
+    {
+      "log": "job.log selected S3 prepare guard excerpt",
+      "executions": 4,
+      "summary": "Ran 4 tests in 0.026s; OK",
+      "failed": false,
+      "selectedCases": 4,
+      "passedCases": 4,
+      "skippedCases": 0,
+      "failedCases": 0,
+      "errorCases": 0
+    }
+  ],
+  "historicalSourceInventory": {
+    "nativeDeclared": 263,
+    "nativeSourceInputsArtifactProduced": false,
+    "rawGitBytesBound": 263,
+    "sourceCommit": "d8200d32f881e1b09399110905d43545cfd0c9f9",
+    "extraNativeReuseGitChecks": 6,
+    "limits": "not complete Xcode compile closure; inventory reconstructed from historical declaration, no cloud stamp was emitted"
+  },
+  "metadataDiscrepancies": [
+    {
+      "file": "full-device-build-execution.json",
+      "field": "output.bytes",
+      "recorded": 6063604,
+      "actualFinalRaw": 6063628,
+      "sameSHA256": true,
+      "difference": 24,
+      "classification": "length metadata mismatch retained; not represented as exact bytes"
+    }
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "portableBeforeStopTotals": {
+    "selected": 101,
+    "passed": 100,
+    "skipped": 1,
+    "failures": 0,
+    "errors": 0
+  },
+  "portableSkip": "The RuntimeNoticeTests Windows junction-only vector is explicitly skipped on macOS. This is separate from actual JVM378/0skip; no claim that all101 selected portable cases passed."
+}

@@ -1,0 +1,276 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T05:12:20.326718+00:00",
+  "status": "focused-CI-source-integrated-actual-Apple-execution-pending",
+  "baselineCommit": "e0c518d690df70eb44952b8e049b04a05cba1632",
+  "changedSources": [
+    {
+      "path": "scripts/reader-experience/native-smoke-tools.py",
+      "bytes": 83544,
+      "sha256": "d450f98cf38ff71ce750849752b8b54d33e87c2bbeb2e8a643bb93519639e80c"
+    },
+    {
+      "path": "scripts/reader-experience/test-native-smoke-tools.py",
+      "bytes": 44227,
+      "sha256": "fe235a576c87be26d15dd450c383f8670a5d7e5beebb940134420d0c728092a6"
+    },
+    {
+      "path": "scripts/reader-experience/original-cold-process-tools.py",
+      "bytes": 23177,
+      "sha256": "2c82dc2be409d6cdaff7b206e077458e1bb99d45f7ae3ab78c9d10f4eaf2b6a2"
+    },
+    {
+      "path": "scripts/reader-experience/test-original-cold-process-tools.py",
+      "bytes": 15523,
+      "sha256": "ddf0a3ee6e2185dcbebd7385b45289f62ef04ea3dcdf309bbe8148c04fee1273"
+    },
+    {
+      "path": ".github/workflows/legado-native-reader-test.yml",
+      "bytes": 14744,
+      "sha256": "b42ade967b5156ee8243f0fd26e3f991b7a63028a02678e709cb4566cfd77aad"
+    }
+  ],
+  "productionChanges": 0,
+  "newWorkflowFiles": 0,
+  "newHosts": 0,
+  "newSwiftTestDefinitions": 0,
+  "reason": "The new S5 handoff delta needs two fresh compiled actual App hosts. Existing CI only exposed the full chain, so a separate explicit cold admission avoids replaying unrelated unchanged scopes without weakening their original gates.",
+  "interface": {
+    "coldTag": "legado-native-reader-test-cold-<HEAD SHA7>",
+    "admission": "Exact refs/tags/ + ref_name + full GITHUB_SHA==HEAD; full admission cannot consume cold prepared state or conversely.",
+    "nativeCLI": [
+      "validate-cold-tag",
+      "restore-cold",
+      "prepare-cold",
+      "build-cold",
+      "collect-cold"
+    ],
+    "coldCLI": "--admission full(default)|cold-only; mode threaded through source_state/run_host/run, host argv and validators unchanged",
+    "build": "Current ordinary Jar/runtimeSmoke/inspect + audited native restore; current synthetic source-stamped Simulator App build-for-testing/settings/export audit. No tested method runs during compilation.",
+    "focusedVerdict": "Only two existing cold hosts plus strict source/build/raw case/exit/container/nonce/nested renewal receipts. No full Native/fullS3/currentcore success record."
+  },
+  "budgets": {
+    "fullJobMinutes": 90,
+    "coldJobMinutes": 120,
+    "coldCompileSeconds": 3600,
+    "buildSettingsSeconds": 60,
+    "nativeExportsSeconds": 60,
+    "eachColdWrapperSeconds": 900,
+    "eachColdParentSeconds": 960,
+    "eachColdExportSeconds": 60,
+    "reason": "3600 + 2*(960+2*60)=5760s exceeds old 90min even before freshJar/restore/Simulator preparation; only cold tag receives finite120min."
+  },
+  "fullBehaviorPreserved": [
+    "validate_tag(), result() and verify_full_application_signing() byte exact; all original full CLI admission/source record shapes remain default.",
+    "Original full Native workflow steps retain their run scripts and same-job fullS3/default gates; cold-tag conditions exclude them only for the separately validated focused mode.",
+    "Full Gradle test runtimeJar runtimeSmoke remains original; focused tag runs runtimeJar runtimeSmoke/inspect without replaying the unchanged JVM test suite.",
+    "Original collector CLI is unchanged; focused collect-cold adapter validates real CI/ref/source/overlay and invokes its same bounded collect function, preserving unavailable/partial diagnostics."
+  ],
+  "knownFindingsClosed": [
+    {
+      "finding": "Existing always diagnostics CLI rejects cold tags before collecting.",
+      "fix": "New cold-only adapter, old collector source and full CLI untouched; unavailable result portable vector."
+    },
+    {
+      "finding": "Original90min job shorter than authorized compile plus two host parent/export budgets.",
+      "fix": "Conditional cold120min/full90min, local budgets unchanged."
+    }
+  ],
+  "actualPortable": {
+    "distinctMethods": 4,
+    "executions": 4,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "preTestImportFailures": 0,
+    "rerunPassingMethods": 0,
+    "methodIdentities": [
+      "NativeSmokeProvenanceTests.test_private_prepare_stamps_source_and_restores_module_hooks",
+      "NativeSmokeProvenanceTests.test_source_closure_rejects_changed_bytes_wrong_source_and_source_only_mode",
+      "NativeSmokeProvenanceTests.test_workflow_keeps_native_groups_in_separate_required_hosts_after_real_staging",
+      "ColdProcessProtocolTests.test_two_qualified_invocations_use_frozen_binary_and_keep_host_budget"
+    ]
+  },
+  "actualNewAppleBuilds": 0,
+  "actualNewColdHosts": 0,
+  "newCloudTagsOrRuns": 0,
+  "priorDataHandoffStep": "docs/legado-ios/core-renewal-cold-process-handoff-step.json",
+  "all427CurrentWorkingInputsVerified": true,
+  "sourceRosterDelta": {
+    "path": "docs/legado-ios/evidence/s5-cold-only-native-ci/source-roster-five-path-delta.json",
+    "bytes": 2838,
+    "sha256": "043347ec2d1a47b40f59ee4cd3375daa105403c6e7cac9915aab2b7f7ea8118d"
+  },
+  "sourceCounts": {
+    "core": 418,
+    "native": 263,
+    "union": 427,
+    "package": 23
+  },
+  "Package23InputsUnchanged": true,
+  "d820FrozenSubmissionBindingsPreserved": true,
+  "NativeD820TerminalArchived": true,
+  "NativeTerminalRecord": "docs/legado-ios/core-native-d8200d3-terminal-result.json",
+  "reusePolicy": "Retain only actual passing d820 scope at its original SHA/run and exact input relationships. A failed/missing scope still requires repair and execution; cold2 cannot replace it or be promoted to fullS3/currentcore/Native32 acceptance.",
+  "validationDependencyBinding": {
+    "path": ".build/s5-cold-only-native-ci-step/validation-dependencies-v1.json",
+    "bytes": 50360,
+    "sha256": "fa89cc1853d8d86d443446461e265234a49da1f3c9faee306398cd88b3b74b83"
+  },
+  "evidence": [
+    {
+      "path": "docs/legado-ios/evidence/s5-cold-only-native-ci/source-candidate-v1.json",
+      "bytes": 10629,
+      "sha256": "1abdc8e4582b0a3e513552fb85a917cd9713139e5395808d3a972d0c4449b9e8",
+      "original": {
+        "path": ".build/s5-cold-only-native-ci-step/final-v1.json",
+        "bytes": 10629,
+        "sha256": "1abdc8e4582b0a3e513552fb85a917cd9713139e5395808d3a972d0c4449b9e8"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-cold-only-native-ci/independent-review.json",
+      "bytes": 12737,
+      "sha256": "56dc3948bd3b817809c03739153346e482b13b8ff2bf777bb0299dc2fd4e013d",
+      "original": {
+        "path": ".build/s5-cold-only-native-ci-independent-review/review-v1.json",
+        "bytes": 12737,
+        "sha256": "56dc3948bd3b817809c03739153346e482b13b8ff2bf777bb0299dc2fd4e013d"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-cold-only-native-ci/native-terminal-archive-preparation.json",
+      "bytes": 21898,
+      "sha256": "d3e45de824455101164ebda26b994e123da73d470ec00a1a6867d1a61711aa6f",
+      "original": {
+        "path": ".build/native-d8200d3-terminal-archive-candidate/final-v2.json",
+        "bytes": 21898,
+        "sha256": "d3e45de824455101164ebda26b994e123da73d470ec00a1a6867d1a61711aa6f"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-cold-only-native-ci/native-terminal-archive-independent-review.json",
+      "bytes": 3807,
+      "sha256": "566b40665fb6b8706db2994612989022423495163efaaa1554527ac2a34a7aef",
+      "original": {
+        "path": ".build/native-d8200d3-terminal-archive-independent-review/review-v1.json",
+        "bytes": 3807,
+        "sha256": "566b40665fb6b8706db2994612989022423495163efaaa1554527ac2a34a7aef"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-cold-only-native-ci/source-checks-v1.json",
+      "bytes": 857,
+      "sha256": "81472aa8e5eb5b6128be011c24bc378834582c365d33944e14cccefffd45fa53",
+      "original": {
+        "path": ".build/s5-cold-only-native-ci-step/source-checks-v1.json",
+        "bytes": 857,
+        "sha256": "81472aa8e5eb5b6128be011c24bc378834582c365d33944e14cccefffd45fa53"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-cold-only-native-ci/affected-1-execution.json",
+      "bytes": 3095,
+      "sha256": "4dc7e6fb12ac67ba0bd2b1d51b02f4551af4843f08c3735f0bbdf71a938c5637",
+      "original": {
+        "path": ".build/s5-cold-only-native-ci-step/affected-native-v1.json",
+        "bytes": 3095,
+        "sha256": "4dc7e6fb12ac67ba0bd2b1d51b02f4551af4843f08c3735f0bbdf71a938c5637"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-cold-only-native-ci/affected-1.log",
+      "bytes": 667,
+      "sha256": "7dc3d5272fc699cf1c4958de4bdc45eb6ededf8db5b223b02c372788e6c23306",
+      "original": {
+        "path": ".build/s5-cold-only-native-ci-step/affected-native-v1.log",
+        "bytes": 675,
+        "sha256": "db71ff61198bf85bb52d7f1efbb841857400866fc3118d090f048f1580836b3e"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-cold-only-native-ci/affected-2-execution.json",
+      "bytes": 2668,
+      "sha256": "8c4e5235e9a6e3a04e98f2ab30d7811acad232913d224441c76e55a395134ce1",
+      "original": {
+        "path": ".build/s5-cold-only-native-ci-step/affected-cold-v1.json",
+        "bytes": 2668,
+        "sha256": "8c4e5235e9a6e3a04e98f2ab30d7811acad232913d224441c76e55a395134ce1"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-cold-only-native-ci/affected-2.log",
+      "bytes": 280,
+      "sha256": "ac344126e0aa6cc0adf210e116b4982d9b98297e5bf1b4e4df88c6c168a6eac6",
+      "original": {
+        "path": ".build/s5-cold-only-native-ci-step/affected-cold-v1.log",
+        "bytes": 286,
+        "sha256": "7c9a4b34e340006ea99fba49a82e211fb635f50bd13e67d518a5bc956d47ae1c"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-cold-only-native-ci/diffs/scripts/reader-experience/native-smoke-tools.py.diff",
+      "bytes": 13212,
+      "sha256": "613c232cf7d9d0f735b61d73815cd8ec22317e2422d432cda7c1176015b7adb3",
+      "original": {
+        "path": ".build/s5-cold-only-native-ci-step/diffs/scripts/reader-experience/native-smoke-tools.py.diff",
+        "bytes": 13219,
+        "sha256": "20c7e54a43fe77516362ee71c4def98edb2ac1cc68ac10a1799b8489c1f40d5e"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-cold-only-native-ci/diffs/scripts/reader-experience/test-native-smoke-tools.py.diff",
+      "bytes": 9856,
+      "sha256": "0e34af61860fdf0dcab5854de54f787c7025c1428c0ee7bcf3a3dba0cb53c40d",
+      "original": {
+        "path": ".build/s5-cold-only-native-ci-step/diffs/scripts/reader-experience/test-native-smoke-tools.py.diff",
+        "bytes": 9857,
+        "sha256": "89416cc8dfa44cfeba8b94e1861edd855c8de276d9ecd06145a7b56b1f9495d3"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-cold-only-native-ci/diffs/scripts/reader-experience/original-cold-process-tools.py.diff",
+      "bytes": 4782,
+      "sha256": "5a5a5205c5ec4b583c4effb114c21e84d810a705dd2e4a90a70d48f5dc89c18d",
+      "original": {
+        "path": ".build/s5-cold-only-native-ci-step/diffs/scripts/reader-experience/original-cold-process-tools.py.diff",
+        "bytes": 4789,
+        "sha256": "5c9984573e57b3f5c2eb292159051631b84458588cb30a0b02e962022303218e"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-cold-only-native-ci/diffs/scripts/reader-experience/test-original-cold-process-tools.py.diff",
+      "bytes": 1943,
+      "sha256": "c872bcbbdd7e97f7d451ea7ad3b416318e1a008c2f24d077e83864953a8df23c",
+      "original": {
+        "path": ".build/s5-cold-only-native-ci-step/diffs/scripts/reader-experience/test-original-cold-process-tools.py.diff",
+        "bytes": 1943,
+        "sha256": "c872bcbbdd7e97f7d451ea7ad3b416318e1a008c2f24d077e83864953a8df23c"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/s5-cold-only-native-ci/diffs/.github/workflows/legado-native-reader-test.yml.diff",
+      "bytes": 7262,
+      "sha256": "b4c9a955d1d5c6acfe9d4cb3fcb4726f81a0ce2c9c9926206c8576eca6e53688",
+      "original": {
+        "path": ".build/s5-cold-only-native-ci-step/diffs/.github/workflows/legado-native-reader-test.yml.diff",
+        "bytes": 7262,
+        "sha256": "b4c9a955d1d5c6acfe9d4cb3fcb4726f81a0ce2c9c9926206c8576eca6e53688"
+      }
+    }
+  ],
+  "temporaryBookSourceTargetPercent": 90,
+  "measuredCompatibilityPercent": null,
+  "otherSeventeenItemsRemainDeferred": true,
+  "limits": [
+    "No new Apple/Swift/Simulator/JVM/physical-device execution or cloud query occurred. Only four existing Python methods executed once each.",
+    "Current d820 runs remain separate immutable snapshots; this candidate does not establish their outcome or the added handoff cold execution.",
+    "Any reuse of Package24/fullS3/currentcore/native results remains conditional on actual d820 passing evidence for that precise scope and unchanged input relationships. Failed or missing scopes cannot be bypassed with a focused pass.",
+    "Cold result continues receiptObserved/local normal-load observation with explicit null installed material/process installation proof and renewalVerified=false. No account/installation authority claim.",
+    "No canonical/Git/plan/roster/workflow execution/tag/cloud mutation; ignored five-file snapshot only."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

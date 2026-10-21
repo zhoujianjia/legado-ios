@@ -1,0 +1,234 @@
+--- a/scripts/reader-experience/native-smoke-tools.py
++++ b/scripts/reader-experience/native-smoke-tools.py
+@@ -577,13 +577,16 @@
+     return records
+
+
+-def _source_state(work):
++def _source_state(work, admission="full"):
+     if "LEGADO_RUNTIME_SOURCE_ONLY" in os.environ:
+         raise ValueError("Actual native groups require LEGADO_RUNTIME_SOURCE_ONLY to be unset")
+-    source = validate_tag()
++    source = _admission_validator(admission)()
+     smoke.review_overlays(smoke.read_json(work / "overlays.json"))
+     prepared = smoke.read_json(work / "native-source-inputs.json")
+-    if prepared != {"sourceCommit": source, "sourceInputs": source_inputs()}:
++    expected = {"sourceCommit": source, "sourceInputs": source_inputs()}
++    if admission == "cold-only":
++        expected["admission"] = admission
++    if prepared != expected:
+         raise ValueError("Native reading source closure changed after preparation")
+     return prepared
+
+@@ -757,8 +760,153 @@
+     return source
+
+
+-def prepare(work):
+-    source = validate_tag()
++def validate_cold_tag():
++    source = smoke.source_sha()
++    name = "legado-native-reader-test-cold-" + source[:7]
++    if (os.environ.get("GITHUB_SHA") != source or os.environ.get("GITHUB_REF_NAME") != name
++            or os.environ.get("GITHUB_REF") != "refs/tags/" + name):
++        raise ValueError("Expected exact cold-only tag ref and matching checkout SHA")
++    return source
++
++
++def _admission_validator(admission):
++    if admission == "full":
++        return validate_tag
++    if admission == "cold-only":
++        return validate_cold_tag
++    raise ValueError("Unknown native execution admission")
++
++
++def cold_build_commands(work):
++    destination = os.environ.get("YUEDU_DEST", "")
++    if re.fullmatch(r"id=[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}", destination) is None:
++        raise ValueError("Cold build requires an explicit owned Simulator destination")
++    base = ["xcodebuild", "-project", "Yuedu-Reader.xcodeproj", "-scheme", "Yuedu-Reader",
++        "-destination", destination, *_build_args()]
++    return [base + ["build-for-testing"], base + ["-showBuildSettings", "-json"]]
++
++
++def _cold_built_app(work, source):
++    settings = smoke.read_json(work / "build-settings.json")
++    matches = [row["buildSettings"] for row in settings if row.get("target") == smoke.config.MAIN_TARGET]
++    if len(matches) != 1:
++        raise ValueError("Cold build requires exactly one main reader App")
++    actual = matches[0]
++    for key, value in {"CONFIGURATION": "Debug", "PLATFORM_NAME": "iphonesimulator", "SWIFT_VERSION": "5.0",
++            "ENABLE_DEBUG_DYLIB": "NO", "PRODUCT_BUNDLE_IDENTIFIER": smoke.config.MAIN_BUNDLE}.items():
++        if actual.get(key) != value:
++            raise ValueError("Unexpected cold build setting: " + key)
++    if "LEGADO_REQUIRE_NATIVE_MAINJS" not in actual.get("SWIFT_ACTIVE_COMPILATION_CONDITIONS", "").split():
++        raise ValueError("Cold build must require the real native runtime")
++    app = smoke.config.checked_path(Path(actual["TARGET_BUILD_DIR"]) / actual["FULL_PRODUCT_NAME"])
++    info = smoke.config.read_info(app)
++    smoke.require_local_info(info); smoke.require_source_stamp(info, source)
++    if info.get("CFBundleSupportedPlatforms") != ["iPhoneSimulator"]:
++        raise ValueError("Cold build requires a real Simulator App")
++    return app
++
++
++def _cold_build_products(work, source):
++    app = _cold_built_app(work, source)
++    restored = smoke.read_json(work / "native-restore.json")
++    if (not os.environ.get("GITHUB_RUN_ID") or restored.get("sourceCommit") != source
++            or restored.get("workflowRunID") != os.environ["GITHUB_RUN_ID"]
++            or restored.get("admission") != "cold-only" or restored.get("status") != "restored"):
++        raise ValueError("Cold native restoration must belong to this source and run")
++    ordinary = smoke.read_json(work / "ordinary-jar.json")
++    if ordinary != packaging.inspect_jar(packaging.JAR) or ordinary.get("testClassesIncluded") is not False:
++        raise ValueError("Cold build must retain this checkout's ordinary audited JAR")
++    runtime = smoke.config.verify_jvm_payload(app)
++    if runtime.get("jar") != ordinary:
++        raise ValueError("Cold App runtime differs from the audited ordinary JAR")
++    if smoke.read_json(work / "native-exports.json").get("requiredDynamicExportsPresent") is not True:
++        raise ValueError("Cold App must preserve the actual native exports")
++    return {"app": str(app), "executable": _fact(app / "YueduReader"), "info": _fact(app / "Info.plist"),
++        "runtime": runtime, "nativeRestoration": _fact(work / "native-restore.json"),
++        "ordinaryJarAudit": _fact(work / "ordinary-jar.json"), "nativeExports": _fact(work / "native-exports.json")}
++
++
++def verify_cold_build(work):
++    source = _source_state(work, "cold-only")
++    ledger = smoke.read_json(work / "cold-build-execution.json")
++    if (ledger.get("admission") != "cold-only" or ledger.get("error") is not None
++            or ledger.get("sourceBefore") != source or ledger.get("sourceAfter") != source):
++        raise ValueError("Missing, failed or changed-source cold build")
++    app = _cold_built_app(work, source["sourceCommit"])
++    commands = cold_build_commands(work) + [[sys.executable, "-B", str(smoke.REPO / "scripts/legado-ios/verify-native-exports.py"),
++        "--executable", str(app / "YueduReader"), "--report", str(work / "native-exports.json")]]
++    outputs = ("native-build.log", "build-settings.json", "native-exports-driver.log")
++    actual_commands = ledger.get("commands")
++    if not isinstance(actual_commands, list) or len(actual_commands) != 3:
++        raise ValueError("Cold build requires all three actual commands")
++    for actual, argv, name, budget in zip(actual_commands, commands, outputs, (3600, 60, 60)):
++        output = work / name
++        if (actual.get("argv") != argv or type(actual.get("exitCode")) is not int or actual["exitCode"] != 0
++                or actual.get("timedOut") is not False or type(actual.get("timeoutSeconds")) is not int
++                or actual["timeoutSeconds"] != budget or actual.get("output") != name
++                or actual.get("stdout") != _fact(output) or actual.get("stderr") != name + ".stderr.log"
++                or actual.get("stderrFact") != _fact(output.with_name(name + ".stderr.log"))):
++            raise ValueError("Cold build command failed, timed out or lost its raw evidence")
++    result = smoke.read_json(work / "cold-build-result.json")
++    products = _cold_build_products(work, source["sourceCommit"])
++    if result != {"schemaVersion": 1, "admission": "cold-only", "status": "built-for-cold-two-hosts",
++            "sourceState": source, "buildExecution": _fact(work / "cold-build-execution.json"), "products": products,
++            "actualExecutedTests": 0}:
++        raise ValueError("Cold build products or result changed")
++    return result
++
++
++def build_cold(work):
++    if sys.platform != "darwin":
++        raise ValueError("Actual cold build requires Apple Simulator")
++    before = _source_state(work, "cold-only")
++    if any((work / name).exists() for name in ("cold-build-execution.json", "cold-build-result.json",
++            "native-build.log", "build-settings.json", "native-exports.json", "native-exports-driver.log")):
++        raise ValueError("Refusing to overwrite an earlier cold build")
++    commands = []; error = None; after = None; products = None
++    try:
++        for argv, name, budget in zip(cold_build_commands(work), ("native-build.log", "build-settings.json"), (3600, 60)):
++            row = _capture(argv, work / name, budget); commands.append(row)
++            if row["exitCode"] != 0 or row["timedOut"] is not False:
++                raise ValueError("Cold build command failed or timed out")
++        app = _cold_built_app(work, before["sourceCommit"])
++        argv = [sys.executable, "-B", str(smoke.REPO / "scripts/legado-ios/verify-native-exports.py"),
++            "--executable", str(app / "YueduReader"), "--report", str(work / "native-exports.json")]
++        row = _capture(argv, work / "native-exports-driver.log", 60); commands.append(row)
++        if row["exitCode"] != 0 or row["timedOut"] is not False:
++            raise ValueError("Cold native export verification failed or timed out")
++        after = _source_state(work, "cold-only")
++        if before != after:
++            raise ValueError("Cold source changed during compilation")
++        products = _cold_build_products(work, before["sourceCommit"])
++    except Exception as failure:
++        error = type(failure).__name__ + ": " + str(failure)[:2048]
++    smoke.config.write_new_json(work / "cold-build-execution.json", {"schemaVersion": 1, "admission": "cold-only",
++        "sourceBefore": before, "sourceAfter": after, "commands": commands, "error": error})
++    if error is not None:
++        raise ValueError(error)
++    result = {"schemaVersion": 1, "admission": "cold-only", "status": "built-for-cold-two-hosts",
++        "sourceState": after, "buildExecution": _fact(work / "cold-build-execution.json"), "products": products,
++        "actualExecutedTests": 0}
++    smoke.config.write_new_json(work / "cold-build-result.json", result)
++    return verify_cold_build(work)
++
++
++def collect_cold(work, udid):
++    source = validate_cold_tag()
++    if os.environ.get("GITHUB_ACTIONS") != "true":
++        raise ValueError("Cold diagnostics require actual GitHub CI")
++    smoke.review_overlays(smoke.read_json(work / "overlays.json"))
++    # A failed build may have no installed App. Keep the collector's original
++    # bounded unavailable/partial report instead of inventing runtime success.
++    source_inputs()
++    collector = load("cold_native_diagnostics", HERE / "collect-native-diagnostics.py")
++    return collector.collect(udid, work / "diagnostics", work / "overlays.json", source)
++
++
++def prepare(work, admission="full"):
++    validator = _admission_validator(admission)
++    source = validator()
+     original_overlay = smoke.overlay_info
+     original_validate = smoke.validate_tag
+
+@@ -768,10 +916,13 @@
+     # This is a private imported module instance. Existing UI/data smoke
+     # protocols retain their unstamped default, including old audit records.
+     try:
+-        smoke.validate_tag = validate_tag
++        smoke.validate_tag = validator
+         smoke.overlay_info = stamped_info
+         audit = smoke.prepare(work)
+-        smoke.config.write_new_json(work / "native-source-inputs.json", {"sourceCommit": source, "sourceInputs": source_inputs()})
++        inputs = {"sourceCommit": source, "sourceInputs": source_inputs()}
++        if admission == "cold-only":
++            inputs["admission"] = admission
++        smoke.config.write_new_json(work / "native-source-inputs.json", inputs)
+         return audit
+     finally:
+         smoke.overlay_info = original_overlay
+@@ -886,23 +1037,34 @@
+
+ def main():
+     parser = argparse.ArgumentParser(description=__doc__)
+-    parser.add_argument("phase", choices=("validate-tag", "restore", "prepare", "run-group", "verify-cache", "result"))
++    parser.add_argument("phase", choices=("validate-tag", "validate-cold-tag", "restore", "restore-cold", "prepare", "prepare-cold", "build-cold", "collect-cold", "run-group", "verify-cache", "result"))
+     parser.add_argument("--work", type=Path, default=smoke.config.REPO / ".build/native-reader-test")
+     parser.add_argument("--group", choices=tuple(NATIVE_GROUPS))
++    parser.add_argument("--udid")
+     parser.add_argument("--summary", type=Path)
+     parser.add_argument("--tests", type=Path)
+     args = parser.parse_args()
+     work = smoke.config.checked_path(args.work)
+     if args.phase == "validate-tag":
+         record = {"sourceCommit": validate_tag()}
+-    elif args.phase == "restore":
++    elif args.phase == "validate-cold-tag":
++        record = {"sourceCommit": validate_cold_tag(), "admission": "cold-only"}
++    elif args.phase in ("restore", "restore-cold"):
+         # Override only this private module instance; the reader packaging tag
+         # contract and all historical probe gates remain unchanged.
+-        packaging.validate_tag = validate_tag
++        packaging.validate_tag = validate_cold_tag if args.phase == "restore-cold" else validate_tag
+         record = packaging.restore()
++        if args.phase == "restore-cold":
++            record["admission"] = "cold-only"
+         smoke.config.write_new_json(work / "native-restore.json", record)
+-    elif args.phase == "prepare":
+-        record = prepare(work)
++    elif args.phase in ("prepare", "prepare-cold"):
++        record = prepare(work, "cold-only") if args.phase == "prepare-cold" else prepare(work)
++    elif args.phase == "build-cold":
++        record = build_cold(work)
++    elif args.phase == "collect-cold":
++        if args.udid is None:
++            parser.error("collect-cold requires --udid")
++        record = collect_cold(work, args.udid)
+     elif args.phase == "verify-cache":
+         if args.summary is None or args.tests is None:
+             parser.error("verify-cache requires --summary and --tests")

@@ -1,0 +1,105 @@
+{
+  "staticValidationPassed": true,
+  "modules": [
+    "java.base",
+    "java.xml",
+    "java.desktop",
+    "java.datatransfer",
+    "java.prefs",
+    "java.logging",
+    "jdk.charsets",
+    "java.compiler",
+    "java.instrument",
+    "java.net.http",
+    "java.sql",
+    "java.transaction.xa",
+    "jdk.unsupported"
+  ],
+  "deviceValidationPassed": false,
+  "jarSHA256": "3f6b97a8793247be01dda158efd2735cab8cb6d9469ad5ae6e4e4685bc6b54b1",
+  "layout": "exploded-java-home/modules",
+  "sourcePins": {
+    "schemaVersion": 1,
+    "openjdkMobile": {
+      "repository": "https://github.com/openjdk/mobile.git",
+      "commit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb"
+    },
+    "iosTools": {
+      "repository": "https://github.com/openjdk-mobile/ios-tools.git",
+      "commit": "2f0a489b48cdb13901185be051004f7a9c23bf14"
+    },
+    "libffi": {
+      "version": "3.5.2",
+      "url": "https://github.com/libffi/libffi/releases/download/v3.5.2/libffi-3.5.2.tar.gz",
+      "sha256": "f3a3082a23b37c293a4fcd1053147b371f2ff91fa7ea1b2a52e335676bac82dc"
+    },
+    "requiredModules": [
+      "java.base",
+      "java.xml",
+      "java.desktop",
+      "java.datatransfer",
+      "java.prefs",
+      "java.logging",
+      "jdk.charsets",
+      "java.compiler",
+      "java.instrument",
+      "java.net.http",
+      "java.sql",
+      "java.transaction.xa",
+      "jdk.unsupported"
+    ],
+    "bootJdkFeature": 26,
+    "minimumIOS": "18.0",
+    "notes": "Source pins, not an assertion that these inputs have passed an iOS device gate. Current upstream workflow uses JDK 26 as boot JDK. Exploded JDK layout is java.home/modules, not java.home/lib/modules."
+  },
+  "runtimeNotices": {
+    "schemaVersion": 1,
+    "verified": true,
+    "manifestSHA256": "0b60c9ed3e2b6e4c70f36627db630c8b3b0b72a0a5b016c5b9d9f580d3e4574a",
+    "noticeFileCount": 37,
+    "noticeBytes": 370325,
+    "filePathSHA256Aggregate": "c3657edbb39827de27bceada841512944496d01ba02197d94c6789e889cc3874",
+    "requiredModuleCount": 13,
+    "staticArchiveGroupCount": 8,
+    "sourcePins": {
+      "openjdkMobile": {
+        "repository": "https://github.com/openjdk/mobile.git",
+        "commit": "c1ed06aaef34c8dccf71e236d1ffa20918a77cfb"
+      },
+      "iosTools": {
+        "repository": "https://github.com/openjdk-mobile/ios-tools.git",
+        "commit": "2f0a489b48cdb13901185be051004f7a9c23bf14"
+      },
+      "libffi": {
+        "version": "3.5.2",
+        "url": "https://github.com/libffi/libffi/releases/download/v3.5.2/libffi-3.5.2.tar.gz",
+        "sha256": "f3a3082a23b37c293a4fcd1053147b371f2ff91fa7ea1b2a52e335676bac82dc"
+      },
+      "requiredModules": [
+        "java.base",
+        "java.xml",
+        "java.desktop",
+        "java.datatransfer",
+        "java.prefs",
+        "java.logging",
+        "jdk.charsets",
+        "java.compiler",
+        "java.instrument",
+        "java.net.http",
+        "java.sql",
+        "java.transaction.xa",
+        "jdk.unsupported"
+      ]
+    },
+    "coverage": {
+      "allRequiredModuleLegalSourceCandidatesEnumerated": true,
+      "rootNoticesIncluded": true,
+      "allStaticArchiveGroupsListed": true,
+      "nativeObjectAndHeaderLicenseReviewComplete": false,
+      "correspondingDependencySourceClosureEstablished": false,
+      "componentLicenseCombinationReviewed": false,
+      "redistributionClearanceEstablished": false
+    },
+    "scope": "Original notice materials, module-source candidate inventory and build-script archive composition only. Preserves all platform candidates (including Windows, Unix and GCC texts) without claiming they are selected, linked, or applicable on iOS. HotSpot/source-header review, ios-tools symbol_keeper license applicability, other dependencies and corresponding-source completeness remain separate reviews."
+  }
+}

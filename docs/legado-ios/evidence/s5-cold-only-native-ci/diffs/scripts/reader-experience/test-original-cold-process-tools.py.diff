@@ -1,0 +1,26 @@
+--- a/scripts/reader-experience/test-original-cold-process-tools.py
++++ b/scripts/reader-experience/test-original-cold-process-tools.py
+@@ -188,6 +188,23 @@
+         self.assertEqual([v for v in consumer if v.startswith('-only-testing:')],
+             ['-only-testing:yuedu appTests/' + cold.METHODS['consumer']])
+         self.assertNotEqual(producer[-1], consumer[-1])
++        with tempfile.TemporaryDirectory() as directory:
++            root = Path(directory); relative = cold.EXTRA_INPUTS[0]
++            source = root / relative; source.parent.mkdir(parents=True); source.write_bytes(b"source")
++            base = {"sourceCommit": "a" * 40, "sourceInputs": []}
++            with patch.object(cold, "REPO", root), patch.object(cold, "EXTRA_INPUTS", (relative,)), \
++                    patch.object(cold.native, "_source_state", return_value=base) as state, \
++                    patch.object(cold.native, "verify_cold_build", return_value={}) as built, \
++                    patch.object(cold.native.smoke, "git", return_value=b"source"):
++                cold.source_state(root)
++                state.assert_called_once_with(root, "full"); built.assert_not_called()
++                cold.source_state(root, "cold-only")
++                state.assert_called_with(root, "cold-only"); built.assert_called_once_with(root)
++                with patch.object(cold.native, "verify_cold_build", side_effect=ValueError("missing current build")), self.assertRaises(ValueError):
++                    cold.source_state(root, "cold-only")
++        # Neither admission changes host argv, method identity or host budgets.
++        self.assertEqual(cold.command(Path('/owned'), 'producer', udid), producer)
++
+         inputs = [{'path': 'base.swift', 'bytes': 1, 'sha256': 'a' * 64}]
+         extra = [{'path': n, 'bytes': 1, 'sha256': 'b' * 64} for n in cold.EXTRA_INPUTS]
+         self.assertEqual(cold.additional_inputs(inputs, extra), extra)

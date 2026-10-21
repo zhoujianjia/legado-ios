@@ -1,0 +1,143 @@
+{
+  "sourceCommit": "d8200d32f881e1b09399110905d43545cfd0c9f9",
+  "run": {
+    "id": 39543887707,
+    "head_sha": "d8200d32f881e1b09399110905d43545cfd0c9f9",
+    "head_branch": "legado-native-reader-test-d8200d3",
+    "status": "completed",
+    "conclusion": "failure",
+    "created_at": "2026-10-21T04:24:45Z",
+    "run_started_at": "2026-10-21T04:24:45Z",
+    "updated_at": "2026-10-21T05:00:19Z",
+    "html_url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39543887707"
+  },
+  "job": {
+    "id": 119037579000,
+    "name": "native-reader",
+    "status": "completed",
+    "conclusion": "failure",
+    "run_id": 39543887707,
+    "logs_url": null,
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1
+      },
+      {
+        "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2
+      },
+      {
+        "name": "Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3
+      },
+      {
+        "name": "Run actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4
+      },
+      {
+        "name": "Build and audit this checkout's ordinary production runtime",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5
+      },
+      {
+        "name": "Restore only the audited native interpreter",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6
+      },
+      {
+        "name": "Build and prepare the required complete current iPhoneOS JVM signing input",
+        "status": "completed",
+        "conclusion": "failure",
+        "number": 7
+      },
+      {
+        "name": "Prepare the Simulator payload and synthetic local application",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 8
+      },
+      {
+        "name": "Re-sign and independently verify the required complete device package",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 9
+      },
+      {
+        "name": "Execute1 MainJS and32 original methods in separate required hosts",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 10
+      },
+      {
+        "name": "Preserve this Simulator run's JVM diagnostics and crash reports",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 11
+      },
+      {
+        "name": "Retain actual test results, payload provenance and failures",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12
+      },
+      {
+        "name": "Post Run actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 22
+      },
+      {
+        "name": "Post Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 23
+      },
+      {
+        "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 24
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 25
+      }
+    ]
+  },
+  "artifact": {
+    "id": 12321664256,
+    "name": "legado-native-main-app-product-chain",
+    "size_in_bytes": 336091,
+    "digest": "sha256:a14d1d1df64803a20ac845b2cd6597ea29c1bb17c6519bad248135129475516e",
+    "created_at": "2026-10-21T05:00:14Z",
+    "expires_at": "2026-10-28T05:00:13Z"
+  },
+  "metadataSources": {
+    "run.json": {
+      "bytes": 13839,
+      "sha256": "7dcafc515b77b124d319c0eff29bf2ee4786391c0e593859aece598b85c22022"
+    },
+    "jobs.json": {
+      "bytes": 3269,
+      "sha256": "e6d681e5a3d9b9888b1a62b4f16c336c4a5b9cadd7e2fe4ccee2d3b011c6a867"
+    },
+    "artifacts.json": {
+      "bytes": 872,
+      "sha256": "1fe44205b6d2bf27b348200d8b6589a954ec9b9c5674d410754ebdbc4bf0bf97"
+    }
+  },
+  "noRequery": true
+}

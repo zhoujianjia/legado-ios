@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "d8200d32f881e1b09399110905d43545cfd0c9f9",
+  "workflowRunID": "39543887707",
+  "status": "restored",
+  "nativeProducer": {
+    "runID": 39083752761,
+    "sourceSHA": "ce792982a30942e605fc935b733c5b41bef2736a",
+    "runAttempt": 1,
+    "workflowPath": ".github/workflows/legado-ios-prototype.yml",
+    "workflowBlob": "acc22e4f49b24200f75f85b679564b4e8867d28c",
+    "runURL": "https://github.com/zhoujianjia/legado-ios/actions/runs/39083752761",
+    "artifact": {
+      "id": 12120530642,
+      "name": "legado-zero-source-build",
+      "size_in_bytes": 89898489,
+      "digest": "sha256:6d91463d6e28a1bcc6c1d5ba79ad88f5a8d1ba79d0e2e11e78b5fbd5520346ac",
+      "expires_at": "2026-10-25T00:59:12Z"
+    }
+  },
+  "nativeInputChecks": [
+    {
+      "path": "scripts/legado-ios/build-zero.sh",
+      "sourceObject": "7b8ea2cf068d6a225d3084d8c7458a06585f9bb0",
+      "currentObject": "7b8ea2cf068d6a225d3084d8c7458a06585f9bb0",
+      "matches": true
+    },
+    {
+      "path": "scripts/legado-ios/prepare-zero-wx.py",
+      "sourceObject": "ff238311e1786281efdf2264b3c3a06768f3883b",
+      "currentObject": "ff238311e1786281efdf2264b3c3a06768f3883b",
+      "matches": true
+    },
+    {
+      "path": "scripts/legado-ios/prepare-zero-signal-context.py",
+      "sourceObject": "8d5a36bd479df9e4ebf8d9b31f77e2604db7c513",
+      "currentObject": "8d5a36bd479df9e4ebf8d9b31f77e2604db7c513",
+      "matches": true
+    },
+    {
+      "path": "scripts/legado-ios/prepare-zero-code-cache.py",
+      "sourceObject": "e3a86d3fc81d268b551f9a7c3ee073d8a31f834b",
+      "currentObject": "e3a86d3fc81d268b551f9a7c3ee073d8a31f834b",
+      "matches": true
+    },
+    {
+      "path": "scripts/legado-ios/prepare-symbol-keeper.py",
+      "sourceObject": "04b7c297b710f130a7cccfb4cadf6c8b7446f1e4",
+      "currentObject": "04b7c297b710f130a7cccfb4cadf6c8b7446f1e4",
+      "matches": true
+    },
+    {
+      "path": "scripts/legado-ios/fetch-sources.py",
+      "sourceObject": "1a52b19c09c5ad802e36518a690dbe395a95f55c",
+      "currentObject": "1a52b19c09c5ad802e36518a690dbe395a95f55c",
+      "matches": true
+    },
+    {
+      "path": "scripts/legado-ios/runtime-lock.json",
+      "sourceObject": "caa3a983d42eff74076f061a0c638712b67121ab",
+      "currentObject": "caa3a983d42eff74076f061a0c638712b67121ab",
+      "matches": true
+    }
+  ],
+  "nativeZIP": {
+    "bytes": 89898489,
+    "sha256": "6d91463d6e28a1bcc6c1d5ba79ad88f5a8d1ba79d0e2e11e78b5fbd5520346ac"
+  },
+  "nativeRuntimeRecompiled": false,
+  "freshOrdinaryJVMRequired": true,
+  "scope": "Audited native reuse and this checkout's ordinary JAR; no historical device acceptance is transferred.",
+  "jar": {
+    "sha256": "3f6b97a8793247be01dda158efd2735cab8cb6d9469ad5ae6e4e4685bc6b54b1",
+    "bytes": 10960540,
+    "maximumBaseClassMajor": 65,
+    "requiredClasses": [
+      "io/yuedu/legado/LegadoRuntime.class",
+      "io/yuedu/legado/NativeHost.class",
+      "io/yuedu/legado/ProductionHttpTransport.class",
+      "io/yuedu/legado/RuntimeSessionOptions.class",
+      "io/yuedu/legado/StaticScalarSelectorRule.class",
+      "org/htmlunit/corejs/javascript/Context.class",
+      "okhttp3/OkHttpClient.class",
+      "org/brotli/dec/BrotliInputStream.class",
+      "org/apache/commons/text/StringEscapeUtils.class",
+      "org/apache/commons/lang3/StringUtils.class",
+      "io/legado/app/model/analyzeRule/AnalyzeRule.class",
+      "io/legado/app/data/entities/Book.class",
+      "io/legado/app/data/entities/BookChapter.class",
+      "io/legado/app/data/entities/BookSource.class"
+    ],
+    "testClassesIncluded": false
+  },
+  "nativeLayout": {
+    "device": {
+      "staticValidationPassed": true,
+      "modules": [
+        "java.base",
+        "java.xml",
+        "java.desktop",
+        "java.datatransfer",
+        "java.prefs",
+        "java.logging",
+        "jdk.charsets",
+        "java.compiler",
+        "java.instrument",
+        "java.net.http",
+        "java.sql",
+        "java.transaction.xa",
+        "jdk.unsupported"
+      ],
+      "deviceValidationPassed": false,
+      "bytecodeCompatibility": {
+        "source": "modules/java.base/java/lang/Object.class",
+        "nativeClassMajor": 72,
+        "nativeClassMinor": 0,
+        "freshJarMaximumBaseClassMajor": 65,
+        "runtimeJavaVersionMeasured": false
+      }
+    },
+    "simulator": {
+      "staticValidationPassed": true,
+      "modules": [
+        "java.base",
+        "java.xml",
+        "java.desktop",
+        "java.datatransfer",
+        "java.prefs",
+        "java.logging",
+        "jdk.charsets",
+        "java.compiler",
+        "java.instrument",
+        "java.net.http",
+        "java.sql",
+        "java.transaction.xa",
+        "jdk.unsupported"
+      ],
+      "deviceValidationPassed": false,
+      "bytecodeCompatibility": {
+        "source": "modules/java.base/java/lang/Object.class",
+        "nativeClassMajor": 72,
+        "nativeClassMinor": 0,
+        "freshJarMaximumBaseClassMajor": 65,
+        "runtimeJavaVersionMeasured": false
+      }
+    }
+  },
+  "nativeExecutionVerified": false,
+  "deviceValidationPassed": false
+}

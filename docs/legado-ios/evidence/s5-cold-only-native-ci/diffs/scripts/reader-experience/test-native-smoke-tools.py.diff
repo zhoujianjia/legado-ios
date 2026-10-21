@@ -1,0 +1,128 @@
+--- a/scripts/reader-experience/test-native-smoke-tools.py
++++ b/scripts/reader-experience/test-native-smoke-tools.py
+@@ -48,6 +48,86 @@
+             self.assertEqual(overlay_record.read_bytes(), prior_record)
+         self.assertIs(native.smoke.overlay_info, old_overlay)
+         self.assertIs(native.smoke.validate_tag, old_validate)
++
++        # The cold tag is a separate actual refs/tags admission, never a
++        # synthetic GITHUB_REF_NAME override or a replacement for the full tag.
++        name = "legado-native-reader-test-cold-" + SOURCE[:7]
++        env = {"GITHUB_SHA": SOURCE, "GITHUB_REF_NAME": name, "GITHUB_REF": "refs/tags/" + name}
++        with patch.object(native.smoke, "source_sha", return_value=SOURCE), patch.dict(os.environ, env, clear=True):
++            self.assertEqual(native.validate_cold_tag(), SOURCE)
++            with self.assertRaises(ValueError): native.validate_tag()
++            for key, value in (("GITHUB_REF", "refs/heads/" + name), ("GITHUB_SHA", "b" * 40),
++                    ("GITHUB_REF_NAME", "legado-native-reader-test-" + SOURCE[:7])):
++                with patch.dict(os.environ, {key: value}), self.assertRaises(ValueError): native.validate_cold_tag()
++        with self.assertRaises(ValueError): native._admission_validator("arbitrary")
++        cold_work = self.root / "cold"; cold_work.mkdir()
++        cold_info = cold_work / "Info.plist"; cold_info.write_bytes(plistlib.dumps({}))
++        def cold_prepare(work):
++            self.assertEqual(native.smoke.validate_tag(), SOURCE)
++            return native.smoke.overlay_info(cold_info, cold_work / "info-overlay.json")
++        with patch.object(native, "validate_cold_tag", return_value=SOURCE), \
++                patch.object(native.smoke, "prepare", side_effect=cold_prepare), \
++                patch.object(native, "source_inputs", return_value=[]):
++            native.prepare(cold_work, "cold-only")
++        self.assertEqual(json.loads((cold_work / "native-source-inputs.json").read_bytes()),
++            {"sourceCommit": SOURCE, "sourceInputs": [], "admission": "cold-only"})
++        self.assertIs(native.smoke.validate_tag, old_validate)
++        self.assertIs(native.smoke.overlay_info, old_overlay)
++
++        # Execute the real build/verification controller against synthetic
++        # command outputs. This is a portable provenance check, not Apple build.
++        app, _, records = self.result_fixture()
++        source = {"sourceCommit": SOURCE, "sourceInputs": [], "admission": "cold-only"}
++        ordinary = {"sha256": "b" * 64, "testClassesIncluded": False}
++        self.write_json("native-restore.json", {"sourceCommit": SOURCE, "workflowRunID": "cold-run",
++            "admission": "cold-only", "status": "restored"})
++        self.write_json("ordinary-jar.json", ordinary)
++        def capture(argv, output, seconds):
++            if output.name == "build-settings.json":
++                output.write_text(json.dumps(records["build-settings.json"]))
++            else:
++                output.write_bytes(b"synthetic command output, not a real compiler")
++            if output.name == "native-exports-driver.log": self.write_json("native-exports.json", records["native-exports.json"])
++            stderr = output.with_name(output.name + ".stderr.log"); stderr.write_bytes(b"")
++            return {"argv": argv, "exitCode": 0, "timedOut": False, "timeoutSeconds": seconds,
++                "output": output.name, "stdout": native._fact(output), "stderr": stderr.name, "stderrFact": native._fact(stderr)}
++        with patch.object(native.sys, "platform", "darwin"), patch.object(native, "_source_state", return_value=source), \
++                patch.object(native, "_capture", side_effect=capture), \
++                patch.object(native.packaging, "inspect_jar", return_value=ordinary), \
++                patch.object(native.smoke.config, "verify_jvm_payload", return_value={"jar": ordinary}), \
++                patch.dict(os.environ, {"YUEDU_DEST": "id=A08A4C4D-3384-4BB6-B785-288570157975", "GITHUB_RUN_ID": "cold-run"}):
++            built = native.build_cold(self.root)
++            self.assertEqual(built["actualExecutedTests"], 0)
++            ledger = json.loads((self.root / "cold-build-execution.json").read_bytes())
++            ledger_bytes = (self.root / "cold-build-execution.json").read_bytes()
++            self.assertEqual([r["timeoutSeconds"] for r in ledger["commands"]], [3600, 60, 60])
++            self.assertIn("build-for-testing", ledger["commands"][0]["argv"])
++            self.assertFalse(any(a.startswith("-only-testing:") for a in ledger["commands"][0]["argv"]))
++            for fault in ("boolExit", "timeout", "source", "products"):
++                changed = copy.deepcopy(ledger)
++                if fault == "boolExit": changed["commands"][0]["exitCode"] = False
++                elif fault == "timeout": changed["commands"][0]["timedOut"] = True
++                elif fault == "source": changed["sourceAfter"] = {**source, "sourceCommit": "b" * 40}
++                else: (app / "YueduReader").write_bytes(b"changed compiled product")
++                if fault == "products": (self.root / "cold-build-execution.json").write_bytes(ledger_bytes)
++                else: self.write_json("cold-build-execution.json", changed)
++                with self.subTest(fault=fault), self.assertRaises(ValueError): native.verify_cold_build(self.root)
++                (app / "YueduReader").write_bytes(b"synthetic executable, not a native payload")
++            (self.root / "cold-build-execution.json").write_bytes(ledger_bytes)
++            failed = self.root / "failed-build"; failed.mkdir()
++            with patch.object(native, "_capture", return_value={"exitCode": 65, "timedOut": False}), self.assertRaises(ValueError):
++                native.build_cold(failed)
++            self.assertTrue((failed / "cold-build-execution.json").is_file())
++            self.assertFalse((failed / "cold-build-result.json").exists())
++        collector = type("Collector", (), {})()
++        collector.collect = lambda *args: {"collectionStatus": "unavailable", "source": args[-1]}
++        with patch.object(native, "validate_cold_tag", return_value=SOURCE), \
++                patch.object(native.smoke, "review_overlays"), patch.object(native.smoke, "read_json", return_value={}), \
++                patch.object(native, "source_inputs", return_value=[]), patch.object(native, "load", return_value=collector), \
++                patch.dict(os.environ, {"GITHUB_ACTIONS": "true"}):
++            self.assertEqual(native.collect_cold(self.root, "owned-simulator")["collectionStatus"], "unavailable")
++            with patch.dict(os.environ, {"GITHUB_ACTIONS": "false"}), self.assertRaises(ValueError):
++                native.collect_cold(self.root, "owned-simulator")
+
+     def result_fixture(self):
+         app = self.root / "products/YueduReader.app"
+@@ -201,6 +281,14 @@
+             prepared = {"sourceCommit": SOURCE, "sourceInputs": native.source_inputs()}
+             self.write_json("native-source-inputs.json", prepared)
+             self.assertEqual(native._source_state(self.root), prepared)
++            with patch.object(native, "validate_cold_tag", return_value=SOURCE):
++                with self.assertRaisesRegex(ValueError, "source closure"): native._source_state(self.root, "cold-only")
++                cold_prepared = {**prepared, "admission": "cold-only"}
++                self.write_json("native-source-inputs.json", cold_prepared)
++                self.assertEqual(native._source_state(self.root, "cold-only"), cold_prepared)
++                with self.assertRaisesRegex(ValueError, "source closure"): native._source_state(self.root)
++                self.write_json("native-source-inputs.json", prepared)
++
+             (self.root / "owned.swift").write_bytes(b"changed")
+             with self.assertRaisesRegex(ValueError, "tracked HEAD"): native._source_state(self.root)
+             (self.root / "owned.swift").write_bytes(b"owned source")
+@@ -349,6 +437,23 @@
+         self.assertEqual(len(native.ORIGINAL_LOGIN_ACTION_MATERIAL_INPUTS), 23)
+         self.assertTrue(set(native.ORIGINAL_LOGIN_ACTION_MATERIAL_INPUTS) <= set(native.SOURCE_INPUTS))
+         self.assertIn("Execute1 MainJS and32 original methods in separate required hosts", workflow)
++        self.assertIn("legado-native-reader-test-cold-", workflow)
++        self.assertIn("native-smoke-tools.py validate-cold-tag", workflow)
++        self.assertIn("native-smoke-tools.py restore-cold", workflow)
++        self.assertIn("native-smoke-tools.py prepare-cold", workflow)
++        self.assertIn("native-smoke-tools.py build-cold", workflow)
++        self.assertIn("original-cold-process-tools.py --admission cold-only --udid", workflow)
++        self.assertIn("native-smoke-tools.py collect-cold --udid", workflow)
++        self.assertIn("collect-native-diagnostics.py --udid", workflow)
++        self.assertEqual(workflow.count("if: ${{ !startsWith(github.ref_name, 'legado-native-reader-test-cold-') }}"), 4)
++        focused = workflow[workflow.index("      - name: Prepare only the current-source native cold Simulator host"):
++            workflow.index("      - name: Preserve this Simulator run's JVM diagnostics")]
++        self.assertNotIn("full-application-signing-tools.py", focused)
++        self.assertNotIn("native-smoke-tools.py result", focused)
++        self.assertNotIn("run-group", focused)
++        self.assertIn("--no-daemon test runtimeJar runtimeSmoke", workflow)
++        self.assertIn("--no-daemon runtimeJar runtimeSmoke", workflow)
++
+         self.assertEqual(len(native.NATIVE_CORETEXT_COMPILE_INPUTS), 6)
+         self.assertTrue(set(native.NATIVE_CORETEXT_COMPILE_INPUTS) <= set(native.SOURCE_INPUTS))
+         for relative in native.NATIVE_CORETEXT_COMPILE_INPUTS:

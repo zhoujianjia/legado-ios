@@ -260,8 +260,10 @@ def additional_inputs(base, extra):
     return added
 
 
-def source_state(work):
-    base = native._source_state(work)
+def source_state(work, admission="full"):
+    base = native._source_state(work, admission)
+    if admission == "cold-only":
+        native.verify_cold_build(work)
     extra = []
     for relative in EXTRA_INPUTS:
         path = REPO / relative
@@ -297,8 +299,8 @@ def get_container(udid, bundle, kind, log):
     return path
 
 
-def run_host(work, phase, expected_source, expected_container, udid, bundle):
-    if source_state(work.parent) != expected_source:
+def run_host(work, phase, expected_source, expected_container, udid, bundle, admission="full"):
+    if source_state(work.parent, admission) != expected_source:
         raise ValueError('Cold source changed before host launch')
     before = get_container(udid, bundle, 'data', work / (phase + '-container-before.log'))
     if before != expected_container:
@@ -309,7 +311,7 @@ def run_host(work, phase, expected_source, expected_container, udid, bundle):
         ['xcrun', 'xcresulttool', 'get', 'test-results', 'tests', '--path', str(work / (phase + '.xcresult'))]]
     results = [native._capture(argv, output, timeout) for argv, output, timeout in zip(commands, outputs, (960, 60, 60))]
     after = get_container(udid, bundle, 'data', work / (phase + '-container-after.log'))
-    observed = source_state(work.parent)
+    observed = source_state(work.parent, admission)
     ledger = {'phase': phase, 'expectedMethod': METHODS[phase], 'sourceBefore': expected_source,
         'sourceAfter': observed, 'containerBefore': str(before), 'containerAfter': str(after), 'commands': results}
     write_new(work / (phase + '-execution.json'), ledger)
@@ -356,12 +358,12 @@ def terminate_producer(udid, bundle, pid, work):
         queue.close()
 
 
-def run(work, udid):
+def run(work, udid, admission="full"):
     if sys.platform != 'darwin':
         raise ValueError('Actual cold process execution requires Apple Simulator')
     work = native.smoke.config.checked_path(work)
     work.mkdir(exist_ok=False)
-    expected = source_state(work.parent)
+    expected = source_state(work.parent, admission)
     source = expected['nativeSourceState']['sourceCommit']
     settings = native.smoke.read_json(work.parent / 'build-settings.json')
     matches = [i['buildSettings'] for i in settings if i.get('target') == 'yuedu app']
@@ -380,7 +382,7 @@ def run(work, udid):
         'sourceCommit': source, 'container': str(container)})
     owned = base / control['runID']; owned.mkdir(exist_ok=False)
     write_new(base / 'control.json', control); write_new(work / 'control.json', control)
-    run_host(work, 'producer', expected, container, udid, bundle)
+    run_host(work, 'producer', expected, container, udid, bundle, admission)
     producer = validate_producer(read_json(owned / 'producer-pending.json'), control, False)
     claim = read_json(owned / 'claim.json')
     if claim != {'control': control, 'bookID': producer['bookID']}:
@@ -389,7 +391,7 @@ def run(work, udid):
     producer['hostExecutionSHA256'] = fact(work / 'producer-execution.json')['sha256']
     terminate_producer(udid, bundle, producer['producerPID'], work)
     commit_marker(owned / 'producer.json', producer); write_new(work / 'producer.json', producer)
-    run_host(work, 'consumer', expected, container, udid, bundle)
+    run_host(work, 'consumer', expected, container, udid, bundle, admission)
     consumer = validate_consumer(read_json(owned / 'consumer-pending.json'), producer, control, False)
     if (owned / 'data').exists():
         raise ValueError('Consumer failed to clean its owned fixture data')
@@ -406,6 +408,9 @@ def run(work, udid):
             'installedDifferentProcess': None, 'renewalVerified': False},
         'scope': 'Synthetic original public reader and controlled handoff local observation across processes; '
             'no consumer remote-submission path, installed renewal, full source or device acceptance'}
+    if admission == 'cold-only':
+        result['admission'] = admission
+        result['otherScopesExecuted'] = False
     write_new(work / 'result.json', result)
     return result
 
@@ -414,9 +419,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--work', type=Path, default=REPO / '.build/native-reader-test/cold-process')
     parser.add_argument('--udid', required=True)
+    parser.add_argument('--admission', choices=('full', 'cold-only'), default='full')
     args = parser.parse_args()
     try:
-        print(json.dumps(run(args.work, args.udid), indent=2))
+        print(json.dumps(run(args.work, args.udid, args.admission), indent=2))
     except Exception as error:
         # Preserve actual controller/host evidence. Unknown errors cannot create
         # producer/consumer accepted markers or an empty successful result.
