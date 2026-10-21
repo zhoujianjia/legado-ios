@@ -1,0 +1,197 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T05:44:33.444905+00:00",
+  "status": "source-approved; actual Swift/OS-process execution pending",
+  "final": {
+    "path": ".build/c2-original-cold-persistence-step/final-v2.json",
+    "bytes": 7521,
+    "sha256": "681a928fa9f08daf56dc5e1bc1fed4c651c3be1960171c62a3c0cdccfef163f3"
+  },
+  "sourceRoot": ".build/c2-original-cold-persistence-step/snapshot-v2/work",
+  "files": [
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "baseline": {
+        "path": ".build/c2-original-cold-persistence-step/rawbaseline/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+        "bytes": 145103,
+        "sha256": "624e3fc79c7586bb407e7e6d53eb647ac1b5b62c1eba054abb24d2264514833e"
+      },
+      "candidate": {
+        "path": ".build/c2-original-cold-persistence-step/snapshot-v2/work/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+        "bytes": 167259,
+        "sha256": "454213ef79e53260ccca857d3c9ef608fae978e5f9fb7251e011384683f2dbc0"
+      },
+      "diff": {
+        "path": ".build/c2-original-cold-persistence-step/diffs-v2/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 27787,
+        "sha256": "1892fdede532bd2c77ffa23625bd0c59e145b401cdbc6fcc39d982c7000cd04b"
+      }
+    }
+  ],
+  "findings": [],
+  "remainingConfirmedFindings": [],
+  "closedFindings": [
+    {
+      "finding": "v1 credential collision preflight could migrate legacy/Keychain accessibility before rejecting ownership",
+      "beforeFix": {
+        "path": ".build/c2-original-cold-persistence-independent-review/before-fix-v1.json",
+        "bytes": 2196,
+        "sha256": "742298c760d2f57974c4c20460dc828fd44033f8f19848499a5b5bdac761cfa1"
+      },
+      "parentFinal": {
+        "path": ".build/c2-original-cold-persistence-step/final-v1.json",
+        "bytes": 5897,
+        "sha256": "2327577c77501c1a75adba0c2accd31ee0211297284b9793d055e4baabeb11b0"
+      },
+      "priorSource": {
+        "path": ".build/c2-original-cold-persistence-step/snapshot-v1/work/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+        "bytes": 166855,
+        "sha256": "718c64209205177285a1d7873eea4722471b5a922fe49ae09acac5cce8ca9bcb"
+      },
+      "incrementalDiff": {
+        "path": ".build/c2-original-cold-persistence-step/diffs-v2/LegadoNativeOriginalReaderTests.swift.v1-to-v2.diff",
+        "bytes": 1817,
+        "sha256": "3fa5f32b6a46aca27e39de8f413dd5b58274b45776fef1f8336682b4dd9a23e3"
+      },
+      "closure": "v2 uses existing checked Keychain read with explicit nil accessibility and separately rejects the exact legacy account in the original suite; no new owner/storage/API. Entire file equals v1 after restoring only this preflight block."
+    },
+    {
+      "finding": "Draft original-text Cookie cleanup used an RFC remover that left originalRawDomains; original remove also affects related rich/native records.",
+      "closure": "Final uses original-text remove for only nonce-reserved invalid domains, verifies raw empty, and reserves related raw/legacy/rich/native records across every path before any write. Loopback cleanup remains exact run-unique cookie key."
+    }
+  ],
+  "preserved": {
+    "wholeBaselineReconstructedByRemovingOnlyDarwinImportColdC2HelpersAndRestoringTwoColdBodies": true,
+    "testIdentities": 17,
+    "newTestDefinitions": 0,
+    "other15MethodsEveryOldHelperReceiptAndPeerServerByteExact": true,
+    "handoffEntireFile": {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift",
+      "bytes": 31822,
+      "sha256": "e8e0b47936ca8d417f41ffb49f092edcfd43697153365c7dcf2831718e61fbd6"
+    },
+    "twoHostSelectorsUnchanged": true,
+    "originalPythonControllerAndStrictSetsUnchanged": true,
+    "originalSevenHTTPRequestsUnchanged": true,
+    "producer180Consumer120AllowancesUnchanged": true
+  },
+  "reviewedRoute": {
+    "identities": "A/B URLs derive from validated runID+nonce; UUIDs derive from each URL SHA256, same exact reconstruction in producer/consumer; same keys have different A/B markers. These are not new source library records.",
+    "actualOwner": "LegadoRuntimeProcess.shared.executor + bindPersistentSource -> createSession(originalTraditional/appOwnerText) -> public loginActionOriginal -> original Rhino/default Host/backing. No fake data map, alternate JVM, cache or Cookie owner.",
+    "producer": "Public action writes source variable/key, checked Keychain loginInfo/header, original Cookie text and TTL cache; same live sessions retain explicit memory through a final read after other service shutdown, then only actual controller PID exit ends those idle sessions.",
+    "consumer": "Requires accepted producer/control/nonce/container/different PID, reopens same identities and performs two real read-only public actions before pending receipt. Old offline-reader/S5 normal-load/candidate evidence remains intact.",
+    "transient": "Existing search response emits the same no-Expires run-unique Cookie, no new HTTP. Consumer asserts original text-session and explicit JVM memory absent; no broad RFC/native-session persistence claim.",
+    "networkProof": "Consumer enables existing trace before lazy startup, uses UUID taskIDs and requires exactly one registered/finished pair and no http.* for both real tasks; missing/truncated/faulted trace fails.",
+    "cleanup": "Known source keys/header/credential/cache entries only; reserved invalid-domain original text removal and exact localhost nonce-cookie key. No global suite/domain/jar deletion."
+  },
+  "APIAndPermissionBoundaries": {
+    "checkedExistingKeychainServiceAndNilAccessibilityRead": true,
+    "noAccessGroupOrEntitlementsChange": true,
+    "KeychainFailureThrowsNoFallbackOrSkip": true,
+    "defaultBackingSources": [
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/CookieStore.swift",
+        "bytes": 11229,
+        "sha256": "26aaa57b348497d67ac3f2be4682a538cfc3345a82f43af8dde2432c235a38f6"
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/CookiePersistenceOwner.swift",
+        "bytes": 43599,
+        "sha256": "e3faed0e0b4d22d9463a702c0e1fc76fe9ad4a83ccd300d25744bbf7dab9b08b"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+        "bytes": 134237,
+        "sha256": "4b5e0c2b3c476a12f02f2ea2b5061532cd5e59a2a3ce1ef391bf006c8a05fcab"
+      },
+      {
+        "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 128094,
+        "sha256": "03e495463199075cdc6a7f2a070a2505acde9e3b74d3c05f6083c7c6c371ad81"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/LegadoRuntime/LegadoRuntime.swift",
+        "bytes": 35221,
+        "sha256": "03ec2bf8f3c662690c400bfdb9502a46a6176912ea4b22b9bb728729950ae538"
+      },
+      {
+        "path": "scripts/reader-experience/original-cold-process-tools.py",
+        "bytes": 23177,
+        "sha256": "2c82dc2be409d6cdaff7b206e077458e1bb99d45f7ae3ab78c9d10f4eaf2b6a2"
+      },
+      {
+        "path": "scripts/reader-experience/test-original-cold-process-tools.py",
+        "bytes": 15523,
+        "sha256": "ddf0a3ee6e2185dcbebd7385b45289f62ef04ea3dcdf309bbe8148c04fee1273"
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+        "bytes": 40109,
+        "sha256": "90c94878c585c3a8be094014ff8d873c9e364d435a7af52a7c96c60f09e3239c"
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift",
+        "bytes": 10954,
+        "sha256": "621ae13b5563053ad0b389e4ed45153490e2459763df446faccae4f4b7d0117c"
+      }
+    ],
+    "additionalReadOnlyOwnerTraceFacts": [
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/JS/LegadoCacheBridge.swift",
+        "bytes": 6533,
+        "sha256": "b4a8a7e9c484c57b80da9b6f936931c531d4399f97f78377931fb80a62556c62"
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/BookSourceRuntimeStateStore.swift",
+        "bytes": 10365,
+        "sha256": "1e519aa986e5514f0da6c4bd2244e1b153271cfdbeeba09d80b54263d0dedc82"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt",
+        "bytes": 13607,
+        "sha256": "89924e1bbe893898b2ab122fa0ea76735b6e9ac6def3df96481bd746314b90d6"
+      },
+      {
+        "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/RuntimeTaskTrace.kt",
+        "bytes": 6208,
+        "sha256": "643e8ec15347c0be83fbde68cedfaea2a27902dfe5dbb897b4a4c3bf887f2321"
+      },
+      {
+        "path": "Packages/LegadoRuntime/Sources/CLegadoJNI/LegadoJNI.m",
+        "bytes": 35615,
+        "sha256": "304c7e15c7bc1fb539f43dbf1cc55c33853251c703d7830fb136cc45722b9f0d"
+      }
+    ],
+    "actorReview": "New source/Keychain/cache/persistence and trace I/O are detached/non-main; synchronous callbacks do not block main. New helper calls match existing declared APIs. This is source review, not compiler acceptance."
+  },
+  "proofLimits": [
+    "New candidate Swift/SDK/Simulator/JNI execution=0. A fresh owner inside one process is not used as a replacement for the second real OS process.",
+    "UserDefaults ACK proves acceptance, not fsync. No sleep/synchronize/artificial flush is added.",
+    "TTL proves still-live records and expired-value rejection; exact cross-process deadline equality/no-extension was not measured.",
+    "C2 state is outside the existing S5 selected-five-file receipt. Lookup/receipt/read observation still does not prove installed material or renewal.",
+    "Keychain authorization on the actual Simulator remains pending; no same-physical-device/no-VPN/real Apple permission claim."
+  ],
+  "boundAuthorSourceEvidence": {
+    "sourceChecks": {
+      "path": ".build/c2-original-cold-persistence-step/source-checks-v2.json",
+      "bytes": 1692,
+      "sha256": "c0bb7c9a8e68bed5902a77b049b3004947fcc4bc4488be3fd1adf0c6cc598948"
+    },
+    "design": {
+      "path": ".build/c2-original-cold-persistence-step/design-v1.json",
+      "bytes": 3474,
+      "sha256": "c2dffa29755db2bd4ffd32aa35272a69b36b7a2419b6aaa6a5d468f95c91759e"
+    }
+  },
+  "reviewExecution": {
+    "tests": 0,
+    "parser": 0,
+    "SwiftCompiler": 0,
+    "SDK": 0,
+    "JVM": 0,
+    "cloud": 0,
+    "canonicalWrites": 0,
+    "GitWrites": 0
+  },
+  "allCompletionFlagsRemainFalse": true
+}

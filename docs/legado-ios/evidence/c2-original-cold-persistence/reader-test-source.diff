@@ -1,0 +1,439 @@
+--- a/Tests/iOS/LegadoNativeOriginalReaderTests.swift
++++ b/Tests/iOS/LegadoNativeOriginalReaderTests.swift
+@@ -1,5 +1,6 @@
+ import CoreFoundation
+ import CryptoKit
++import Darwin
+ import Foundation
+ import LegadoRuntime
+ @preconcurrency import Network
+@@ -194,7 +195,7 @@
+     func testNativeOriginalColdProducerPersistsPublicReaderBeforeProcessExit() async throws {
+         executionTimeAllowance = 180
+         let cold = try await coldContext()
+-        let peer = try NativeOriginalLoopbackServer(runID: cold.control.runID, emitCookie: false)
++        let peer = try NativeOriginalLoopbackServer(runID: cold.control.runID, emitCookie: true)
+         let ready = expectation(description: "Cold producer loopback ready")
+         peer.start { ready.fulfill() }
+         await fulfillment(of: [ready], timeout: 10)
+@@ -202,10 +203,13 @@
+         var ownedID: UUID?
+         var prepared: ColdProducerReceipt?
+         var problem: Error?
++        var c2Scope: ColdC2Scope?
++        var c2SourcesOwned = false
++        var c2Sessions: [(session: LegadoSourceSession, owner: String)] = []
+         do {
+             let base = try peer.readyBaseURL()
+             var source = Self.source(base: base, runID: cold.control.runID, tocRedirect: true)
+-            source.enabledCookieJar = false
++            source.enabledCookieJar = true
+             let data = cold.root.appendingPathComponent("data", isDirectory: true)
+             try await Task.detached { try FileManager.default.createDirectory(at: data, withIntermediateDirectories: false) }.value
+             let contexts = data.appendingPathComponent("contexts", isDirectory: true)
+@@ -217,6 +221,12 @@
+                 cache: .init(rootDirectory: body), peer: peer, source: source,
+                 service: .init(contextDirectory: contexts, operationTimeout: 45))
+             fixture = f
++            let stateScope = try await Task.detached { try Self.coldC2Scope(cold.control, cookieURL: base) }.value
++            c2Scope = stateScope
++            // Reserve only two fresh nonce-scoped source namespaces before any
++            // C2 mutation; a collision never authorizes cleanup of that source.
++            try await Self.coldC2RequireUnowned(stateScope)
++            c2SourcesOwned = true
+             let fetcher = BookSourceFetcher(mainJSService: f.service)
+             let foundBooks = try await fetcher.search(query: "native-original", in: source, page: 2)
+             let found = try XCTUnwrap(foundBooks.first)
+@@ -264,6 +274,11 @@
+                     && !snapshot.fingerprints.values.contains("missing"), "Cold producer lacks committed cache artifacts")
+                 fingerprints.append(snapshot.fingerprints)
+             }
++            c2Sessions = try await Self.coldC2Open(stateScope)
++            _ = try await Self.coldC2Evaluate(stateScope, sessions: c2Sessions, seed: true, memoryPresent: true)
++            let c2Hashes = try await Self.coldC2BackingProof(stateScope)
++            attach(["sources": 2, "ttlRecordSHA256": c2Hashes, "keychainAccess": "actual checked owner",
++                "persistence": "owner accepted; no fsync claim"], name: "ColdProducer-C2")
+             // Same normal metadata/progress owners and the real retained reader
+             // are checkpointed by the actual before-Upgrade handoff. Only the
+             // controlled signing/TLS material is temporary; its journal survives.
+@@ -292,6 +307,13 @@
+         if let fixture {
+             do { try await fixture.service.closeSessions() } catch { if problem == nil { problem = error } }
+         }
++        if problem == nil, let c2Scope {
++            do {
++                // These two idle original sessions intentionally outlive the
++                // other service. Only the controller's real PID exit ends them.
++                _ = try await Self.coldC2Evaluate(c2Scope, sessions: c2Sessions, seed: false, memoryPresent: true)
++            } catch { problem = error }
++        }
+         let stopped = expectation(description: "Cold producer owns no live TCP listener or connection")
+         peer.stop { stopped.fulfill() }
+         await fulfillment(of: [stopped], timeout: 10)
+@@ -301,6 +323,8 @@
+                 try Self.coldRequire(snapshot.listenerCancelled && snapshot.activeConnections == 0 && snapshot.errors.isEmpty,
+                     "Cold producer TCP peer failed to drain")
+                 var receipt = try XCTUnwrap(prepared)
++                try Self.coldRequire(snapshot.requests.map(\.target) == receipt.requestTargets,
++                    "Final public C2 read changed the original seven HTTP targets")
+                 receipt.peerStopped = true; receipt.activeConnections = 0
+                 let completedReceipt = receipt
+                 // Pending only. CI commits producer.json after this exact host's
+@@ -308,6 +332,12 @@
+                 try await Task.detached { try cold.write(completedReceipt, name: "producer-pending.json") }.value
+             } catch { problem = error }
+         }
++        if problem != nil, let c2Scope {
++            do { try await Self.coldC2Close(c2Sessions) }
++            catch { attach(["c2SessionCleanupFailed": true], name: "ColdProducer-cleanup") }
++            do { try await Self.coldC2Cleanup(c2Scope, sourcesOwned: c2SourcesOwned) }
++            catch { attach(["c2StateCleanupFailed": true], name: "ColdProducer-cleanup") }
++        }
+         if let problem {
+             if let ownedID {
+                 do { try await BookSourceFetcher.shared.clearAllChapterCacheAwait(bookId: ownedID) }
+@@ -321,10 +351,20 @@
+
+     func testNativeOriginalColdConsumerRestoresOwnedReaderWithoutNetwork() async throws {
+         executionTimeAllowance = 120
++        let previousTrace = ProcessInfo.processInfo.environment["LEGADO_RUNTIME_TASK_TRACE"]
++        guard setenv("LEGADO_RUNTIME_TASK_TRACE", "1", 1) == 0 else {
++            throw NativeOriginalReaderError.failed("Cannot enable cold consumer runtime trace")
++        }
++        defer {
++            if let previousTrace { setenv("LEGADO_RUNTIME_TASK_TRACE", previousTrace, 1) }
++            else { unsetenv("LEGADO_RUNTIME_TASK_TRACE") }
++        }
+         let cold = try await coldContext()
+         var ownedID: UUID?
+         var openedService: LegadoMainJSSourceService?
+         var problem: Error?
++        var c2Scope: ColdC2Scope?
++        var c2Sessions: [(session: LegadoSourceSession, owner: String)] = []
+         do {
+             let claim: ColdClaim = try await Task.detached { try cold.read(ColdClaim.self, name: "claim.json") }.value
+             try Self.coldRequire(claim.control == cold.control, "Cold claim belongs to another run")
+@@ -380,6 +420,19 @@
+             let after = try await Task.detached { try cold.fileFacts(bookID: book.id) }.value
+             try Self.coldRequire(bodyHashes == receipt.bodySHA256 && probe.count == 0 && before == after,
+                 "Cold public reader did not return immutable offline cache before source resolution")
++            let stateScope = try await Task.detached {
++                try Self.coldC2Scope(cold.control, cookieURL: source.bookSourceUrl)
++            }.value
++            // The accepted producer/control/claim and normal stored source are
++            // established before these exact namespaces authorize cleanup.
++            c2Scope = stateScope
++            c2Sessions = try await Self.coldC2Open(stateScope)
++            let readTasks = try await Self.coldC2Evaluate(stateScope, sessions: c2Sessions, seed: false, memoryPresent: false)
++            let c2Hashes = try await Self.coldC2BackingProof(stateScope)
++            let traceSHA256 = try await Self.coldC2NoHTTP(readTasks)
++            attach(["sources": 2, "ttlRecordSHA256": c2Hashes, "publicReadTasks": readTasks,
++                "runtimeTraceSHA256": traceSHA256, "httpTaskEvents": 0,
++                "scope": "original text Cookie session and JVM memory only; not all native RFC session records"], name: "ColdConsumer-C2")
+             // Recovery-only has no Vault, signing lease, endpoint or submission
+             // capability. It records a real second-process normal-owner read;
+             // installedMaterial remains nil and the receipt stays unretired.
+@@ -397,6 +450,12 @@
+             do { try await openedService.closeSessions() }
+             catch { if problem == nil { problem = error } }
+         }
++        do { try await Self.coldC2Close(c2Sessions) }
++        catch { if problem == nil { problem = error } }
++        if let c2Scope {
++            do { try await Self.coldC2Cleanup(c2Scope, sourcesOwned: true) }
++            catch { if problem == nil { problem = error } }
++        }
+         // The only global cache subtree admitted here is the freshly claimed
+         // book UUID. Never enumerate/erase the default shelf or other books.
+         if let ownedID {
+@@ -406,6 +465,290 @@
+         do { try await Task.detached { try cold.removeDataOnly() }.value }
+         catch { if problem == nil { problem = error } }
+         if let problem { throw problem }
++    }
++
++    private struct ColdC2Scope: Sendable {
++        let urls: [String]
++        let sourceIDs: [UUID]
++        let markers: [String]
++        let key: String
++        let cookieURL: String
++        let sessionCookie: String
++    }
++    private struct ColdC2CleanupFailure: Error { let primary: Error; let cleanup: Error }
++
++    nonisolated private static func coldC2Scope(_ control: ColdControl, cookieURL: String) throws -> ColdC2Scope {
++        let suffix = control.runID.lowercased() + "-" + String(control.nonce.prefix(16))
++        let urls = ["https://cold-c2-a-" + suffix + ".invalid", "https://cold-c2-b-" + suffix + ".invalid"]
++        var ids: [UUID] = []
++        for url in urls {
++            let hex = Array(SHA256.hash(data: Data(url.utf8))).prefix(16).map { String(format: "%02x", $0) }.joined()
++            let pieces = [String(hex.prefix(8)), String(hex.dropFirst(8).prefix(4)), String(hex.dropFirst(12).prefix(4)),
++                String(hex.dropFirst(16).prefix(4)), String(hex.dropFirst(20).prefix(12))]
++            guard let id = UUID(uuidString: pieces.joined(separator: "-")) else {
++                throw NativeOriginalReaderError.failed("Invalid deterministic C2 source identity")
++            }
++            ids.append(id)
++        }
++        return .init(urls: urls, sourceIDs: ids, markers: ["A:" + control.nonce, "B:" + control.nonce],
++            key: "cold-c2-" + String(control.nonce.prefix(16)), cookieURL: cookieURL,
++            sessionCookie: "native_" + control.runID.replacingOccurrences(of: "-", with: ""))
++    }
++
++    nonisolated private static func coldC2Check(_ accepted: Bool, _ label: String) throws {
++        guard accepted else { throw NativeOriginalReaderError.failed("C2 cold state: " + label) }
++    }
++
++    nonisolated private static func coldC2Literal(_ value: String) throws -> String {
++        String(decoding: try JSONEncoder().encode(value), as: UTF8.self)
++    }
++
++    nonisolated private static func coldC2Header(_ marker: String) throws -> String {
++        String(decoding: try JSONEncoder().encode(["X-Cold-C2": marker]), as: UTF8.self)
++    }
++
++    nonisolated private static func coldC2RelatedCookieDomain(_ raw: String, _ host: String) -> Bool {
++        let domain = (raw.hasPrefix(".") ? String(raw.dropFirst()) : raw).lowercased()
++        return domain == host || domain.hasSuffix("." + host) || host.hasSuffix("." + domain)
++    }
++
++    nonisolated private static func coldC2RequireUnowned(_ scope: ColdC2Scope) async throws {
++        try await Task.detached {
++            let loginDefaults = UserDefaults(suiteName: "com.yuedu.loginStore") ?? .standard
++            for url in scope.urls {
++                try coldC2Check(BookSourceRuntimeStateStore.shared.sourceVariableJSON(for: url) == nil, "source variable already exists")
++                try coldC2Check(BookSourceRuntimeStateStore.shared.sourceValue(for: url, key: scope.key) == nil, "source key already exists")
++                let account = "userInfo_" + url
++                // This collision guard must not migrate legacy plaintext or
++                // change an existing Keychain item's accessibility.
++                let login = try KeychainHelper.loadChecked(account: account, service: KeychainHelper.loginService,
++                    accessibility: nil, maximumBytes: 65_536)
++                try coldC2Check(login == nil && loginDefaults.object(forKey: account) == nil
++                    && LoginManager.shared.getLoginHeader(sourceUrl: url) == nil, "credential/header already exists")
++                for key in [scope.key, scope.key + "-expired", scope.key + "-memory"] {
++                    let snapshot = try LegadoCacheBridge.runtimeSnapshot(sourceId: url, key: key)
++                    try coldC2Check(snapshot.values.isEmpty, "cache key already exists")
++                }
++            }
++        }.value
++        let document = try await CookieStore.shared.snapshot()
++        try await Task.detached {
++            try SourcePerfTrace.span("test.cold.c2.cookie-ownership", "main=\(Thread.isMainThread) sources=2") {
++                let native = HTTPCookieStorage.shared.cookies ?? []
++                try coldC2Check(document.cookies.count <= 16_384 && native.count <= 16_384
++                    && document.legacyHeaders.count <= 16_384 && (document.originalRawDomains?.count ?? 0) <= 16_384,
++                    "Cookie ownership snapshot exceeds its bounded fixture check")
++                for url in scope.urls {
++                    guard let domain = URL(string: url)?.host, domain.hasSuffix(".invalid") else {
++                        throw NativeOriginalReaderError.failed("Invalid C2 Cookie domain")
++                    }
++                    // The original remove operation also removes related native
++                    // records. Reserve every path, not only cookies(for: /).
++                    for record in document.cookies {
++                        try coldC2Check(!coldC2RelatedCookieDomain(try record.native().domain, domain),
++                            "related persisted Cookie already exists")
++                    }
++                    try coldC2Check(!native.contains { coldC2RelatedCookieDomain($0.domain, domain) },
++                        "related native Cookie already exists")
++                    try coldC2Check(!document.legacyHeaders.keys.contains {
++                        coldC2RelatedCookieDomain(URL(string: $0)?.host ?? $0, domain)
++                    }, "related legacy Cookie already exists")
++                    try coldC2Check(!(document.originalRawDomains ?? []).contains {
++                        coldC2RelatedCookieDomain($0.domain, domain)
++                    }, "related original Cookie already exists")
++                }
++            }
++        }.value
++        for url in scope.urls {
++            guard let domain = URL(string: url)?.host else { throw NativeOriginalReaderError.failed("Invalid C2 Cookie domain") }
++            let raw = try await CookieStore.shared.originalRawText(domain: domain)
++            try coldC2Check(raw.isEmpty, "Cookie domain already exists")
++        }
++    }
++
++    nonisolated private static func coldC2Open(_ scope: ColdC2Scope) async throws -> [(session: LegadoSourceSession, owner: String)] {
++        let process = LegadoRuntimeProcess.shared
++        let runtime = try await process.executor()
++        var result: [(session: LegadoSourceSession, owner: String)] = []
++        do {
++            for index in scope.urls.indices {
++                let json = try await Task.detached {
++                    var source = BookSource()
++                    source.id = scope.sourceIDs[index]
++                    source.bookSourceUrl = scope.urls[index]
++                    source.bookSourceName = "Owned cold C2"
++                    source.enabledCookieJar = true
++                    source.loginUrl = "var coldC2Prelude = true;"
++                    source.loginUi = "[]"
++                    return String(decoding: try JSONEncoder().encode(source), as: UTF8.self)
++                }.value
++                let revision = try await Task.detached {
++                    SHA256.hash(data: Data(json.utf8)).map { String(format: "%02x", $0) }.joined()
++                }.value
++                let owner = try await process.bindPersistentSource(sourceURL: scope.urls[index], sourceRevision: revision)
++                do {
++                    let session = try await runtime.createSession(sourceJSON: json,
++                        options: .init(httpTransport: .jvmOkHttp, stateOwner: owner,
++                            sourceMode: .originalTraditional, cookieAccess: .appOwnerText))
++                    result.append((session, owner))
++                } catch {
++                    await process.revokePersistentSource(owner: owner)
++                    throw error
++                }
++            }
++        } catch {
++            let primary = error
++            do { try await coldC2Close(result) }
++            catch { throw ColdC2CleanupFailure(primary: primary, cleanup: error) }
++            throw primary
++        }
++        return result
++    }
++
++    nonisolated private static func coldC2Close(_ sessions: [(session: LegadoSourceSession, owner: String)]) async throws {
++        guard !sessions.isEmpty else { return }
++        let process = LegadoRuntimeProcess.shared
++        let runtime = try await process.executor()
++        var problem: Error?
++        for value in sessions {
++            do { try await runtime.close(session: value.session) } catch { if problem == nil { problem = error } }
++            await process.revokePersistentSource(owner: value.owner)
++        }
++        if let problem { throw problem }
++    }
++
++    nonisolated private static func coldC2Evaluate(_ scope: ColdC2Scope,
++        sessions: [(session: LegadoSourceSession, owner: String)], seed: Bool, memoryPresent: Bool) async throws -> [String] {
++        try coldC2Check(sessions.count == 2, "requires the same two original source sessions")
++        let runtime = try await LegadoRuntimeProcess.shared.executor()
++        var taskIDs: [String] = []
++        for index in scope.urls.indices {
++            let script = try await Task.detached {
++                let marker = scope.markers[index]
++                let variable = try coldC2Literal(String(decoding: JSONEncoder().encode(["c2": marker]), as: UTF8.self))
++                let value = try coldC2Literal(marker)
++                let login = try coldC2Literal("login:" + marker)
++                let header = try coldC2Literal(coldC2Header(marker))
++                let key = try coldC2Literal(scope.key)
++                let expired = try coldC2Literal(scope.key + "-expired")
++                let memory = try coldC2Literal(scope.key + "-memory")
++                let cookieURL = try coldC2Literal(scope.urls[index])
++                let cookie = try coldC2Literal("c2persist=" + marker)
++                let sessionURL = try coldC2Literal(scope.cookieURL)
++                let sessionName = try coldC2Literal(scope.sessionCookie)
++                var text = ""
++                if seed {
++                    text += "source.setVariable(\(variable));source.put(\(key),\(value));"
++                    text += "if(source.putLoginInfo(\(login))!==true)throw new Error('C2 credential not accepted');"
++                    text += "source.putLoginHeader(\(header));cookie.setCookie(\(cookieURL),\(cookie));"
++                    text += "cache.put(\(key),\(value),604800);cache.put(\(expired),\(value),-86400);cache.putMemory(\(memory),\(value));"
++                }
++                text += "if(String(source.getVariable())!==\(variable)||String(source.get(\(key)))!==\(value))throw new Error('C2 source restoration/isolation');"
++                text += "if(String(source.getLoginInfo())!==\(login)||String(source.getLoginHeader())!==\(header))throw new Error('C2 credential/header restoration/isolation');"
++                text += "if(String(cookie.getCookie(\(cookieURL)))!==\(cookie))throw new Error('C2 persistent Cookie restoration/isolation');"
++                text += "if(String(cache.get(\(key),true))!==\(value)||cache.get(\(expired),true)!==null)throw new Error('C2 TTL restoration/isolation');"
++                if memoryPresent {
++                    text += "if(String(cache.getFromMemory(\(memory)))!==\(value))throw new Error('C2 producer memory missing');"
++                    text += "if(String(cookie.getKey(\(sessionURL),\(sessionName)))!=='wire')throw new Error('C2 producer session Cookie missing');"
++                } else {
++                    text += "if(cache.getFromMemory(\(memory))!==null||cache.get(\(memory),true)!==null)throw new Error('C2 transient memory restored');"
++                    text += "if(String(cookie.getKey(\(sessionURL),\(sessionName)))!=='')throw new Error('C2 original text session Cookie restored');"
++                }
++                return text
++            }.value
++            let taskID = UUID().uuidString.lowercased()
++            let receipt = try await runtime.loginActionOriginal(session: sessions[index].session,
++                action: script, credentials: [:], taskID: taskID)
++            try coldC2Check(receipt.executed, "original action was skipped")
++            taskIDs.append(taskID)
++        }
++        return taskIDs
++    }
++
++    nonisolated private static func coldC2BackingProof(_ scope: ColdC2Scope) async throws -> [String] {
++        try await Task.detached {
++            try SourcePerfTrace.span("test.cold.c2.backing", "main=\(Thread.isMainThread) sources=2") {
++                var hashes: [String] = []
++                let now = Int64(Date().timeIntervalSince1970 * 1000)
++                for index in scope.urls.indices {
++                    let marker = scope.markers[index]
++                    let data = try LegadoCacheBridge.runtimeSnapshot(sourceId: scope.urls[index], key: scope.key)
++                    guard let bytes = data.values["value"] else { throw NativeOriginalReaderError.failed("C2 persistent cache absent") }
++                    let entry = try JSONDecoder().decode(LegadoRuntimeCacheEntry.self, from: bytes)
++                    let text = try entry.text()
++                    try coldC2Check(text == marker && entry.deadline > now && entry.deadline <= now + 604_860_000,
++                        "actual cache record lost its long-lived TTL")
++                    let expired = try LegadoCacheBridge.runtimeSnapshot(sourceId: scope.urls[index], key: scope.key + "-expired")
++                    guard let expiredBytes = expired.values["value"] else { throw NativeOriginalReaderError.failed("C2 expired record absent") }
++                    let expiredEntry = try JSONDecoder().decode(LegadoRuntimeCacheEntry.self, from: expiredBytes)
++                    try coldC2Check(expiredEntry.deadline > 0 && expiredEntry.deadline < now, "expired deadline was rewritten")
++                    hashes.append(SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined())
++                }
++                return hashes
++            }
++        }.value
++    }
++
++    nonisolated private static func coldC2NoHTTP(_ taskIDs: [String]) async throws -> String {
++        try await Task.detached {
++            let reports = try LegadoRuntime.savedDiagnostics()
++            guard let trace = reports["current/runtime-events.jsonl"], !trace.isEmpty,
++                  !trace.contains("[truncated:"), !trace.contains("\"stage\":\"trace.limit\"") else {
++                throw NativeOriginalReaderError.failed("C2 consumer task trace unavailable or incomplete")
++            }
++            let output = reports["current/vm-output.log"] ?? ""
++            try coldC2Check(!output.contains("LEGADO_TASK_TRACE_OPEN_FAILED") && !output.contains("LEGADO_TASK_TRACE_WRITE_FAILED")
++                && !output.contains("LEGADO_TASK_TRACE_LIMIT"), "trace writer failed")
++            var stages: [String: [String]] = [:]
++            for line in trace.split(separator: "\n") {
++                guard let row = try JSONSerialization.jsonObject(with: Data(line.utf8)) as? [String: Any],
++                      let id = row["taskId"] as? String, let stage = row["stage"] as? String else {
++                    throw NativeOriginalReaderError.failed("C2 consumer task trace malformed")
++                }
++                if taskIDs.contains(id) { stages[id, default: []].append(stage) }
++            }
++            for id in taskIDs {
++                let actual = stages[id] ?? []
++                try coldC2Check(actual.filter { $0 == "execute.registered" }.count == 1
++                    && actual.filter { $0 == "execute.finished" }.count == 1
++                    && !actual.contains(where: { $0.hasPrefix("http.") }), "consumer public task attempted HTTP or lost completion")
++            }
++            return SHA256.hash(data: Data(trace.utf8)).map { String(format: "%02x", $0) }.joined()
++        }.value
++    }
++
++    nonisolated private static func coldC2Cleanup(_ scope: ColdC2Scope, sourcesOwned: Bool) async throws {
++        if sourcesOwned {
++            try await Task.detached {
++                for url in scope.urls {
++                    let variable = BookSourceRuntimeStateStore.shared.runtimeVariableSnapshot(for: url)
++                    try coldC2Check(BookSourceRuntimeStateStore.shared.compareRuntimeVariable(for: url, expected: variable, value: nil), "source cleanup CAS failed")
++                    let values = BookSourceRuntimeStateStore.shared.runtimeValuesSnapshot(for: url, keys: [scope.key])
++                    let removal: [String: Data?] = [scope.key: nil]
++                    try coldC2Check(BookSourceRuntimeStateStore.shared.compareRuntimeValues(for: url, expected: values, changes: removal), "source key cleanup CAS failed")
++                    try coldC2Check(try LoginManager.shared.storeRuntimeLoginInfo(sourceUrl: url, value: nil, validate: {}, recordEffect: { _ in true }), "credential cleanup failed")
++                    let header = LoginManager.shared.runtimeHeaderSnapshot(sourceUrl: url)
++                    try coldC2Check(LoginManager.shared.compareRuntimeHeader(sourceUrl: url, expected: header, value: nil), "header cleanup CAS failed")
++                    for key in [scope.key, scope.key + "-expired", scope.key + "-memory"] {
++                        let proof = try LegadoCacheBridge.runtimeSnapshot(sourceId: url, key: key)
++                        try coldC2Check(try LegadoCacheBridge.compareRuntimeEntry(sourceId: url, key: key, expected: proof, value: nil), "cache cleanup CAS failed")
++                    }
++                }
++            }.value
++            for url in scope.urls {
++                guard let domain = URL(string: url)?.host, domain.hasSuffix(".invalid") else {
++                    throw NativeOriginalReaderError.failed("C2 cleanup requires its reserved invalid domain")
++                }
++                // These exact nonce domains were empty before this test wrote
++                // them. The original text owner, not the legacy RFC remover,
++                // owns its originalRawDomains record and memory view.
++                try await CookieStore.shared.mutateOriginalText(domain: domain, action: "remove", raw: nil)
++                let remaining = try await CookieStore.shared.originalRawText(domain: domain)
++                try coldC2Check(remaining.isEmpty, "original raw Cookie cleanup failed")
++            }
++        }
++        // 127.0.0.1 cookies are not port-isolated. Never clear its whole jar.
++        try await CookieStore.shared.removeOwned(url: scope.cookieURL, key: scope.sessionCookie)
+     }
+
+     private func coldContext() async throws -> ColdContext {

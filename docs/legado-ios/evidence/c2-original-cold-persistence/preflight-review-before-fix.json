@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T05:38:26.789413+00:00",
+  "candidate": {
+    "path": ".build/c2-original-cold-persistence-step/final-v1.json",
+    "bytes": 5897,
+    "sha256": "2327577c77501c1a75adba0c2accd31ee0211297284b9793d055e4baabeb11b0"
+  },
+  "source": {
+    "path": ".build/c2-original-cold-persistence-step/snapshot-v1/work/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+    "bytes": 166855,
+    "sha256": "718c64209205177285a1d7873eea4722471b5a922fe49ae09acac5cce8ca9bcb"
+  },
+  "finding": {
+    "severity": "P2",
+    "status": "confirmed source path; no runtime reproduction",
+    "summary": "The fresh-namespace credential preflight can mutate a colliding legacy/old-accessibility credential before rejecting it.",
+    "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+    "function": "coldC2RequireUnowned",
+    "cause": "runtimeLoginInfo with recordEffect always true calls readRawLoginInfo. Existing legacy userInfo can be inserted into Keychain and deleted from defaults before returning non-nil; the preflight then throws with sourcesOwned=false. The checked existing-login read can also migrate accessibility before rejection.",
+    "ownerSources": [
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+        "bytes": 40109,
+        "sha256": "90c94878c585c3a8be094014ff8d873c9e364d435a7af52a7c96c60f09e3239c"
+      },
+      {
+        "path": "Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift",
+        "bytes": 10954,
+        "sha256": "621ae13b5563053ad0b389e4ed45153490e2459763df446faccae4f4b7d0117c"
+      }
+    ],
+    "preciseOwnerLines": [
+      "LoginManager.swift:783-808",
+      "KeychainHelper.swift:129-149",
+      "KeychainHelper.swift:185-195"
+    ],
+    "requestedRepair": "Use existing Keychain checked read with accessibility:nil and reject exact existing legacy record before any migration, or an equivalently narrow same-owner pure-read check. Preserve unreadable/malformed failure, Keychain authorization, and nonce-scoped cleanup."
+  },
+  "execution": {
+    "tests": 0,
+    "Swift": 0,
+    "parser": 0,
+    "cloud": 0,
+    "canonicalWrites": 0
+  },
+  "approval": false
+}

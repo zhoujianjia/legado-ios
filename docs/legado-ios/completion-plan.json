@@ -169,7 +169,7 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Classify the remaining exact d820 SDK terminal, batch any actual failures with current reviewed changes, then submit the necessary coherent successor. Native fullS3 failed and requires full revalidation; focused cold cannot substitute for a failed scope.",
+      "nextPlannedCheckpoint": "Archive the closed actual d820 SDK failure, batch repair the actual selected and unassociated failures, then submit only the necessary coherent SDK/full Native verification. Full Native includes S3/MainJS1/Native32/cold2; do not additionally replay focused cold. Passed unchanged Package inputs may be reused only at their true original source identity. No new request before reviewed repairs and both terminal archives.",
       "alreadyRunningTasks": "Exact d820 SDK remains live; d820 Native is terminal/archived after the1800-second complete-device-build timeout. Focused cold CI source is ready but has not run.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "7ef3c7ec1b0d37ce2b395bb897f6806f5acbafa8",
@@ -219,18 +219,7 @@
         "producerMachOs": 4,
         "separateSourceRepairRecord": "docs/legado-ios/core-sdk-7ef3c7e-preview-fixture-repair.json"
       },
-      "onlyLiveSDKHandles": [
-        {
-          "runID": 39543888037,
-          "jobID": 119037580780,
-          "sourceCommit": "d8200d32f881e1b09399110905d43545cfd0c9f9",
-          "sourceTag": "reader-renewal-d8200d3",
-          "workflow": ".github/workflows/reader-renewal-probe.yml",
-          "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39543888037",
-          "initialStatus": "in_progress",
-          "status": "in_progress"
-        }
-      ],
+      "onlyLiveSDKHandles": [],
       "latestDevicePackageTerminal": {
         "sourceCommit": "44f125b73c06bf95637765ab58e65f41d0651b44",
         "runID": 39457883604,
@@ -287,7 +276,7 @@
           "PackageInputs": 23,
           "boolPairs": 3
         },
-        "status": "SDK-in-progress-Native-terminal-failure-fully-archived",
+        "status": "both-terminal-failure-SDK-public-archive-pending",
         "actualResultAccepted": false
       },
       "live8dPortableFailureRepair": {
@@ -301,26 +290,45 @@
         "terminalRecord": "docs/legado-ios/core-sdk-8d934dd-terminal-result.json"
       },
       "latestSDKTerminal": {
-        "sourceCommit": "7ef3c7ec1b0d37ce2b395bb897f6806f5acbafa8",
-        "sourceTag": "reader-renewal-7ef3c7e",
-        "runID": 39537665728,
-        "jobID": 119017948485,
+        "sourceCommit": "d8200d32f881e1b09399110905d43545cfd0c9f9",
+        "sourceTag": "reader-renewal-d8200d3",
+        "runID": 39543888037,
+        "jobID": 119037580780,
         "status": "completed",
         "conclusion": "failure",
         "queryAgain": false,
-        "record": "docs/legado-ios/core-sdk-7ef3c7e-terminal-result.json",
-        "failure": "Portable4 failure followed by one immutable-bookURL test compiler error; App0. Exact selector/control and fixture repairs remain source-only until successor.",
-        "AppDefinitionsExecuted": 0,
-        "AppLeavesExecuted": 0,
+        "terminalUpdatedUTC": "2026-10-21T05:34:07Z",
+        "archiveStatus": "raw-downloaded-public-terminal-archive-in-preparation",
+        "rawRun": {
+          "path": ".build/sdk-d8200d3-terminal/run.json",
+          "bytes": 13820,
+          "sha256": "f1441fe14c8887552cbd5fc3a773aa66b01dbad57eabd555b2efcb5fe49a6d8a"
+        },
+        "rawSummary": {
+          "path": ".build/sdk-d8200d3-terminal/artifact-12323004633/reader-renewal-probe/currentcore-summary.json",
+          "bytes": 15479,
+          "sha256": "02dce4c00c0fe7ae0e7e45907dfa02f3d50e284f28cd9ab1aaf3bd98e2450a36"
+        },
+        "rawSummaryCounts": {
+          "totalTestCount": 480,
+          "passedTests": 463,
+          "failedTests": 17,
+          "skippedTests": 0
+        },
+        "rawSummaryIsNotQualifiedLeafCount": true,
         "AppSuitePassed": false,
-        "uniqueCompilerErrors": 1,
-        "PackageMethodsPassed": 24,
-        "producerCommandsPassed": 48,
-        "producerPublicOutputs": 43,
-        "producerMachOs": 4,
-        "separateSourceRepairRecord": "docs/legado-ios/core-sdk-7ef3c7e-preview-fixture-repair.json"
+        "resultProduced": false
       },
-      "terminalArchivesPending": [],
+      "terminalArchivesPending": [
+        {
+          "runID": 39543888037,
+          "jobID": 119037580780,
+          "sourceCommit": "d8200d32f881e1b09399110905d43545cfd0c9f9",
+          "kind": "SDK",
+          "status": "raw-downloaded-public-archive-in-preparation",
+          "queryAgain": false
+        }
+      ],
       "latestClosedCorePair": {
         "sourceCommit": "7ef3c7ec1b0d37ce2b395bb897f6806f5acbafa8",
         "recordedUTC": "2026-10-21T04:23:38.249701+00:00",
@@ -458,18 +466,7 @@
       },
       "queuedSourceCheckpoint": "docs/legado-ios/core-sdk-s5-c4-preview-fixture-successor-checkpoint.json",
       "onlyLiveNativeHandles": [],
-      "activeSourceBoundRunHandles": [
-        {
-          "runID": 39543888037,
-          "jobID": 119037580780,
-          "sourceCommit": "d8200d32f881e1b09399110905d43545cfd0c9f9",
-          "sourceTag": "reader-renewal-d8200d3",
-          "workflow": ".github/workflows/reader-renewal-probe.yml",
-          "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39543888037",
-          "initialStatus": "in_progress",
-          "status": "in_progress"
-        }
-      ],
+      "activeSourceBoundRunHandles": [],
       "queuedOriginalColdRenewalDataHandoff": {
         "record": "docs/legado-ios/core-renewal-cold-process-handoff-step.json",
         "status": "source-integrated-actual-two-host-execution-pending",
@@ -481,7 +478,7 @@
       },
       "queuedOriginalColdRenewalExecution": {
         "record": "docs/legado-ios/core-renewal-cold-only-native-ci-step.json",
-        "status": "source-ready-no-new-cloud-execution",
+        "status": "source-ready-included-in-next-required-full-Native",
         "tagTemplate": "legado-native-reader-test-cold-<HEAD SHA7>",
         "actualPortablePassed": 4,
         "actualAppleBuilds": 0,
@@ -492,7 +489,8 @@
           "union": 427,
           "package": 23
         },
-        "requiredPriorAction": "Classify the remaining exact d820 SDK terminal and repair the confirmed Native full-build timeout before selecting the next actual request; reuse only genuinely passed unchanged scopes."
+        "requiredPriorAction": "Classify the remaining exact d820 SDK terminal and repair the confirmed Native full-build timeout before selecting the next actual request; reuse only genuinely passed unchanged scopes.",
+        "executionRoute": "Full Native includes the same cold2. Do not additionally submit focused cold for this successor; failed full S3 must be revalidated."
       },
       "queuedFullNativeBudgetRepair": {
         "record": "docs/legado-ios/core-native-d8200d3-build-budget-repair.json",
@@ -500,6 +498,15 @@
         "actualPortableMethods": 2,
         "actualPortableExecutions": 3,
         "actualAppleRevalidations": 0,
+        "newTagsOrRuns": 0
+      },
+      "queuedOriginalColdC2Persistence": {
+        "record": "docs/legado-ios/core-original-cold-persistence-step.json",
+        "status": "source-integrated-actual-two-cold-hosts-pending",
+        "changedTestSources": 1,
+        "newDefinitions": 0,
+        "actualAppleBuilds": 0,
+        "actualColdHosts": 0,
         "newTagsOrRuns": 0
       }
     },
@@ -875,6 +882,10 @@
             {
               "record": "docs/legado-ios/core-native-d8200d3-terminal-result.json",
               "scope": "Actual d820 ordinary JVM378 passed; complete device build interrupted by1800-second budget, App/Signer/Native/cold0. This handle is closed; concurrent SDK remains independent."
+            },
+            {
+              "record": "docs/legado-ios/core-original-cold-persistence-step.json",
+              "scope": "Existing cold2 now assert original persistent/source/Keychain/Cookie/cache restoration and transient reset; source-only, no new runtime pass."
             }
           ],
           "implementedSubtasksZh": [
@@ -1274,6 +1285,10 @@
             {
               "record": "docs/legado-ios/core-native-d8200d3-build-budget-repair.json",
               "scope": "Actual Native build timeout and same-stream log fact repair; portable2 methods/3passes, no new Apple execution. Historical failure remains closed."
+            },
+            {
+              "record": "docs/legado-ios/core-original-cold-persistence-step.json",
+              "scope": "Existing cold2 now assert original persistent/source/Keychain/Cookie/cache restoration and transient reset; source-only, no new runtime pass."
             }
           ],
           "implementedSubtasksZh": [
@@ -3127,6 +3142,45 @@
         "actualPortableExecutions": 3,
         "actualAppleRevalidations": 0,
         "newTagsOrRuns": 0
+      },
+      "queuedOriginalColdC2Persistence": {
+        "record": "docs/legado-ios/core-original-cold-persistence-step.json",
+        "status": "source-integrated-actual-two-cold-hosts-pending",
+        "changedTestSources": 1,
+        "newDefinitions": 0,
+        "actualAppleBuilds": 0,
+        "actualColdHosts": 0,
+        "newTagsOrRuns": 0
+      },
+      "currentD820SDKTerminal": {
+        "sourceCommit": "d8200d32f881e1b09399110905d43545cfd0c9f9",
+        "sourceTag": "reader-renewal-d8200d3",
+        "runID": 39543888037,
+        "jobID": 119037580780,
+        "status": "completed",
+        "conclusion": "failure",
+        "queryAgain": false,
+        "terminalUpdatedUTC": "2026-10-21T05:34:07Z",
+        "archiveStatus": "raw-downloaded-public-terminal-archive-in-preparation",
+        "rawRun": {
+          "path": ".build/sdk-d8200d3-terminal/run.json",
+          "bytes": 13820,
+          "sha256": "f1441fe14c8887552cbd5fc3a773aa66b01dbad57eabd555b2efcb5fe49a6d8a"
+        },
+        "rawSummary": {
+          "path": ".build/sdk-d8200d3-terminal/artifact-12323004633/reader-renewal-probe/currentcore-summary.json",
+          "bytes": 15479,
+          "sha256": "02dce4c00c0fe7ae0e7e45907dfa02f3d50e284f28cd9ab1aaf3bd98e2450a36"
+        },
+        "rawSummaryCounts": {
+          "totalTestCount": 480,
+          "passedTests": 463,
+          "failedTests": 17,
+          "skippedTests": 0
+        },
+        "rawSummaryIsNotQualifiedLeafCount": true,
+        "AppSuitePassed": false,
+        "resultProduced": false
       }
     }
   },
@@ -7531,7 +7585,8 @@
     "docs/legado-ios/core-renewal-cold-process-handoff-step.json",
     "docs/legado-ios/core-renewal-cold-only-native-ci-step.json",
     "docs/legado-ios/core-native-d8200d3-terminal-result.json",
-    "docs/legado-ios/core-native-d8200d3-build-budget-repair.json"
+    "docs/legado-ios/core-native-d8200d3-build-budget-repair.json",
+    "docs/legado-ios/core-original-cold-persistence-step.json"
   ],
   "userScopeAdjustments": [
     {

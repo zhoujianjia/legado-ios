@@ -1,0 +1,41 @@
+{
+  "kind": "literal successor source protection checks; not Swift compilation or functional tests",
+  "failedChecks": 0,
+  "parentChecks": {
+    "path": ".build/c2-original-cold-persistence-step/source-checks-v1.json",
+    "bytes": 4185,
+    "sha256": "92567f3f603e052fa12a2e47329761622f0a4425d7308041a3e9487a2136cb53"
+  },
+  "v1OriginalSnapshotPreserved": {
+    "path": ".build/c2-original-cold-persistence-step/snapshot-v1/work/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+    "bytes": 166855,
+    "sha256": "718c64209205177285a1d7873eea4722471b5a922fe49ae09acac5cce8ca9bcb"
+  },
+  "onlyChangedRegion": "coldC2RequireUnowned credential collision read",
+  "restoringPriorGuardMakesEntireV2EqualV1": true,
+  "canonicalBaselineStillExact": true,
+  "pureReadGuard": "existing KeychainHelper.loadChecked accessibility:nil plus exact legacy account object absence in existing LoginManager suite/default fallback",
+  "noMigrationOrStorageEffectsAuthorizedByPreflight": true,
+  "ownerConstantsAndNilAccessibilityBranchSourceChecked": [
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/LoginManager.swift",
+      "bytes": 40109,
+      "sha256": "90c94878c585c3a8be094014ff8d873c9e364d435a7af52a7c96c60f09e3239c"
+    },
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/Login/KeychainHelper.swift",
+      "bytes": 10954,
+      "sha256": "621ae13b5563053ad0b389e4ed45153490e2459763df446faccae4f4b7d0117c"
+    }
+  ],
+  "priorGuardsMethodsReceiptsAndCookieOwnershipUnchanged": true,
+  "actualExecution": {
+    "swiftCompilation": 0,
+    "swiftSDKTests": 0,
+    "simulatorHosts": 0,
+    "jvmTests": 0,
+    "portableTests": 0,
+    "parserRuns": 0,
+    "cloudQueries": 0
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T05:46:18.311756+00:00",
+  "status": "test-source-integrated-actual-two-process-execution-pending",
+  "baselineCommit": "3d3c2e328e43f6bb05bd02254b31b7de04f2b0a6",
+  "changedSources": [
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "bytes": 167259,
+      "sha256": "454213ef79e53260ccca857d3c9ef608fae978e5f9fb7251e011384683f2dbc0"
+    }
+  ],
+  "newTestDefinitions": 0,
+  "newHosts": 0,
+  "productionSourceChanges": 0,
+  "modifiedExistingMethods": [
+    "testNativeOriginalColdProducerPersistsPublicReaderBeforeProcessExit",
+    "testNativeOriginalColdConsumerRestoresOwnedReaderWithoutNetwork"
+  ],
+  "implementation": {
+    "publicRoute": "same LegadoRuntimeProcess executor + bindPersistentSource -> originalTraditional/appOwnerText loginActionOriginal, two nonce-derived stable source UUIDs/URLs",
+    "persistentAssertions": [
+      "source variable JSON and keyed value",
+      "checked real Keychain loginInfo and existing header owner",
+      "original persistent Cookie text",
+      "source-isolated text cache with actual seven-day TTL record"
+    ],
+    "transientAssertions": [
+      "explicit JVM memory stays present in producer idle sessions until PID exit and is absent in consumer",
+      "original Cookie text session from existing no-Expires response is visible in producer and absent in consumer"
+    ],
+    "consumerOfflineProof": "existing public reader cache-first gates plus two real public original-runtime read tasks with complete UUID-bound trace and zero HTTP stages",
+    "cookieOwnership": "Before any source writes, both reserved invalid domains require no related raw/legacy/rich/native Cookie across every path, bounded to16384 rows per collection; original-text remove clears only these proven run domains.127.0.0.1 removal is exact nonce key only.",
+    "keychainBoundary": "Existing KeychainHelper default service/account and same installed adhoc App; no explicit access group or entitlements changes. Actual access failures throw, never skip/fallback.",
+    "receipts": "All original ColdProducer/Consumer/renewal receipt declarations and field sets unchanged; no Python changes. New assertions complete before old pending receipts are written."
+  },
+  "actualValidation": {
+    "swiftCompilation": 0,
+    "swiftSDKTests": 0,
+    "simulatorHosts": 0,
+    "jvmTests": 0,
+    "portableTests": 0,
+    "parserRuns": 0,
+    "cloudQueries": 0
+  },
+  "literalSourceProtectionOnly": true,
+  "sourceCounts": {
+    "core": 418,
+    "native": 263,
+    "union": 427,
+    "package": 23
+  },
+  "all427CurrentInputsVerified": true,
+  "Package23InputsUnchanged": true,
+  "sourceRosterDelta": {
+    "path": "docs/legado-ios/evidence/c2-original-cold-persistence/source-roster-one-path-delta.json",
+    "bytes": 1169,
+    "sha256": "2aec572193b641b9536fb530658a0edceffe3ce8f2b5fc3a844769e95129b75a"
+  },
+  "evidence": [
+    {
+      "path": "docs/legado-ios/evidence/c2-original-cold-persistence/source-candidate-v2.json",
+      "bytes": 7521,
+      "sha256": "681a928fa9f08daf56dc5e1bc1fed4c651c3be1960171c62a3c0cdccfef163f3",
+      "original": {
+        "path": ".build/c2-original-cold-persistence-step/final-v2.json",
+        "bytes": 7521,
+        "sha256": "681a928fa9f08daf56dc5e1bc1fed4c651c3be1960171c62a3c0cdccfef163f3"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/c2-original-cold-persistence/independent-review.json",
+      "bytes": 10329,
+      "sha256": "6cd47306c97f504a40ecd55dd2153bf2f1797126de143bdee7045a596a60aee4",
+      "original": {
+        "path": ".build/c2-original-cold-persistence-independent-review/review-v1.json",
+        "bytes": 10329,
+        "sha256": "6cd47306c97f504a40ecd55dd2153bf2f1797126de143bdee7045a596a60aee4"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/c2-original-cold-persistence/source-checks-v2.json",
+      "bytes": 1692,
+      "sha256": "c0bb7c9a8e68bed5902a77b049b3004947fcc4bc4488be3fd1adf0c6cc598948",
+      "original": {
+        "path": ".build/c2-original-cold-persistence-step/source-checks-v2.json",
+        "bytes": 1692,
+        "sha256": "c0bb7c9a8e68bed5902a77b049b3004947fcc4bc4488be3fd1adf0c6cc598948"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/c2-original-cold-persistence/source-checks-v1.json",
+      "bytes": 4185,
+      "sha256": "92567f3f603e052fa12a2e47329761622f0a4425d7308041a3e9487a2136cb53",
+      "original": {
+        "path": ".build/c2-original-cold-persistence-step/source-checks-v1.json",
+        "bytes": 4185,
+        "sha256": "92567f3f603e052fa12a2e47329761622f0a4425d7308041a3e9487a2136cb53"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/c2-original-cold-persistence/source-candidate-v1.json",
+      "bytes": 5897,
+      "sha256": "2327577c77501c1a75adba0c2accd31ee0211297284b9793d055e4baabeb11b0",
+      "original": {
+        "path": ".build/c2-original-cold-persistence-step/final-v1.json",
+        "bytes": 5897,
+        "sha256": "2327577c77501c1a75adba0c2accd31ee0211297284b9793d055e4baabeb11b0"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/c2-original-cold-persistence/credential-preflight-successor.diff",
+      "bytes": 1816,
+      "sha256": "224cc438555b5b4e19117a480ff55e95380a1d81a2f7962c8be6de2470aa4db1",
+      "original": {
+        "path": ".build/c2-original-cold-persistence-step/diffs-v2/LegadoNativeOriginalReaderTests.swift.v1-to-v2.diff",
+        "bytes": 1817,
+        "sha256": "3fa5f32b6a46aca27e39de8f413dd5b58274b45776fef1f8336682b4dd9a23e3"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/c2-original-cold-persistence/preflight-review-before-fix.json",
+      "bytes": 2196,
+      "sha256": "742298c760d2f57974c4c20460dc828fd44033f8f19848499a5b5bdac761cfa1",
+      "original": {
+        "path": ".build/c2-original-cold-persistence-independent-review/before-fix-v1.json",
+        "bytes": 2196,
+        "sha256": "742298c760d2f57974c4c20460dc828fd44033f8f19848499a5b5bdac761cfa1"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/c2-original-cold-persistence/design-v1.json",
+      "bytes": 3474,
+      "sha256": "c2dffa29755db2bd4ffd32aa35272a69b36b7a2419b6aaa6a5d468f95c91759e",
+      "original": {
+        "path": ".build/c2-original-cold-persistence-step/design-v1.json",
+        "bytes": 3474,
+        "sha256": "c2dffa29755db2bd4ffd32aa35272a69b36b7a2419b6aaa6a5d468f95c91759e"
+      }
+    },
+    {
+      "path": "docs/legado-ios/evidence/c2-original-cold-persistence/reader-test-source.diff",
+      "bytes": 27785,
+      "sha256": "59d137a08fac15a3d8f2a832d9968530c560fc1440c992710f0bd44056119fdc",
+      "original": {
+        "path": ".build/c2-original-cold-persistence-step/diffs-v2/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 27787,
+        "sha256": "1892fdede532bd2c77ffa23625bd0c59e145b401cdbc6fcc39d982c7000cd04b"
+      }
+    }
+  ],
+  "limits": [
+    "No Swift compiler/SDK/Simulator/JNI/WK execution for this candidate. Two real process reads remain pending; fresh-owner tests are not substituted.",
+    "Owner ACK does not prove fsync. No synchronize or timing waits are introduced.",
+    "Cookie negative covers original text session memory only, not every native RFC session Cookie.",
+    "TTL assertions prove the record remains unexpired and expired values are rejected; they do not compare exact deadline equality between processes.",
+    "Cookie/Keychain/runtime state is outside the existing S5 selected five-file handoff receipt and does not extend its coverage.",
+    "No real Apple account, signing, device installation or renewal success is established."
+  ],
+  "temporaryCompatibilityTargetPercent": 90,
+  "measuredCompatibilityPercent": null,
+  "otherSeventeenItemsRemainDeferred": true,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}
