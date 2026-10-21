@@ -1,0 +1,27 @@
+.build\native-88c61ee-stale-expectation-repair-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\OriginalSourceLoginBrowserAwaitTest.kt:91:114: error: unresolved reference 'FileRulePersistenceAdapter'.
+        private val directory=Files.createTempDirectory("original-await-");private val state=RulePersistenceHost(FileRulePersistenceAdapter(directory))
+                                                                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.build\native-88c61ee-stale-expectation-repair-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\OriginalSourceLoginBrowserTest.kt:84:47: error: unresolved reference 'FileRulePersistenceAdapter'.
+        private val state=RulePersistenceHost(FileRulePersistenceAdapter(directory))
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.build\native-88c61ee-stale-expectation-repair-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\OriginalSourceLoginV2BrowserTest.kt:107:119: error: unresolved reference 'FileRulePersistenceAdapter'.
+        private val directory=Files.createTempDirectory("original-v2-browser-");private val state=RulePersistenceHost(FileRulePersistenceAdapter(directory))
+                                                                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+.build\native-88c61ee-stale-expectation-repair-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\OriginalUrlExecutionTest.kt:45:36: error: cannot infer type for type parameter 'R'. Specify it explicitly.
+                    val expected = runCatching { ArchiveUrlExpansionReference(raw, page, evaluator::evalJS).ruleUrl }
+                                   ^^^^^^^^^^^
+.build\native-88c61ee-stale-expectation-repair-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\OriginalUrlExecutionTest.kt:45:50: error: unresolved reference 'ArchiveUrlExpansionReference'.
+                    val expected = runCatching { ArchiveUrlExpansionReference(raw, page, evaluator::evalJS).ruleUrl }
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.build\native-88c61ee-stale-expectation-repair-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\OriginalUrlExecutionTest.kt:256:9: error: unresolved reference 'RuleScopeInitializationGate'.
+        RuleScopeInitializationGate.reset()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.build\native-88c61ee-stale-expectation-repair-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\OriginalUrlExecutionTest.kt:266:40: error: unresolved reference 'RuleScopeInitializationGate'.
+                            assertTrue(RuleScopeInitializationGate.entered.await(3, TimeUnit.SECONDS))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.build\native-88c61ee-stale-expectation-repair-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\OriginalUrlExecutionTest.kt:269:29: error: unresolved reference 'RuleScopeInitializationGate'.
+                            RuleScopeInitializationGate.release.countDown()
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.build\native-88c61ee-stale-expectation-repair-step\work\Packages\LegadoRuntime\jvm\src\test\kotlin\io\yuedu\legado\OriginalUrlExecutionTest.kt:278:21: error: unresolved reference 'RuleScopeInitializationGate'.
+                    RuleScopeInitializationGate.release.countDown(); owned.task.job.cancel(); executor.shutdownNow()
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^

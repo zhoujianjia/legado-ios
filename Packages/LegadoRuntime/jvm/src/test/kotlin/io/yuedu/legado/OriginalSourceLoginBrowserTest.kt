@@ -34,12 +34,18 @@ class OriginalSourceLoginBrowserTest {
         Owned().use { owned ->
             for(script in listOf(
                 "java.showBrowser('https://synthetic-browser.invalid/page');",
-                "java.startBrowser('https://synthetic-browser.invalid/page','HTML','');",
                 "java.startBrowser('file:///private/synthetic','Not web');")) {
                 val reply=owned.call(script,success=false)
                 assertEquals(reply.toString(),"UNSUPPORTED_CAPABILITY",reply["error"].asJsonObject["code"].asString)
             }
-            assertTrue(owned.pages.isEmpty());assertEquals(0,owned.httpCalls);assertEquals(0,owned.credentialCalls)
+            assertTrue(owned.pages.isEmpty())
+            // Preserve the historical test identity while migrating only the
+            // explicit-HTML branch that the original local-page slice enabled.
+            val accepted=owned.call("java.startBrowser('https://synthetic-browser.invalid/page','HTML','');")
+            val page=owned.pages.single();assertTrue(page.has("localPage"));assertTrue(page["prefetchedHTML"].asString.isNotEmpty())
+            assertFalse(page.has("awaitsResult"))
+            assertTrue(accepted["completedEffects"].asJsonArray.any{it.asString=="sourceBrowserPresented"})
+            assertEquals(0,owned.httpCalls);assertEquals(0,owned.credentialCalls)
         }
     }
     @Test(timeout=20_000) fun refusalAndSensitiveFailuresKeepAcceptedFactsWithoutLateSourceMutation() {

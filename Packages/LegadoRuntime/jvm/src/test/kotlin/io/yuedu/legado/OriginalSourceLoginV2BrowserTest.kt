@@ -50,11 +50,20 @@ class OriginalSourceLoginV2BrowserTest {
             assertEquals("SCRIPT_ERROR",failed["error"].asJsonObject["code"].asString)
             assertTrue(failed["error"].asJsonObject["completedEffects"].asJsonArray.map{it.asString}.contains("sourceBrowserPresented"))
             assertFalse(failed.toString().contains("SYNTHETIC-V2-PRIVATE"))
-            for(script in listOf("java.startBrowser('${peer.origin}/local','Local','<html>x</html>');", "source.startBrowserAwait('${peer.origin}/local','Local',false,'');")) {
+            // The already-accepted script failure above remains an error with
+            // its Presented effect. Explicit local HTML is now a real branch.
+            owned.action("java.startBrowser('${peer.origin}/local','Local','<html>x</html>');")
+            owned.mode="response"
+            owned.action("var r=source.startBrowserAwait('${peer.origin}/local','Local',false,'');if(String(r.body())!=='<html>dom</html>')throw Error('lost DOM');")
+            assertEquals(3,owned.pages.size)
+            assertTrue(owned.pages[1]["prefetchedHTML"].asString.contains("<html>x</html>"))
+            assertTrue(owned.pages.drop(1).all{it.has("localPage")&&it["prefetchedHTML"].asString.isNotEmpty()})
+            assertFalse(owned.pages.last()["refetchAfterSuccess"].asBoolean)
+            for(script in listOf("source.startBrowser('file:///private/synthetic','Not web');")) {
                 val rejected=owned.action(script,success=false)
                 assertEquals("UNSUPPORTED_CAPABILITY",rejected["error"].asJsonObject["code"].asString)
             }
-            assertEquals(1,owned.pages.size);assertTrue(peer.routes.isEmpty());assertEquals(0,owned.credentials)
+            assertEquals(3,owned.pages.size);assertTrue(peer.routes.isEmpty());assertEquals(0,owned.credentials);assertEquals(0,owned.nativeHTTP)
         } }
     }
     @Test(timeout=20_000) fun cancellationDrainsCurrentTaskAndRetainsActualPostFacts() {

@@ -294,7 +294,10 @@ class OriginalAnalyzeRuleTest {
         assertEquals("", rule.evalJS("java.base64Decode('')"))
         val decoded = rule.evalJS("java.base64Decode('-_8=','ISO-8859-1')") as String
         assertEquals(listOf(251, 255), decoded.map { it.code })
-        assertThrows(Exception::class.java) { rule.evalJS("java.base64Decode('aGVsbG8=',0)") }
+        // The no-flags overloads above remain Hutool. The separate Android
+        // flags overload is now implemented; DEFAULT=0 decodes this same text.
+        assertEquals("hello", rule.evalJS("java.base64Decode('aGVsbG8=',0)"))
+        assertThrows(Exception::class.java) { rule.evalJS("java.base64Decode('A',0)") }
     }
 
     @Test fun platformCapabilitiesAreRejectedAndCancelledJobsRemainCancelled(): Unit = RuleEnvironment().use { environment ->

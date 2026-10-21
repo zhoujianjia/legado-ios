@@ -1,0 +1,36 @@
+--- a/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalUrlExecutionTest.kt
++++ b/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalUrlExecutionTest.kt
+@@ -129,7 +129,9 @@
+             Session(peer.origin).use { owned ->
+                 owned.environment.use { environment ->
+                     AnalyzeRule(source = RuleSource(environment, peer.origin, "Owned")).use { rule ->
+-                        listOf("webView", "type", "webJs", "unknown").forEach { option ->
++                        // webView remains denied without its checked source
++                        // owner; type/unknown remain constructor rejections.
++                        listOf("webView", "type", "unknown").forEach { option ->
+                             val url = peer.origin + "/{{1}}, {\"$option\":\"unported\"}"
+                             assertThrows(UnsupportedRuleCapability::class.java) { rule.connect(url) }
+                             assertThrows(UnsupportedRuleCapability::class.java) { rule.ajax(url) }
+@@ -148,6 +150,22 @@
+                     val error = RhinoScriptEngine.eval("try { java.connect(\"@js:'${peer.origin}'\"); 'bypassed' } catch(error) { String(error) }", bindings, owned.task.job).toString()
+                     assertTrue(error, error.contains("Dynamic URL rules are not migrated"))
+                     assertTrue(peer.requests.isEmpty())
++                    val browserCalls=java.util.concurrent.atomic.AtomicInteger()
++                    LegadoRuntime.setHostCallback { _, operation, _ ->
++                        if(operation=="source.webview")browserCalls.incrementAndGet()
++                        error("Unexpected native host: $operation")
++                    }
++                    try {
++                        AnalyzeRule(source = RuleSource(environment, peer.origin, "Owned")).use { rule ->
++                            // webJs alone does not enable option.webView. Both
++                            // public request overloads must retain original HTTP.
++                            val url=peer.origin+"/script-only,{\"webJs\":\"throw Error('must not run')\"}"
++                            assertEquals("unexpected",rule.connect(url).body())
++                            assertEquals("unexpected",rule.ajax(url))
++                        }
++                        assertEquals(listOf("/script-only","/script-only"),peer.requests.map{it.path})
++                        assertEquals(0,browserCalls.get())
++                    } finally {LegadoRuntime.setHostCallback(null)}
+                 }
+             }
+         }

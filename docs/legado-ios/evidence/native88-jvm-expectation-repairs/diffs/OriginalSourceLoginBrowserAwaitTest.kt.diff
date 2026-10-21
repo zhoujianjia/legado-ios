@@ -1,0 +1,24 @@
+--- a/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserAwaitTest.kt
++++ b/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalSourceLoginBrowserAwaitTest.kt
+@@ -54,10 +54,19 @@
+             assertEquals("BROWSER_CANCELLED",cancelled["error"].asJsonObject["code"].asString)
+             assertFalse(cancelled.toString().contains("SYNTHETIC-AWAIT-PRIVATE"))
+             owned.failure=null;val count=owned.pages.size
+-            for(script in listOf("java.startBrowserAwait('https://synthetic-await.invalid/page','HTML',false,'');")){
++            for(script in listOf("java.startBrowserAwait('file:///private/synthetic','Not web',false);")){
+                 assertEquals("UNSUPPORTED_CAPABILITY",owned.call(script,success=false)["error"].asJsonObject["code"].asString)
+             }
+-            assertEquals(count,owned.pages.size);assertEquals(0,owned.credentialCalls);assertEquals(0,owned.httpHostCalls)
++            assertEquals(count,owned.pages.size)
++            // Explicit local HTML now has a same-session page. The false mode
++            // must consume the actual atomic DOM response, without refetch.
++            owned.mode="response";owned.body="<html>local-dom</html>"
++            val html=owned.call("var r=java.startBrowserAwait('https://synthetic-await.invalid/page','HTML',false,'');if(String(r.body())!=='<html>local-dom</html>')throw Error('lost actual DOM');")
++            assertEquals(count+1,owned.pages.size)
++            val page=owned.pages.last();assertTrue(page.has("localPage"));assertTrue(page["prefetchedHTML"].asString.isNotEmpty())
++            assertFalse(page["refetchAfterSuccess"].asBoolean)
++            assertTrue(html["completedEffects"].asJsonArray.any{it.asString=="sourceBrowserCookieCaptureCompleted"})
++            assertEquals(0,owned.credentialCalls);assertEquals(0,owned.httpHostCalls)
+         }
+     }
+     @Test(timeout=20_000) fun taskCancellationBeforeAndAfterCookieCaptureRetainsFactsAndPreventsLaterWrites() {
