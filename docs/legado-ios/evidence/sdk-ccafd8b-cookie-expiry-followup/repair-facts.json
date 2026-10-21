@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "actualFailedSource": "ccafd8b700691403889bc1cf205998bc74552bad",
+  "reviewedCandidate": {
+    "path": ".build/sdk-ccafd8b-cookie-expiry-projection-repair/preparation-v1.json",
+    "bytes": 8016,
+    "sha256": "a6bb244ce3ad4ba7b6541f40bbd49a2e54d02e3ef8c598f97cd7838d260c5a54"
+  },
+  "actualFailedSDKRun": 39591438336,
+  "actualFailure": {
+    "test": "LegadoCookieTextHostTests/responseTextPrecedenceAndNativeMetadataSurviveTheirCorrectLifetimes",
+    "source": "ccafd8b700691403889bc1cf205998bc74552bad",
+    "actualSelectorDefinitions": 479,
+    "actualLeafExecutions": 482,
+    "passedDefinitions": 478,
+    "passedLeaves": 481,
+    "orphanCases": 0,
+    "compilerErrors": 0,
+    "timeout": false,
+    "proof": {
+      "originalExpiresMs": 4071686400000,
+      "expectedReferenceDateBits": "41e70c2710000000",
+      "seedReferenceDateBits": "41c94c1da5000000",
+      "nativeReferenceDateBits": "41c94c1da5000000",
+      "seedMaximumAge": false,
+      "seedCreated": true
+    },
+    "exactDecodedFactsFromRoot": {
+      "originalAbsolute": "2099-01-10T00:00:00Z",
+      "seedAndNativeAbsolute": "2027-11-25T12:10:50Z",
+      "nativeMinus400Days": "2026-10-21T12:10:50Z"
+    },
+    "rawLog": ".build/sdk-ccafd8b-terminal/artifact-12344528413/reader-renewal-probe/currentcore-tests.log",
+    "rawLine": 39029
+  },
+  "changedSources": [
+    {
+      "path": "Modules/Core/RuleEngine/ModernParser/CookiePersistenceOwner.swift",
+      "before": {
+        "path": "Modules/Core/RuleEngine/ModernParser/CookiePersistenceOwner.swift",
+        "bytes": 43599,
+        "sha256": "e3faed0e0b4d22d9463a702c0e1fc76fe9ad4a83ccd300d25744bbf7dab9b08b"
+      },
+      "after": {
+        "path": "Modules/Core/RuleEngine/ModernParser/CookiePersistenceOwner.swift",
+        "bytes": 54391,
+        "sha256": "d411f030cb7dbc05b861be895dd24ad8ba76d87b312455b64c88ae5c64f204b6"
+      }
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "before": {
+        "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 129471,
+        "sha256": "a7351a931474e378cae73af33d1c056c3eb664b072f18f0c773749c8cc765e0e"
+      },
+      "after": {
+        "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+        "bytes": 125576,
+        "sha256": "cb4c74bb7449f5ad9763cde505d8d473b2134cf26f614d52684236e80e5283d5"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoCookieTextHostTests.swift",
+      "before": {
+        "path": "Tests/iOS/yuedu appTests/LegadoCookieTextHostTests.swift",
+        "bytes": 20112,
+        "sha256": "330efdbfa5f5bd356c48dfd9d13fc6fa17cc51012c99bf7261649fe98a712060"
+      },
+      "after": {
+        "path": "Tests/iOS/yuedu appTests/LegadoCookieTextHostTests.swift",
+        "bytes": 26982,
+        "sha256": "f8bb6fec0b8f703d34328df2d49d830a4bda99c960e0b1683f3f245ca4a789d4"
+      }
+    }
+  ],
+  "repair": [
+    "The same CookiePersistenceOwner.Record retains the exact original absolute milliseconds and one stable native precision/cap projection.",
+    "A due projection refresh uses the existing atomic accept, revision and native publication, preserving foreign live state. Cold refresh precedes all native/legacy replay.",
+    "Original requestHeader and rootIndex remain within that same owner and use the original deadline. Request selection preserves the final fractional window with exact RFC encoded-path scope.",
+    "Root reviewed the other bridge boundary: CookieStore forwards to this owner; cookie.owner.read requestHeader returns only String. Original AppCookieOwnerClient text/getCookie retains DB/session semantics; it is not globally redefined as an RFC jar.",
+    "Root reviewed SourceHosts.SessionCookies as the separate existing Java persistence path; it does not export these native Record dates and is unchanged."
+  ],
+  "limits": [
+    "Pinned WebKit precision evidence and the actual failing seed400day cap are distinct evidence. No Created override, clock rebasing, tolerance or session conversion.",
+    "Source review only: candidate SDK, Swift compilation and device execution remain unmeasured. No whole C2 or full compatibility completion."
+  ],
+  "newTestDefinitions": 0,
+  "newHostsOrSelectors": 0,
+  "actualNewSDKExecutions": 0,
+  "temporaryCompatibilityTargetPercent": 90,
+  "measuredCompatibilityPercent": null,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

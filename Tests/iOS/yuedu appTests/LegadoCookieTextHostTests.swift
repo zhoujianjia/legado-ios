@@ -144,7 +144,12 @@ struct LegadoCookieTextHostTests {
         let nativePersistent = try firstRecord.native()
         #expect(nativePersistent.isSecure && nativePersistent.isHTTPOnly && !nativePersistent.isSessionOnly)
         #expect(nativePersistent.domain == ".example.co.uk" && nativePersistent.path == "/private")
-        #expect(nativePersistent.expiresDate == Date(timeIntervalSince1970: Double(expiry) / 1000))
+        #expect(firstRecord.originalExpirationDate == Date(timeIntervalSince1970: Double(expiry) / 1000))
+        let capturedProjection = try #require(firstRecord.expiresAt)
+        #expect(nativePersistent.expiresDate == capturedProjection)
+        #expect(capturedProjection.timeIntervalSince1970.rounded(.down) == capturedProjection.timeIntervalSince1970)
+        #expect(capturedProjection <= Date(timeIntervalSince1970: Double(expiry) / 1000))
+        #expect(capturedProjection > Date())
         let sessionRecord = try #require(accepted.cookies.dropFirst().first)
         let nativeSession = try sessionRecord.native()
         #expect(nativeSession.isSessionOnly && nativeSession.expiresDate == nil)
@@ -171,8 +176,86 @@ struct LegadoCookieTextHostTests {
         let relativeRecord = try #require(afterRelative.cookies.first { $0.originalExpiresAtMs == absolute })
         let relativeNative = try relativeRecord.native()
         #expect(relativeRecord.originalExpiresAtMs == absolute)
-        #expect(relativeNative.expiresDate == Date(timeIntervalSince1970: Double(absolute) / 1000))
+        #expect(relativeRecord.originalExpirationDate == Date(timeIntervalSince1970: Double(absolute) / 1000))
+        #expect(relativeNative.expiresDate == Date(timeIntervalSince1970: Double(absolute / 1000)))
         #expect(relativeNative.isHTTPOnly && relativeNative.isSecure && !relativeNative.isSessionOnly)
+
+        // Synthetic durable input: an old platform projection has expired,
+        // while its unchanged original2099 deadline remains alive. Native
+        // creation uses the real public initializer; no Created/clock is set.
+        var expiredProperties = try #require(nativePersistent.properties)
+        expiredProperties.removeValue(forKey: .maximumAge)
+        expiredProperties[.expires] = Date(timeIntervalSince1970: 1)
+        let expiredNative = try #require(HTTPCookie(properties: expiredProperties))
+        let expiredProjection = try CookiePersistenceOwner.Record(cookie: expiredNative, provenance: .httpResponse,
+            originURL: firstRecord.originURL, hostOnly: firstRecord.hostOnly, originalExpiresAtMs: expiry,
+            originalDomain: firstRecord.originalDomain, originalSetCookieHeader: firstRecord.originalSetCookieHeader)
+        let syntheticFile = f.directory.appendingPathComponent("synthetic-expired-projection.json")
+        let syntheticDocument = CookiePersistenceOwner.Document(legacyHeaders: ["example.co.uk": "sid=persistent"], cookies: [expiredProjection])
+        let syntheticBytes = try JSONEncoder().encode(syntheticDocument)
+        try syntheticBytes.write(to: syntheticFile)
+        let projectionStorage = try #require(URLSessionConfiguration.ephemeral.httpCookieStorage)
+        let projectionGate = CookieTextWriteGate()
+        let projectionOwner = CookieStore(fileURL: syntheticFile, storage: projectionStorage,
+            beforeWrite: { try projectionGate.beforeWrite() })
+        projectionGate.arm(failing: true)
+        do { _ = try await projectionOwner.snapshot(); Issue.record("A failed projection refresh must not publish") }
+        catch let error as CookieOwnerError { #expect(error.code == "STATE_IO") }
+        #expect(try Data(contentsOf: syntheticFile) == syntheticBytes)
+        #expect(projectionStorage.cookies?.isEmpty != false)
+        let refreshed = try await projectionOwner.snapshot()
+        let refreshedRecord = try #require(refreshed.cookies.first)
+        #expect(refreshedRecord.originalExpiresAtMs == expiry)
+        #expect(refreshedRecord.originalExpirationDate == firstRecord.originalExpirationDate)
+        #expect(refreshedRecord.originalSetCookieHeader == firstRecord.originalSetCookieHeader)
+        #expect(refreshedRecord.originalDomain == firstRecord.originalDomain)
+        #expect(refreshedRecord.originURL == firstRecord.originURL && refreshedRecord.hostOnly == firstRecord.hostOnly)
+        #expect(refreshed.legacyHeaders == syntheticDocument.legacyHeaders && refreshed.cookies.count == 1)
+        let refreshedExpiration = try #require(refreshedRecord.expiresAt)
+        #expect(refreshedExpiration > Date())
+        #expect(try refreshedRecord.native().expiresDate == refreshedRecord.expiresAt)
+        let refreshedBytes = try Data(contentsOf: syntheticFile)
+        #expect(refreshedBytes != syntheticBytes)
+        #expect(try JSONDecoder().decode(CookiePersistenceOwner.Document.self, from: refreshedBytes) == refreshed)
+        let publishedProjection = try #require(projectionStorage.cookies?.first { $0.path == "/private" && $0.name == "sid" })
+        #expect(publishedProjection.expiresDate == refreshedExpiration && publishedProjection.value == "persistent")
+        #expect(try await projectionOwner.requestHeader(url: privateURL)?.contains("sid=persistent") == true)
+        projectionGate.arm(failing: true)
+        #expect(try await projectionOwner.snapshot() == refreshed)
+        #expect(try Data(contentsOf: syntheticFile) == refreshedBytes)
+
+        // A real refresh cannot overwrite an independently live native value
+        // sharing the old projection identity. The owner file still retains its
+        // accepted original deadline; this is not an external-jar CAS claim.
+        let foreignFile = f.directory.appendingPathComponent("synthetic-foreign-projection.json")
+        try syntheticBytes.write(to: foreignFile)
+        let foreignStorage = try #require(URLSessionConfiguration.ephemeral.httpCookieStorage)
+        var foreignProperties = try #require(nativePersistent.properties)
+        foreignProperties[.value] = "foreign"
+        let foreign = try #require(HTTPCookie(properties: foreignProperties))
+        foreignStorage.setCookie(foreign)
+        let foreignOwner = CookieStore(fileURL: foreignFile, storage: foreignStorage)
+        let foreignAccepted = try await foreignOwner.snapshot()
+        #expect(foreignAccepted.cookies.first?.originalExpiresAtMs == expiry)
+        #expect(foreignAccepted.cookies.first?.originalExpirationDate == firstRecord.originalExpirationDate)
+        let preservedForeign = try #require(foreignStorage.cookies?.first { $0.path == "/private" && $0.name == "sid" })
+        #expect(preservedForeign.value == "foreign" && preservedForeign.expiresDate == foreign.expiresDate)
+        #expect(try await foreignOwner.requestHeader(url: privateURL)?.contains("sid=foreign") == true)
+
+        // A pure selection fixture exercises the final fractional window and
+        // exact expiry boundary without advancing/injecting a platform clock.
+        let fractionalMs = expiry + 250
+        let fractionalRecord = try CookiePersistenceOwner.Record(cookie: expiredNative, provenance: .httpResponse,
+            originURL: firstRecord.originURL, hostOnly: firstRecord.hostOnly, originalExpiresAtMs: fractionalMs,
+            originalDomain: firstRecord.originalDomain, originalSetCookieHeader: firstRecord.originalSetCookieHeader)
+        let inside = Date(timeIntervalSince1970: Double(expiry) / 1000 + 0.125)
+        let deadline = Date(timeIntervalSince1970: Double(fractionalMs) / 1000)
+        let tail = try CookiePersistenceOwner.requestCookies([fractionalRecord], native: [], url: privateURL, at: inside)
+        #expect(HTTPCookie.requestHeaderFields(with: tail)["Cookie"] == "sid=persistent")
+        #expect(try CookiePersistenceOwner.requestCookies([fractionalRecord], native: [], url: privateURL, at: deadline).isEmpty)
+        #expect(try CookiePersistenceOwner.requestCookies([fractionalRecord], native: [], url: publicHTTP, at: inside).isEmpty)
+        let encodedPath = try #require(URL(string: "https://reader.example.co.uk/private%2Fchapter"))
+        #expect(try CookiePersistenceOwner.requestCookies([fractionalRecord], native: [], url: encodedPath, at: inside).isEmpty)
         try await f.cookies.clearAllOwned()
         #expect(try await result(f, action: "get").isEmpty)
     }

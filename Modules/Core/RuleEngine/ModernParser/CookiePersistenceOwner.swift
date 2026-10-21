@@ -110,6 +110,70 @@ actor CookiePersistenceOwner {
             return cookie
         }
 
+        /// OkHttp's absolute millisecond deadline remains the authority. The
+        /// captured Foundation projection can expire earlier (precision/cap).
+        var originalExpirationDate: Date? {
+            guard provenance == .httpResponse, expiresAt != nil, originURL != nil, hostOnly != nil,
+                  originalDomain != nil, originalSetCookieHeader != nil, let value = originalExpiresAtMs else { return nil }
+            return value == Int64.min ? Date(timeIntervalSince1970: 0)
+                : Date(timeIntervalSince1970: Double(value) / 1000)
+        }
+
+        var expirationDate: Date? { originalExpirationDate ?? expiresAt }
+
+        static func nativeExpirationDate(forOriginalMilliseconds value: Int64) -> Date {
+            let absolute = value == Int64.min ? Int64(0) : value
+            var seconds = absolute / 1000
+            if absolute < 0 && absolute % 1000 != 0 { seconds -= 1 }
+            return Date(timeIntervalSince1970: Double(seconds))
+        }
+
+        /// Use the public parser's actual property representation (HttpOnly
+        /// included). Never invent/override Created or replay relative Max-Age.
+        static func originalProjection(name: String, value: String, domain: String, path: String,
+                                       raw: String, originURL: URL, hostOnly: Bool, persistent: Bool,
+                                       expiresAtMs: Int64, secure: Bool, httpOnly: Bool) throws -> HTTPCookie {
+            let parsed = HTTPCookie.cookies(withResponseHeaderFields: ["Set-Cookie": raw], for: originURL)
+            guard parsed.count == 1, let seed = parsed.first, var properties = seed.properties else {
+                throw CookieOwnerError(code: "UNSUPPORTED_CAPABILITY", message: "Parsed original Cookie cannot be represented by the existing native owner [responseParser]")
+            }
+            let nativeDomain = hostOnly ? domain : "." + domain
+            properties[.name] = name; properties[.value] = value
+            properties[.domain] = nativeDomain; properties[.path] = path; properties[.originURL] = originURL
+            properties.removeValue(forKey: .maximumAge)
+            properties[.version] = "0"
+            if persistent { properties.removeValue(forKey: .discard) }
+            else { properties[.discard] = NSNumber(value: true) }
+            // CFNetwork exposes whole seconds. Keep the original milliseconds
+            // in this same Record, never in an invented native/Created clock.
+            let projected = nativeExpirationDate(forOriginalMilliseconds: expiresAtMs)
+            if persistent { properties[.expires] = projected }
+            else { properties.removeValue(forKey: .expires) }
+            guard let native = HTTPCookie(properties: properties) else {
+                throw CookieOwnerError(code: "UNSUPPORTED_CAPABILITY", message: "Parsed original Cookie cannot be represented by the existing native owner [construction]")
+            }
+            var mismatches: [String] = []
+            if !native.name.utf8.elementsEqual(name.utf8) { mismatches.append("name") }
+            if !native.value.utf8.elementsEqual(value.utf8) { mismatches.append("value") }
+            if !native.domain.utf8.elementsEqual(nativeDomain.utf8) { mismatches.append("domain") }
+            if !native.path.utf8.elementsEqual(path.utf8) { mismatches.append("path") }
+            if native.isSecure != secure { mismatches.append("secure") }
+            if native.isHTTPOnly != httpOnly { mismatches.append("httpOnly") }
+            if native.isSessionOnly != !persistent { mismatches.append("session") }
+            let expiryMatches: Bool
+            if persistent, let actual = native.expiresDate {
+                // Both branches are exact. A platform cap must be this public
+                // parser's actual future projection, never an arbitrary earlier
+                // date. Deletion sentinels use the exact projected date branch.
+                expiryMatches = actual == projected || (actual == seed.expiresDate && actual < projected && actual > Date())
+            } else { expiryMatches = !persistent && native.expiresDate == nil }
+            if !expiryMatches { mismatches.append("expiry") }
+            guard mismatches.isEmpty else {
+                throw CookieOwnerError(code: "UNSUPPORTED_CAPABILITY", message: "Parsed original Cookie cannot be represented by the existing native owner [\(mismatches.joined(separator: ","))] originalExpiresMs=\(expiresAtMs)")
+            }
+            return native
+        }
+
         static func == (lhs: Record, rhs: Record) -> Bool {
             func same(_ a: String?, _ b: String?) -> Bool {
                 switch (a, b) {
@@ -183,8 +247,39 @@ actor CookiePersistenceOwner {
     func snapshot() throws -> Document { try loaded() }
 
     func requestHeader(url: URL) throws -> String? {
-        let visible = try nativeCookies(url: url)
+        let current = try loaded()
+        let visible = try Self.requestCookies(current.cookies, native: nativeCookies(url: url), url: url, at: Date())
         return visible.isEmpty ? nil : HTTPCookie.requestHeaderFields(with: visible)["Cookie"]
+    }
+
+    /// Pure request selection. Its date argument never affects Foundation's
+    /// parser/initializer clock or creates a native Cookie property.
+    static func requestCookies(_ records: [Record], native: [HTTPCookie], url: URL, at now: Date) throws -> [HTTPCookie] {
+        var values: [String: HTTPCookie] = [:], order: [String] = []
+        var ordered = Set<String>()
+        for cookie in native {
+            let key = Self.identity(cookie)
+            if ordered.insert(key).inserted { order.append(key) }
+            values[key] = cookie
+        }
+        // The native jar can drop a floored date during the original deadline's
+        // final fraction of a second. This same accepted file remains the only
+        // authority; never extend its exact original deadline to match the jar.
+        for record in records where record.originalExpirationDate != nil {
+            let native = try record.native()
+            let key = Self.identity(native)
+            if let live = values[key], !sameNativeCookie(live, native) {
+                // Existing foreign native mutations have no owner CAS proof.
+                // Preserve that live value rather than overwriting it here.
+                continue
+            }
+            values.removeValue(forKey: key)
+            guard let expiry = record.originalExpirationDate, expiry > now,
+                  Self.matches(native, hostOnly: record.hostOnly == true, url: url) else { continue }
+            if ordered.insert(key).inserted { order.append(key) }
+            values[key] = native
+        }
+        return order.compactMap { values[$0] }
     }
 
     func nativeCookies(url: URL) throws -> [HTTPCookie] {
@@ -194,10 +289,10 @@ actor CookiePersistenceOwner {
         let live = Set((storage.cookies ?? []).map(Self.identity))
         let native = try current.cookies.map { try $0.native() }
         let rich = Set(native.map(Self.identity))
-        let roots = Self.rootIndex(native)
-        let legacy = current.legacyHeaders.flatMap { domain, raw -> [HTTPCookie] in
+        let roots = try Self.rootIndex(current.cookies)
+        let legacy = try current.legacyHeaders.flatMap { domain, raw -> [HTTPCookie] in
             guard let target = URL(string: "https://" + domain) else { return [] }
-            let raw = Self.legacyHeader(raw, roots: roots[Self.stripped(domain)] ?? [])
+            let raw = try Self.legacyHeader(raw, roots: roots[Self.stripped(domain)] ?? [])
             return CookieStore.makeCookies(raw, for: target).filter { !rich.contains(Self.identity($0)) }
         }
         for cookie in native + legacy where !live.contains(Self.identity(cookie)) {
@@ -220,10 +315,11 @@ actor CookiePersistenceOwner {
             if !collected.isEmpty { return collected.map { "\($0.key)=\($0.value)" }.joined(separator: "; ") }
         }
         let domain = Self.domain(url)
-        let roots = try current.cookies.map { try $0.native() }.filter {
-            $0.path == "/" && Self.stripped($0.domain) == Self.stripped(domain)
+        let roots = try current.cookies.filter {
+            let cookie = try $0.native()
+            return cookie.path == "/" && Self.stripped(cookie.domain) == Self.stripped(domain)
         }
-        return Self.legacyHeader(Self.originalRawText(current, domain: domain), roots: roots)
+        return try Self.legacyHeader(Self.originalRawText(current, domain: domain), roots: roots)
     }
 
     /// The original App-process CacheManager projection uses its exact keys in
@@ -616,7 +712,7 @@ actor CookiePersistenceOwner {
 
     private func loaded() throws -> Document {
         try Task.checkCancellation()
-        if let document { return document }
+        if let document { return try refreshOriginalProjections(document) }
         let next: Document = try SourcePerfTrace.span("cookie.owner.load", "main=\(Thread.isMainThread)") {
             guard let data = try Self.readFile(fileURL) else { return Document() }
             do {
@@ -637,21 +733,73 @@ actor CookiePersistenceOwner {
             } catch let error as CookieOwnerError { throw error }
             catch { throw CookieOwnerError(code: "STATE_IO", message: "Cookie file is corrupt") }
         }
+        // A due refresh must commit before *any* cold native/legacy replay.
+        // Failed replacement leaves both the old file and native jar untouched.
+        let accepted = try refreshOriginalProjections(next)
         // Validate all persisted records before publishing any replayed value.
-        let native = try next.cookies.map { try $0.native() }
+        let native = try accepted.cookies.map { try $0.native() }
         let identities = Set(native.map(Self.identity))
-        let roots = Self.rootIndex(native)
-        let legacy = next.legacyHeaders.flatMap { domain, raw -> [HTTPCookie] in
+        let roots = try Self.rootIndex(accepted.cookies)
+        let legacy = try accepted.legacyHeaders.flatMap { domain, raw -> [HTTPCookie] in
             guard let url = URL(string: "https://" + domain) else { return [] }
-            let raw = Self.legacyHeader(raw, roots: roots[Self.stripped(domain)] ?? [])
+            let raw = try Self.legacyHeader(raw, roots: roots[Self.stripped(domain)] ?? [])
             return CookieStore.makeCookies(raw, for: url).filter { !identities.contains(Self.identity($0)) }
         }
         let liveIdentities = Set((storage.cookies ?? []).map(Self.identity))
         for cookie in native + legacy where !liveIdentities.contains(Self.identity(cookie)) {
             if cookie.expiresDate.map({ $0 > Date() }) ?? true { storage.setCookie(cookie) }
         }
-        document = next
-        return next
+        document = accepted
+        return accepted
+    }
+
+    /// Only expired native projections of still-live original responses refresh.
+    /// Stable warm reads never parse/rewrite them or move WK comparison dates.
+    private func refreshOriginalProjections(_ current: Document) throws -> Document {
+        let now = Date()
+        let due = current.cookies.indices.filter { index in
+            let record = current.cookies[index]
+            guard let original = record.originalExpiresAtMs, let captured = record.expiresAt,
+                  Record.nativeExpirationDate(forOriginalMilliseconds: original) > captured else { return false }
+            return record.originalExpirationDate.map { $0 > now } == true
+                && captured <= now
+        }
+        guard !due.isEmpty else { return current }
+        return try SourcePerfTrace.span("cookie.owner.refresh-projections",
+            "cookies=\(due.count) main=\(Thread.isMainThread)") {
+            var next = current
+            var changed: [(prior: HTTPCookie, next: HTTPCookie)] = []
+            for index in due {
+                try Task.checkCancellation()
+                let record = current.cookies[index]
+                guard let raw = record.originalSetCookieHeader, let origin = record.originURL,
+                      let domain = record.originalDomain, let hostOnly = record.hostOnly,
+                      let originalExpiry = record.originalExpiresAtMs else {
+                    throw CookieOwnerError(code: "STATE_IO", message: "Original Cookie projection provenance is incomplete")
+                }
+                let prior = try record.native()
+                let native = try Record.originalProjection(name: prior.name, value: prior.value, domain: domain,
+                    path: prior.path, raw: raw, originURL: origin, hostOnly: hostOnly, persistent: true,
+                    expiresAtMs: originalExpiry, secure: prior.isSecure, httpOnly: prior.isHTTPOnly)
+                // A final subsecond tail has no later native representation.
+                // requestHeader still uses the original absolute deadline.
+                guard let expiry = native.expiresDate, let oldExpiry = record.expiresAt, expiry > oldExpiry else { continue }
+                next.cookies[index] = try Record(cookie: native, provenance: record.provenance,
+                    originURL: origin, hostOnly: hostOnly, originalExpiresAtMs: originalExpiry,
+                    originalDomain: domain, originalSetCookieHeader: raw)
+                changed.append((prior: prior, next: native))
+            }
+            guard !changed.isEmpty else { return current }
+            try accept(next) {
+                var live: [String: HTTPCookie] = [:]
+                for cookie in self.storage.cookies ?? [] { live[Self.identity(cookie)] = cookie }
+                for change in changed {
+                    if let actual = live[Self.identity(change.prior)], !Self.sameNativeCookie(actual, change.prior) { continue }
+                    self.storage.setCookie(change.next)
+                }
+            }
+            return next
+        }
     }
 
     /// Read the existing owner file once. Cocoa's broad "no such file" error can
@@ -710,16 +858,22 @@ actor CookiePersistenceOwner {
     /// has no independent expiry proof and cannot revive that same domain/name.
     /// A bare-domain JS lookup still receives the current live root value. Leave
     /// v1-only names and other domains/paths untouched.
-    private static func rootIndex(_ cookies: [HTTPCookie]) -> [String: [HTTPCookie]] {
-        Dictionary(grouping: cookies.filter { $0.path == "/" }, by: { stripped($0.domain) })
+    private static func rootIndex(_ records: [Record]) throws -> [String: [Record]] {
+        var roots: [String: [Record]] = [:]
+        for record in records {
+            let cookie = try record.native()
+            if cookie.path == "/" { roots[stripped(cookie.domain), default: []].append(record) }
+        }
+        return roots
     }
 
-    private static func legacyHeader(_ raw: String, roots: [HTTPCookie]) -> String {
+    private static func legacyHeader(_ raw: String, roots: [Record]) throws -> String {
         var remaining = raw
         let now = Date()
-        for cookie in roots {
+        for record in roots {
+            let cookie = try record.native()
             remaining = CookieStore.removingCookie(named: cookie.name, from: remaining)
-            if cookie.expiresDate.map({ $0 > now }) ?? true {
+            if record.expirationDate.map({ $0 > now }) ?? true {
                 remaining = CookieStore.merge(existing: remaining, incoming: "\(cookie.name)=\(cookie.value)")
             }
         }
@@ -773,6 +927,10 @@ actor CookiePersistenceOwner {
 
     private static func sameCookie(_ lhs: Record, _ rhs: Record) throws -> Bool {
         let a = try lhs.native(), b = try rhs.native()
+        return sameNativeCookie(a, b)
+    }
+
+    private static func sameNativeCookie(_ a: HTTPCookie, _ b: HTTPCookie) -> Bool {
         return a.name == b.name && a.value == b.value && a.domain == b.domain && a.path == b.path
             && a.isSecure == b.isSecure && a.isHTTPOnly == b.isHTTPOnly && a.expiresDate == b.expiresDate
             && a.version == b.version && a.isSessionOnly == b.isSessionOnly && a.portList == b.portList
@@ -782,6 +940,15 @@ actor CookiePersistenceOwner {
     private static func identity(_ cookie: HTTPCookie) -> String {
         // Cookie components cannot contain NUL; do not collapse two paths/names.
         cookie.domain.lowercased() + "\u{0}" + cookie.path + "\u{0}" + cookie.name
+    }
+    private static func matches(_ cookie: HTTPCookie, hostOnly: Bool, url: URL) -> Bool {
+        guard let host = url.host?.lowercased(), let scheme = url.scheme?.lowercased(), ["http", "https"].contains(scheme) else { return false }
+        let domain = stripped(cookie.domain)
+        guard host == domain || (!hostOnly && host.hasSuffix("." + domain)), !cookie.isSecure || scheme == "https" else { return false }
+        guard let encoded = URLComponents(url: url, resolvingAgainstBaseURL: false)?.percentEncodedPath else { return false }
+        let path = Array((encoded.isEmpty ? "/" : encoded).utf8), expected = Array(cookie.path.utf8)
+        return path == expected || (path.starts(with: expected)
+            && (expected.last == 47 || path.dropFirst(expected.count).first == 47))
     }
     private static func stripped(_ domain: String) -> String {
         (domain.hasPrefix(".") ? String(domain.dropFirst()) : domain).lowercased()
