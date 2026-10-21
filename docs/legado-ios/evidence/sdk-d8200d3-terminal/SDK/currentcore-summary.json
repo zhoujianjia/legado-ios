@@ -1,0 +1,193 @@
+{
+  "devicesAndConfigurations" : [
+    {
+      "device" : {
+        "architecture" : "arm64",
+        "deviceId" : "4C675116-265D-488F-BFFA-836A4545674C",
+        "deviceName" : "iPhone 17 Pro Max",
+        "modelName" : "iPhone 17 Pro Max",
+        "osBuildNumber" : "23C54",
+        "osVersion" : "26.2",
+        "platform" : "iOS Simulator"
+      },
+      "expectedFailures" : 0,
+      "failedTests" : 17,
+      "passedTests" : 466,
+      "skippedTests" : 0,
+      "testPlanConfiguration" : {
+        "configurationId" : "1",
+        "configurationName" : "Test Scheme Action"
+      }
+    }
+  ],
+  "environmentDescription" : "Yuedu-Reader · Built with macOS 15.7.9",
+  "expectedFailures" : 0,
+  "failedTests" : 17,
+  "finishTime" : 1792560618.093,
+  "passedTests" : 463,
+  "result" : "Failed",
+  "skippedTests" : 0,
+  "startTime" : 1792557383.996,
+  "statistics" : [
+    {
+      "subtitle" : "6 test runs",
+      "title" : "3 tests ran with dynamic parameters"
+    }
+  ],
+  "testFailures" : [
+    {
+      "failureText" : "Caught error: Interrupted(underlying: yuedu_app.SelfRenewalAuthenticatedInstallationClient.OperationFailure(stage: yuedu_app.SelfRenewalAuthenticatedInstallationClient.Stage.upload, underlying: yuedu_app.BookSourcePersistenceFailure.writeFailed(yuedu_app.BookSourcePersistenceFailure.WriteStage.replace, Error Domain=NSPOSIXErrorDomain Code=21 \"Is a directory\"), ownedRemoteStagingPath: Optional(\"PublicStaging/reader-renewal-77777586-28f9-401b-a792-d1fff3a50170.ipa\"), remoteStagingRemovalVerified: true, remoteCreationAttempted: true, cleanupAttempted: true, cleanupErrors: []), persistedIntent: nil, persistedUpload: Optional(yuedu_app.SelfRenewalTransactionJournal.Snapshot(record: yuedu_app.SelfRenewalTransactionJournal.Record(schema: 1, id: E0EFF597-133B-43CD-B86D-40AB44449A54, revision: 3, createdAt: 2026-10-21 00:00:00 +0000, updatedAt: 2026-10-21 00:00:00 +0000, materialNamespace: E97731B0-A929-403D-A2BB-645E0E5F1167, materialGeneration: 3, originalArchiveSHA256: 32 bytes, identitySHA256: 32 bytes, bundleIdentifier: \"test.owned.reader\", bundleVersion: \"12\", preparationProcessID: Optional(3282428F-00A3-47C5-A1AA-DBC77880E068), phase: yuedu_app.SelfRenewalTransactionJournal.Phase.uploadIntent, candidate: Optional(yuedu_app.SelfRenewalTransactionJournal.Candidate(byteCount: 102246, sha256: 32 bytes)), submission: Optional(yuedu_app.SelfRenewalTransactionJournal.Submission(remotePackagePath: \"PublicStaging/reader-renewal-77777586-28f9-401b-a792-d1fff3a50170.ipa\", deviceCertificateSHA256: 32 bytes)), lookupReportedSameVersion: nil, installedMaterial: nil, userDataHandoff: nil, userDataRead: nil, safePreSubmissionCleanup: nil, reportedCompleteCleanup: nil, retirement: nil, previousRetirement: nil, remoteHistory: Optional(yuedu_app.SelfRenewalTransactionJournal.RemoteHistory.started)), encodedSHA256: 32 bytes, owner: 632FB29F-37DA-4270-A828-A685EB29E0B7)), journalUpdateError: nil)",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 463,
+      "testIdentifierString" : "SelfRenewalUserDataHandoffTests/actualSourceWriteFailurePreventsUpgradeAndKeepsPendingOwnership()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalUserDataHandoffTests/actualSourceWriteFailurePreventsUpgradeAndKeepsPendingOwnership()",
+      "testName" : "real source replacement failure leaves the remote upload owned and sends zero Upgrade frames"
+    },
+    {
+      "failureText" : "Caught error: EnrollmentFailure(underlying: yuedu_app.SelfRenewalSigningMaterialVault.Failure.invalidProfiles, remoteCertificateMayHaveBeenIssued: false, remoteProfilesMayHaveBeenRefreshed: true, remoteRegistrationMayHaveChanged: true, acceptedRegistrationMutations: [\"app.groups.assign\", \"app.groups.assign\", \"app.groups.assign\"])",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 305,
+      "testIdentifierString" : "SelfRenewalDeveloperAccountClientTests/appSessionChecksDurableRetirementBeforeAcceptingNewMaterialGeneration()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalDeveloperAccountClientTests/appSessionChecksDurableRetirementBeforeAcceptingNewMaterialGeneration()",
+      "testName" : "retired prior preparation permits newer material generation only while its actual candidate remains absent"
+    },
+    {
+      "failureText" : "Caught error: .reconciliationRequired",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 310,
+      "testIdentifierString" : "SelfRenewalDeveloperAccountClientTests/appSessionReconcilesExpiredEnrollmentAndRetainsLogoutDenial()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalDeveloperAccountClientTests/appSessionReconcilesExpiredEnrollmentAndRetainsLogoutDenial()",
+      "testName" : "expired App reopens its exact unknown CSR intent without a second issue and failed logout remains denied"
+    },
+    {
+      "failureText" : "Caught error: .reconciliationRequired",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 308,
+      "testIdentifierString" : "SelfRenewalDeveloperAccountClientTests/appSessionReconcilesLostCSRAcknowledgementWithoutAnotherIssue()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalDeveloperAccountClientTests/appSessionReconcilesLostCSRAcknowledgementWithoutAnotherIssue()",
+      "testName" : "reopened App session recovers one lost CSR ACK through its same namespace key and preserves owned data bytes"
+    },
+    {
+      "failureText" : "Caught error: EnrollmentFailure(underlying: yuedu_app.SelfRenewalSigningMaterialVault.Failure.invalidProfiles, remoteCertificateMayHaveBeenIssued: false, remoteProfilesMayHaveBeenRefreshed: true, remoteRegistrationMayHaveChanged: true, acceptedRegistrationMutations: [\"app.groups.assign\", \"app.groups.assign\", \"app.groups.assign\"])",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 304,
+      "testIdentifierString" : "SelfRenewalDeveloperAccountClientTests/appSessionRefreshesTheActualPublishedKeyAndReopensIt()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalDeveloperAccountClientTests/appSessionRefreshesTheActualPublishedKeyAndReopensIt()",
+      "testName" : "App session renews its actual published key and reopens the same credential and material namespace"
+    },
+    {
+      "failureText" : "Caught error: EnrollmentFailure(underlying: yuedu_app.SelfRenewalSigningMaterialVault.Failure.invalidProfiles, remoteCertificateMayHaveBeenIssued: false, remoteProfilesMayHaveBeenRefreshed: true, remoteRegistrationMayHaveChanged: true, acceptedRegistrationMutations: [\"app.groups.assign\", \"app.groups.assign\", \"app.groups.assign\"])",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 307,
+      "testIdentifierString" : "SelfRenewalDeveloperAccountClientTests/appSessionSerializesHeldEnrollmentAndPreservesCancelledRemoteIntent()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalDeveloperAccountClientTests/appSessionSerializesHeldEnrollmentAndPreservesCancelledRemoteIntent()",
+      "testName" : "one App operation owns the actual held CSR and cancellation preserves pending intent without a second issue"
+    },
+    {
+      "failureText" : "Expectation failed: (status.0?.phase == .receiptObserved → false) && (status.0?.state == .recoveryRequired → <not evaluated>)",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 480,
+      "testIdentifierString" : "Issues recorded without an associated test or suite",
+      "testName" : "Issues recorded without an associated test or suite"
+    },
+    {
+      "failureText" : "Caught error: .dataCorrupted(Swift.DecodingError.Context(codingPath: [], debugDescription: \"The given data was not valid JSON.\", underlyingError: Optional(Error Domain=NSCocoaErrorDomain Code=3840 \"Unexpected character 'o' around line 1, column 3.\" UserInfo={NSDebugDescription=Unexpected character 'o' around line 1, column 3., NSJSONSerializationErrorIndex=2})))",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 437,
+      "testIdentifierString" : "SelfRenewalSigningMaterialVaultTests/observesPublicationBaselineWithoutGrantingMaterialAuthority()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalSigningMaterialVaultTests/observesPublicationBaselineWithoutGrantingMaterialAuthority()",
+      "testName" : "publication metadata nil means genuinely absent while stale corrupt cancelled and locked reads remain errors"
+    },
+    {
+      "failureText" : "Caught error: LegadoRuntimeError(code: \"UNSUPPORTED_CAPABILITY\", message: \"Parsed original Cookie cannot be represented by the existing native owner [session,expiry]\", completedEffects: nil, loginUIEvents: nil, secondaryFailures: nil)",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 141,
+      "testIdentifierString" : "LegadoCookieTextHostTests/originalRawExpiryAndRandomPruningBoundaryRemainExplicit()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoCookieTextHostTests/originalRawExpiryAndRandomPruningBoundaryRemainExplicit()",
+      "testName" : "original DB strings keep their original expiry semantics while native RFC headers suppress known expired records"
+    },
+    {
+      "failureText" : "Caught error: .endOfStream",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 259,
+      "testIdentifierString" : "SelfRenewalAutomaticRenewalTests/performsFullActualAutomaticRenewalAndNeverRepostsAReceipt()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalAutomaticRenewalTests/performsFullActualAutomaticRenewalAndNeverRepostsAReceipt()",
+      "testName" : "one due trigger captures current Bundle, really signs, persists and sends exact candidate with all three owners"
+    },
+    {
+      "failureText" : "Expectation failed: (storedBook[\"bookURL\"] as? String → nil) == (book.bookUrl → \"https://preview-owned.invalid/book\")",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 196,
+      "testIdentifierString" : "LegadoPreviewStateOwnerTests/preUpdateFailureAndCancellationKeepOldContextUsable()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoPreviewStateOwnerTests/preUpdateFailureAndCancellationKeepOldContextUsable()",
+      "testName" : "Failed or cancelled migrated TOC retains old URL/context and accepted per-URL writes without pretending rollback"
+    },
+    {
+      "failureText" : "Caught error: LegadoRuntimeError(code: \"INVALID_RESULT\", message: \"Original variables require a JSON String map\", completedEffects: nil, loginUIEvents: nil, secondaryFailures: nil)",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 193,
+      "testIdentifierString" : "LegadoPreviewStateOwnerTests/preUpdateIdentityGrantRequiresTaskTOCAndOptIn()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoPreviewStateOwnerTests/preUpdateIdentityGrantRequiresTaskTOCAndOptIn()",
+      "testName" : "Only opted-in TOC owns task-local URL refresh; details, content, missing owner and wrong task do not"
+    },
+    {
+      "failureText" : "Expectation failed: (request → https://owned-fixture.invalid/v3/get_headers).httpBody → nil → nil",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 229,
+      "testIdentifierString" : "SelfRenewalAnisetteV3ProviderTests/realTransportSeparatesProviderAndAppleRequests()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalAnisetteV3ProviderTests/realTransportSeparatesProviderAndAppleRequests()",
+      "testName" : "actual shared URLSession constructs only provider fields and account surface refuses a provider URL"
+    },
+    {
+      "failureText" : "Caught error: LegadoRuntimeError(code: \"UNSUPPORTED_CAPABILITY\", message: \"Parsed original Cookie cannot be represented by the existing native owner [session,expiry]\", completedEffects: nil, loginUIEvents: nil, secondaryFailures: nil)",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 140,
+      "testIdentifierString" : "LegadoCookieTextHostTests/responseTextPrecedenceAndNativeMetadataSurviveTheirCorrectLifetimes()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoCookieTextHostTests/responseTextPrecedenceAndNativeMetadataSurviveTheirCorrectLifetimes()",
+      "testName" : "response text uses last-name update across path/subdomain while rich RFC attributes and DB/session restart lifetimes stay distinct"
+    },
+    {
+      "failureText" : "Caught error: .digestMismatch(\"Frameworks/OwnedFramework.framework/OwnedFramework\")",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 291,
+      "testIdentifierString" : "SelfRenewalControlledPackageSignerTests/signsSDKProducedMainExtensionsAndFrameworkInSameJob()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/SelfRenewalControlledPackageSignerTests/signsSDKProducedMainExtensionsAndFrameworkInSameJob()",
+      "testName" : "actual same-job xcrun main extensions and framework retain their referenced offsets"
+    },
+    {
+      "failureText" : "Test exceeded execution time allowance of 1 minute",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 134,
+      "testIdentifierString" : "LegadoCookieOwnerTests/staleWebViewCookieDecisionCannotEndReusedLease()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/LegadoCookieOwnerTests/staleWebViewCookieDecisionCannotEndReusedLease()",
+      "testName" : "a late Cookie response success or failure cannot stop the next real pooled WebView lease"
+    },
+    {
+      "failureText" : "Expectation failed: (tallerView.debugStringIndex(at:\n                CGPoint(x: tallerRect.midX, y: tallerRect.midY)) → 1) == 0",
+      "targetName" : "yuedu appTests",
+      "testIdentifier" : 82,
+      "testIdentifierString" : "CoreTextPagedScrollAppearanceTests/tallerPagePreservesGlyphPixelsAndSelection()",
+      "testIdentifierURL" : "test://com.apple.xcode/Yuedu-Reader/yuedu%20appTests/CoreTextPagedScrollAppearanceTests/tallerPagePreservesGlyphPixelsAndSelection()",
+      "testName" : "a taller destination preserves actual CJK and Latin glyph pixels and hit geometry"
+    }
+  ],
+  "title" : "Test - Yuedu-Reader",
+  "topInsights" : [
+    {
+      "category" : "Common Failures",
+      "impact" : "5% of failures",
+      "text" : "4 runs of 1 test failed with Expectation failed: (attributes[kSecAttrApplicationTag as String] → nil) as? (Data → Optional<Any>)"
+    },
+    {
+      "category" : "Common Failures",
+      "impact" : "17% of failures",
+      "text" : "3 runs of 3 tests failed with Caught error: EnrollmentFailure(underlying: yuedu_app.SelfRenewalSigningMaterialVault.Failure.invalidProfiles, remoteCertificateMayHaveBeenIssued: false, remoteProfilesMayHaveBeenRefreshed: true, remoteRegistrationMayHaveChanged: true, acceptedRegistrationMutations: [\"app.groups.assign\", \"app.groups.assign\", \"app.groups.assign\"])"
+    },
+    {
+      "category" : "Common Failures",
+      "impact" : "5% of failures",
+      "text" : "2 runs of 1 test failed with Issue recorded: Lost ACK became a publication"
+    }
+  ],
+  "totalTestCount" : 480
+}

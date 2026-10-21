@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "status": "source/archive approved",
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "parent": {
+    "path": ".build/sdk-d8200d3-terminal-archive-candidate/final-v1.json",
+    "bytes": 14415,
+    "sha256": "1e28c4cd0457d1edd4cf3ab981bc49322f2ce50b198f57d6a56ae46b5fc2565b"
+  },
+  "scope": "Independent read-only review of the59-file public SDK d820 terminal archive candidate against existing local raw artifacts and historical Git source",
+  "facts": {
+    "publicFiles": 59,
+    "normalizedRawMappings": 48,
+    "historicalGitInputs": 418,
+    "AppDefinitions": 479,
+    "AppLeaves": 482,
+    "leafPassed": 466,
+    "leafFailed": 16,
+    "unassociatedFailedCases": 1,
+    "unassociatedLocations": 20,
+    "unassociatedOccurrences": 43,
+    "BoolRunsPassed": 6,
+    "xcodebuildExit": 65,
+    "timedOut": false,
+    "PackagePassed": 24,
+    "PackageInputs": 23,
+    "producerCommands": 48,
+    "producerOutputs": 43,
+    "producerMachOs": 4,
+    "phases": 11
+  },
+  "reviewedBoundaries": [
+    "All public paths/hash/UTF8/noNUL and48 raw normalization mappings",
+    "Raw test tree retained exact cases/arguments/results; credential-bearing debug nodes only omitted",
+    "Actual failures/orphan source locations preserved; no passing result inferred from broken strict cases/export gates",
+    "Historical d820 source exact418 blobs via one read-only Git batch; per-phase source snapshots equal",
+    "Package XML exact24 identities plus existing raw verbose/result; separate source-only scope",
+    "Producer commands/output bytes and private argv redaction exact; producer success does not override actual production signer digestMismatch",
+    "Overlay metadata bound as raw phase source provenance; this review does not inspect the departed Mac worktree after cleanup",
+    "No public private keys/embedded binaries/signed download URLs/raw controlled credential values"
+  ],
+  "privacyScan": {
+    "private_key_pem": false,
+    "embedded_large_base64": false,
+    "signed_url_query": false,
+    "credential_value_json": false,
+    "controlled_token_debug_value": false
+  },
+  "checkCount": 812,
+  "actualReviewExecution": {
+    "tests": 0,
+    "compiler": 0,
+    "SDK": 0,
+    "downloads": 0,
+    "cloudQueries": 0,
+    "GitMutations": 0,
+    "canonicalMutations": 0
+  },
+  "limits": [
+    "No test suite or author script was rerun. Existing ZIP bytes/ledgers were hashed without another download.",
+    "The historical SDK run failed. Candidate fixes and later C2/Native sources do not inherit a pass.",
+    "Public projection excludes raw xcresult binaries/large App logs/embedded fixture IPA/private credentials; their original hashes remain ignored."
+  ]
+}

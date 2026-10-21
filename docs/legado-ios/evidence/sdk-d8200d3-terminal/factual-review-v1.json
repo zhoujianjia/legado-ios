@@ -1,0 +1,279 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "d8200d32f881e1b09399110905d43545cfd0c9f9",
+  "runID": 39543888037,
+  "jobID": 119037580780,
+  "terminal": "failure",
+  "queryAgain": false,
+  "actualApp": {
+    "selectedDefinitions": 479,
+    "selectedDefinitionPassed": 463,
+    "selectedDefinitionFailed": 16,
+    "selectedLeaves": 482,
+    "selectedLeafPassed": 466,
+    "selectedLeafFailed": 16,
+    "unassociatedFailureCases": 1,
+    "rawSummaryCases": 480,
+    "rawDeviceExecutions": 483,
+    "skipped": 0,
+    "BoolPairs": [
+      {
+        "identity": "AozoraTXTTests/storedV6LocationsMigrateOnce",
+        "parameterizedIdentifier": "AozoraTXTTests/storedV6LocationsMigrateOnce(interrupt:)",
+        "values": [
+          {
+            "name": "false",
+            "result": "Passed"
+          },
+          {
+            "name": "true",
+            "result": "Passed"
+          }
+        ]
+      },
+      {
+        "identity": "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll",
+        "parameterizedIdentifier": "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll(nestedBackdrop:)",
+        "values": [
+          {
+            "name": "false",
+            "result": "Passed"
+          },
+          {
+            "name": "true",
+            "result": "Passed"
+          }
+        ]
+      },
+      {
+        "identity": "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit",
+        "parameterizedIdentifier": "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit(interrupt:)",
+        "values": [
+          {
+            "name": "false",
+            "result": "Passed"
+          },
+          {
+            "name": "true",
+            "result": "Passed"
+          }
+        ]
+      }
+    ],
+    "compilerBlock": false,
+    "uniqueSwiftCompilerErrors": 0
+  },
+  "firstFailure": {
+    "phase": "native",
+    "exitCode": 1
+  },
+  "nativeExecution": {
+    "phaseExitCode": 1,
+    "xcodebuildStatuses": [
+      {
+        "exitCode": 65,
+        "wrapperVerdictStop": false
+      }
+    ],
+    "phaseTimedOut": false,
+    "wrapperReportedBudgetTimeout": false,
+    "elapsedSeconds": 3492.341322
+  },
+  "phaseFacts": [
+    {
+      "phase": "producer",
+      "state": "succeeded",
+      "exitCode": 0,
+      "timedOut": false,
+      "budgetSeconds": 600,
+      "elapsedSeconds": 30.265215
+    },
+    {
+      "phase": "stage",
+      "state": "succeeded",
+      "exitCode": 0,
+      "timedOut": false,
+      "budgetSeconds": 90,
+      "elapsedSeconds": 12.565676
+    },
+    {
+      "phase": "before-build",
+      "state": "succeeded",
+      "exitCode": 0,
+      "timedOut": false,
+      "budgetSeconds": 90,
+      "elapsedSeconds": 12.46783
+    },
+    {
+      "phase": "boot",
+      "state": "succeeded",
+      "exitCode": 0,
+      "timedOut": false,
+      "budgetSeconds": 180,
+      "elapsedSeconds": 275.632143
+    },
+    {
+      "phase": "native",
+      "state": "failed",
+      "exitCode": 1,
+      "timedOut": false,
+      "budgetSeconds": 3720,
+      "elapsedSeconds": 3492.341322
+    },
+    {
+      "phase": "export",
+      "state": "failed",
+      "exitCode": 1,
+      "timedOut": false,
+      "budgetSeconds": 330,
+      "elapsedSeconds": 21.845571
+    },
+    {
+      "phase": "cases",
+      "state": "failed",
+      "exitCode": 1,
+      "timedOut": false,
+      "budgetSeconds": 90,
+      "elapsedSeconds": 11.04403
+    },
+    {
+      "phase": "test-settings",
+      "state": "succeeded",
+      "exitCode": 0,
+      "timedOut": false,
+      "budgetSeconds": 120,
+      "elapsedSeconds": 47.340204
+    },
+    {
+      "phase": "after-tests",
+      "state": "blocked",
+      "exitCode": null,
+      "timedOut": null,
+      "budgetSeconds": 120,
+      "elapsedSeconds": 9.874579
+    },
+    {
+      "phase": "build-settings",
+      "state": "succeeded",
+      "exitCode": 0,
+      "timedOut": false,
+      "budgetSeconds": 120,
+      "elapsedSeconds": 23.017523
+    },
+    {
+      "phase": "result",
+      "state": "blocked",
+      "exitCode": null,
+      "timedOut": null,
+      "budgetSeconds": 180,
+      "elapsedSeconds": 10.916571
+    }
+  ],
+  "parameterExports": [
+    {
+      "error": "Ambiguous qualified test identifier"
+    }
+  ],
+  "actualPackage": {
+    "tests": 24,
+    "passed": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sourceInputs": 23
+  },
+  "minimalProducer": {
+    "commands": 48,
+    "successful": 48,
+    "publicOutputs": 43,
+    "actualMachOs": 4,
+    "outputHashesIndependentlyVerified": true,
+    "privateFlagArgumentsOmitted": 3,
+    "beforeBuildFixtureVerified": true,
+    "afterTestsFixtureProduced": false,
+    "productionRequiredSignerExecuted": true,
+    "productionRequiredSignerResult": "failed digestMismatch Frameworks/OwnedFramework.framework/OwnedFramework"
+  },
+  "portable": {
+    "groups": [
+      {
+        "path": "reader-renewal-existing-guards.log",
+        "selected": 24,
+        "passed": 24,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "path": "reader-renewal-guards.log",
+        "selected": 76,
+        "passed": 76,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "path": "reader-renewal-original-api-guards.log",
+        "selected": 22,
+        "passed": 22,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "path": "reader-renewal-producer-guards.log",
+        "selected": 6,
+        "passed": 6,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "path": "reader-renewal-producer-timeout-guards.log",
+        "selected": 9,
+        "passed": 9,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "path": "reader-renewal-producer-user-trust-guards.log",
+        "selected": 28,
+        "passed": 28,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "path": "reader-renewal-report-inspector-guards.log",
+        "selected": 35,
+        "passed": 35,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ],
+    "totalPassed": 200,
+    "failed": 0,
+    "skipped": 0
+  },
+  "historicalSourceBinding": {
+    "core": 418,
+    "Package": 23,
+    "producer": 7,
+    "repoUnique": 418,
+    "allHistoricalGitBytesExact": true,
+    "allPhaseBeforeAfterSourceExact": true
+  },
+  "resultProduced": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "limits": [
+    "Unassociated SwiftTesting failure is retained and cannot be discarded to make selected cases appear passing.",
+    "Actual base exports succeeded but parameterExports ambiguous identifier and strict cases gate also failed.",
+    "This is SDK source-only Simulator App testing and macOS Package, not Native interpreter/JNI/full current IPA/physical installation.",
+    "Next source does not inherit these results as a same-source pass; failed App contracts need actual fix and verification."
+  ]
+}

@@ -1,0 +1,410 @@
+{
+  "sourceCommit": "d8200d32f881e1b09399110905d43545cfd0c9f9",
+  "runID": 39543888037,
+  "jobID": 119037580780,
+  "selectedDefinitions": 479,
+  "selectedLeafExecutions": 482,
+  "selectedDefinitionPassed": 463,
+  "selectedDefinitionFailed": 16,
+  "selectedLeafPassed": 466,
+  "selectedLeafFailed": 16,
+  "unassociatedFailureCases": 1,
+  "rawSummary": {
+    "totalTestCount": 480,
+    "passedTests": 463,
+    "failedTests": 17,
+    "skippedTests": 0
+  },
+  "failures": [
+    {
+      "identity": "SelfRenewalUserDataHandoffTests/actualSourceWriteFailurePreventsUpgradeAndKeepsPendingOwnership()",
+      "classification": "selected method failure",
+      "shortReason": "Caught error: Interrupted(underlying: yuedu_app.SelfRenewalAuthenticatedInstallationClient.OperationFailure(stage: yuedu_app.SelfRenewalAuthenticatedInstallationClient.Stage.upload, underlying: yuedu_app.BookSourcePersistenceFailure.writeFailed(yuedu_app.BookSourcePersistenceFailure.WriteStage.replace, Error Domain=NSPOSIXErrorDomain Code=21 \"Is a directory\"), ownedRemoteStagingPath: Optional(\"PublicStaging/reader-renewal-77777586-28f9-401b-a792-d1fff3a50170.ipa\"), remoteStagingRemovalVerified:  [bounded]",
+      "actualIssueLocations": [
+        {
+          "rawLogLine": 149766,
+          "sourceFile": "SelfRenewalUserDataHandoffTests.swift",
+          "sourcePaths": [
+            "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift"
+          ],
+          "sourceLine": 76,
+          "sourceColumn": 6
+        }
+      ],
+      "rawLogLineRanges": [
+        [
+          149766,
+          149771
+        ]
+      ]
+    },
+    {
+      "identity": "SelfRenewalDeveloperAccountClientTests/appSessionChecksDurableRetirementBeforeAcceptingNewMaterialGeneration()",
+      "classification": "selected method failure",
+      "shortReason": "Caught error: EnrollmentFailure(underlying: yuedu_app.SelfRenewalSigningMaterialVault.Failure.invalidProfiles, remoteCertificateMayHaveBeenIssued: false, remoteProfilesMayHaveBeenRefreshed: true, remoteRegistrationMayHaveChanged: true, acceptedRegistrationMutations: [\"app.groups.assign\", \"app.groups.assign\", \"app.groups.assign\"])",
+      "actualIssueLocations": [
+        {
+          "rawLogLine": 87043,
+          "sourceFile": "SelfRenewalAccountSessionTests.swift",
+          "sourcePaths": [
+            "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift"
+          ],
+          "sourceLine": 154,
+          "sourceColumn": 6
+        }
+      ],
+      "rawLogLineRanges": [
+        [
+          87043,
+          87048
+        ]
+      ]
+    },
+    {
+      "identity": "SelfRenewalDeveloperAccountClientTests/appSessionReconcilesExpiredEnrollmentAndRetainsLogoutDenial()",
+      "classification": "selected method failure",
+      "shortReason": "Caught error: .reconciliationRequired",
+      "actualIssueLocations": [
+        {
+          "rawLogLine": 90464,
+          "sourceFile": "SelfRenewalAccountSessionTests.swift",
+          "sourcePaths": [
+            "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift"
+          ],
+          "sourceLine": 392,
+          "sourceColumn": 6
+        }
+      ],
+      "rawLogLineRanges": [
+        [
+          90464,
+          90469
+        ]
+      ]
+    },
+    {
+      "identity": "SelfRenewalDeveloperAccountClientTests/appSessionReconcilesLostCSRAcknowledgementWithoutAnotherIssue()",
+      "classification": "selected method failure",
+      "shortReason": "Caught error: .reconciliationRequired",
+      "actualIssueLocations": [
+        {
+          "rawLogLine": 88681,
+          "sourceFile": "SelfRenewalAccountSessionTests.swift",
+          "sourcePaths": [
+            "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift"
+          ],
+          "sourceLine": 250,
+          "sourceColumn": 6
+        }
+      ],
+      "rawLogLineRanges": [
+        [
+          88681,
+          88686
+        ]
+      ]
+    },
+    {
+      "identity": "SelfRenewalDeveloperAccountClientTests/appSessionRefreshesTheActualPublishedKeyAndReopensIt()",
+      "classification": "selected method failure",
+      "shortReason": "Caught error: EnrollmentFailure(underlying: yuedu_app.SelfRenewalSigningMaterialVault.Failure.invalidProfiles, remoteCertificateMayHaveBeenIssued: false, remoteProfilesMayHaveBeenRefreshed: true, remoteRegistrationMayHaveChanged: true, acceptedRegistrationMutations: [\"app.groups.assign\", \"app.groups.assign\", \"app.groups.assign\"])",
+      "actualIssueLocations": [
+        {
+          "rawLogLine": 86512,
+          "sourceFile": "SelfRenewalAccountSessionTests.swift",
+          "sourcePaths": [
+            "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift"
+          ],
+          "sourceLine": 122,
+          "sourceColumn": 6
+        }
+      ],
+      "rawLogLineRanges": [
+        [
+          86512,
+          86517
+        ]
+      ]
+    },
+    {
+      "identity": "SelfRenewalDeveloperAccountClientTests/appSessionSerializesHeldEnrollmentAndPreservesCancelledRemoteIntent()",
+      "classification": "selected method failure",
+      "shortReason": "Caught error: EnrollmentFailure(underlying: yuedu_app.SelfRenewalSigningMaterialVault.Failure.invalidProfiles, remoteCertificateMayHaveBeenIssued: false, remoteProfilesMayHaveBeenRefreshed: true, remoteRegistrationMayHaveChanged: true, acceptedRegistrationMutations: [\"app.groups.assign\", \"app.groups.assign\", \"app.groups.assign\"])",
+      "actualIssueLocations": [
+        {
+          "rawLogLine": 87940,
+          "sourceFile": "SelfRenewalAccountSessionTests.swift",
+          "sourcePaths": [
+            "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift"
+          ],
+          "sourceLine": 210,
+          "sourceColumn": 6
+        }
+      ],
+      "rawLogLineRanges": [
+        [
+          87940,
+          87945
+        ]
+      ]
+    },
+    {
+      "identity": "Issues recorded without an associated test or suite",
+      "classification": "unassociated SwiftTesting issues; not a 480th selected definition",
+      "shortReason": "Expectation failed: (status.0?.phase == .receiptObserved → false) && (status.0?.state == .recoveryRequired → <not evaluated>)",
+      "actualIssueLocations": [],
+      "rawLogLineRanges": []
+    },
+    {
+      "identity": "SelfRenewalSigningMaterialVaultTests/observesPublicationBaselineWithoutGrantingMaterialAuthority()",
+      "classification": "selected method failure",
+      "shortReason": "Caught error: .dataCorrupted(Swift.DecodingError.Context(codingPath: [], debugDescription: \"The given data was not valid JSON.\", underlyingError: Optional(Error Domain=NSCocoaErrorDomain Code=3840 \"Unexpected character 'o' around line 1, column 3.\" UserInfo={NSDebugDescription=Unexpected character 'o' around line 1, column 3., NSJSONSerializationErrorIndex=2})))",
+      "actualIssueLocations": [
+        {
+          "rawLogLine": 133026,
+          "sourceFile": "SelfRenewalSigningMaterialVaultTests.swift",
+          "sourcePaths": [
+            "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift"
+          ],
+          "sourceLine": 12,
+          "sourceColumn": 6
+        }
+      ],
+      "rawLogLineRanges": [
+        [
+          133026,
+          133031
+        ]
+      ]
+    },
+    {
+      "identity": "LegadoCookieTextHostTests/originalRawExpiryAndRandomPruningBoundaryRemainExplicit()",
+      "classification": "selected method failure",
+      "shortReason": "Caught error: LegadoRuntimeError(code: \"UNSUPPORTED_CAPABILITY\", message: \"Parsed original Cookie cannot be represented by the existing native owner [session,expiry]\", completedEffects: nil, loginUIEvents: nil, secondaryFailures: nil)",
+      "actualIssueLocations": [
+        {
+          "rawLogLine": 39122,
+          "sourceFile": "LegadoCookieTextHostTests.swift",
+          "sourcePaths": [
+            "Tests/iOS/yuedu appTests/LegadoCookieTextHostTests.swift"
+          ],
+          "sourceLine": 180,
+          "sourceColumn": 6
+        }
+      ],
+      "rawLogLineRanges": [
+        [
+          39122,
+          39127
+        ]
+      ]
+    },
+    {
+      "identity": "SelfRenewalAutomaticRenewalTests/performsFullActualAutomaticRenewalAndNeverRepostsAReceipt()",
+      "classification": "selected method failure",
+      "shortReason": "Caught error: .endOfStream",
+      "actualIssueLocations": [
+        {
+          "rawLogLine": 58466,
+          "sourceFile": "SelfRenewalAutomaticRenewalTests.swift",
+          "sourcePaths": [
+            "Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift"
+          ],
+          "sourceLine": 86,
+          "sourceColumn": 6
+        }
+      ],
+      "rawLogLineRanges": [
+        [
+          58466,
+          58471
+        ]
+      ]
+    },
+    {
+      "identity": "LegadoPreviewStateOwnerTests/preUpdateFailureAndCancellationKeepOldContextUsable()",
+      "classification": "selected method failure",
+      "shortReason": "Expectation failed: (storedBook[\"bookURL\"] as? String → nil) == (book.bookUrl → \"https://preview-owned.invalid/book\")",
+      "actualIssueLocations": [
+        {
+          "rawLogLine": 40098,
+          "sourceFile": "LegadoPreviewStateOwnerTests.swift",
+          "sourcePaths": [
+            "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift"
+          ],
+          "sourceLine": 843,
+          "sourceColumn": 13
+        },
+        {
+          "rawLogLine": 40167,
+          "sourceFile": "LegadoPreviewStateOwnerTests.swift",
+          "sourcePaths": [
+            "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift"
+          ],
+          "sourceLine": 843,
+          "sourceColumn": 13
+        }
+      ],
+      "rawLogLineRanges": [
+        [
+          40098,
+          40103
+        ],
+        [
+          40167,
+          40172
+        ]
+      ]
+    },
+    {
+      "identity": "LegadoPreviewStateOwnerTests/preUpdateIdentityGrantRequiresTaskTOCAndOptIn()",
+      "classification": "selected method failure",
+      "shortReason": "Caught error: LegadoRuntimeError(code: \"INVALID_RESULT\", message: \"Original variables require a JSON String map\", completedEffects: nil, loginUIEvents: nil, secondaryFailures: nil)",
+      "actualIssueLocations": [
+        {
+          "rawLogLine": 39943,
+          "sourceFile": "LegadoPreviewStateOwnerTests.swift",
+          "sourcePaths": [
+            "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift"
+          ],
+          "sourceLine": 747,
+          "sourceColumn": 6
+        }
+      ],
+      "rawLogLineRanges": [
+        [
+          39943,
+          39948
+        ]
+      ]
+    },
+    {
+      "identity": "SelfRenewalAnisetteV3ProviderTests/realTransportSeparatesProviderAndAppleRequests()",
+      "classification": "selected method failure",
+      "shortReason": "Expectation failed: (request → https://owned-fixture.invalid/v3/get_headers).httpBody → nil → nil",
+      "actualIssueLocations": [
+        {
+          "rawLogLine": 41449,
+          "sourceFile": "SelfRenewalAnisetteV3ProviderTests.swift",
+          "sourcePaths": [
+            "Tests/iOS/yuedu appTests/SelfRenewalAnisetteV3ProviderTests.swift"
+          ],
+          "sourceLine": 208,
+          "sourceColumn": 24
+        }
+      ],
+      "rawLogLineRanges": [
+        [
+          41449,
+          41454
+        ]
+      ]
+    },
+    {
+      "identity": "LegadoCookieTextHostTests/responseTextPrecedenceAndNativeMetadataSurviveTheirCorrectLifetimes()",
+      "classification": "selected method failure",
+      "shortReason": "Caught error: LegadoRuntimeError(code: \"UNSUPPORTED_CAPABILITY\", message: \"Parsed original Cookie cannot be represented by the existing native owner [session,expiry]\", completedEffects: nil, loginUIEvents: nil, secondaryFailures: nil)",
+      "actualIssueLocations": [
+        {
+          "rawLogLine": 39119,
+          "sourceFile": "LegadoCookieTextHostTests.swift",
+          "sourcePaths": [
+            "Tests/iOS/yuedu appTests/LegadoCookieTextHostTests.swift"
+          ],
+          "sourceLine": 125,
+          "sourceColumn": 6
+        }
+      ],
+      "rawLogLineRanges": [
+        [
+          39119,
+          39124
+        ]
+      ]
+    },
+    {
+      "identity": "SelfRenewalControlledPackageSignerTests/signsSDKProducedMainExtensionsAndFrameworkInSameJob()",
+      "classification": "selected method failure",
+      "shortReason": "Caught error: .digestMismatch(\"Frameworks/OwnedFramework.framework/OwnedFramework\")",
+      "actualIssueLocations": [
+        {
+          "rawLogLine": 76085,
+          "sourceFile": "SelfRenewalControlledPackageSignerTests.swift",
+          "sourcePaths": [
+            "Tests/iOS/yuedu appTests/SelfRenewalControlledPackageSignerTests.swift"
+          ],
+          "sourceLine": 215,
+          "sourceColumn": 6
+        }
+      ],
+      "rawLogLineRanges": [
+        [
+          76085,
+          76090
+        ]
+      ]
+    },
+    {
+      "identity": "LegadoCookieOwnerTests/staleWebViewCookieDecisionCannotEndReusedLease()",
+      "classification": "selected method failure",
+      "shortReason": "Test exceeded execution time allowance of 1 minute",
+      "actualIssueLocations": [
+        {
+          "rawLogLine": 39014,
+          "sourceFile": "LegadoCookieOwnerTests.swift",
+          "sourcePaths": [
+            "Tests/iOS/yuedu appTests/LegadoCookieOwnerTests.swift"
+          ],
+          "sourceLine": 408,
+          "sourceColumn": 6
+        }
+      ],
+      "rawLogLineRanges": [
+        [
+          39014,
+          39019
+        ]
+      ]
+    },
+    {
+      "identity": "CoreTextPagedScrollAppearanceTests/tallerPagePreservesGlyphPixelsAndSelection()",
+      "classification": "selected method failure",
+      "shortReason": "Expectation failed: (tallerView.debugStringIndex(at:\n                CGPoint(x: tallerRect.midX, y: tallerRect.midY)) → 1) == 0",
+      "actualIssueLocations": [
+        {
+          "rawLogLine": 38448,
+          "sourceFile": "CoreTextPagedScrollAppearanceTests.swift",
+          "sourcePaths": [
+            "Tests/iOS/yuedu appTests/CoreTextPagedScrollAppearanceTests.swift"
+          ],
+          "sourceLine": 35,
+          "sourceColumn": 13
+        },
+        {
+          "rawLogLine": 38458,
+          "sourceFile": "CoreTextPagedScrollAppearanceTests.swift",
+          "sourcePaths": [
+            "Tests/iOS/yuedu appTests/CoreTextPagedScrollAppearanceTests.swift"
+          ],
+          "sourceLine": 35,
+          "sourceColumn": 13
+        }
+      ],
+      "rawLogLineRanges": [
+        [
+          38448,
+          38453
+        ],
+        [
+          38458,
+          38463
+        ]
+      ]
+    }
+  ],
+  "rawTestsLog": {
+    "bytes": 20586168,
+    "sha256": "877a98bb8b8cce5011c0fe8457735069cd29199967a646d88ae800dd89d2a0bc"
+  },
+  "limits": "Exact log locations only, not production root-cause verdicts. Unknown-context issues remain separately failed. No raw log bodies, account tokens or key material copied."
+}

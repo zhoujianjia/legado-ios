@@ -1,0 +1,328 @@
+{
+  "sourceCommit": "d8200d32f881e1b09399110905d43545cfd0c9f9",
+  "classification": "All real SwiftTesting unknown-context issues remain failed under one unassociated case; no reassignment to passed case identities",
+  "rawIssueOccurrences": 43,
+  "distinctSourceLocations": 20,
+  "owners": {
+    "Tests/iOS/yuedu appTests/SelfRenewalAppExecutionTests.swift": [
+      {
+        "sourceLine": 47,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(status.0?.phase == .receiptObserved && status.0?.state == .recoveryRequired)",
+        "shortFailure": "Expectation failed: (status.0?.phase == .receiptObserved → false) && (status.0?.state == .recoveryRequired → <not evaluated>)",
+        "rawLogLine": 43518
+      },
+      {
+        "sourceLine": 47,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(status.0?.phase == .receiptObserved && status.0?.state == .recoveryRequired)",
+        "shortFailure": "Expectation failed: (status.0?.phase == .receiptObserved → false) && (status.0?.state == .recoveryRequired → <not evaluated>)",
+        "rawLogLine": 43519
+      },
+      {
+        "sourceLine": 48,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(status.1 == nil && status.2)",
+        "shortFailure": "Expectation failed: (status.1 == nil → false) && (status.2 → <not evaluated>)",
+        "rawLogLine": 43520
+      },
+      {
+        "sourceLine": 48,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(status.1 == nil && status.2)",
+        "shortFailure": "Expectation failed: (status.1 == nil → false) && (status.2 → <not evaluated>)",
+        "rawLogLine": 43521
+      },
+      {
+        "sourceLine": 51,
+        "sourceColumn": 39,
+        "sourceExpression": "let handoff = try #require(completed.userDataHandoff)",
+        "shortFailure": "Expectation failed: (completed → Record(schema: 1, id: 3B3C05E4-1171-4441-B989-732E3670617A, revision: 3, createdAt: 2026-10-21 00:00:00 +0000, updatedAt: 2026-10-21 00:00:00 +0000, materialNamespace: AE192346-D6E1-4034-8E71-2DF81512AA84, materialGeneration: 3, originalArchiveSHA256: 32 bytes, identitySHA256: 32 bytes, [debug value bounded]",
+        "rawLogLine": 43522
+      },
+      {
+        "sourceLine": 51,
+        "sourceColumn": 39,
+        "sourceExpression": "let handoff = try #require(completed.userDataHandoff)",
+        "shortFailure": "Expectation failed: (completed → Record(schema: 1, id: 3B3C05E4-1171-4441-B989-732E3670617A, revision: 3, createdAt: 2026-10-21 00:00:00 +0000, updatedAt: 2026-10-21 00:00:00 +0000, materialNamespace: AE192346-D6E1-4034-8E71-2DF81512AA84, materialGeneration: 3, originalArchiveSHA256: 32 bytes, identitySHA256: 32 bytes, [debug value bounded]",
+        "rawLogLine": 43523
+      }
+    ],
+    "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift": [
+      {
+        "sourceLine": 303,
+        "sourceColumn": 13,
+        "sourceExpression": "#expect(underlying == .cancelled)",
+        "shortFailure": "Expectation failed: (underlying → nil) == .cancelled",
+        "rawLogLine": 52009
+      }
+    ],
+    "Tests/iOS/yuedu appTests/SelfRenewalAutomaticRenewalTests.swift": [
+      {
+        "sourceLine": 114,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(observed.0?.outcome == .receiptObserved && observed.0?.lastAttemptAt == f.date)",
+        "shortFailure": "Expectation failed: (observed.0?.outcome == .receiptObserved → false) && (observed.0?.lastAttemptAt == f.date → <not evaluated>)",
+        "rawLogLine": 58344
+      },
+      {
+        "sourceLine": 114,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(observed.0?.outcome == .receiptObserved && observed.0?.lastAttemptAt == f.date)",
+        "shortFailure": "Expectation failed: (observed.0?.outcome == .receiptObserved → false) && (observed.0?.lastAttemptAt == f.date → <not evaluated>)",
+        "rawLogLine": 58345
+      },
+      {
+        "sourceLine": 115,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(observed.1?.phase == .receiptObserved && observed.2 == nil && !observed.3)",
+        "shortFailure": "Expectation failed: (observed.1?.phase == .receiptObserved && observed.2 == nil → false) && (!observed.3 → <not evaluated>)",
+        "rawLogLine": 58346
+      },
+      {
+        "sourceLine": 115,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(observed.1?.phase == .receiptObserved && observed.2 == nil && !observed.3)",
+        "shortFailure": "Expectation failed: (observed.1?.phase == .receiptObserved && observed.2 == nil → false) && (!observed.3 → <not evaluated>)",
+        "rawLogLine": 58347
+      },
+      {
+        "sourceLine": 119,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(record.userDataHandoff?.files.map(\\.role) == [\"shelf\", \"reading\", \"sources\"])",
+        "shortFailure": "Expectation failed: (record.userDataHandoff?.files.map(\\.role) → nil) == [\"shelf\", \"reading\", \"sources\"]",
+        "rawLogLine": 58348
+      },
+      {
+        "sourceLine": 119,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(record.userDataHandoff?.files.map(\\.role) == [\"shelf\", \"reading\", \"sources\"])",
+        "shortFailure": "Expectation failed: (record.userDataHandoff?.files.map(\\.role) → nil) == [\"shelf\", \"reading\", \"sources\"]",
+        "rawLogLine": 58349
+      },
+      {
+        "sourceLine": 120,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(record.userDataHandoff?.positions.first?.position == App.position)",
+        "shortFailure": "Expectation failed: (record.userDataHandoff?.positions.first?.position → nil) == (App.position → CoreTextReadingPosition(spineIndex: 2, charOffset: 31, translationOffset: Optional(4)))",
+        "rawLogLine": 58350
+      },
+      {
+        "sourceLine": 120,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(record.userDataHandoff?.positions.first?.position == App.position)",
+        "shortFailure": "Expectation failed: (record.userDataHandoff?.positions.first?.position → nil) == (App.position → CoreTextReadingPosition(spineIndex: 2, charOffset: 31, translationOffset: Optional(4)))",
+        "rawLogLine": 58351
+      },
+      {
+        "sourceLine": 122,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(peer.observed.snapshot.uploaded == candidate && peer.observed.snapshot.upgradeRequests == 1)",
+        "shortFailure": "Expectation failed: (peer.observed.snapshot.uploaded == candidate → true) && (peer.observed.snapshot.upgradeRequests == 1 → false)",
+        "rawLogLine": 58352
+      },
+      {
+        "sourceLine": 122,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(peer.observed.snapshot.uploaded == candidate && peer.observed.snapshot.upgradeRequests == 1)",
+        "shortFailure": "Expectation failed: (peer.observed.snapshot.uploaded == candidate → true) && (peer.observed.snapshot.upgradeRequests == 1 → false)",
+        "rawLogLine": 58353
+      },
+      {
+        "sourceLine": 129,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(peer.observed.snapshot.upgradeRequests == 1)",
+        "shortFailure": "Expectation failed: (peer.observed.snapshot.upgradeRequests → 0) == 1",
+        "rawLogLine": 58456
+      },
+      {
+        "sourceLine": 129,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(peer.observed.snapshot.upgradeRequests == 1)",
+        "shortFailure": "Expectation failed: (peer.observed.snapshot.upgradeRequests → 0) == 1",
+        "rawLogLine": 58457
+      }
+    ],
+    "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift": [
+      {
+        "sourceLine": 266,
+        "sourceColumn": 17,
+        "sourceExpression": "#expect(failure.remoteCertificateMayHaveBeenIssued && !failure.remoteProfilesMayHaveBeenRefreshed)",
+        "shortFailure": "Expectation failed: (failure.remoteCertificateMayHaveBeenIssued → false) && (!failure.remoteProfilesMayHaveBeenRefreshed → <not evaluated>)",
+        "rawLogLine": 88441
+      },
+      {
+        "sourceLine": 266,
+        "sourceColumn": 17,
+        "sourceExpression": "#expect(failure.remoteCertificateMayHaveBeenIssued && !failure.remoteProfilesMayHaveBeenRefreshed)",
+        "shortFailure": "Expectation failed: (failure.remoteCertificateMayHaveBeenIssued → false) && (!failure.remoteProfilesMayHaveBeenRefreshed → <not evaluated>)",
+        "rawLogLine": 88442
+      },
+      {
+        "sourceLine": 271,
+        "sourceColumn": 13,
+        "sourceExpression": "#expect(pendingBytes.contains(\"certificateRequestIntent\"))",
+        "shortFailure": "Expectation failed; source expression retained, expanded credential-bearing value omitted",
+        "rawLogLine": 88445
+      },
+      {
+        "sourceLine": 271,
+        "sourceColumn": 13,
+        "sourceExpression": "#expect(pendingBytes.contains(\"certificateRequestIntent\"))",
+        "shortFailure": "Expectation failed; source expression retained, expanded credential-bearing value omitted",
+        "rawLogLine": 88446
+      },
+      {
+        "sourceLine": 290,
+        "sourceColumn": 17,
+        "sourceExpression": "#expect(stillStored.contains(c.fixture.credentials.xcodeToken) && stillStored.contains(\"certificateRequestIntent\"))",
+        "shortFailure": "Expectation failed; source expression retained, expanded credential-bearing value omitted",
+        "rawLogLine": 88635
+      },
+      {
+        "sourceLine": 290,
+        "sourceColumn": 17,
+        "sourceExpression": "#expect(stillStored.contains(c.fixture.credentials.xcodeToken) && stillStored.contains(\"certificateRequestIntent\"))",
+        "shortFailure": "Expectation failed; source expression retained, expanded credential-bearing value omitted",
+        "rawLogLine": 88636
+      },
+      {
+        "sourceLine": 378,
+        "sourceColumn": 17,
+        "sourceExpression": "#expect(facts.validCSRs == 1 && facts.profileRequests == 3)",
+        "shortFailure": "Expectation failed: (facts.validCSRs == 1 → false) && (facts.profileRequests == 3 → <not evaluated>)",
+        "rawLogLine": 89646
+      },
+      {
+        "sourceLine": 378,
+        "sourceColumn": 17,
+        "sourceExpression": "#expect(facts.validCSRs == 1 && facts.profileRequests == 3)",
+        "shortFailure": "Expectation failed: (facts.validCSRs == 1 → false) && (facts.profileRequests == 3 → <not evaluated>)",
+        "rawLogLine": 89647
+      },
+      {
+        "sourceLine": 385,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(after.validCSRs == 1)",
+        "shortFailure": "Expectation failed: (after.validCSRs → 0) == 1",
+        "rawLogLine": 89668
+      },
+      {
+        "sourceLine": 385,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(after.validCSRs == 1)",
+        "shortFailure": "Expectation failed: (after.validCSRs → 0) == 1",
+        "rawLogLine": 89669
+      },
+      {
+        "sourceLine": 405,
+        "sourceColumn": 126,
+        "sourceExpression": "do { _ = try await interrupted.refreshDeveloperMaterials(machineName: \"Owned expired lost ACK\"); Issue.record(\"Lost ACK became a publication\") }",
+        "shortFailure": "Issue recorded",
+        "rawLogLine": 90406
+      },
+      {
+        "sourceLine": 405,
+        "sourceColumn": 126,
+        "sourceExpression": "do { _ = try await interrupted.refreshDeveloperMaterials(machineName: \"Owned expired lost ACK\"); Issue.record(\"Lost ACK became a publication\") }",
+        "shortFailure": "Issue recorded",
+        "rawLogLine": 90408
+      }
+    ],
+    "Tests/iOS/yuedu appTests/SelfRenewalForegroundMaterialRevalidationTests.swift": [
+      {
+        "sourceLine": 107,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(failed.1 == (denyStatusWrite ? .localStorage : .signingMaterials))",
+        "shortFailure": "Expectation failed: (failed.1 → nil) == ((denyStatusWrite ? .localStorage : .signingMaterials) → .signingMaterials)",
+        "rawLogLine": 118525
+      },
+      {
+        "sourceLine": 107,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(failed.1 == (denyStatusWrite ? .localStorage : .signingMaterials))",
+        "shortFailure": "Expectation failed: (failed.1 → nil) == ((denyStatusWrite ? .localStorage : .signingMaterials) → .signingMaterials)",
+        "rawLogLine": 118526
+      },
+      {
+        "sourceLine": 107,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(failed.1 == (denyStatusWrite ? .localStorage : .signingMaterials))",
+        "shortFailure": "Expectation failed: (failed.1 → nil) == ((denyStatusWrite ? .localStorage : .signingMaterials) → .localStorage)",
+        "rawLogLine": 119239
+      },
+      {
+        "sourceLine": 107,
+        "sourceColumn": 21,
+        "sourceExpression": "#expect(failed.1 == (denyStatusWrite ? .localStorage : .signingMaterials))",
+        "shortFailure": "Expectation failed: (failed.1 → nil) == ((denyStatusWrite ? .localStorage : .signingMaterials) → .localStorage)",
+        "rawLogLine": 119240
+      },
+      {
+        "sourceLine": 244,
+        "sourceColumn": 25,
+        "sourceExpression": "#expect(peer.observed.snapshot.lookupRequests == 0 && peer.observed.snapshot.upgradeRequests == 1)",
+        "shortFailure": "Expectation failed: (peer.observed.snapshot.lookupRequests == 0 → false) && (peer.observed.snapshot.upgradeRequests == 1 → <not evaluated>)",
+        "rawLogLine": 123089
+      },
+      {
+        "sourceLine": 244,
+        "sourceColumn": 25,
+        "sourceExpression": "#expect(peer.observed.snapshot.lookupRequests == 0 && peer.observed.snapshot.upgradeRequests == 1)",
+        "shortFailure": "Expectation failed: (peer.observed.snapshot.lookupRequests == 0 → false) && (peer.observed.snapshot.upgradeRequests == 1 → <not evaluated>)",
+        "rawLogLine": 123090
+      }
+    ],
+    "Tests/iOS/yuedu appTests/SelfRenewalIPAUnpackerTests.swift": [
+      {
+        "sourceLine": 211,
+        "sourceColumn": 32,
+        "sourceExpression": "catch let error as E { #expect(error == expected) }",
+        "shortFailure": "Expectation failed: (error → .compressionRatioLimit) == (expected → .expandedLimit)",
+        "rawLogLine": 123413
+      },
+      {
+        "sourceLine": 211,
+        "sourceColumn": 32,
+        "sourceExpression": "catch let error as E { #expect(error == expected) }",
+        "shortFailure": "Expectation failed: (error → .compressionRatioLimit) == (expected → .expandedLimit)",
+        "rawLogLine": 123414
+      }
+    ],
+    "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift": [
+      {
+        "sourceLine": 419,
+        "sourceColumn": 20,
+        "sourceExpression": "return try #require(attributes[kSecAttrApplicationTag as String] as? Data)",
+        "shortFailure": "Expectation failed: (attributes[kSecAttrApplicationTag as String] → nil) as? (Data → Optional<Any>)",
+        "rawLogLine": 133139
+      },
+      {
+        "sourceLine": 419,
+        "sourceColumn": 20,
+        "sourceExpression": "return try #require(attributes[kSecAttrApplicationTag as String] as? Data)",
+        "shortFailure": "Expectation failed: (attributes[kSecAttrApplicationTag as String] → nil) as? (Data → Optional<Any>)",
+        "rawLogLine": 133140
+      },
+      {
+        "sourceLine": 419,
+        "sourceColumn": 20,
+        "sourceExpression": "return try #require(attributes[kSecAttrApplicationTag as String] as? Data)",
+        "shortFailure": "Expectation failed: (attributes[kSecAttrApplicationTag as String] → nil) as? (Data → Optional<Any>)",
+        "rawLogLine": 134638
+      },
+      {
+        "sourceLine": 419,
+        "sourceColumn": 20,
+        "sourceExpression": "return try #require(attributes[kSecAttrApplicationTag as String] as? Data)",
+        "shortFailure": "Expectation failed: (attributes[kSecAttrApplicationTag as String] → nil) as? (Data → Optional<Any>)",
+        "rawLogLine": 134639
+      }
+    ]
+  },
+  "rawTestsLog": {
+    "bytes": 20586168,
+    "sha256": "877a98bb8b8cce5011c0fe8457735069cd29199967a646d88ae800dd89d2a0bc"
+  },
+  "limits": "Duplicate raw issue emissions retained. Source expressions use immutable Gitd820 bytes; debug credential values omitted. First analysis-only zero-match encoding draft superseded, not test evidence."
+}

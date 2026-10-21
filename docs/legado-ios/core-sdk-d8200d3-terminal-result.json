@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "d8200d32f881e1b09399110905d43545cfd0c9f9",
+  "sourceTag": "reader-renewal-d8200d3",
+  "runID": 39543888037,
+  "jobID": 119037580780,
+  "status": "completed",
+  "conclusion": "failure",
+  "queryAgain": false,
+  "actualApp": {
+    "selectedDefinitions": 479,
+    "selectedDefinitionPassed": 463,
+    "selectedDefinitionFailed": 16,
+    "selectedLeaves": 482,
+    "selectedLeafPassed": 466,
+    "selectedLeafFailed": 16,
+    "unassociatedFailureCases": 1,
+    "rawSummaryCases": 480,
+    "rawDeviceExecutions": 483,
+    "skipped": 0,
+    "BoolPairs": [
+      {
+        "identity": "AozoraTXTTests/storedV6LocationsMigrateOnce",
+        "parameterizedIdentifier": "AozoraTXTTests/storedV6LocationsMigrateOnce(interrupt:)",
+        "values": [
+          {
+            "name": "false",
+            "result": "Passed"
+          },
+          {
+            "name": "true",
+            "result": "Passed"
+          }
+        ]
+      },
+      {
+        "identity": "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll",
+        "parameterizedIdentifier": "CoreTextPagedScrollAppearanceTests/authoredCompositionMatchesScroll(nestedBackdrop:)",
+        "values": [
+          {
+            "name": "false",
+            "result": "Passed"
+          },
+          {
+            "name": "true",
+            "result": "Passed"
+          }
+        ]
+      },
+      {
+        "identity": "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit",
+        "parameterizedIdentifier": "TXTReaderIndexMigrationTests/migrationPreservesBookmarksAndReplaysInterruptedCommit(interrupt:)",
+        "values": [
+          {
+            "name": "false",
+            "result": "Passed"
+          },
+          {
+            "name": "true",
+            "result": "Passed"
+          }
+        ]
+      }
+    ],
+    "compilerBlock": false,
+    "uniqueSwiftCompilerErrors": 0
+  },
+  "actualPackage": {
+    "tests": 24,
+    "passed": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "sourceInputs": 23
+  },
+  "firstFailure": {
+    "phase": "native",
+    "exitCode": 1
+  },
+  "nativeExecution": {
+    "phaseExitCode": 1,
+    "xcodebuildStatuses": [
+      {
+        "exitCode": 65,
+        "wrapperVerdictStop": false
+      }
+    ],
+    "phaseTimedOut": false,
+    "wrapperReportedBudgetTimeout": false,
+    "elapsedSeconds": 3492.341322
+  },
+  "minimalProducer": {
+    "commands": 48,
+    "successful": 48,
+    "publicOutputs": 43,
+    "actualMachOs": 4,
+    "outputHashesIndependentlyVerified": true,
+    "privateFlagArgumentsOmitted": 3,
+    "beforeBuildFixtureVerified": true,
+    "afterTestsFixtureProduced": false,
+    "productionRequiredSignerExecuted": true,
+    "productionRequiredSignerResult": "failed digestMismatch Frameworks/OwnedFramework.framework/OwnedFramework"
+  },
+  "requiredPortablePassed": 200,
+  "sourceInputs": {
+    "core": 418,
+    "Package": 23,
+    "producer": 7,
+    "repoUnique": 418,
+    "allHistoricalGitBytesExact": true,
+    "allPhaseBeforeAfterSourceExact": true
+  },
+  "factualReview": {
+    "path": "docs/legado-ios/evidence/sdk-d8200d3-terminal/factual-review-v1.json",
+    "bytes": 7116,
+    "sha256": "a2040b13bf4c753c874616590fceb1b4159ab207a85178b2f139aab62c4e1a4d"
+  },
+  "resultProduced": false,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false,
+  "limits": [
+    "Unassociated SwiftTesting failure is retained and cannot be discarded to make selected cases appear passing.",
+    "Actual base exports succeeded but parameterExports ambiguous identifier and strict cases gate also failed.",
+    "This is SDK source-only Simulator App testing and macOS Package, not Native interpreter/JNI/full current IPA/physical installation.",
+    "Next source does not inherit these results as a same-source pass; failed App contracts need actual fix and verification."
+  ]
+}
