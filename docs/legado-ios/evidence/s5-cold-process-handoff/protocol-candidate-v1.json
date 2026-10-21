@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "status": "frozen-two-Python-source-candidate-awaiting-independent-review-and-real-Apple-run",
+  "sourceRoot": ".build/s5-original-cold-renewal-protocol-step/snapshot-v1/work",
+  "files": [
+    {
+      "path": "scripts/reader-experience/original-cold-process-tools.py",
+      "baseline": {
+        "path": ".build/s5-original-cold-renewal-protocol-step/rawbaseline/scripts/reader-experience/original-cold-process-tools.py",
+        "bytes": 16767,
+        "sha256": "857611a99eaf8d02f4a0af5fe3157e1e6f18d7227773920c3deac8940ef8be03"
+      },
+      "candidate": {
+        "path": ".build/s5-original-cold-renewal-protocol-step/snapshot-v1/work/scripts/reader-experience/original-cold-process-tools.py",
+        "bytes": 22764,
+        "sha256": "ba53dd99f902cf3398282e9627ad391ef1e2c148c80e790d7cc25563efe24bd5"
+      },
+      "diff": {
+        "path": ".build/s5-original-cold-renewal-protocol-step/diffs/scripts/reader-experience/original-cold-process-tools.py.diff",
+        "bytes": 9700,
+        "sha256": "636729a57a0c22d9ee25f7ef7e007d16acf6e2afd60bd440df4c22cf6804ab49"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-original-cold-process-tools.py",
+      "baseline": {
+        "path": ".build/s5-original-cold-renewal-protocol-step/rawbaseline/scripts/reader-experience/test-original-cold-process-tools.py",
+        "bytes": 8030,
+        "sha256": "60c07689e88c4053c19de6aa716d646679c58d20c3b60890bc612b52320d9648"
+      },
+      "candidate": {
+        "path": ".build/s5-original-cold-renewal-protocol-step/snapshot-v1/work/scripts/reader-experience/test-original-cold-process-tools.py",
+        "bytes": 14206,
+        "sha256": "fcf2825797feb86731c7c530d03348167ad47c0fe6451fd0fdcb078acc1d741d"
+      },
+      "diff": {
+        "path": ".build/s5-original-cold-renewal-protocol-step/diffs/scripts/reader-experience/test-original-cold-process-tools.py.diff",
+        "bytes": 8437,
+        "sha256": "71b20a070ae350f7252891c70aafd37e2502d523deca3b3a8a83ba21f83e5874"
+      }
+    }
+  ],
+  "interface": {
+    "path": ".build/s5-original-cold-renewal-swift-step/interface-v1.json",
+    "bytes": 3413,
+    "sha256": "96c14dbc90a65fef7bfb773ae07d05e57f6c4c720549f1c628381ceb0c97e4b6"
+  },
+  "pairedSwiftCandidate": {
+    "path": ".build/s5-original-cold-renewal-swift-step/final-v2.json",
+    "bytes": 3810,
+    "sha256": "feb873c20a2f67ae8cdffb4f5a21bf70af4644d8f77e94ea5e6e0f5dc246fceb"
+  },
+  "candidateSourceRoster": {
+    "path": ".build/s5-original-cold-renewal-protocol-step/candidate-source-roster.json",
+    "bytes": 2229,
+    "sha256": "1da3a5e5e1f74d403c97bf5fb738ed569d088d0159c751d3f71ecb7fb63bde66"
+  },
+  "sourceChecks": {
+    "path": ".build/s5-original-cold-renewal-protocol-step/source-checks-v1.json",
+    "bytes": 1318,
+    "sha256": "9b9451b56df3dc9fda329e9ea21235ea5df176dd5d7219bea868a7d814489dca"
+  },
+  "changes": [
+    "Require actual normal-owner files books_meta.json/books_meta.reading.json/book_sources.json plus chapter and checked position; reject old source.json-only shape.",
+    "Strict nested21+21 renewal receipts retain same transaction/candidate/handoff hashes, real different process UUID, exact revision+1 and local normal-load observation.",
+    "Explicit nil installedMaterial/installedDifferentProcess and false renewalVerified remain mandatory.",
+    "Only result scope gains controlled-handoff local-observation facts; all existing actual two-host, frozen-binary, same-container, source guard, peer-offline, PID-exit and marker operations stay unchanged."
+  ],
+  "actualValidation": {
+    "distinctPortableMethods": 2,
+    "actualMethodExecutions": 2,
+    "passed": 2,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "successfulCommands": 1,
+    "logs": [
+      {
+        "path": ".build/s5-original-cold-renewal-protocol-step/affected-protocol-v2.log",
+        "bytes": 479,
+        "sha256": "4060c0c1cdf2e95f6d3cfa1f2707b904d654d1c04e2ebdaf7355e233b8712f6f"
+      }
+    ],
+    "execution": {
+      "path": ".build/s5-original-cold-renewal-protocol-step/affected-protocol-v2.json",
+      "bytes": 3665,
+      "sha256": "c07fccef264523f81d4d7a42e328e4c91a5b47f7754b4e47d69f7c16fce0fc4c"
+    },
+    "history": {
+      "firstAttempt": {
+        "path": ".build/s5-original-cold-renewal-protocol-step/affected-protocol-v1.json",
+        "bytes": 3197,
+        "sha256": "1ba7a900e3f51dcff3876fa9832c8bd515487885c3a7c54b824264208ef52858"
+      },
+      "rawLog": {
+        "path": ".build/s5-original-cold-renewal-protocol-step/affected-protocol-v1.log",
+        "bytes": 2659,
+        "sha256": "61d378c7deee7ba9640936194b0d4726b3a5cbfba34dde2b3d87bd7a70ca5005"
+      },
+      "cause": "Temporary validation tree omitted existing verify-runtime.py in existing imported packaging chain. Import stopped before any unittest method.",
+      "actualMethodExecutions": 0,
+      "onlyFix": "Copy canonical verify-runtime.py auxiliary file; both candidate source bytes unchanged.",
+      "repeatOfPassingMethods": 0
+    }
+  },
+  "preservedTests": {
+    "portableDefinitionsBefore": 5,
+    "portableDefinitionsAfter": 5,
+    "changedExistingMethods": [
+      "test_receipts_require_current_nonce_accepted_host_and_different_pid",
+      "test_offline_marker_requires_two_real_bodies_all_artifacts_and_stopped_peer"
+    ],
+    "unchangedExistingMethods": [
+      "test_each_host_requires_one_exact_passed_case_without_retry_or_skip",
+      "test_marker_commit_is_complete_and_refuses_stale_overwrite",
+      "test_two_qualified_invocations_use_frozen_binary_and_keep_host_budget"
+    ],
+    "SwiftNewDefinitionsFromThisSlice": 0,
+    "actualSwiftSDKOrNativeColdHosts": 0,
+    "countCorrection": "An earlier coordination message said6 portable definitions. Source actually has5; only2 have executed here, no extra tests or rerun followed this wording correction.",
+    "pairedSwiftEvidence": "Swift author final-v2 records unchanged definition identities; its independent reviewer owns exact old3 Handoff tests/helpers and Native remaining-body preservation."
+  },
+  "proofLimits": [
+    "This Python protocol pass cannot establish App/Swift compilation, TLS exchange, actual two-host execution or installation.",
+    "Producer counters1 upgrade/1 lookup refer to the future real controlled peer; they are validated claims until the owned Swift hosts actually execute.",
+    "Consumer only performs recoveryOnly local normal-load observation, remains receiptObserved and has no Vault/peer/endpoint. This is not a measured second-process remote upgradeRequests=0; no such field is accepted or fabricated.",
+    "The actual consumer fixture compares Record changes only in userDataRead/revision/updatedAt. Python enforces its exact receipt bindings and true flag, and does not claim to re-execute the Swift Record comparison.",
+    "No production source, other7 controls, canonical plan/rosters/workflow/Git/cloud/tag was changed. Existing d820 results cannot be upgraded to this changed Swift/Python snapshot."
+  ],
+  "actualAppleExecutions": 0,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

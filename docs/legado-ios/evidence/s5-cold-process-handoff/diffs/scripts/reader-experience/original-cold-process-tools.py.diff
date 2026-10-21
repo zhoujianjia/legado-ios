@@ -1,0 +1,166 @@
+--- a/scripts/reader-experience/original-cold-process-tools.py
++++ b/scripts/reader-experience/original-cold-process-tools.py
+@@ -4,6 +4,7 @@
+ import hashlib
+ import importlib.util
+ import json
++import math
+ import os
+ from pathlib import Path
+ import re
+@@ -69,6 +70,102 @@
+     return value
+
+
++RENEWAL_PRODUCER_FIELDS = frozenset((
++    'schemaVersion', 'transactionID', 'phase', 'revision', 'recordSHA256',
++    'candidateBytes', 'candidateSHA256', 'preparationProcessID', 'handoffProcessID',
++    'clockEpochSeconds', 'files', 'positionSHA256', 'positionBytes', 'uploadBytes',
++    'uploadSHA256', 'upgradeRequests', 'lookupRequests', 'reportedCompleteCleanup',
++    'installedMaterial', 'installedDifferentProcess', 'renewalVerified',
++))
++RENEWAL_CONSUMER_FIELDS = frozenset((
++    'schemaVersion', 'transactionID', 'phase', 'beforeRevision', 'revision',
++    'beforeRecordSHA256', 'recordSHA256', 'candidateBytes', 'candidateSHA256',
++    'handoffProcessID', 'normalReadProcessID', 'clockEpochSeconds',
++    'dataReadInDifferentProcess', 'selectedFilesMatch', 'sourceWasBootstrapped',
++    'unchangedExceptDataRead', 'candidateFileUnchanged', 'recoveryOnly',
++    'installedMaterial', 'installedDifferentProcess', 'renewalVerified',
++))
++
++
++def renewal_uuid(value):
++    if not isinstance(value, str) or re.fullmatch(
++            r'[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}', value) is None:
++        raise ValueError('Malformed cold renewal identity')
++    return uuid.UUID(value)
++
++
++def renewal_hash(value):
++    return isinstance(value, str) and re.fullmatch('[0-9a-f]{64}', value) is not None
++
++
++def renewal_uint(value, maximum):
++    return type(value) is int and 0 < value <= maximum
++
++
++def renewal_common(value, fields):
++    if (not isinstance(value, dict) or set(value) != fields
++            or type(value['schemaVersion']) is not int or value['schemaVersion'] != 1
++            or value['phase'] != 'receiptObserved'
++            or not renewal_uint(value['revision'], (1 << 64) - 1)
++            or not renewal_uint(value['candidateBytes'], (1 << 63) - 1)
++            or not renewal_hash(value['candidateSHA256']) or not renewal_hash(value['recordSHA256'])
++            or value['installedMaterial'] is not None or value['installedDifferentProcess'] is not None
++            or value['renewalVerified'] is not False
++            or type(value['clockEpochSeconds']) not in (int, float)):
++        raise ValueError('Missing or invalid controlled renewal receipt')
++    try:
++        finite_clock = math.isfinite(value['clockEpochSeconds'])
++    except OverflowError:
++        finite_clock = False
++    if not finite_clock:
++        raise ValueError('Nonfinite controlled renewal clock')
++    renewal_uuid(value['transactionID']); renewal_uuid(value['handoffProcessID'])
++    return value
++
++
++def validate_producer_renewal(value, producer):
++    value = renewal_common(value, RENEWAL_PRODUCER_FIELDS)
++    selected = value['files']
++    position_path = 'positions/' + producer['bookID'] + '.json'
++    if (renewal_uuid(value['preparationProcessID']) != renewal_uuid(value['handoffProcessID'])
++            or not isinstance(selected, dict) or set(selected) != {'shelf', 'reading', 'sources'}
++            or any(not renewal_hash(h) for h in selected.values())
++            or selected != {'shelf': producer['files']['books_meta.json'],
++                            'reading': producer['files']['books_meta.reading.json'],
++                            'sources': producer['files']['book_sources.json']}
++            or not renewal_hash(value['positionSHA256'])
++            or value['positionSHA256'] != producer['positionSHA256']
++            or value['positionSHA256'] != producer['files'][position_path]
++            or not renewal_uint(value['positionBytes'], (1 << 63) - 1)
++            or type(value['uploadBytes']) is not int or value['uploadBytes'] != value['candidateBytes']
++            or value['uploadSHA256'] != value['candidateSHA256']
++            or type(value['upgradeRequests']) is not int or value['upgradeRequests'] != 1
++            or type(value['lookupRequests']) is not int or value['lookupRequests'] != 1
++            or value['reportedCompleteCleanup'] is not True):
++        raise ValueError('Cold producer did not seal the same candidate and actual data handoff')
++    return value
++
++
++def validate_consumer_renewal(value, producer):
++    value = renewal_common(value, RENEWAL_CONSUMER_FIELDS)
++    if (renewal_uuid(value['transactionID']) != renewal_uuid(producer['transactionID'])
++            or not renewal_uint(value['beforeRevision'], (1 << 64) - 1)
++            or value['beforeRevision'] != producer['revision']
++            or value['revision'] != value['beforeRevision'] + 1
++            or value['beforeRecordSHA256'] != producer['recordSHA256']
++            or value['recordSHA256'] == value['beforeRecordSHA256']
++            or value['candidateBytes'] != producer['candidateBytes']
++            or value['candidateSHA256'] != producer['candidateSHA256']
++            or renewal_uuid(value['handoffProcessID']) != renewal_uuid(producer['handoffProcessID'])
++            or renewal_uuid(value['normalReadProcessID']) == renewal_uuid(producer['preparationProcessID'])
++            or value['clockEpochSeconds'] != producer['clockEpochSeconds']
++            or value['dataReadInDifferentProcess'] is not True or value['selectedFilesMatch'] is not True
++            or value['sourceWasBootstrapped'] is not False or value['unchangedExceptDataRead'] is not True
++            or value['candidateFileUnchanged'] is not True or value['recoveryOnly'] is not True):
++        raise ValueError('Cold consumer is not the same local handoff observation in a new process')
++    return value
++
++
+ def validate_producer(receipt, control, accepted):
+     check_control(control)
+     if (receipt.get('control') != control or receipt.get('hostAccepted') is not accepted
+@@ -76,13 +173,15 @@
+             or receipt.get('peerStopped') is not True or type(receipt.get('activeConnections')) is not int or receipt['activeConnections'] != 0
+             or len(receipt.get('chapterIDs', [])) != 2 or len(set(receipt['chapterIDs'])) != 2
+             or len(receipt.get('cacheFingerprints', [])) != 2 or len(receipt.get('bodySHA256', [])) != 2
+-            or len(receipt.get('files', {})) != 4 or receipt.get('position') != {'spineIndex': 1, 'charOffset': 7}):
++            or not isinstance(receipt.get('files'), dict) or len(receipt['files']) != 5
++            or receipt.get('position') != {'spineIndex': 1, 'charOffset': 7}):
+         raise ValueError('Missing, stale or incomplete cold producer receipt')
+     uuid.UUID(receipt['bookID']); uuid.UUID(receipt['sourceID'])
+     for chapter in receipt['chapterIDs']:
+         uuid.UUID(chapter)
+-    expected_files = {'books_meta.reading.json', 'books_meta.chapters/' + receipt['bookID'] + '.json',
+-        'positions/' + receipt['bookID'] + '.json', 'source.json'}
++    expected_files = {'books_meta.json', 'books_meta.reading.json',
++        'books_meta.chapters/' + receipt['bookID'] + '.json',
++        'positions/' + receipt['bookID'] + '.json', 'book_sources.json'}
+     if set(receipt['files']) != expected_files:
+         raise ValueError('Cold producer metadata paths differ')
+     expected_cache = {'.txt', '.meta.json', '.raw.html', '.normalized.xhtml', '.package.json'}
+@@ -97,18 +196,20 @@
+         ('/search?key=native-original&page=2', '/book', '/toc-rewritten', '/toc2', '/c1', '/c1p2', '/c2')]
+     if receipt.get('requestTargets') != expected_targets:
+         raise ValueError('Cold producer did not fetch real next-page content')
++    validate_producer_renewal(receipt.get('renewal'), receipt)
+     return receipt
+
+
+ def validate_consumer(receipt, producer, control, accepted):
+     validate_producer(producer, control, True)
+     if (receipt.get('control') != control or receipt.get('hostAccepted') is not accepted
+-            or receipt.get('producerPID') != producer['producerPID']
++            or type(receipt.get('producerPID')) is not int or receipt['producerPID'] != producer['producerPID']
+             or type(receipt.get('consumerPID')) is not int or receipt['consumerPID'] <= 1
+             or receipt['consumerPID'] == producer['producerPID'] or receipt.get('bookID') != producer['bookID']
+             or type(receipt.get('sourceResolutions')) is not int or receipt['sourceResolutions'] != 0 or receipt.get('fileHashesUnchanged') is not True
+             or receipt.get('bodySHA256') != producer['bodySHA256']):
+         raise ValueError('Cold consumer is not an immutable different-process offline read')
++    validate_consumer_renewal(receipt.get('renewal'), producer['renewal'])
+     return receipt
+
+
+@@ -300,7 +401,11 @@
+         'producerExitObservation': {'path': 'producer-process-exit.json', **fact(work / 'producer-process-exit.json')},
+         'status': 'passed', 'actualIndependentHosts': 2, 'sourceResolutions': 0,
+         'sameContainer': True, 'producerPeerStopped': True, 'differentPIDs': True,
+-        'scope': 'Synthetic original public reader/process restart only; no full source/device acceptance'}
++        'controlledRenewalRecovery': {'phase': 'receiptObserved', 'selectedFilesMatch': True,
++            'localNormalLoadObservationOnly': True, 'installedMaterial': None,
++            'installedDifferentProcess': None, 'renewalVerified': False},
++        'scope': 'Synthetic original public reader and controlled handoff local observation across processes; '
++            'no consumer remote-submission path, installed renewal, full source or device acceptance'}
+     write_new(work / 'result.json', result)
+     return result

@@ -246,6 +246,9 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
             let position = CoreTextReadingPosition(spineIndex: 1, charOffset: 7)
             let positions = JSONFileReadingPositionStore(baseURL: data.appendingPathComponent("positions", isDirectory: true), onSave: { _, _ in })
             let positionReceipt = try await positions.saveChecked(position, for: owned.book.id.uuidString)
+            try Self.coldRequire(positionReceipt.operation == .atomicWriteCompleted
+                && positionReceipt.position == position && positionReceipt.bookId == owned.book.id.uuidString,
+                "Cold producer did not complete its initial checked position write")
             await BookStore.queuedWritesLanded()
             let currentValue = await MainActor.run { owned.store.readingBook(id: owned.book.id) }
             let current = try XCTUnwrap(currentValue)
@@ -261,8 +264,20 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
                     && !snapshot.fingerprints.values.contains("missing"), "Cold producer lacks committed cache artifacts")
                 fingerprints.append(snapshot.fingerprints)
             }
-            let persistedSource = source
-            try await Task.detached { try cold.write(persistedSource, name: "data/source.json") }.value
+            // Same normal metadata/progress owners and the real retained reader
+            // are checkpointed by the actual before-Upgrade handoff. Only the
+            // controlled signing/TLS material is temporary; its journal survives.
+            let renewal = try await SelfRenewalUserDataHandoffTests.coldSubmit(in: data, bookID: current.id,
+                books: owned.store, source: source, positions: positions, position: position)
+            // Navigator flush is a second real save. JSON object byte ordering
+            // need not match the first save; commit the final actual read receipt.
+            let finalPositionValue = try await positions.loadChecked(for: current.id.uuidString)
+            let finalPosition = try XCTUnwrap(finalPositionValue)
+            try Self.coldRequire(finalPosition.operation == .existingFileRead && finalPosition.position == position
+                && finalPosition.bookId == current.id.uuidString
+                && renewal.positionSHA256 == Self.coldHex(finalPosition.rawSHA256)
+                && renewal.positionBytes == finalPosition.rawByteCount,
+                "Renewal handoff differs from the final normal position read")
             let files = try await Task.detached { try cold.fileFacts(bookID: current.id) }.value
             let expectedTargets = ["/search?key=native-original&page=2", "/book", "/toc-rewritten", "/toc2", "/c1", "/c1p2", "/c2"].map { f.prefix + $0 }
             try Self.coldRequire(peer.snapshot.requests.map(\.target) == expectedTargets, "Cold producer bypassed the public search/detail/paginated reader chain")
@@ -271,8 +286,8 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
                 chapterVariables: chapters.map { $0.runtimeVariables ?? [:] }, bookVariables: current.runtimeVariables ?? [:],
                 bodySHA256: [Self.coldHash(Data(first.content.utf8)), Self.coldHash(Data(second.content.utf8))],
                 cacheFingerprints: fingerprints, files: files, position: position,
-                positionSHA256: Self.coldHex(positionReceipt.rawSHA256), requestTargets: peer.snapshot.requests.map(\.target),
-                peerStopped: false, activeConnections: -1, hostAccepted: false)
+                positionSHA256: Self.coldHex(finalPosition.rawSHA256), requestTargets: peer.snapshot.requests.map(\.target),
+                renewal: renewal, peerStopped: false, activeConnections: -1, hostAccepted: false)
         } catch { problem = error }
         if let fixture {
             do { try await fixture.service.closeSessions() } catch { if problem == nil { problem = error } }
@@ -321,9 +336,13 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
             ownedID = claim.bookID
             let before = try await Task.detached { try cold.fileFacts(bookID: claim.bookID) }.value
             try Self.coldRequire(before == receipt.files, "Producer metadata/position/source bytes changed before cold load")
-            let source: BookSource = try await Task.detached { try cold.read(BookSource.self, name: "data/source.json") }.value
-            try Self.coldRequire(source.id == receipt.sourceID && URL(string: source.bookSourceUrl)?.host == "127.0.0.1",
-                "Cold source is not the owned loopback definition")
+            let sources = await MainActor.run { BookSourceStore(directory: cold.root.appendingPathComponent("data", isDirectory: true)) }
+            let sourceLoad = try await sources.normalLoadReceiptForRenewalHandoff()
+            let storedSource = await MainActor.run { sources.source(id: receipt.sourceID) }
+            let source = try XCTUnwrap(storedSource)
+            try Self.coldRequire(sourceLoad.operation == .normalFileRead && sourceLoad.sourceCount == 1
+                && source.id == receipt.sourceID && URL(string: source.bookSourceUrl)?.host == "127.0.0.1",
+                "Cold normal source owner did not read the owned loopback definition")
             let metadata = cold.root.appendingPathComponent("data/books_meta.json")
             let store = await Task.detached { BookStore(metadataFileURL: metadata, legacyMetadataDefaults: nil) }.value
             let bookValue = await MainActor.run { store.readingBook(id: claim.bookID) }
@@ -361,9 +380,17 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
             let after = try await Task.detached { try cold.fileFacts(bookID: book.id) }.value
             try Self.coldRequire(bodyHashes == receipt.bodySHA256 && probe.count == 0 && before == after,
                 "Cold public reader did not return immutable offline cache before source resolution")
+            // Recovery-only has no Vault, signing lease, endpoint or submission
+            // capability. It records a real second-process normal-owner read;
+            // installedMaterial remains nil and the receipt stays unretired.
+            let renewal = try await SelfRenewalUserDataHandoffTests.coldObserve(
+                in: cold.root.appendingPathComponent("data", isDirectory: true), bookID: book.id,
+                books: store, sources: sources, positions: positions, producer: receipt.renewal)
+            let afterObservation = try await Task.detached { try cold.fileFacts(bookID: book.id) }.value
+            try Self.coldRequire(afterObservation == after, "Normal data-read observation rewrote selected owner files")
             let result = ColdConsumerReceipt(control: cold.control, producerPID: receipt.producerPID,
                 consumerPID: ProcessInfo.processInfo.processIdentifier, bookID: book.id, sourceResolutions: probe.count,
-                bodySHA256: bodyHashes, fileHashesUnchanged: true, hostAccepted: false)
+                bodySHA256: bodyHashes, fileHashesUnchanged: true, renewal: renewal, hostAccepted: false)
             try await Task.detached { try cold.write(result, name: "consumer-pending.json") }.value
         } catch { problem = error }
         if let openedService {
@@ -409,11 +436,13 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
         let chapterIDs: [UUID]; let chapterVariables: [[String: String]]; let bookVariables: [String: String]
         let bodySHA256: [String]; let cacheFingerprints: [[String: String]]; let files: [String: String]
         let position: CoreTextReadingPosition; let positionSHA256: String; let requestTargets: [String]
+        let renewal: SelfRenewalUserDataHandoffTests.ColdProducerFacts
         var peerStopped: Bool; var activeConnections: Int; var hostAccepted: Bool
     }
     private struct ColdConsumerReceipt: Codable, Sendable {
         let control: ColdControl; let producerPID: Int32; let consumerPID: Int32; let bookID: UUID
-        let sourceResolutions: Int; let bodySHA256: [String]; let fileHashesUnchanged: Bool; let hostAccepted: Bool
+        let sourceResolutions: Int; let bodySHA256: [String]; let fileHashesUnchanged: Bool
+        let renewal: SelfRenewalUserDataHandoffTests.ColdConsumerFacts; let hostAccepted: Bool
     }
     private struct ColdContext: Sendable {
         let control: ColdControl; let root: URL
@@ -458,8 +487,8 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
             try encoder.encode(value).write(to: destination, options: .withoutOverwriting)
         }
         func fileFacts(bookID: UUID) throws -> [String: String] {
-            let names = ["books_meta.reading.json", "books_meta.chapters/" + bookID.uuidString + ".json",
-                "positions/" + bookID.uuidString + ".json", "source.json"]
+            let names = ["books_meta.json", "books_meta.reading.json", "books_meta.chapters/" + bookID.uuidString + ".json",
+                "positions/" + bookID.uuidString + ".json", "book_sources.json"]
             var result: [String: String] = [:]
             for name in names { result[name] = LegadoNativeOriginalReaderTests.coldHash(try Self.bytes(root.appendingPathComponent("data/" + name))) }
             return result

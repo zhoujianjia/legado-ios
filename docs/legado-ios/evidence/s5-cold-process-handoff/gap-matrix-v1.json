@@ -1,0 +1,22 @@
+{
+  "scope": "S5 selected normal-owner data across existing two real C5 processes",
+  "findings": [
+    {
+      "contract": "checkpoint then second-process normal owners",
+      "status": "missing in current C5; implement in ignored candidate",
+      "producer": "Tests/iOS/LegadoNativeOriginalReaderTests.swift:testNativeOriginalColdProducerPersistsPublicReaderBeforeProcessExit",
+      "consumer": "Tests/iOS/LegadoNativeOriginalReaderTests.swift:testNativeOriginalColdConsumerRestoresOwnedReaderWithoutNetwork",
+      "reuse": "existing controller exclusive producer exit marker; same container; two existing selectors, no new host/mode",
+      "gap": "source.json is DTO, no Journal/handoff; current Handoff test reopens owners in same process"
+    },
+    {
+      "contract": "actual replacement, installed materials and device authority",
+      "status": "external unverified; deliberately not claimed",
+      "installedMaterial": null,
+      "renewalVerified": false
+    }
+  ],
+  "baseline": "d3268719c55d238b32841d57ecb9190b1d12545e",
+  "swiftExecution": 0,
+  "cloudQueries": 0
+}

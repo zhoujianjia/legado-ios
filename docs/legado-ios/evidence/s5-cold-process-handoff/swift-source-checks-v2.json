@@ -1,0 +1,57 @@
+{
+  "scope": "source contracts only; no Swift grammar/compiler/SDK/test execution",
+  "checks": [
+    {
+      "check": "Handoff original whole source retained as exact byte prefix apart from EOF separator",
+      "passed": true
+    },
+    {
+      "check": "Native source outside existing C5 two hosts, two receipt types and fileFacts is exact",
+      "passed": true
+    },
+    {
+      "check": "Existing C5 time budgets stay 180 and 120",
+      "passed": true
+    },
+    {
+      "check": "No new XCTest or SwiftTesting definition",
+      "passed": true
+    },
+    {
+      "check": "No new installation/retirement/network action in consumer helper",
+      "passed": true
+    },
+    {
+      "check": "New helper assertions throw independently of SwiftTesting context",
+      "passed": true
+    },
+    {
+      "check": "Current canonical two source files remain exact baseline",
+      "passed": true
+    },
+    {
+      "check": "Producer source DTO removed and normal source owner used",
+      "passed": true
+    },
+    {
+      "check": "Final position commitment comes from actual post-handoff existingFileRead, initial write is checked semantically only",
+      "passed": true
+    },
+    {
+      "check": "v2 Handoff source is exact v1; only Reader position receipt hunk changed",
+      "passed": true
+    }
+  ],
+  "failedChecks": 0,
+  "testDefinitionsChanged": 0,
+  "hostMethodsChanged": 2,
+  "existingHandoffTestBodiesChanged": 0,
+  "execution": {
+    "Swift": 0,
+    "SDK": 0,
+    "XCTest": 0,
+    "SwiftTesting": 0,
+    "parser": 0,
+    "cloud": 0
+  }
+}

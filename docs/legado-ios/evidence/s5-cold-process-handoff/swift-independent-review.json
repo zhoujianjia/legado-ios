@@ -1,0 +1,131 @@
+{
+  "schema": 1,
+  "reviewedUTC": "2026-10-21T04:45:07.485949+00:00",
+  "scope": "Independent source review of exactly two frozen C5 Swift test-only consumers for real S5 data handoff; no controller/source/canonical changes.",
+  "final": {
+    "path": ".build/s5-original-cold-renewal-swift-step/final-v2.json",
+    "bytes": 3810,
+    "sha256": "feb873c20a2f67ae8cdffb4f5a21bf70af4644d8f77e94ea5e6e0f5dc246fceb"
+  },
+  "sourceRoot": ".build/s5-original-cold-renewal-swift-step/snapshot-v2/work",
+  "files": [
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "baseline": {
+        "path": ".build/s5-original-cold-renewal-swift-step/rawbaseline/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+        "bytes": 142491,
+        "sha256": "61fa7f4b1bafd9fd0fb5901dce64f8978e742f4a1735bcbb30ae46834605f08b"
+      },
+      "candidate": {
+        "path": ".build/s5-original-cold-renewal-swift-step/snapshot-v2/work/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+        "bytes": 145103,
+        "sha256": "624e3fc79c7586bb407e7e6d53eb647ac1b5b62c1eba054abb24d2264514833e"
+      },
+      "diff": {
+        "path": ".build/s5-original-cold-renewal-swift-step/diffs-v2/Tests/iOS/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 9014,
+        "sha256": "2eeeb9d1ea044da782c48ca312f6d647a2ddf728085bb18d7d514470e7b89eea"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift",
+      "baseline": {
+        "path": ".build/s5-original-cold-renewal-swift-step/rawbaseline/Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift",
+        "bytes": 13491,
+        "sha256": "ca0f65caad0fbe922b3dd7e3762a6dcaacf7339dfdfa3a06ff4ffc0d5768fb19"
+      },
+      "candidate": {
+        "path": ".build/s5-original-cold-renewal-swift-step/snapshot-v2/work/Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift",
+        "bytes": 31822,
+        "sha256": "e8e0b47936ca8d417f41ffb49f092edcfd43697153365c7dcf2831718e61fbd6"
+      },
+      "diff": {
+        "path": ".build/s5-original-cold-renewal-swift-step/diffs-v2/Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift.diff",
+        "bytes": 18767,
+        "sha256": "062a5ffdd595fe673125ffe24e56fb96084d734d820eed1052a5259397b48fa2"
+      }
+    }
+  ],
+  "findings": [],
+  "remainingConfirmedFindings": [],
+  "closedPriorFinding": {
+    "origin": "Root review of frozen v1",
+    "cause": "ReadingPositionStore.writePosition uses a new JSONEncoder without sortedKeys; same semantic position saved twice need not have identical raw JSON hash.",
+    "v2Evidence": "Initial save checked only operation/bookID/position. After real coldSubmit handoff, actual loadChecked is checked against renewal.positionSHA256/bytes; outer producer receipt commits that final actual read. Production encoder unchanged.",
+    "status": "closed in source only; Swift execution pending"
+  },
+  "reviewedCallChain": [
+    "Producer keeps existing real C5 public search/detail/TOC/two chapter read/cache claims, writes actual position and calls coldSubmit with that same BookStore/position owner.",
+    "coldSubmit calls existing Package.fixture (real Unpacker/Vault/SecKey/PackageSigner), retains a real ReaderNavigator registered in one handoff, adds source through normal BookSourceStore, and submits once through actual mTLS Peer -> Coordinator.submitWithAppDataHandoff.",
+    "Journal lives under run-owned data/renewal/SelfRenewalTransactions, outside temporary Package.fixture. Coordinator.close runs before fixture Vault/temporary cleanup. Candidate and transaction persist for second host; errors preserve primary and close error.",
+    "Consumer uses normal BookStore, normal BookSourceStore receipt and real checked position reads. Existing same container/run/book/source/PID/cache/offline sourceResolver=0 guards remain.",
+    "Consumer creates recoveryOnly with no Vault/peer/endpoint. observeUserDataAfterNormalLoad is the only operation; exact Record comparison permits only userDataRead/revision/updatedAt, requires revision+1/receiptObserved/selectedFilesMatch/no bootstrap.",
+    "Both hosts require installedMaterial nil, installedDifferentProcess explicit null and renewalVerified false. Actual candidate bytes/hash remain exact; no installed observation or automatic retirement is fabricated."
+  ],
+  "apiAndOwnershipEvidence": [
+    "11 frozen readonly reference files bound. MainActor ColdOwners retains sources/handoff/navigator; actual navigator init registers weakly and strong after-submit property read retains it through the hook.",
+    "Normal BookStore save uses existing queue and sorted full metadata; off-shelf record still produces [] shelf bytes. Consumer normal-load receipt comes from original reads, not a test-created observation.",
+    "Real JSONFileReadingPositionStore default checked IO is used with onSave no cloud side effect. loadChecked returns actual file bytes and semantic position. New helper disk reads are nonisolated/off-main and bounded.",
+    "Existing Package.fixture.make has throwing #require for its fixture prerequisites, not nonthrowing #expect success predicates. New helper assertions use thrown ColdFailure so XCTest cannot pass merely from SwiftTesting issue recording.",
+    "Journal/recovery APIs and case/field names match referenced current production definitions. No extra session, store, queue, VM or new test selector is introduced."
+  ],
+  "checks": {
+    "sourceComparisonsOnly": 39,
+    "failed": [],
+    "labels": [
+      "Tests/iOS/LegadoNativeOriginalReaderTests.swift baseline bytes/hash",
+      "Tests/iOS/LegadoNativeOriginalReaderTests.swift candidate bytes/hash",
+      "Tests/iOS/LegadoNativeOriginalReaderTests.swift diff bytes/hash",
+      "Tests/iOS/LegadoNativeOriginalReaderTests.swift exact complete unified diff",
+      "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift baseline bytes/hash",
+      "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift candidate bytes/hash",
+      "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift diff bytes/hash",
+      "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift exact complete unified diff",
+      "API reference Modules/Services/LibraryStore/BookStore.swift",
+      "API reference Modules/Services/SelfRenewal/SelfRenewalUserDataHandoff.swift",
+      "API reference Modules/Services/SelfRenewal/SelfRenewalTransactionJournal.swift",
+      "API reference Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+      "API reference Modules/Services/SelfRenewal/SelfRenewalInstalledMaterialObserver.swift",
+      "API reference Modules/Core/BookSource/BookSourceStore.swift",
+      "API reference Modules/Core/ReaderCore/ReaderNavigator.swift",
+      "API reference Modules/Core/ReaderCore/ReadingPositionStore.swift",
+      "API reference Modules/Core/ReaderCore/CoreText/CoreTextReadingPosition.swift",
+      "API reference Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationFixture.swift",
+      "API reference Tests/iOS/yuedu appTests/SelfRenewalControlledPackageSignerTests.swift",
+      "all three original @Tests and helpers byte-exact prefix",
+      "no new test definition or raw positive record/ProcessIdentity constructor",
+      "new XCTest-callable helpers use throwing guards rather than #expect/#require",
+      "same complete XCTest method identities",
+      "final position read after actual handoff, before receipt commitment",
+      "no initial-vs-second-save hash comparison",
+      "producer receipt commits final actual position hash",
+      "exactly two existing cold host definitions found",
+      "retained C5 guard before == receipt.files",
+      "retained C5 guard receipt.producerPID != ProcessInfo.processInfo.processIdentifier",
+      "retained C5 guard probe.count == 0 && before == after",
+      "retained C5 guard beforeCache.fingerprints == receipt.cacheFingerprints[chapter.index]",
+      "retained C5 guard afterCache.fingerprints == beforeCache.fingerprints",
+      "retained C5 guard snapshot.listenerCancelled && snapshot.activeConnections == 0 && snapshot.errors.isEmpty",
+      "retained C5 guard receipt.hostAccepted && receipt.peerStopped && receipt.activeConnections == 0",
+      "handoff helper exact frozen v1 while v2 only corrects Reader assumption",
+      "manifest companion interface",
+      "manifest companion gapMatrix",
+      "manifest companion sourceChecks",
+      "manifest companion readOnlyAPIReferences"
+    ]
+  },
+  "actualExecution": {
+    "SwiftCompiler": 0,
+    "parser": 0,
+    "tests": 0,
+    "SDK": 0,
+    "cloudQueries": 0
+  },
+  "limits": [
+    "Source review is not Swift actor/typechecking or real two-process execution.",
+    "Controller/receipt acceptance implementation is separately owned and must bind this exact interface; not approved by this two-Swift review.",
+    "Package fixture controlled certificate chain/mTLS is not Apple issuance, physical installation, current Bundle material replacement or a cold-start installation proof.",
+    "Only selected normal owner files and one actual position across the future two C5 hosts may be established; all user data/kernel/noVPN/unattended claims remain false."
+  ],
+  "approvedForIntegrationAsTestSourceOnly": true
+}
