@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T03:32:08.675033+00:00",
+  "status": "test-only-owned-root-normalization-integrated-local-alias-replay-pass-Mac-rerun-pending",
+  "canonicalSources": [
+    {
+      "path": "scripts/reader-experience/test-full-application-signing-tools.py",
+      "bytes": 7991,
+      "sha256": "66c3e27dc14ba817dc9913c1dc26aea455b93d9161e53cab7ee1afbf13471946"
+    }
+  ],
+  "productionChanges": 0,
+  "productionToolUnchanged": {
+    "path": "scripts/reader-experience/full-application-signing-tools.py",
+    "bytes": 18318,
+    "sha256": "135e1cce731fbdd65d7f4ab1d0d353734e13fbe304455e50b8ad13f32c8cc75a"
+  },
+  "actualDistinctMethods": 1,
+  "actualRelevantCandidatePassed": 1,
+  "actualExecutions": [
+    {
+      "kind": "baseline",
+      "method": "FullApplicationSigningProtocolTests.test_required_resource_hashes_and_cleanup_are_bound_without_minimal_substitution",
+      "executed": 1,
+      "errors": 1,
+      "failures": 0,
+      "skipped": 0,
+      "actualOwnedJunction": true,
+      "physicalRootVerified": true,
+      "log": {
+        "path": ".build/s3-owned-temp-root-repair/baseline-existing-method.log",
+        "bytes": 1608,
+        "sha256": "337b9840463ce2f398b52a0ce98edca347bc40d40ffcf1ef0581dd4e9e338c32"
+      }
+    },
+    {
+      "kind": "candidate",
+      "method": "FullApplicationSigningProtocolTests.test_required_resource_hashes_and_cleanup_are_bound_without_minimal_substitution",
+      "executed": 1,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "actualOwnedJunction": true,
+      "physicalRootVerified": true,
+      "log": {
+        "path": ".build/s3-owned-temp-root-repair/candidate-existing-method.log",
+        "bytes": 333,
+        "sha256": "94155b04229ba45ac29e405f253c6fce3c1107b1e03812e46e3b9f0f461f3979"
+      }
+    }
+  ],
+  "actualMacReruns": 0,
+  "actualSDKOrSigningExecuted": 0,
+  "reason": "The real Mac Native job failed this resource protocol test when checked rejected a symlink ancestor. Canonicalize only the test-owned temporary root. The raw log does not identify which system alias; this local actual NTFS-junction replay reproduces rejection and verifies the fix.",
+  "failedNativeRecord": "docs/legado-ios/core-native-7ef3c7e-terminal-result.json",
+  "independentReview": {
+    "path": "docs/legado-ios/evidence/renewal-s3-owned-temp-root-repair/independent-review.json",
+    "bytes": 2386,
+    "sha256": "3a730e53d6417e208d86eeeff1784b810b03849cbee7d2d75c75415f63eabecc"
+  },
+  "evidence": [
+    {
+      "path": "docs/legado-ios/evidence/renewal-s3-owned-temp-root-repair/reviewed-candidate.json",
+      "bytes": 3038,
+      "sha256": "d59c06264d45bf89123562346a81e75d3cc31ce8e03b469eb2300d1fb0d98e64",
+      "original": {
+        "path": ".build/s3-owned-temp-root-repair/final-v1.json",
+        "bytes": 3038,
+        "sha256": "d59c06264d45bf89123562346a81e75d3cc31ce8e03b469eb2300d1fb0d98e64"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-s3-owned-temp-root-repair/independent-review.json",
+      "bytes": 2386,
+      "sha256": "3a730e53d6417e208d86eeeff1784b810b03849cbee7d2d75c75415f63eabecc",
+      "original": {
+        "path": ".build/s3-owned-temp-root-independent-review/review-v1.json",
+        "bytes": 2386,
+        "sha256": "3a730e53d6417e208d86eeeff1784b810b03849cbee7d2d75c75415f63eabecc"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-s3-owned-temp-root-repair/baseline-existing-method.log",
+      "bytes": 1608,
+      "sha256": "337b9840463ce2f398b52a0ce98edca347bc40d40ffcf1ef0581dd4e9e338c32",
+      "original": {
+        "path": ".build/s3-owned-temp-root-repair/baseline-existing-method.log",
+        "bytes": 1608,
+        "sha256": "337b9840463ce2f398b52a0ce98edca347bc40d40ffcf1ef0581dd4e9e338c32"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-s3-owned-temp-root-repair/candidate-existing-method.log",
+      "bytes": 333,
+      "sha256": "94155b04229ba45ac29e405f253c6fce3c1107b1e03812e46e3b9f0f461f3979",
+      "original": {
+        "path": ".build/s3-owned-temp-root-repair/candidate-existing-method.log",
+        "bytes": 333,
+        "sha256": "94155b04229ba45ac29e405f253c6fce3c1107b1e03812e46e3b9f0f461f3979"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-s3-owned-temp-root-repair/fixture-only.diff",
+      "bytes": 1290,
+      "sha256": "e1232ecd15f70eafe1de2a64c3224c1440ae6251e94244411936eda40d23e67c",
+      "original": {
+        "path": ".build/s3-owned-temp-root-repair/fixture-only.diff",
+        "bytes": 1290,
+        "sha256": "e1232ecd15f70eafe1de2a64c3224c1440ae6251e94244411936eda40d23e67c"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained."
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-s3-owned-temp-root-repair/repair-and-replay.py",
+      "bytes": 4327,
+      "sha256": "2cb1e2ecb2b8487ba5675a130b3b077ef53044935896198ad54d6bcefb475b06",
+      "original": {
+        "path": ".build/repair-s3-owned-temp-root.py",
+        "bytes": 4327,
+        "sha256": "2cb1e2ecb2b8487ba5675a130b3b077ef53044935896198ad54d6bcefb475b06"
+      },
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained."
+    }
+  ],
+  "newCloudRunsOrTags": 0,
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

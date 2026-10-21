@@ -1,0 +1,38 @@
+2026-10-21T03:21:43.1954280Z ##[group]Run export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
+2026-10-21T03:21:43.1955150Z [36;1mexport DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"[0m
+2026-10-21T03:21:43.1955710Z [36;1mpython -B scripts/reader-experience/test-full-application-signing-tools.py -v[0m
+2026-10-21T03:21:43.1956350Z [36;1mpython -B scripts/reader-experience/full-application-signing-tools.py prepare[0m
+2026-10-21T03:21:43.4038070Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-21T03:21:43.4038850Z env:
+2026-10-21T03:21:43.4039640Z   pythonLocation: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-21T03:21:43.4041590Z   PKG_CONFIG_PATH: /Users/runner/hostedtoolcache/Python/3.12.10/arm64/lib/pkgconfig
+2026-10-21T03:21:43.4043300Z   Python_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-21T03:21:43.4046770Z   Python2_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-21T03:21:43.4047640Z   Python3_ROOT_DIR: /Users/runner/hostedtoolcache/Python/3.12.10/arm64
+2026-10-21T03:21:43.4053740Z   JAVA_HOME: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.12-101.0.LTS/aarch64/Contents/Home
+2026-10-21T03:21:43.4055300Z   JAVA_HOME_21_AARCH64: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.12-101.0.LTS/aarch64/Contents/Home
+2026-10-21T03:21:43.4056540Z   MAVEN_ARGS: -ntp
+2026-10-21T03:21:43.4056790Z ##[endgroup]
+2026-10-21T03:22:41.7522370Z test_exact_case_gate_rejects_zero_duplicate_wrong_failed_and_skipped_results (__main__.FullApplicationSigningProtocolTests.test_exact_case_gate_rejects_zero_duplicate_wrong_failed_and_skipped_results) ... ok
+2026-10-21T03:22:41.7526040Z test_native_proof_requires_same_job_both_platforms_and_current_ordinary_jar (__main__.FullApplicationSigningProtocolTests.test_native_proof_requires_same_job_both_platforms_and_current_ordinary_jar) ... ok
+2026-10-21T03:22:41.7667790Z test_producer_minimal_default_body_is_unchanged_and_full_branch_is_explicit (__main__.FullApplicationSigningProtocolTests.test_producer_minimal_default_body_is_unchanged_and_full_branch_is_explicit) ... ok
+2026-10-21T03:22:41.7695910Z test_required_resource_hashes_and_cleanup_are_bound_without_minimal_substitution (__main__.FullApplicationSigningProtocolTests.test_required_resource_hashes_and_cleanup_are_bound_without_minimal_substitution) ... ERROR
+2026-10-21T03:22:41.7696750Z
+2026-10-21T03:22:41.7697020Z ======================================================================
+2026-10-21T03:22:41.7697990Z ERROR: test_required_resource_hashes_and_cleanup_are_bound_without_minimal_substitution (__main__.FullApplicationSigningProtocolTests.test_required_resource_hashes_and_cleanup_are_bound_without_minimal_substitution)
+2026-10-21T03:22:41.7698890Z ----------------------------------------------------------------------
+2026-10-21T03:22:41.7699350Z Traceback (most recent call last):
+2026-10-21T03:22:41.7718590Z   File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/test-full-application-signing-tools.py", line 51, in test_required_resource_hashes_and_cleanup_are_bound_without_minimal_substitution
+2026-10-21T03:22:41.7719530Z     tools.resource_binding(root, "c" * 40, producer)
+2026-10-21T03:22:41.7720230Z   File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/full-application-signing-tools.py", line 122, in resource_binding
+2026-10-21T03:22:41.7720930Z     metadata_path = checked(directory / RESOURCE_NAMES[0])
+2026-10-21T03:22:41.7721320Z                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-21T03:22:41.7721890Z   File "/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/full-application-signing-tools.py", line 52, in checked
+2026-10-21T03:22:41.7722610Z     raise ValueError("Symlinked full-application input/output is forbidden")
+2026-10-21T03:22:41.7723070Z ValueError: Symlinked full-application input/output is forbidden
+2026-10-21T03:22:41.7723340Z
+2026-10-21T03:22:41.7723530Z ----------------------------------------------------------------------
+2026-10-21T03:22:41.7728540Z Ran 4 tests in 0.018s
+2026-10-21T03:22:41.7728730Z
+2026-10-21T03:22:41.7728870Z FAILED (errors=1)
+2026-10-21T03:22:41.7797140Z ##[error]Process completed with exit code 1.

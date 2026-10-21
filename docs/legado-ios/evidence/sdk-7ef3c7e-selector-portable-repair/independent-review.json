@@ -1,0 +1,256 @@
+{
+  "schemaVersion": 1,
+  "reviewedUTC": "2026-10-21T03:29:37.818109+00:00",
+  "approved": true,
+  "failedChecks": 0,
+  "unresolvedFindings": [],
+  "parent": {
+    "path": ".build/sdk-7ef3c7e-portable-failure-step/final-v2.json",
+    "bytes": 8498,
+    "sha256": "bf3a44baf5db7c06e6973e716bbc7caa67fa02578f65e816cd1514b88534e744"
+  },
+  "sourceRoot": ".build/sdk-7ef3c7e-portable-failure-step/snapshot-v1/work",
+  "sourceFiles": [
+    {
+      "path": "scripts/reader-experience/renewal-probe-tools.py",
+      "baseline": {
+        "path": ".build/sdk-7ef3c7e-portable-failure-step/rawbaseline/scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 212133,
+        "sha256": "61bc1747cb54a426e22a557e7203861139565377eb643d4615d2427a28943ef0"
+      },
+      "candidate": {
+        "path": ".build/sdk-7ef3c7e-portable-failure-step/snapshot-v1/work/scripts/reader-experience/renewal-probe-tools.py",
+        "bytes": 212096,
+        "sha256": "534b1ce3c6f2b104aed5d3113ba0b1f8c503f73e28293717b258bd5abd8a6908"
+      },
+      "diff": {
+        "path": ".build/sdk-7ef3c7e-portable-failure-step/diffs/scripts/reader-experience/renewal-probe-tools.py.diff",
+        "bytes": 1435,
+        "sha256": "5a6a6daac6650f842bbab8cab3d4ee3e4a03d8e34bf4c85ac278b24f8cfb26a1"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/test-renewal-probe-tools.py",
+      "baseline": {
+        "path": ".build/sdk-7ef3c7e-portable-failure-step/rawbaseline/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 193082,
+        "sha256": "bfa3c5b6452277dcd5af76ee7746004133c7d4da236b348f77cccaa713ea467b"
+      },
+      "candidate": {
+        "path": ".build/sdk-7ef3c7e-portable-failure-step/snapshot-v1/work/scripts/reader-experience/test-renewal-probe-tools.py",
+        "bytes": 195921,
+        "sha256": "49293e543f20c8e1f553c4739afcab1575ec4dc8bc79332c6a372b8e69a25873"
+      },
+      "diff": {
+        "path": ".build/sdk-7ef3c7e-portable-failure-step/diffs/scripts/reader-experience/test-renewal-probe-tools.py.diff",
+        "bytes": 6672,
+        "sha256": "3b6e23990b537e2bd65761a85eaf773edff60ef300942b9cfa0d3626b0f129a1"
+      }
+    },
+    {
+      "path": "scripts/reader-experience/renewal-probe-tests.sh",
+      "baseline": {
+        "path": ".build/sdk-7ef3c7e-portable-failure-step/rawbaseline/scripts/reader-experience/renewal-probe-tests.sh",
+        "bytes": 43377,
+        "sha256": "35bcd7f50e0ba3a3437ec71858d7e323d266e8e52a086877a8420554294dbdc6"
+      },
+      "candidate": {
+        "path": ".build/sdk-7ef3c7e-portable-failure-step/snapshot-v1/work/scripts/reader-experience/renewal-probe-tests.sh",
+        "bytes": 44294,
+        "sha256": "bcd194259705e1c02d34a398dacb119e7067c63ffd5e6d8c5697d7387064b2db"
+      },
+      "diff": {
+        "path": ".build/sdk-7ef3c7e-portable-failure-step/diffs/scripts/reader-experience/renewal-probe-tests.sh.diff",
+        "bytes": 1727,
+        "sha256": "a34d82d2d5dba1066c21296e7b16993ad88e583b3a3f0ab6aaeca5ec6e01977d"
+      }
+    }
+  ],
+  "metadataCorrection": {
+    "priorParent": {
+      "path": ".build/sdk-7ef3c7e-portable-failure-step/final-v1.json",
+      "bytes": 8799,
+      "sha256": "bb1aa738cde94ce85af79bf6ec104c4f2f10ea7daa0ccf52cf8eedfbcd3d5a67"
+    },
+    "onlyChangedField": "actualLocalExecution.failedMethods",
+    "fourRawFailureIdentities": [
+      "AccountCoreSelectionTests.test_account_case_inventory_matches_actual_suite_extensions_and_closure",
+      "LiveCoreSelectionTests.test_later_core_union_matches_real_suite_owners_without_widening_old_modes",
+      "MaterialPublicationAndLoginActionSelectionTests.test_combined_checkpoint_keeps_four_real_material_methods_and_exact_login_inputs",
+      "RenewalProbeEvidenceTests.test_integrated_leaf_union_matches_source_and_excludes_storage_benchmark"
+    ],
+    "otherJSONAndAllThreeSourceBytesAndSixEvidenceFilesUnchanged": true
+  },
+  "actualFailureBoundary": {
+    "cloudRunID": 39537665728,
+    "cloudJobID": 119017948485,
+    "cloudSource": "7ef3c7e",
+    "knownCloudFact": "Root observed portable step failure; full live joblog unavailable when reviewed.",
+    "cloudFourMethodDetailsConfirmed": false,
+    "actualLocalSmoke": {
+      "tests": 24,
+      "passed": 24,
+      "failed": 0
+    },
+    "actualLocalRenewalBeforeRepair": {
+      "tests": 76,
+      "passed": 72,
+      "failed": 4
+    },
+    "actualAfterRepair": {
+      "tests": 6,
+      "distinctMethods": 6,
+      "passed": 6,
+      "failed": 0,
+      "scope": "Original4 failed plus2 explicitly affected currentcore checks only; no full76 rerun."
+    }
+  },
+  "sourceAndSelectionReview": [
+    "Three rawbaseline files equal exact read-only Git7ef3c7e blobs and current canonical controls; each candidate/diff and validation input matches its frozen hashes.",
+    "The actual AccountSession source is an extension of SelfRenewalDeveloperAccountClientTests, not a suite inferred from its filename. Correcting this one qualified identity fixes a real missing-selection bug; no App production source changes.",
+    "The corrected first-registration roster is exactly3 Client-owned and1 authenticated-installation-owned no-argument methods. S3 is its own real struct and remains an independent required1/1, outside every SDK mode.",
+    "Currentcore retains475 definitions/478 leaves, replacing exactly one nonexistent suite identity by its actual extension owner. All13 other expected mode sets,418 source paths/order,3 Bool matrices, phase order and every tool function AST are exact.",
+    "Legacy integrated whole-suite selection would admit the newly added currentcore-only TLS registration method. Only that one class selector is replaced by its exact original7 method selectors with proper SwiftTesting(). All other shell bytes and the old140 expected set remain exact.",
+    "Integrated inventory still sees all declarations and retains available/expanded==expected, duplicate checks, before/after source gates and2700-second budget. It explicitly rejects a whole authenticated-suite selector and compares the7 exact historical methods; the new registration method is not silently removed from available evidence.",
+    "The material inventory now requires exactly20 methods, one correctly owned new first-registration method and19 retained historical unique declarations. AccountCore and LiveCore test bodies are unchanged and recover via the corrected production selector.",
+    "Only3 test methods change: integrated strict inventory, material count/owner assertion and Delta first-registration owner regression. No test definitions, production gates or assertions are deleted; mandatory SDK fixture and3600/single-xcresult currentcore invocation remain."
+  ],
+  "actualOwnerFacts": [
+    {
+      "source": {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+        "bytes": 83067,
+        "sha256": "db01acd0a4c39ff08dd74d11cacafd268944cfe4a6f3bf995179033990de0d9d"
+      },
+      "ownerKind": "struct",
+      "suite": "SelfRenewalDeveloperAccountClientTests",
+      "ownerLine": 8,
+      "method": "registersOriginalPortalScopeAndReusesObservedRemoteIdentity",
+      "methodLine": 14
+    },
+    {
+      "source": {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+        "bytes": 83067,
+        "sha256": "db01acd0a4c39ff08dd74d11cacafd268944cfe4a6f3bf995179033990de0d9d"
+      },
+      "ownerKind": "struct",
+      "suite": "SelfRenewalDeveloperAccountClientTests",
+      "ownerLine": 8,
+      "method": "registrationFailuresRetainScopeAndAcceptedFactsBeforeCSR",
+      "methodLine": 52
+    },
+    {
+      "source": {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift",
+        "bytes": 73150,
+        "sha256": "fabd94c5e54d3f18dcf119cda6b8279a28001476f17284821a016d1227ec040a"
+      },
+      "ownerKind": "extension",
+      "suite": "SelfRenewalDeveloperAccountClientTests",
+      "ownerLine": 9,
+      "method": "appSessionRegistersOnlyItsConfiguredPairedTargetBeforeFirstProfiles",
+      "methodLine": 630
+    },
+    {
+      "source": {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift",
+        "bytes": 22623,
+        "sha256": "8f58acc2a0e8cbaecbbe715a30266329d776536803282999c61388c2ec30eb42"
+      },
+      "ownerKind": "struct",
+      "suite": "SelfRenewalAuthenticatedInstallationClientTests",
+      "ownerLine": 6,
+      "method": "registrationDeviceObservationUsesAuthenticatedSessionAndExpiresAtStop",
+      "methodLine": 12
+    },
+    {
+      "source": {
+        "path": "Tests/iOS/yuedu appTests/SelfRenewalFullApplicationSignerTests.swift",
+        "bytes": 21683,
+        "sha256": "f5d74f9661ea4888a1f0096e94a7ac1958ce8874c94322b3b655c3cc29451ae9"
+      },
+      "ownerKind": "struct",
+      "suite": "SelfRenewalFullApplicationSignerTests",
+      "ownerLine": 10,
+      "method": "signsFullCurrentIPhoneOSJVMApplicationThroughSameProductionOwners",
+      "methodLine": 16
+    }
+  ],
+  "correctFirstRegistrationQualifiedMethods": [
+    "SelfRenewalAuthenticatedInstallationClientTests/registrationDeviceObservationUsesAuthenticatedSessionAndExpiresAtStop",
+    "SelfRenewalDeveloperAccountClientTests/appSessionRegistersOnlyItsConfiguredPairedTargetBeforeFirstProfiles",
+    "SelfRenewalDeveloperAccountClientTests/registersOriginalPortalScopeAndReusesObservedRemoteIdentity",
+    "SelfRenewalDeveloperAccountClientTests/registrationFailuresRetainScopeAndAcceptedFactsBeforeCSR"
+  ],
+  "oldIdentityRemoved": "SelfRenewalAccountSessionTests/appSessionRegistersOnlyItsConfiguredPairedTargetBeforeFirstProfiles",
+  "actualIdentitySelected": "SelfRenewalDeveloperAccountClientTests/appSessionRegistersOnlyItsConfiguredPairedTargetBeforeFirstProfiles",
+  "nativeS3AndPackage": {
+    "sourceChanges": 0,
+    "newPassClaims": false
+  },
+  "validationEvidence": [
+    {
+      "path": ".build/sdk-7ef3c7e-portable-failure-step/actual-smoke-v1.json",
+      "bytes": 620,
+      "sha256": "ed2a90eff914806e63bce384c86894bcab4e59ccb6cfaab12a9502264abb89ff"
+    },
+    {
+      "path": ".build/sdk-7ef3c7e-portable-failure-step/actual-smoke-v1.log",
+      "bytes": 4250,
+      "sha256": "82d79446f8533b54890b01f7f7fb408cd7a81e4a951d2e681f54529eea6d6d2a"
+    },
+    {
+      "path": ".build/sdk-7ef3c7e-portable-failure-step/actual-renewal-v1.json",
+      "bytes": 675,
+      "sha256": "3f09f59ed67c09b00bcbfd5027119a2397e49adb53133be772cf30927310e3ee"
+    },
+    {
+      "path": ".build/sdk-7ef3c7e-portable-failure-step/actual-renewal-v1.log",
+      "bytes": 18773,
+      "sha256": "7b83d04608c2ab056d5c3817c477a706391934a59106327465160906f522f333"
+    },
+    {
+      "path": ".build/sdk-7ef3c7e-portable-failure-step/actual-repaired-six-v1.json",
+      "bytes": 2009,
+      "sha256": "be296da10caffd041969a166ef159854d7cc19f24a325a13927ad2f2d96176ab"
+    },
+    {
+      "path": ".build/sdk-7ef3c7e-portable-failure-step/actual-repaired-six-v1.log",
+      "bytes": 1345,
+      "sha256": "0753f11300ff96c4ea4777823201615980ef6671e793d2d2b1f80018c8788ab3"
+    }
+  ],
+  "afterRepairMethods": [
+    "AccountCoreSelectionTests.test_account_case_inventory_matches_actual_suite_extensions_and_closure",
+    "LiveCoreSelectionTests.test_later_core_union_matches_real_suite_owners_without_widening_old_modes",
+    "MaterialPublicationAndLoginActionSelectionTests.test_combined_checkpoint_keeps_four_real_material_methods_and_exact_login_inputs",
+    "RenewalProbeEvidenceTests.test_integrated_leaf_union_matches_source_and_excludes_storage_benchmark",
+    "RenewalProbeEvidenceTests.test_currentcore_exact_ast_union_source_boundaries_arguments_and_one_new_budget",
+    "DeltaReuseCheckpointSelectionTests.test_delta_inputs_keep_app_inventory_all_three_pairs_required_fixture_and_new_package_mode"
+  ],
+  "historicalReviewCorrection": {
+    "priorUnifiedReview": ".build/consolidated-sdk-first-registration-full-application-independent-review/review-v1.json",
+    "missedBoundary": "The prior review checked file-local method existence but did not independently enforce its Swift extension owner, and did not expand the old integrated class selector against the new method.",
+    "correction": "This review binds actual lexical struct/extension declarations and the corrected qualified selector, preserves both real failure facts and all historical expected sets. Prior source/cloud evidence is not rewritten as a pass."
+  },
+  "reviewActions": {
+    "sourceReadHashASTAndArgvConstructionOnly": true,
+    "newTests": 0,
+    "SwiftParser": 0,
+    "compilers": 0,
+    "SDK": 0,
+    "JVM": 0,
+    "cloudQueries": 0,
+    "GitOrCanonicalWrites": 0
+  },
+  "limits": [
+    "Portable6 success does not establish App SDK compilation, physical device, signing or renewal success.",
+    "The72 historical passes were obtained against the earlier wrong selection; only the6 explicitly rerun methods have final-candidate execution evidence.",
+    "Current cloud tasks retain their frozen source and original outcomes. No cloud log was fetched or terminal status inferred by this reviewer."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

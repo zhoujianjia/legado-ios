@@ -578,7 +578,7 @@ assert not (EXPECTED_CASES["currentcore"] & CURRENTCORE_CERTIFICATE_PREUPDATE_QU
 EXPECTED_CASES["currentcore"] |= CURRENTCORE_CERTIFICATE_PREUPDATE_QUALIFIED_CASES
 assert len(EXPECTED_CASES["currentcore"]) == 471
 
-CURRENTCORE_FIRST_REGISTRATION_CASES = {'SelfRenewalDeveloperAccountClientTests': ('registersOriginalPortalScopeAndReusesObservedRemoteIdentity', 'registrationFailuresRetainScopeAndAcceptedFactsBeforeCSR'), 'SelfRenewalAccountSessionTests': ('appSessionRegistersOnlyItsConfiguredPairedTargetBeforeFirstProfiles',), 'SelfRenewalAuthenticatedInstallationClientTests': ('registrationDeviceObservationUsesAuthenticatedSessionAndExpiresAtStop',)}
+CURRENTCORE_FIRST_REGISTRATION_CASES = {'SelfRenewalDeveloperAccountClientTests': ('registersOriginalPortalScopeAndReusesObservedRemoteIdentity', 'registrationFailuresRetainScopeAndAcceptedFactsBeforeCSR', 'appSessionRegistersOnlyItsConfiguredPairedTargetBeforeFirstProfiles'), 'SelfRenewalAuthenticatedInstallationClientTests': ('registrationDeviceObservationUsesAuthenticatedSessionAndExpiresAtStop',)}
 CURRENTCORE_FIRST_REGISTRATION_QUALIFIED_CASES = {suite + "/" + method for suite, methods in CURRENTCORE_FIRST_REGISTRATION_CASES.items() for method in methods}
 assert len(CURRENTCORE_FIRST_REGISTRATION_QUALIFIED_CASES) == 4
 assert not (EXPECTED_CASES["currentcore"] & CURRENTCORE_FIRST_REGISTRATION_QUALIFIED_CASES)

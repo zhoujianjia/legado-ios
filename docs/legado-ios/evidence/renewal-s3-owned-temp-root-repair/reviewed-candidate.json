@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "status": "candidate-one-existing-method-alias-regression-passed",
+  "files": [
+    {
+      "path": "scripts/reader-experience/test-full-application-signing-tools.py",
+      "baseline": {
+        "path": ".build/s3-owned-temp-root-repair/baseline/scripts/reader-experience/test-full-application-signing-tools.py",
+        "bytes": 7811,
+        "sha256": "5c4f742d4c6c9827043c9eadf29afc36c3945c2f27ab9b24cb2a5189895d3e61"
+      },
+      "candidate": {
+        "path": ".build/s3-owned-temp-root-repair/candidate/scripts/reader-experience/test-full-application-signing-tools.py",
+        "bytes": 7991,
+        "sha256": "66c3e27dc14ba817dc9913c1dc26aea455b93d9161e53cab7ee1afbf13471946"
+      }
+    }
+  ],
+  "productionToolUnchanged": {
+    "path": "scripts/reader-experience/full-application-signing-tools.py",
+    "bytes": 18318,
+    "sha256": "135e1cce731fbdd65d7f4ab1d0d353734e13fbe304455e50b8ad13f32c8cc75a"
+  },
+  "reason": "The real Mac Native job failed this resource protocol test when checked rejected a symlink ancestor. Canonicalize only the test-owned temporary root. The raw log does not identify which system alias; this local actual NTFS-junction replay reproduces rejection and verifies the fix.",
+  "actualExecutions": [
+    {
+      "kind": "baseline",
+      "method": "FullApplicationSigningProtocolTests.test_required_resource_hashes_and_cleanup_are_bound_without_minimal_substitution",
+      "executed": 1,
+      "errors": 1,
+      "failures": 0,
+      "skipped": 0,
+      "actualOwnedJunction": true,
+      "physicalRootVerified": true,
+      "log": {
+        "path": ".build/s3-owned-temp-root-repair/baseline-existing-method.log",
+        "bytes": 1608,
+        "sha256": "337b9840463ce2f398b52a0ce98edca347bc40d40ffcf1ef0581dd4e9e338c32"
+      }
+    },
+    {
+      "kind": "candidate",
+      "method": "FullApplicationSigningProtocolTests.test_required_resource_hashes_and_cleanup_are_bound_without_minimal_substitution",
+      "executed": 1,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "actualOwnedJunction": true,
+      "physicalRootVerified": true,
+      "log": {
+        "path": ".build/s3-owned-temp-root-repair/candidate-existing-method.log",
+        "bytes": 333,
+        "sha256": "94155b04229ba45ac29e405f253c6fce3c1107b1e03812e46e3b9f0f461f3979"
+      }
+    }
+  ],
+  "actualDistinctMethods": 1,
+  "actualRelevantCandidatePassed": 1,
+  "actualMacReruns": 0,
+  "actualSDKOrSigningExecuted": 0,
+  "baselineCloudRun": 39537665402,
+  "baselineCloudJob": 119017948098,
+  "fullDeviceBuildReached": false,
+  "productionChanges": 0,
+  "newTestDefinitions": 0,
+  "diff": {
+    "path": ".build/s3-owned-temp-root-repair/fixture-only.diff",
+    "bytes": 1290,
+    "sha256": "e1232ecd15f70eafe1de2a64c3224c1440ae6251e94244411936eda40d23e67c"
+  },
+  "sourceHelper": {
+    "path": ".build/repair-s3-owned-temp-root.py",
+    "bytes": 4327,
+    "sha256": "2cb1e2ecb2b8487ba5675a130b3b077ef53044935896198ad54d6bcefb475b06"
+  },
+  "canonicalWrites": false,
+  "newTags": 0
+}

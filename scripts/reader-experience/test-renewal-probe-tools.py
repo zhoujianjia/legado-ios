@@ -1225,6 +1225,12 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
                 self.assertTrue(current_only.isdisjoint(expected))
                 self.assertEqual({suite + "/" + method for method in methods}, historical | current_only)
                 methods = [method for method in methods if suite + "/" + method not in current_only]
+            first_registration_only = {case for case in probe.CURRENTCORE_FIRST_REGISTRATION_QUALIFIED_CASES
+                                       if case.startswith(suite + "/")}
+            self.assertTrue(first_registration_only.isdisjoint(expected))
+            self.assertTrue(first_registration_only <= probe.EXPECTED_CASES['currentcore'])
+            self.assertTrue(first_registration_only <= {suite + "/" + method for method in methods})
+            methods = [method for method in methods if suite + "/" + method not in first_registration_only]
             actual.update(suite + "/" + method for method in methods if suite != probe.PERSISTENT_STATE_SUITE or suite + "/" + method in expected)
         self.assertEqual(actual, expected)
         wrapper = (HERE / "renewal-probe-tests.sh").read_text(encoding="utf-8")
@@ -1239,8 +1245,14 @@ class RenewalProbeEvidenceTests(unittest.TestCase):
         self.assertNotIn('original-api-package-tests.sh', body)
         selectors = re.findall(r"-only-testing:'yuedu appTests/([^']+)'", body)
         self.assertEqual(len(selectors), len(set(selectors)))
-        selected = set(selectors)
-        expanded = [case for selector in selectors for case in available
+        self.assertNotIn(probe.AUTH_INSTALL_SUITE, selectors)
+        authenticated_selectors = {selector for selector in selectors if selector.startswith(probe.AUTH_INSTALL_SUITE + '/')}
+        self.assertEqual(authenticated_selectors, {
+            probe.AUTH_INSTALL_SUITE + '/' + name + '()'
+            for name in probe.INTEGRATED_ADDITIONAL_CASES[probe.AUTH_INSTALL_SUITE]})
+        normalized_selectors = [selector.removesuffix('()') for selector in selectors]
+        selected = set(normalized_selectors)
+        expanded = [case for selector in normalized_selectors for case in available
                     if case == selector or case.split("/")[0] == selector]
         self.assertEqual(len(expanded), len(set(expanded)))
         self.assertEqual(set(expanded), expected)
@@ -2252,8 +2264,19 @@ class MaterialPublicationAndLoginActionSelectionTests(unittest.TestCase):
         self.assertEqual(added, {'SelfRenewalDeveloperAccountClientTests/appSessionMaterialReconnectRejectsChangedCurrentBundleAndKeepsPublication', 'SelfRenewalDeveloperAccountClientTests/appSessionCancelledPostPublicationReconnectRetainsItsActualReceipt', 'SelfRenewalDeveloperAccountClientTests/appOwnerInitialMaterialPublicationConnectsWithoutLifecycleRestart', 'SelfRenewalDeveloperAccountClientTests/appOwnerMaterialFinalizationConnectsWithoutRepeatedEnrollment'})
         source = (HERE.parents[1] / 'Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift').read_text(encoding='utf8')
         declarations = re.findall(r'(?m)^[ \t]*@Test[^\n]*\n(?:[ \t]*@[^\n]*\n)*[ \t]*func[ \t]+(\w+)[ \t]*\(([^)]*)\)', source)
-        self.assertEqual(len(declarations), 19)
+        # This file extends AccountClientTests; it does not declare a suite
+        # named after the source file. Keep its19 historical declarations and
+        # separately bind the one first-registration-only method to its owner.
+        first_registration = 'appSessionRegistersOnlyItsConfiguredPairedTargetBeforeFirstProfiles'
+        self.assertIn('extension SelfRenewalDeveloperAccountClientTests {', source)
+        self.assertEqual([args for name, args in declarations if name == first_registration], [''])
+        self.assertIn('SelfRenewalDeveloperAccountClientTests/' + first_registration,
+            probe.CURRENTCORE_FIRST_REGISTRATION_QUALIFIED_CASES)
+        self.assertNotIn('SelfRenewalAccountSessionTests/' + first_registration,
+            probe.EXPECTED_CASES['currentcore'])
+        self.assertEqual(len(declarations), 20)
         self.assertEqual(len(declarations), len({name for name, _ in declarations}))
+        self.assertEqual(len([name for name, _ in declarations if name != first_registration]), 19)
         for case in added:
             self.assertEqual([args for name, args in declarations if name == case.split('/')[1]], [''])
         self.assertEqual(probe.CURRENTCORE_LOGIN_ACTION_REGRESSION_QUALIFIED_CASES,
@@ -2531,11 +2554,22 @@ class DeltaReuseCheckpointSelectionTests(unittest.TestCase):
         self.assertTrue(set(probe.CURRENTCORE_GENERAL_WEBJS_RUNTIME_REPAIR_INPUTS) <= set(probe.SOURCE_INPUTS))
         self.assertEqual(len(probe.CURRENTCORE_FIRST_REGISTRATION_QUALIFIED_CASES), 4)
         self.assertTrue(set(probe.CURRENTCORE_FIRST_REGISTRATION_FULL_APPLICATION_INPUTS) <= set(probe.SOURCE_INPUTS))
+        owner = 'SelfRenewalDeveloperAccountClientTests'
+        session_method = 'appSessionRegistersOnlyItsConfiguredPairedTargetBeforeFirstProfiles'
+        self.assertIn(session_method, probe.CURRENTCORE_FIRST_REGISTRATION_CASES[owner])
+        self.assertNotIn('SelfRenewalAccountSessionTests', probe.CURRENTCORE_FIRST_REGISTRATION_CASES)
+        paths = {
+            owner: ('Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift',
+                    'Tests/iOS/yuedu appTests/SelfRenewalAccountSessionTests.swift'),
+            'SelfRenewalAuthenticatedInstallationClientTests': ('Tests/iOS/yuedu appTests/SelfRenewalAuthenticatedInstallationClientTests.swift',),
+        }
         for suite, methods in probe.CURRENTCORE_FIRST_REGISTRATION_CASES.items():
-            text = (HERE.parents[1] / ("Tests/iOS/yuedu appTests/" + suite + ".swift")).read_text(encoding="utf8")
             for method in methods:
-                self.assertIn("func " + method + "()", text)
-                self.assertIn(suite + "/" + method, probe.EXPECTED_CASES['currentcore'])
+                relative = paths[suite][1] if method == session_method else paths[suite][0]
+                text = (HERE.parents[1] / relative).read_text(encoding='utf8')
+                self.assertRegex(text, r'(?:struct|extension) ' + re.escape(suite) + r'\s*\{')
+                self.assertEqual(len(re.findall(r'func\s+' + re.escape(method) + r'\s*\(\)', text)), 1)
+                self.assertIn(suite + '/' + method, probe.EXPECTED_CASES['currentcore'])
         s3 = 'SelfRenewalFullApplicationSignerTests/signsFullCurrentIPhoneOSJVMApplicationThroughSameProductionOwners'
         self.assertTrue(all(s3 not in selected for selected in probe.EXPECTED_CASES.values()))
         self.assertEqual(len(probe.CURRENTCORE_PROXY_REMOTE_CERTIFICATE_PREUPDATE_INPUTS), 35)

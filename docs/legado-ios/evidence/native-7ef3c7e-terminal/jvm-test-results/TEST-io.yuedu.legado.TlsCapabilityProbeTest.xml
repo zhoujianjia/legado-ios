@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.yuedu.legado.TlsCapabilityProbeTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-21T03:19:18.134Z" hostname="sjc20-bb661-c309f5cc-6ff4-4fc1-bf24-c26df688a196-7E774A24BF2C.local" time="0.325">
+  <properties/>
+  <testcase name="realLoopbackTlsValidatesBothProtocolsTrustAndHostAndStopsWorkers" classname="io.yuedu.legado.TlsCapabilityProbeTest" time="0.324"/>
+  <testcase name="cancelledTaskCannotStartTLSWork" classname="io.yuedu.legado.TlsCapabilityProbeTest" time="0.001"/>
+  <testcase name="expiredDeadlineCannotStartTLSWork" classname="io.yuedu.legado.TlsCapabilityProbeTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[LEGADO_TLS_STAGE run.begin
+LEGADO_TLS_STAGE fixtures.verified
+LEGADO_TLS_STAGE server_context.ready
+LEGADO_TLS_STAGE trusted-tls12.begin
+LEGADO_TLS_STAGE trusted-tls12.server_handshake.begin
+LEGADO_TLS_STAGE trusted-tls12.client_handshake.begin
+LEGADO_TLS_STAGE trusted-tls12.server_handshake.returned
+LEGADO_TLS_STAGE trusted-tls12.client_handshake.returned
+LEGADO_TLS_STAGE trusted-tls12.classified.ACCEPTED
+LEGADO_TLS_STAGE trusted-tls13.begin
+LEGADO_TLS_STAGE trusted-tls13.server_handshake.begin
+LEGADO_TLS_STAGE trusted-tls13.client_handshake.begin
+LEGADO_TLS_STAGE trusted-tls13.client_handshake.returned
+LEGADO_TLS_STAGE trusted-tls13.server_handshake.returned
+LEGADO_TLS_STAGE trusted-tls13.classified.ACCEPTED
+LEGADO_TLS_STAGE untrusted-ca.begin
+LEGADO_TLS_STAGE untrusted-ca.client_handshake.begin
+LEGADO_TLS_STAGE untrusted-ca.server_handshake.begin
+LEGADO_TLS_STAGE untrusted-ca.server_handshake.returned
+LEGADO_TLS_STAGE untrusted-ca.classified.CERTIFICATE_CHAIN_REJECTED
+LEGADO_TLS_STAGE wrong-host.begin
+LEGADO_TLS_STAGE wrong-host.server_handshake.begin
+LEGADO_TLS_STAGE wrong-host.client_handshake.begin
+LEGADO_TLS_STAGE wrong-host.classified.HOSTNAME_REJECTED
+LEGADO_TLS_STAGE cleanup.complete
+LEGADO_TLS_STAGE run.begin
+]]></system-err>
+</testsuite>

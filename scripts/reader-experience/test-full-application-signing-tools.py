@@ -35,7 +35,9 @@ class FullApplicationSigningProtocolTests(unittest.TestCase):
         # Bytes below are deliberately NOT an IPA; this guard tests staging
         # integrity only. Production Swift must still parse/verify the real IPA.
         with tempfile.TemporaryDirectory() as name:
-            root = Path(name)
+            # Resolve this owned temporary root before checking child resources;
+            # system temp-directory aliases must not change the input policy.
+            root = Path(name).resolve(strict=True)
             archive = root / tools.RESOURCE_NAMES[1]
             archive.write_bytes(b"protocol-integrity-only-not-an-IPA")
             value = tools.fact(archive)

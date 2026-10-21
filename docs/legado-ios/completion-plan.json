@@ -169,8 +169,8 @@
       "triggerForEachSmallChange": false,
       "waitForCloudBeforeContinuingReadyDevelopment": false,
       "repeatWithoutChangedCodeFailureOrUnresolvedConcern": false,
-      "nextPlannedCheckpoint": "Observe these exact SDK/Native handles and classify their actual results before any replacement submission. No duplicate/per-item or IPA tags. Continue only necessary independent source work; book-source long-tail stays deferred.",
-      "alreadyRunningTasks": "Exactly two new source-bound runs are live at initial observation: SDK39537665728/job119017948485 and Native39537665402/job119017948098. Old f481/f233/88 terminals remain archived and must not be queried again.",
+      "nextPlannedCheckpoint": "Wait for the exact SDK7ef3 terminal and classify actual results, then combine any real SDK failures with the reviewed selector/legacy-boundary and S3 owned-temp-root repairs in one necessary successor checkpoint. No new tags while the SDK remains live; no IPA tag or book-source long-tail expansion.",
+      "alreadyRunningTasks": "Only SDK39537665728/job119017948485 was last observed live; its portable step failed and native diagnostics continued. Native39537665402/job119017948098 is terminal failure, fully archived, with JVM378/378 pass and S3/device/Simulator execution0. Never query the Native terminal again.",
       "latestOwnedProducerTerminal": {
         "sourceCommit": "8d934dd5311f73cddd5a88e3085f06fa15fc0ae1",
         "sourceTag": "reader-renewal-8d934dd",
@@ -222,16 +222,6 @@
           "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39537665728",
           "initialStatus": "in_progress",
           "status": "in_progress"
-        },
-        {
-          "runID": 39537665402,
-          "jobID": 119017948098,
-          "sourceCommit": "7ef3c7ec1b0d37ce2b395bb897f6806f5acbafa8",
-          "sourceTag": "legado-native-reader-test-7ef3c7e",
-          "workflow": ".github/workflows/legado-native-reader-test.yml",
-          "url": "https://github.com/zhoujianjia/legado-ios/actions/runs/39537665402",
-          "initialStatus": "in_progress",
-          "status": "in_progress"
         }
       ],
       "latestDevicePackageTerminal": {
@@ -247,26 +237,26 @@
         "actualDeviceRenewalAccepted": false
       },
       "latestOriginalNativeTerminal": {
-        "sourceCommit": "f481e89717b96df1d15d5c3f9a72c359d1fcef55",
-        "record": "docs/legado-ios/core-native-f481e89-terminal-result.json",
-        "runID": 39533277157,
+        "sourceCommit": "7ef3c7ec1b0d37ce2b395bb897f6806f5acbafa8",
+        "record": "docs/legado-ios/core-native-7ef3c7e-terminal-result.json",
+        "runID": 39537665402,
+        "jobID": 119017948098,
+        "status": "completed",
         "conclusion": "failure",
         "queryAgain": false,
         "actualJVM": {
           "XMLSuites": 58,
-          "uniqueCaseIdentities": 378,
-          "passed": 377,
-          "failed": 1,
+          "uniqueMethods": 378,
+          "passed": 378,
+          "failures": 0,
           "errors": 0,
-          "skipped": 0
+          "skipped": 0,
+          "derivedFrom": "all actual ZIP raw XML, not reused old results"
         },
         "actualNativeExecuted": 0,
-        "separateSourceRepairRecord": "docs/legado-ios/core-native-f481e89-proxy-fixture-repair.json",
-        "jobID": 119003957102,
-        "status": "completed",
-        "JVMMethodsPassed": 377,
-        "JVMMethodsFailed": 1,
-        "NativeMethodsExecuted": 0
+        "actualCompleteDeviceBuilds": 0,
+        "failure": "S3 protocol fixture rejected a symlink ancestor before the device prepare command.",
+        "separateSourceRepairRecord": "docs/legado-ios/core-renewal-s3-owned-temp-root-repair.json"
       },
       "currentUnifiedCheckpoint": {
         "sourceCommit": "7ef3c7ec1b0d37ce2b395bb897f6806f5acbafa8",
@@ -397,21 +387,26 @@
         "actualNewAcceptedTests": 0
       },
       "latestNativeTerminal": {
-        "sourceCommit": "f481e89717b96df1d15d5c3f9a72c359d1fcef55",
-        "record": "docs/legado-ios/core-native-f481e89-terminal-result.json",
-        "runID": 39533277157,
+        "sourceCommit": "7ef3c7ec1b0d37ce2b395bb897f6806f5acbafa8",
+        "record": "docs/legado-ios/core-native-7ef3c7e-terminal-result.json",
+        "runID": 39537665402,
+        "jobID": 119017948098,
+        "status": "completed",
         "conclusion": "failure",
         "queryAgain": false,
         "actualJVM": {
           "XMLSuites": 58,
-          "uniqueCaseIdentities": 378,
-          "passed": 377,
-          "failed": 1,
+          "uniqueMethods": 378,
+          "passed": 378,
+          "failures": 0,
           "errors": 0,
-          "skipped": 0
+          "skipped": 0,
+          "derivedFrom": "all actual ZIP raw XML, not reused old results"
         },
         "actualNativeExecuted": 0,
-        "separateSourceRepairRecord": "docs/legado-ios/core-native-f481e89-proxy-fixture-repair.json"
+        "actualCompleteDeviceBuilds": 0,
+        "failure": "S3 protocol fixture rejected a symlink ancestor before the device prepare command.",
+        "separateSourceRepairRecord": "docs/legado-ios/core-renewal-s3-owned-temp-root-repair.json"
       }
     },
     "nextReadyBatch": [
@@ -618,6 +613,10 @@
             {
               "record": "docs/legado-ios/core-sdk-first-registration-full-application-checkpoint.json",
               "scope": "Reviewed coherent source checkpoint: first registration4 definitions, exact DER API fix, stale proxy test repair and required complete package1/1 gate. Actual affected portable5 passed; Apple SDK/JNI/full signing not yet executed."
+            },
+            {
+              "record": "docs/legado-ios/core-native-7ef3c7e-terminal-result.json",
+              "scope": "Fresh ordinary Gradle JUnit378/378 pass; no Simulator/JNI/cold or full-device signing executed."
             }
           ],
           "nextActionZh": "按用户90%阶段目标，先验证已合入的搜索、详情、目录、正文与状态保存核心链路；长尾功能暂缓。兼容率仍需代表性书源全流程样本，不能由测试数量推算。",
@@ -770,6 +769,10 @@
             {
               "record": "docs/legado-ios/core-sdk-first-registration-full-application-checkpoint.json",
               "scope": "Reviewed coherent source checkpoint: first registration4 definitions, exact DER API fix, stale proxy test repair and required complete package1/1 gate. Actual affected portable5 passed; Apple SDK/JNI/full signing not yet executed."
+            },
+            {
+              "record": "docs/legado-ios/core-native-7ef3c7e-terminal-result.json",
+              "scope": "Fresh ordinary Gradle JUnit378/378 pass; no Simulator/JNI/cold or full-device signing executed."
             }
           ],
           "implementedSubtasksZh": [
@@ -880,6 +883,10 @@
             {
               "record": "docs/legado-ios/core-sdk-first-registration-full-application-checkpoint.json",
               "scope": "Reviewed coherent source checkpoint: first registration4 definitions, exact DER API fix, stale proxy test repair and required complete package1/1 gate. Actual affected portable5 passed; Apple SDK/JNI/full signing not yet executed."
+            },
+            {
+              "record": "docs/legado-ios/core-native-7ef3c7e-terminal-result.json",
+              "scope": "Fresh ordinary Gradle JUnit378/378 pass; no Simulator/JNI/cold or full-device signing executed."
             }
           ],
           "nextActionZh": "按用户90%阶段目标，先验证已合入的搜索、详情、目录、正文与状态保存核心链路；长尾功能暂缓。兼容率仍需代表性书源全流程样本，不能由测试数量推算。",
@@ -997,6 +1004,10 @@
             {
               "record": "docs/legado-ios/core-sdk-first-registration-full-application-checkpoint.json",
               "scope": "Reviewed coherent source checkpoint: first registration4 definitions, exact DER API fix, stale proxy test repair and required complete package1/1 gate. Actual affected portable5 passed; Apple SDK/JNI/full signing not yet executed."
+            },
+            {
+              "record": "docs/legado-ios/core-native-7ef3c7e-terminal-result.json",
+              "scope": "Fresh ordinary Gradle JUnit378/378 pass; no Simulator/JNI/cold or full-device signing executed."
             }
           ],
           "nextActionZh": "按用户90%阶段目标，先验证已合入的搜索、详情、目录、正文与状态保存核心链路；长尾功能暂缓。兼容率仍需代表性书源全流程样本，不能由测试数量推算。",
@@ -1101,6 +1112,10 @@
             {
               "record": "docs/legado-ios/core-sdk-first-registration-full-application-checkpoint.json",
               "scope": "Reviewed coherent source checkpoint: first registration4 definitions, exact DER API fix, stale proxy test repair and required complete package1/1 gate. Actual affected portable5 passed; Apple SDK/JNI/full signing not yet executed."
+            },
+            {
+              "record": "docs/legado-ios/core-native-7ef3c7e-terminal-result.json",
+              "scope": "Fresh ordinary Gradle JUnit378/378 pass; no Simulator/JNI/cold or full-device signing executed."
             }
           ],
           "implementedSubtasksZh": [
@@ -1175,6 +1190,14 @@
             {
               "record": "docs/legado-ios/core-sdk-first-registration-full-application-checkpoint.json",
               "scope": "Reviewed coherent source checkpoint: first registration4 definitions, exact DER API fix, stale proxy test repair and required complete package1/1 gate. Actual affected portable5 passed; Apple SDK/JNI/full signing not yet executed."
+            },
+            {
+              "record": "docs/legado-ios/core-sdk-7ef3c7e-selector-portable-repair.json",
+              "scope": "Fix real first-registration suite identity and preserve exact legacy140; local6pass, no corrected Apple run."
+            },
+            {
+              "record": "docs/legado-ios/core-renewal-s3-owned-temp-root-repair.json",
+              "scope": "Normalize only the test-owned temporary root. Actual owned-junction baseline failure/candidate pass for one existing method; no Mac/full signing pass."
             }
           ],
           "nextActionZh": "提交同一源码的集中SDK/模拟器验证，实际执行已选续签、认证安装、事务恢复和触发回归；完整应用包重签另以同job必需1项验签。不以便携检查或源码审查代替真实执行。",
@@ -1253,6 +1276,14 @@
             {
               "record": "docs/legado-ios/core-sdk-first-registration-full-application-checkpoint.json",
               "scope": "Reviewed coherent source checkpoint: first registration4 definitions, exact DER API fix, stale proxy test repair and required complete package1/1 gate. Actual affected portable5 passed; Apple SDK/JNI/full signing not yet executed."
+            },
+            {
+              "record": "docs/legado-ios/core-sdk-7ef3c7e-selector-portable-repair.json",
+              "scope": "Fix real first-registration suite identity and preserve exact legacy140; local6pass, no corrected Apple run."
+            },
+            {
+              "record": "docs/legado-ios/core-renewal-s3-owned-temp-root-repair.json",
+              "scope": "Normalize only the test-owned temporary root. Actual owned-junction baseline failure/candidate pass for one existing method; no Mac/full signing pass."
             }
           ],
           "implementedSubtasksZh": [
@@ -1324,6 +1355,14 @@
             {
               "record": "docs/legado-ios/core-sdk-first-registration-full-application-checkpoint.json",
               "scope": "Reviewed coherent source checkpoint: first registration4 definitions, exact DER API fix, stale proxy test repair and required complete package1/1 gate. Actual affected portable5 passed; Apple SDK/JNI/full signing not yet executed."
+            },
+            {
+              "record": "docs/legado-ios/core-sdk-7ef3c7e-selector-portable-repair.json",
+              "scope": "Fix real first-registration suite identity and preserve exact legacy140; local6pass, no corrected Apple run."
+            },
+            {
+              "record": "docs/legado-ios/core-renewal-s3-owned-temp-root-repair.json",
+              "scope": "Normalize only the test-owned temporary root. Actual owned-junction baseline failure/candidate pass for one existing method; no Mac/full signing pass."
             }
           ],
           "implementedSubtasksZh": [
@@ -1400,6 +1439,14 @@
             {
               "record": "docs/legado-ios/core-sdk-first-registration-full-application-checkpoint.json",
               "scope": "Reviewed coherent source checkpoint: first registration4 definitions, exact DER API fix, stale proxy test repair and required complete package1/1 gate. Actual affected portable5 passed; Apple SDK/JNI/full signing not yet executed."
+            },
+            {
+              "record": "docs/legado-ios/core-sdk-7ef3c7e-selector-portable-repair.json",
+              "scope": "Fix real first-registration suite identity and preserve exact legacy140; local6pass, no corrected Apple run."
+            },
+            {
+              "record": "docs/legado-ios/core-renewal-s3-owned-temp-root-repair.json",
+              "scope": "Normalize only the test-owned temporary root. Actual owned-junction baseline failure/candidate pass for one existing method; no Mac/full signing pass."
             }
           ],
           "implementedSubtasksZh": [
@@ -1462,6 +1509,14 @@
             {
               "record": "docs/legado-ios/core-sdk-first-registration-full-application-checkpoint.json",
               "scope": "Reviewed coherent source checkpoint: first registration4 definitions, exact DER API fix, stale proxy test repair and required complete package1/1 gate. Actual affected portable5 passed; Apple SDK/JNI/full signing not yet executed."
+            },
+            {
+              "record": "docs/legado-ios/core-sdk-7ef3c7e-selector-portable-repair.json",
+              "scope": "Fix real first-registration suite identity and preserve exact legacy140; local6pass, no corrected Apple run."
+            },
+            {
+              "record": "docs/legado-ios/core-renewal-s3-owned-temp-root-repair.json",
+              "scope": "Normalize only the test-owned temporary root. Actual owned-junction baseline failure/candidate pass for one existing method; no Mac/full signing pass."
             }
           ],
           "implementedSubtasksZh": [
@@ -1532,6 +1587,14 @@
             {
               "record": "docs/legado-ios/core-sdk-first-registration-full-application-checkpoint.json",
               "scope": "Reviewed coherent source checkpoint: first registration4 definitions, exact DER API fix, stale proxy test repair and required complete package1/1 gate. Actual affected portable5 passed; Apple SDK/JNI/full signing not yet executed."
+            },
+            {
+              "record": "docs/legado-ios/core-sdk-7ef3c7e-selector-portable-repair.json",
+              "scope": "Fix real first-registration suite identity and preserve exact legacy140; local6pass, no corrected Apple run."
+            },
+            {
+              "record": "docs/legado-ios/core-renewal-s3-owned-temp-root-repair.json",
+              "scope": "Normalize only the test-owned temporary root. Actual owned-junction baseline failure/candidate pass for one existing method; no Mac/full signing pass."
             }
           ],
           "nextActionZh": "提交同一源码的集中SDK/模拟器验证，实际执行已选续签、认证安装、事务恢复和触发回归；完整应用包重签另以同job必需1项验签。不以便携检查或源码审查代替真实执行。",
@@ -2561,7 +2624,7 @@
       },
       "fullApplicationSigning": {
         "record": "docs/legado-ios/core-renewal-full-application-signing-step.json",
-        "status": "submitted-to-required-same-job-Native-gate-actual-execution-pending",
+        "status": "Native7ef3-failed-in-portable-fixture-before-device-build-local-test-only-repair-integrated-Mac-rerun-pending",
         "newMandatorySameJobNativeDefinitions": 1,
         "newMandatorySameJobNativeLeaves": 1,
         "currentcoreSelectionChanged": false,
@@ -2604,6 +2667,41 @@
         "sourceCommit": "7ef3c7ec1b0d37ce2b395bb897f6806f5acbafa8",
         "status": "both-in-progress-initial-observation",
         "actualNewAcceptedTests": 0
+      },
+      "current7ef3NativeTerminal": {
+        "sourceCommit": "7ef3c7ec1b0d37ce2b395bb897f6806f5acbafa8",
+        "record": "docs/legado-ios/core-native-7ef3c7e-terminal-result.json",
+        "runID": 39537665402,
+        "jobID": 119017948098,
+        "status": "completed",
+        "conclusion": "failure",
+        "queryAgain": false,
+        "actualJVM": {
+          "XMLSuites": 58,
+          "uniqueMethods": 378,
+          "passed": 378,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "derivedFrom": "all actual ZIP raw XML, not reused old results"
+        },
+        "actualNativeExecuted": 0,
+        "actualCompleteDeviceBuilds": 0,
+        "failure": "S3 protocol fixture rejected a symlink ancestor before the device prepare command.",
+        "separateSourceRepairRecord": "docs/legado-ios/core-renewal-s3-owned-temp-root-repair.json"
+      },
+      "SDK7ef3SelectorPortableRepair": {
+        "record": "docs/legado-ios/core-sdk-7ef3c7e-selector-portable-repair.json",
+        "actualRepairedPortablePassed": 6,
+        "actualPostFixAppleRuns": 0,
+        "sourceOnlyQueuedForNextCoherentCheckpoint": true
+      },
+      "S3OwnedTempRootRepair": {
+        "record": "docs/legado-ios/core-renewal-s3-owned-temp-root-repair.json",
+        "actualCandidateExistingMethodPassed": 1,
+        "actualDistinctMethods": 1,
+        "actualMacReruns": 0,
+        "actualFullDeviceSigningExecuted": 0
       }
     }
   },
@@ -6993,7 +7091,10 @@
     "docs/legado-ios/core-sdk-f481e89-terminal-result.json",
     "docs/legado-ios/core-renewal-full-application-signing-step.json",
     "docs/legado-ios/core-sdk-first-registration-full-application-checkpoint.json",
-    "docs/legado-ios/core-sdk-7ef3c7e-request.json"
+    "docs/legado-ios/core-sdk-7ef3c7e-request.json",
+    "docs/legado-ios/core-native-7ef3c7e-terminal-result.json",
+    "docs/legado-ios/core-sdk-7ef3c7e-selector-portable-repair.json",
+    "docs/legado-ios/core-renewal-s3-owned-temp-root-repair.json"
   ],
   "userScopeAdjustments": [
     {

@@ -1,0 +1,19 @@
+test_required_resource_hashes_and_cleanup_are_bound_without_minimal_substitution (owned_temp_fixture_baseline.FullApplicationSigningProtocolTests.test_required_resource_hashes_and_cleanup_are_bound_without_minimal_substitution) ... ERROR
+
+======================================================================
+ERROR: test_required_resource_hashes_and_cleanup_are_bound_without_minimal_substitution (owned_temp_fixture_baseline.FullApplicationSigningProtocolTests.test_required_resource_hashes_and_cleanup_are_bound_without_minimal_substitution)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "F:\yuedu-reader\.build\s3-owned-temp-root-repair\baseline\scripts\reader-experience\test-full-application-signing-tools.py", line 51, in test_required_resource_hashes_and_cleanup_are_bound_without_minimal_substitution
+    tools.resource_binding(root, "c" * 40, producer)
+  File "F:\yuedu-reader\.build\s3-owned-temp-root-repair\baseline\scripts\reader-experience\full-application-signing-tools.py", line 122, in resource_binding
+    metadata_path = checked(directory / RESOURCE_NAMES[0])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "F:\yuedu-reader\.build\s3-owned-temp-root-repair\baseline\scripts\reader-experience\full-application-signing-tools.py", line 52, in checked
+    raise ValueError("Symlinked full-application input/output is forbidden")
+ValueError: Symlinked full-application input/output is forbidden
+
+----------------------------------------------------------------------
+Ran 1 test in 0.002s
+
+FAILED (errors=1)

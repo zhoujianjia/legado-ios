@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "status": "source-and-existing-evidence review passed; no confirmed blocker",
+  "candidateManifest": {
+    "path": ".build/s3-owned-temp-root-repair/final-v1.json",
+    "bytes": 3038,
+    "sha256": "d59c06264d45bf89123562346a81e75d3cc31ce8e03b469eb2300d1fb0d98e64"
+  },
+  "candidateSource": {
+    "path": ".build/s3-owned-temp-root-repair/candidate/scripts/reader-experience/test-full-application-signing-tools.py",
+    "bytes": 7991,
+    "sha256": "66c3e27dc14ba817dc9913c1dc26aea455b93d9161e53cab7ee1afbf13471946"
+  },
+  "productionToolUnchanged": {
+    "path": "scripts/reader-experience/full-application-signing-tools.py",
+    "bytes": 18318,
+    "sha256": "135e1cce731fbdd65d7f4ab1d0d353734e13fbe304455e50b8ad13f32c8cc75a"
+  },
+  "findings": [],
+  "sourceFacts": [
+    "Exact one-line test-owned temporary-root normalization plus comment; replacing it reconstructs every other baseline byte and AST.",
+    "All existing negative assertions, TemporaryDirectory cleanup scope, source/hash checks, missing-resource and no-minimal-substitution assertions remain exact.",
+    "Production checked/resource_binding and both replay copies remain byte-identical. Symlink/junction ancestor rejection for arbitrary caller input is retained."
+  ],
+  "evidenceFacts": {
+    "actualMacJobLog": {
+      "path": ".build/native-7ef3c7e-terminal/job.log",
+      "bytes": 77970,
+      "sha256": "db72ad89523508b55cec03c4b63e3d13f8c2219d3c89cc79b48a86ce280791d3"
+    },
+    "MacFailureLocation": "lines717-735: same resource-protocol method fails resource_binding -> checked. Raw log does not identify the particular system alias.",
+    "ownedReplay": "Existing baseline and candidate NTFS junctions physically verified. Original logs bind baseline1error/same ValueError and candidate1pass; not rerun.",
+    "sourceOnlyReadHistory": "An initial UTF8 job-log read used Windows default codec and stopped before report output; explicit UTF8 read corrected this review-only decoding. No test/source mutation."
+  },
+  "limits": [
+    "No reviewer test, SDK, Mac, signing, IPA or device execution. NTFS replay does not prove a future Mac run.",
+    "No full-device-build success, Apple signing/installation authority or automatic renewal inferred."
+  ],
+  "reviewerTestExecutions": 0,
+  "reviewerCloudQueries": 0,
+  "canonicalWrites": false,
+  "GitWrites": false,
+  "newTags": 0
+}
