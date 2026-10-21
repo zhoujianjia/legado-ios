@@ -547,6 +547,7 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
         if request.operation == "source.login-info" { return try sourceLoginInfo(request) }
         if request.operation == "source.login-header" { return try sourceLoginHeader(request) }
         if request.operation == "content.batch.authorize" { return try authorizeContentBatch(request) }
+        if request.operation == "book.refresh.identity" { return try await refreshBookIdentity(request) }
         if request.operation == "explore.owner.scope" { return try explorationOwnerScope(request) }
         if request.operation == "cookie.owner.read" { return try await readCookieOwner(request) }
         if request.operation == "cookie.owner.text" { return try await textCookieOwner(request) }
@@ -1775,7 +1776,7 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
                 guard previewTOCLeases.count < 32, nextLease < Int64.max else { throw failure("STATE_LIMIT", "Preview TOC lease budget exceeded") }
                 nextLease += 1
                 let proof = LegadoPreviewTOCStateSnapshot(recordID: snapshot.recordID, revision: snapshot.revision,
-                    rawSHA256: snapshot.rawSHA256, wire: wire, value: nil)
+                    rawSHA256: snapshot.rawSHA256, bookURL: snapshot.bookURL, wire: wire, value: nil)
                 previewTOCLeases[nextLease] = .init(owner: decoded.owner, binding: decoded.binding, grant: grant, snapshot: proof)
                 leaseOrder.append(nextLease); trimLeases()
                 return try encoded(["revision": nextLease, "values": values])
@@ -1946,6 +1947,43 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
             // Successful atomic replacement is already the owner transaction boundary.
             // A later cancel/revoke cannot be reported as an uncommitted disk mutation.
             return try encoded(["committed": committed])
+        }
+    }
+
+    private func refreshBookIdentity(_ request: LegadoHostRequest) async throws -> String {
+        try check(request)
+        guard request.requestJSON.utf8.count <= 1_114_112,
+              let input = try JSONSerialization.jsonObject(with: Data(request.requestJSON.utf8)) as? [String: Any],
+              Set(input.keys).isSubset(of: ["owner", "sourceURL", "fromBookURL", "toBookURL", "bookVariables", "deadlineEpochMs", "remainingTimeoutMs"]),
+              let owner = input["owner"] as? String, let binding = bindings[owner],
+              let sourceURL = input["sourceURL"] as? String, LegadoPreviewIdentity.same(sourceURL, binding.sourceURL),
+              revisions[binding.sourceURL] == binding.sourceRevision,
+              let preview = bookOwners[owner] as? LegadoPreviewStateOwner,
+              let from = input["fromBookURL"] as? String, let to = input["toBookURL"] as? String,
+              let variables = input["bookVariables"] as? String, variables.utf8.count <= 1_048_576 else {
+            throw failure("INVALID_STATE_REQUEST", "Book identity refresh requires its exact current owner and bounded fields")
+        }
+        try preview.validateRequest(request)
+        let deadline = min(try cookieReadDeadline(input), Date().addingTimeInterval(request.remainingTimeoutSeconds))
+        let ticket = OriginalRuntimeCommitCancellation(); let requestID = UUID()
+        pendingEntityOperations[request.taskID, default: [:]][requestID] = ticket
+        defer {
+            pendingEntityOperations[request.taskID]?.removeValue(forKey: requestID)
+            if pendingEntityOperations[request.taskID]?.isEmpty == true { pendingEntityOperations.removeValue(forKey: request.taskID) }
+        }
+        return try await SourcePerfTrace.spanAsync("legado.book.refresh.identity", "bytes=\(request.requestJSON.utf8.count) main=\(Thread.isMainThread)") {
+            guard request.recordPossibleEffect("bookIdentityGrantMayChange") else { throw CancellationError() }
+            try await withTaskCancellationHandler {
+                try await preview.grant.service.refreshPreviewBookIdentity(preview.grant, from: from, to: to,
+                    bookVariables: variables, deadline: deadline, cancellation: ticket)
+            } onCancel: { ticket.cancel() }
+            // No old entity/TOC lease can authorize writes after this scope change.
+            entityLeases = entityLeases.filter { $0.value.owner != owner }
+            previewTOCLeases = previewTOCLeases.filter { $0.value.owner != owner }
+            request.recordPossibleEffect("bookIdentityGrantChanged")
+            try check(request); try currentEntityBinding(owner: owner, binding: binding)
+            try preview.grant.check(deadline: deadline)
+            return try encoded(["accepted": true, "bookURL": to])
         }
     }
 

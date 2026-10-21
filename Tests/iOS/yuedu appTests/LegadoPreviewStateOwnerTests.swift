@@ -19,6 +19,7 @@ private actor PreviewFixtureExecutor: LegadoOriginalPreviewExecuting {
     enum Mode: Sendable, Equatable {
         case normal, failAfterCommit, staleCAS, changeAfterSeal, waitBeforeCommit, failWrite, scopeChecks, unicodeURLs
         case unicodeRawSmallMap, unicodeLargeAccess, unicodeCrossCompartment
+        case refreshDenied, refreshIdentity, refreshStaleLeases, refreshFailAfterCommit, refreshWaitAfterCommit
     }
     let host = LegadoPersistentStateHost(backing: PreviewFixtureNoSourceState())
     let directory: URL
@@ -36,6 +37,11 @@ private actor PreviewFixtureExecutor: LegadoOriginalPreviewExecuting {
     private var chapterLiteral: String?
     private(set) var staleWasRejected = false
     private(set) var scopeWasRejected = false
+    private(set) var refreshRejections: [String] = []
+    private(set) var staleRefreshEntityRejected = false
+    private(set) var staleRefreshTOCRejected = false
+    private(set) var refreshedLargeWasEmpty = false
+    private(set) var refreshedChapterWasEmpty = false
     let large = String(repeating: "L", count: 10_000)
 
     init(directory: URL) {
@@ -56,6 +62,101 @@ private actor PreviewFixtureExecutor: LegadoOriginalPreviewExecuting {
         do { _ = try await read(owner: lastOwner, keys: [lastWire]); return false }
         catch let error as LegadoRuntimeError { return error.code == "INVALID_STATE_OWNER" }
     }
+    func unboundRefreshIsRejected(sourceURL: String) async throws -> Bool {
+        do {
+            _ = try await call("book.refresh.identity", ["owner": "not-a-preview-owner", "sourceURL": sourceURL,
+                "fromBookURL": "https://preview-owned.invalid/book", "toBookURL": "https://preview-owned.invalid/moved",
+                "bookVariables": "{}", "deadlineEpochMs": Int64(Date().addingTimeInterval(30).timeIntervalSince1970 * 1_000),
+                "remainingTimeoutMs": 30_000])
+            return false
+        } catch let error as LegadoRuntimeError { return error.code == "INVALID_STATE_REQUEST" }
+    }
+    private func refreshInput(owner: String, grant: OriginalRuntimePreviewGrant, from: String, to: String,
+                              variables: String, deadline: Date) -> [String: Any] {
+        ["owner": owner, "sourceURL": grant.sourceURL, "fromBookURL": from, "toBookURL": to,
+         "bookVariables": variables, "deadlineEpochMs": Int64(deadline.timeIntervalSince1970 * 1_000),
+         "remainingTimeoutMs": 30_000]
+    }
+    private func assertRefreshDenied(owner: String, grant: OriginalRuntimePreviewGrant, deadline: Date) async throws {
+        let small = try key(grant, chapter: nil)
+        let values = try map(await read(owner: owner, keys: [small]), key: small) ?? [:]
+        do {
+            _ = try await call("book.refresh.identity", refreshInput(owner: owner, grant: grant, from: grant.bookURL,
+                to: grant.bookURL + "/ungranted", variables: try json(values), deadline: deadline))
+            Issue.record("Details/content or non-opt-in TOC accepted an identity refresh")
+        } catch let error as LegadoRuntimeError {
+            #expect(error.code == "INVALID_STATE_OWNER")
+            refreshRejections.append(error.code)
+        }
+    }
+    private func staleRefreshCommitIsRejected(owner: String, read: [String: Any], wire: String,
+                                              value: Data) async throws -> Bool {
+        do { return try await !commit(owner: owner, read: read, changes: [wire: value.base64EncodedString()]) }
+        catch let error as LegadoRuntimeError { return error.code == "UNSUPPORTED_CAPABILITY" }
+    }
+    private func refreshedTOC(_ original: LegadoOriginalBook, owner: String,
+                              grant: OriginalRuntimePreviewGrant, deadline: Date) async throws -> LegadoOriginalPreviewResult {
+        let from = grant.bookURL; let to = from + "/moved"
+        let oldSmall = try key(grant, chapter: nil)
+        let oldRead = try await read(owner: owner, keys: [oldSmall])
+        var variables = try map(oldRead, key: oldSmall) ?? [:]
+        let oldTOC = try json([grant.sourceURL, "toc", from])
+        let oldTOCRead = try await read(owner: owner, keys: [oldTOC])
+        let input = refreshInput(owner: owner, grant: grant, from: from, to: to,
+            variables: try json(variables), deadline: deadline)
+        do {
+            _ = try await call("book.refresh.identity", input, taskID: "foreign-refresh-task")
+            Issue.record("A different task borrowed the refresh grant")
+        } catch let error as LegadoRuntimeError {
+            #expect(error.code == "INVALID_STATE_OWNER"); refreshRejections.append(error.code)
+        }
+        let ack = try await call("book.refresh.identity", input)
+        #expect(ack["accepted"] as? Bool == true && ack["bookURL"] as? String == to)
+        #expect(Data(grant.bookURL.utf8) == Data(to.utf8))
+        if mode == .refreshStaleLeases {
+            staleRefreshEntityRejected = try await staleRefreshCommitIsRejected(owner: owner, read: oldRead,
+                wire: oldSmall, value: try data(["stale": "must not land"]))
+            staleRefreshTOCRejected = try await staleRefreshCommitIsRejected(owner: owner, read: oldTOCRead,
+                wire: oldTOC, value: Data("[]".utf8))
+            #expect(staleRefreshEntityRejected && staleRefreshTOCRejected)
+        }
+        let small = try key(grant, chapter: nil)
+        let oldLargeName = try key(grant, chapter: nil, large: "large")
+        let nextLarge = try key(grant, chapter: nil, large: "refreshed")
+        let fresh = try await read(owner: owner, keys: [small, oldLargeName, nextLarge])
+        let freshValues = try #require(fresh["values"] as? [String: String])
+        refreshedLargeWasEmpty = freshValues[oldLargeName] == nil && freshValues[nextLarge] == nil
+        #expect(refreshedLargeWasEmpty)
+        variables = try map(fresh, key: small) ?? [:]
+        variables["refresh"] = "new shared small value"
+        #expect(try await commit(owner: owner, read: fresh, changes: [small: try data(variables).base64EncodedString(),
+            nextLarge: Data("owned-new-large".utf8).base64EncodedString()]))
+        // The chapter URL is deliberately the same as the old book's chapter.
+        // New book identity must not borrow that old chapter's variables/index.
+        var chapter = LegadoOriginalChapter(bookURL: to, url: from + "/chapter/1", index: 0,
+            title: "Refreshed chapter", baseURL: to + "/toc")
+        let chapterKey = try key(grant, chapter: chapter.url)
+        let chapterRead = try await read(owner: owner, keys: [chapterKey])
+        refreshedChapterWasEmpty = try map(chapterRead, key: chapterKey) == nil
+        #expect(refreshedChapterWasEmpty)
+        let chapterValues = ["chapter": "new book only"]
+        #expect(try await commit(owner: owner, read: chapterRead, changes: [chapterKey: try data(chapterValues).base64EncodedString()]))
+        chapter.variable = try json(chapterValues)
+        let newTOC = try json([grant.sourceURL, "toc", to])
+        let newTOCRead = try await read(owner: owner, keys: [newTOC])
+        #expect(try await commit(owner: owner, read: newTOCRead,
+            changes: [newTOC: try JSONEncoder().encode([chapter]).base64EncodedString()]))
+        if mode == .refreshFailAfterCommit {
+            throw LegadoRuntimeError(code: "RULE_ERROR", message: "Owned refresh failed after accepted new-URL state writes")
+        }
+        if mode == .refreshWaitAfterCommit {
+            event.yield(true)
+            await withCheckedContinuation { gate = $0 }
+            try Task.checkCancellation()
+        }
+        var book = original; book.bookURL = to; book.tocURL = to + "/toc"; book.variable = try json(variables)
+        return .toc(book, [chapter])
+    }
     func execute(sourceJSON: String, sourceURL: String, sourceRevision: String,
                  grant: OriginalRuntimePreviewGrant?, operation: LegadoOriginalPreviewOperation,
                  deadline: Date) async throws -> LegadoOriginalPreviewResult {
@@ -72,6 +173,7 @@ private actor PreviewFixtureExecutor: LegadoOriginalPreviewExecuting {
         activeTaskID = grant.taskID
         lastOwner = owner
         do {
+            if mode == .refreshDenied { try await assertRefreshDenied(owner: owner, grant: grant, deadline: deadline) }
             let result: LegadoOriginalPreviewResult
             switch operation {
             case .search: throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "Unexpected search state")
@@ -161,8 +263,13 @@ private actor PreviewFixtureExecutor: LegadoOriginalPreviewExecuting {
                 values["direct"] = "setter"
                 book.variable = try json(values)
                 result = .details(book)
-            case .toc(var book, _):
+            case .toc(var book, let runPreUpdateJS):
                 calls.append("toc")
+                if [.refreshIdentity, .refreshStaleLeases, .refreshFailAfterCommit, .refreshWaitAfterCommit].contains(mode) {
+                    #expect(runPreUpdateJS && grant.allowsBookIdentityRefresh)
+                    result = try await refreshedTOC(book, owner: owner, grant: grant, deadline: deadline)
+                    break
+                }
                 let bookKey = try key(grant, chapter: nil)
                 book.variable = try map(await read(owner: owner, keys: [bookKey]), key: bookKey).map { try json($0) }
                 let urls = mode == .unicodeURLs ? [book.bookURL + "/\u{00E9}", book.bookURL + "/e\u{0301}"] : [book.bookURL + "/chapter/1"]
@@ -626,6 +733,115 @@ struct LegadoPreviewStateOwnerTests {
                     #expect(!LegadoPreviewIdentity.sameChapter(chapter, toc.chapters[0]))
                 }
             }
+        }
+    }
+
+    @Test("Only opted-in TOC owns task-local URL refresh; details, content, missing owner and wrong task do not")
+    func preUpdateIdentityGrantRequiresTaskTOCAndOptIn() async throws {
+        let f = try fixture(); defer { cleanup(f) }; let book = try await search(f)
+        #expect(try await f.executor.unboundRefreshIsRejected(sourceURL: f.source.bookSourceUrl))
+        await f.executor.setMode(.refreshDenied)
+        let detail = try await details(f, book)
+        let ordinary = try await f.service.originalTOC(url: detail.tocUrl, source: f.source,
+            runtimeVariables: detail.runtimeVariables, runPreUpdateJS: false)
+        let chapter = try #require(ordinary.chapters.first)
+        _ = try await f.service.originalContent(ref: chapter, source: f.source)
+        #expect(await f.executor.refreshRejections.count == 3)
+        await f.executor.setMode(.refreshIdentity)
+        let moved = try await f.service.originalTOC(url: ordinary.tocURL, source: f.source,
+            runtimeVariables: ordinary.runtimeVariables, runPreUpdateJS: true)
+        #expect(moved.bookURL == book.bookUrl + "/moved")
+        #expect(await f.executor.refreshRejections.count == 4)
+        #expect(try await f.executor.oldGrantIsRejected())
+        // A missing/null stored small map and the JVM's empty JSON map have
+        // the same variable contents; neither can invent an authorization.
+        let empty = try fixture(); defer { cleanup(empty) }
+        await empty.executor.setSearchVariable("null")
+        let emptyBook = try await search(empty)
+        await empty.executor.setMode(.refreshIdentity)
+        let emptyMoved = try await empty.service.originalTOC(url: emptyBook.tocUrl, source: empty.source,
+            runtimeVariables: emptyBook.runtimeVariables, runPreUpdateJS: true)
+        #expect(emptyMoved.bookURL == emptyBook.bookUrl + "/moved")
+    }
+
+    @Test("Accepted identity refresh invalidates both old entity and old TOC leases before any new-URL write")
+    func preUpdateIdentityRefreshRejectsStaleEntityAndTOCLeases() async throws {
+        let f = try fixture(); defer { cleanup(f) }; let book = try await search(f)
+        let detail = try await details(f, book)
+        await f.executor.setMode(.refreshStaleLeases)
+        let moved = try await f.service.originalTOC(url: detail.tocUrl, source: f.source,
+            runtimeVariables: detail.runtimeVariables, runPreUpdateJS: true)
+        #expect(await f.executor.staleRefreshEntityRejected)
+        #expect(await f.executor.staleRefreshTOCRejected)
+        #expect(moved.runtimeVariables?["stale"] == nil)
+        #expect(moved.chapters.count == 1 && moved.chapters.first?.runtimeVariables?["chapter"] == "new book only")
+    }
+
+    @Test("Successful pre-update TOC changes URL/context while retaining record identity and separating old large/chapter state on reopen")
+    func preUpdateSuccessfulTOCReopensSameRecordWithoutOldURLState() async throws {
+        let f = try fixture(); defer { cleanup(f) }; let book = try await search(f)
+        let detail = try await details(f, book)
+        let oldTOC = try await f.service.originalTOC(url: detail.tocUrl, source: f.source, runtimeVariables: detail.runtimeVariables)
+        _ = try await f.service.originalContent(ref: #require(oldTOC.chapters.first), source: f.source)
+        let oldFile = try #require(FileManager.default.contentsOfDirectory(atPath: f.directory.path).first)
+        let oldContext = try #require(oldTOC.runtimeVariables?[LegadoMainJSSourceService.originalPreviewContextKey])
+        let oldReference = try #require(try JSONSerialization.jsonObject(with: Data(oldContext.utf8)) as? [String: Any])
+        await f.executor.setMode(.refreshIdentity)
+        let moved = try await f.service.originalTOC(url: oldTOC.tocURL, source: f.source,
+            runtimeVariables: oldTOC.runtimeVariables, runPreUpdateJS: true)
+        let emptyLarge = await f.executor.refreshedLargeWasEmpty
+        let emptyChapter = await f.executor.refreshedChapterWasEmpty
+        #expect(emptyLarge && emptyChapter)
+        #expect(moved.bookURL == book.bookUrl + "/moved" && moved.tocURL == book.bookUrl + "/moved/toc")
+        #expect(moved.runtimeVariables?["large"] == nil && moved.runtimeVariables?["refreshed"] == "owned-new-large")
+        #expect(moved.chapters.first?.runtimeVariables?["content"] == nil)
+        let movedContext = try #require(moved.runtimeVariables?[LegadoMainJSSourceService.originalPreviewContextKey])
+        let movedReference = try #require(try JSONSerialization.jsonObject(with: Data(movedContext.utf8)) as? [String: Any])
+        #expect(movedReference["bookRecordID"] as? String == oldReference["bookRecordID"] as? String)
+        #expect(movedReference["bookURL"] as? String == moved.bookURL)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: f.directory.path) == [oldFile])
+        let record = try #require(try JSONSerialization.jsonObject(with: contextBytes(f)) as? [String: Any])
+        #expect(record["identityBookURL"] as? String == book.bookUrl)
+        let states = try #require(record["alternateURLState"] as? [String: [String: Any]])
+        let retained = try #require(states[Data(book.bookUrl.utf8).base64EncodedString()])
+        #expect((retained["bookLargeVariables"] as? [String: String])?["large"] == String(repeating: "L", count: 10_000))
+        let reopened = LegadoMainJSSourceService(contextDirectory: f.directory, originalExecutor: PreviewFixtureExecutor(directory: f.directory))
+        let snapshot = try await reopened.originalPreviewSnapshot(source: f.source, runtimeVariables: moved.runtimeVariables)
+        #expect(snapshot.bookURL == moved.bookURL && snapshot.tocURL == moved.tocURL)
+        #expect(snapshot.chapters.first?.id == moved.chapters.first?.id)
+        #expect(snapshot.runtimeVariables?["refreshed"] == "owned-new-large" && snapshot.runtimeVariables?["large"] == nil)
+        #expect(try await reopened.originalContent(ref: #require(snapshot.chapters.first), source: f.source) == "Owned preview body\nSecond line")
+    }
+
+    @Test("Failed or cancelled migrated TOC retains old URL/context and accepted per-URL writes without pretending rollback")
+    func preUpdateFailureAndCancellationKeepOldContextUsable() async throws {
+        for cancel in [false, true] {
+            let f = try fixture(); defer { cleanup(f) }; let book = try await search(f)
+            let detail = try await details(f, book)
+            await f.executor.setMode(cancel ? .refreshWaitAfterCommit : .refreshFailAfterCommit)
+            if cancel {
+                let pending = Task { try await f.service.originalTOC(url: detail.tocUrl, source: f.source,
+                    runtimeVariables: detail.runtimeVariables, runPreUpdateJS: true) }
+                var events = f.executor.entered.makeAsyncIterator(); _ = await events.next()
+                pending.cancel(); await f.executor.openGate()
+                do { _ = try await pending.value; Issue.record("Cancelled migrated TOC was accepted") }
+                catch is CancellationError { }
+            } else {
+                await expectError("RULE_ERROR") { _ = try await f.service.originalTOC(url: detail.tocUrl,
+                    source: f.source, runtimeVariables: detail.runtimeVariables, runPreUpdateJS: true) }
+            }
+            let record = try #require(try JSONSerialization.jsonObject(with: contextBytes(f)) as? [String: Any])
+            let storedBook = try #require(record["book"] as? [String: Any])
+            #expect(storedBook["bookURL"] as? String == book.bookUrl)
+            #expect((record["bookLargeVariables"] as? [String: String])?["large"] == String(repeating: "L", count: 10_000))
+            let states = try #require(record["alternateURLState"] as? [String: [String: Any]])
+            let pendingState = try #require(states[Data((book.bookUrl + "/moved").utf8).base64EncodedString()])
+            #expect((pendingState["bookLargeVariables"] as? [String: String])?["refreshed"] == "owned-new-large")
+            let reopened = LegadoMainJSSourceService(contextDirectory: f.directory, originalExecutor: PreviewFixtureExecutor(directory: f.directory))
+            let old = try await reopened.originalTOC(url: detail.tocUrl, source: f.source, runtimeVariables: detail.runtimeVariables)
+            #expect(old.bookURL == book.bookUrl && old.runtimeVariables?["large"] == String(repeating: "L", count: 10_000))
+            #expect(old.runtimeVariables?["refresh"] == "new shared small value")
+            #expect(try FileManager.default.contentsOfDirectory(atPath: f.directory.path).count == 1)
         }
     }
 }

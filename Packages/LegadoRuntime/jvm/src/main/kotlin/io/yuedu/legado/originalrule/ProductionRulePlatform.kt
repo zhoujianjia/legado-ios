@@ -3,6 +3,10 @@ package io.yuedu.legado.originalrule
 import com.google.gson.JsonObject
 import com.script.rhino.ScriptExecutionGuard
 import io.legado.app.data.entities.BaseSource
+import io.legado.app.data.entities.BaseBook
+import io.legado.app.data.entities.Book
+import io.legado.app.data.entities.BookSource
+import io.legado.app.model.webBook.WebBook
 import io.legado.app.model.analyzeRule.AnalyzeUrl
 import io.legado.app.model.analyzeRule.RuleDataInterface
 import io.yuedu.legado.RuntimeTask
@@ -15,6 +19,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Protocol
 import okhttp3.Request
@@ -311,6 +316,65 @@ internal class ProductionRulePlatform(
             rethrowRuleControlFailure(error)
             throw error
         } finally { cancellation?.dispose() }
+    }
+
+    override fun refreshBookInfo(book: BaseBook?, source: BaseSource?, context: CoroutineContext) {
+        val actualSource = source as? BookSource ?: return
+        val actualBook = book as? Book ?: return
+        check(actualSource.environment === environment() && actualBook.environment === environment()) {
+            "Book refresh belongs to another original owner"
+        }
+        ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+        val oldURL = actualBook.bookUrl
+        val refresh = OriginalBookRefreshSearch(actualSource, actualBook) { matched ->
+            ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+            check(actualBook.bookUrl == oldURL) { "Book URL changed during precise search" }
+            authorizeBookRefresh(actualSource, actualBook, matched.bookUrl)
+        }
+        runBlocking(context) {
+            // The locked thirty-minute upper bound never extends the parent
+            // task's absolute HTTP/Host deadline or its cancellation lifetime.
+            withTimeout(1_800_000L) {
+                val matched = withContext(refresh) {
+                    WebBook.preciseSearchAwait(actualSource, actualBook.name, actualBook.author).getOrThrow()
+                }
+                ensureOwnerOpen(); task.ensureActiveForRuntime()
+                actualBook.bookUrl = matched.bookUrl
+                matched.variableMap.forEach { (key, value) -> actualBook.putVariable(key, value) }
+                WebBook.getBookInfoAwait(actualSource, actualBook, false)
+            }
+        }
+    }
+
+    override fun refreshToc(book: BaseBook?, source: BaseSource?, context: CoroutineContext) {
+        val actualSource = source as? BookSource ?: return
+        val actualBook = book as? Book ?: return
+        check(actualSource.environment === environment() && actualBook.environment === environment()) {
+            "TOC refresh belongs to another original owner"
+        }
+        ensureOwnerOpen(); context.ensureActive(); task.ensureActiveForRuntime()
+        runBlocking(context) {
+            withTimeout(1_800_000L) { WebBook.getBookInfoAwait(actualSource, actualBook, false) }
+        }
+    }
+
+    private fun authorizeBookRefresh(source: BookSource, book: Book, targetURL: String) {
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
+        val owner = task.session.options.stateOwner ?: return
+        val result = hostDispatch(task, "book.refresh.identity", io.yuedu.legado.jsonObject(
+            "owner" to owner, "sourceURL" to source.getKey(),
+            "fromBookURL" to book.bookUrl, "toBookURL" to targetURL,
+            "bookVariables" to GSON.toJson(book.variableMap),
+            "deadlineEpochMs" to task.deadlineEpochMs,
+            "remainingTimeoutMs" to (task.deadlineEpochMs - System.currentTimeMillis()).coerceAtLeast(1L)
+        ))
+        val accepted = result["accepted"]
+        val url = result["bookURL"]
+        if (accepted?.isJsonPrimitive != true || !accepted.asJsonPrimitive.isBoolean || !accepted.asBoolean ||
+            url?.isJsonPrimitive != true || !url.asJsonPrimitive.isString || url.asString != targetURL)
+            throw io.yuedu.legado.RuntimeFailure("INVALID_STATE_RESPONSE", "The current book owner did not grant its precise refresh identity")
+        task.recordHostEffect("book.refresh.identity.granted")
+        ensureOwnerOpen(); task.ensureActiveForRuntime()
     }
 
     override fun executeUrl(analyzed: AnalyzeUrl): StrResponse = executeUrl(analyzed, null, null, true)

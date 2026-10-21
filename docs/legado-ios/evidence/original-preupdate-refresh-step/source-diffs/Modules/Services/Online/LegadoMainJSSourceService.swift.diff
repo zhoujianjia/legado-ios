@@ -1,0 +1,190 @@
+--- a/Modules/Services/Online/LegadoMainJSSourceService.swift
++++ b/Modules/Services/Online/LegadoMainJSSourceService.swift
+@@ -99 +99,5 @@
+-    let bookURL: String
++    /// The record remains at its original identity until successful TOC completion.
++    let initialBookURL: String
++    let allowsBookIdentityRefresh: Bool
++    var bookURL: String { lock.lock(); defer { lock.unlock() }; return currentBookURL }
++    private var currentBookURL: String
+@@ -111 +115 @@
+-                     chapter: LegadoOriginalChapter?, discoveringChapters: Bool, expiresAt: Date,
++                     chapter: LegadoOriginalChapter?, discoveringChapters: Bool, allowsBookIdentityRefresh: Bool = false, expiresAt: Date,
+@@ -114 +118,3 @@
+-        self.sourceRevision = sourceRevision; self.recordID = recordID; self.bookURL = bookURL
++        self.sourceRevision = sourceRevision; self.recordID = recordID
++        self.initialBookURL = bookURL; self.currentBookURL = bookURL
++        self.allowsBookIdentityRefresh = allowsBookIdentityRefresh
+@@ -118,0 +125,9 @@
++    }
++    fileprivate func acceptBookIdentity(from: String, to: String, deadline: Date) throws {
++        try check(deadline: deadline)
++        lock.lock(); defer { lock.unlock() }
++        guard !completed, allowsBookIdentityRefresh, discoveringChapters, chapterURL == nil,
++              LegadoPreviewIdentity.same(currentBookURL, from) else {
++            throw LegadoRuntimeError(code: "INVALID_STATE_OWNER", message: "Book identity refresh has no current TOC execution grant")
++        }
++        currentBookURL = to
+@@ -145,0 +161 @@
++    var bookURL: String? = nil
+@@ -558,0 +575,9 @@
++    /// URL-scoped original state stays in this existing logical context file.
++    /// It grants neither another App UUID nor chapter-body save permission.
++    private struct PreviewURLState: Codable {
++        var bookLargeVariables: [String: String] = [:]
++        var chapterVariables: [String: [String: String]] = [:]
++        var chapterLargeVariables: [String: [String: String]] = [:]
++        var originalTOC: [LegadoOriginalChapter]?
++        var isEmpty: Bool { bookLargeVariables.isEmpty && chapterVariables.isEmpty && chapterLargeVariables.isEmpty && originalTOC == nil }
++    }
+@@ -572,0 +598,2 @@
++        var identityBookURL: String? = nil
++        var alternateURLState: [String: PreviewURLState]? = nil
+@@ -830 +857 @@
+-        let grant = try makePreviewGrant(reference, read: before, chapter: nil, discoveringChapters: true, deadline: deadline)
++        let grant = try makePreviewGrant(reference, read: before, chapter: nil, discoveringChapters: true, allowsBookIdentityRefresh: runPreUpdateJS, deadline: deadline)
+@@ -836 +863 @@
+-        return try previewTOCPackage(updated, reference: reference, previous: runtimeVariables, source: source)
++        return try previewTOCPackage(updated, reference: previewReference(updated, id: reference.bookRecordID), previous: runtimeVariables, source: source)
+@@ -862 +889 @@
+-        return TOCPackage(sourceId: source.id, sourceName: source.bookSourceName, tocURL: record.book.tocURL,
++        return TOCPackage(sourceId: source.id, sourceName: source.bookSourceName, tocURL: record.book.tocURL, bookURL: record.book.bookURL,
+@@ -1058,0 +1086,37 @@
++    /// Only a trusted TOC task may change its runtime URL. The durable record URL
++    /// is committed later with the actual successful business DTOs.
++    func refreshPreviewBookIdentity(_ grant: OriginalRuntimePreviewGrant, from: String, to: String,
++                                    bookVariables: String, deadline: Date,
++                                    cancellation: OriginalRuntimeCommitCancellation) throws {
++        try cancellation.check(deadline: deadline); try grant.check(deadline: deadline)
++        guard grant.allowsBookIdentityRefresh, grant.discoveringChapters, grant.chapterURL == nil,
++              LegadoPreviewIdentity.same(from, grant.bookURL), !to.isEmpty, to.utf8.count <= 8_192 else {
++            throw failure("INVALID_STATE_OWNER", "Only a current pre-update TOC may refresh its own book identity")
++        }
++        let read = try readPreview(grantReference(grant))
++        guard LegadoPreviewVariableCodec.sameMap(try previewVariableMap(bookVariables) ?? [:], try previewVariableMap(read.record.book.variable) ?? [:]) else {
++            throw failure("STATE_CONFLICT", "Book variables changed before identity refresh")
++        }
++        try cancellation.check(deadline: deadline)
++        try grant.acceptBookIdentity(from: from, to: to, deadline: deadline)
++    }
++
++    private func previewURLState(_ record: PreviewRecord, bookURL: String) -> PreviewURLState {
++        if LegadoPreviewIdentity.same(record.book.bookURL, bookURL) {
++            return .init(bookLargeVariables: record.bookLargeVariables, chapterVariables: record.chapterVariables,
++                chapterLargeVariables: record.chapterLargeVariables, originalTOC: record.originalTOC)
++        }
++        return record.alternateURLState?[LegadoPreviewIdentity.key(bookURL)] ?? .init()
++    }
++    private func setPreviewURLState(_ value: PreviewURLState, in record: inout PreviewRecord, bookURL: String) {
++        if LegadoPreviewIdentity.same(record.book.bookURL, bookURL) {
++            record.bookLargeVariables = value.bookLargeVariables; record.chapterVariables = value.chapterVariables
++            record.chapterLargeVariables = value.chapterLargeVariables; record.originalTOC = value.originalTOC
++        } else {
++            var states = record.alternateURLState ?? [:]
++            if value.isEmpty { states.removeValue(forKey: LegadoPreviewIdentity.key(bookURL)) }
++            else { states[LegadoPreviewIdentity.key(bookURL)] = value }
++            record.alternateURLState = states.isEmpty ? nil : states
++        }
++    }
++
+@@ -1071 +1135,2 @@
+-        let chapter = chapterURL.flatMap { url in read.record.chapters.first { LegadoPreviewIdentity.same($0.url, url) } }
++        let state = previewURLState(read.record, bookURL: grant.bookURL)
++        let chapter = chapterURL.flatMap { url in read.record.chapters.first { LegadoPreviewIdentity.same($0.url, url) && LegadoPreviewIdentity.same($0.bookURL, grant.bookURL) } }
+@@ -1075,2 +1140,2 @@
+-            variables = try read.record.chapterVariables[LegadoPreviewIdentity.key(chapterURL)] ?? previewVariableMap(chapter?.variable)
+-            large = read.record.chapterLargeVariables[LegadoPreviewIdentity.key(chapterURL)] ?? [:]
++            variables = try state.chapterVariables[LegadoPreviewIdentity.key(chapterURL)] ?? previewVariableMap(chapter?.variable)
++            large = state.chapterLargeVariables[LegadoPreviewIdentity.key(chapterURL)] ?? [:]
+@@ -1079 +1144 @@
+-            large = read.record.bookLargeVariables
++            large = state.bookLargeVariables
+@@ -1090 +1155 @@
+-        return .init(recordID: grant.recordID, revision: read.record.revision, rawSHA256: read.sha256,
++        return .init(recordID: grant.recordID, revision: read.record.revision, rawSHA256: read.sha256, bookURL: grant.bookURL,
+@@ -1105 +1170 @@
+-        let chapter = chapterURL.flatMap { url in read.record.chapters.first { LegadoPreviewIdentity.same($0.url, url) } }
++        let chapter = chapterURL.flatMap { url in read.record.chapters.first { LegadoPreviewIdentity.same($0.url, url) && LegadoPreviewIdentity.same($0.bookURL, grant.bookURL) } }
+@@ -1106,0 +1172 @@
++              LegadoPreviewIdentity.same(snapshot.bookURL, grant.bookURL),
+@@ -1137,0 +1204 @@
++        var state = previewURLState(read.record, bookURL: grant.bookURL)
+@@ -1139,5 +1206,6 @@
+-            if deleted { read.record.chapterVariables.removeValue(forKey: LegadoPreviewIdentity.key(chapterURL)) }
+-            else { read.record.chapterVariables[LegadoPreviewIdentity.key(chapterURL)] = small }
+-            read.record.chapterLargeVariables[LegadoPreviewIdentity.key(chapterURL)] = large
+-            if let chapter { read.record.chapters[Int(chapter.index)].variable = raw }
+-        } else { read.record.book.variable = raw; read.record.bookLargeVariables = large }
++            if deleted { state.chapterVariables.removeValue(forKey: LegadoPreviewIdentity.key(chapterURL)) }
++            else { state.chapterVariables[LegadoPreviewIdentity.key(chapterURL)] = small }
++            state.chapterLargeVariables[LegadoPreviewIdentity.key(chapterURL)] = large
++            if let chapter, LegadoPreviewIdentity.same(chapter.bookURL, grant.bookURL) { read.record.chapters[Int(chapter.index)].variable = raw }
++        } else { read.record.book.variable = raw; state.bookLargeVariables = large }
++        setPreviewURLState(state, in: &read.record, bookURL: grant.bookURL)
+@@ -1172 +1240 @@
+-        let value = try read.record.originalTOC.map { try encoded($0) }
++        let value = try previewURLState(read.record, bookURL: grant.bookURL).originalTOC.map { try encoded($0) }
+@@ -1174 +1242 @@
+-        return .init(recordID: grant.recordID, revision: read.record.revision, rawSHA256: read.sha256, wire: wire, value: value)
++        return .init(recordID: grant.recordID, revision: read.record.revision, rawSHA256: read.sha256, bookURL: grant.bookURL, wire: wire, value: value)
+@@ -1188 +1256 @@
+-              snapshot.rawSHA256 == read.sha256 else { return false }
++              LegadoPreviewIdentity.same(snapshot.bookURL, grant.bookURL), snapshot.rawSHA256 == read.sha256 else { return false }
+@@ -1193 +1261,3 @@
+-        read.record.originalTOC = toc
++        var state = previewURLState(read.record, bookURL: grant.bookURL)
++        state.originalTOC = toc
++        setPreviewURLState(state, in: &read.record, bookURL: grant.bookURL)
+@@ -1226 +1296,16 @@
+-        guard LegadoPreviewIdentity.same(book.bookURL, reference.bookURL) else { throw failure("CONTEXT_MISMATCH", "Original result changed its preview book identity") }
++        guard LegadoPreviewIdentity.same(book.bookURL, grant.bookURL) else { throw failure("CONTEXT_MISMATCH", "Original result changed its ungranted preview book identity") }
++        if !LegadoPreviewIdentity.same(book.bookURL, reference.bookURL) {
++            guard grant.allowsBookIdentityRefresh, chapters != nil, chapter == nil else {
++                throw failure("INVALID_STATE_OWNER", "Only successful pre-update TOC may publish a changed book identity")
++            }
++            let previousURL = read.record.book.bookURL
++            let previousState = previewURLState(read.record, bookURL: previousURL)
++            let nextState = previewURLState(read.record, bookURL: book.bookURL)
++            var states = read.record.alternateURLState ?? [:]
++            if !previousState.isEmpty { states[LegadoPreviewIdentity.key(previousURL)] = previousState }
++            states.removeValue(forKey: LegadoPreviewIdentity.key(book.bookURL))
++            read.record.alternateURLState = states.isEmpty ? nil : states
++            read.record.identityBookURL = read.record.identityBookURL ?? previousURL
++            read.record.bookLargeVariables = nextState.bookLargeVariables; read.record.chapterVariables = nextState.chapterVariables
++            read.record.chapterLargeVariables = nextState.chapterLargeVariables; read.record.originalTOC = nextState.originalTOC
++        }
+@@ -1232 +1317 @@
+-                guard Int(value.index) == offset, LegadoPreviewIdentity.same(value.bookURL, reference.bookURL), !value.url.isEmpty,
++                guard Int(value.index) == offset, LegadoPreviewIdentity.same(value.bookURL, book.bookURL), !value.url.isEmpty,
+@@ -1358 +1443 @@
+-            sourceURL: record.sourceURL, sourceSignature: record.sourceSignature, bookURL: record.book.bookURL)))
++            sourceURL: record.sourceURL, sourceSignature: record.sourceSignature, bookURL: record.identityBookURL ?? record.book.bookURL)))
+@@ -1467,0 +1553,19 @@
++        if let anchor = record.identityBookURL {
++            guard !anchor.isEmpty, anchor.utf8.count <= 8_192 else { throw failure("CONTEXT_CORRUPT", "Original identity anchor is invalid") }
++        }
++        guard (record.alternateURLState?.count ?? 0) <= 32 else { throw failure("STATE_LIMIT", "Original refreshed URL state exceeds its context budget") }
++        for (encodedURL, state) in record.alternateURLState ?? [:] {
++            guard let bytes = Data(base64Encoded: encodedURL), !bytes.isEmpty, bytes.count <= 8_192,
++                  let url = String(data: bytes, encoding: .utf8), LegadoPreviewIdentity.key(url) == encodedURL,
++                  !LegadoPreviewIdentity.same(url, record.book.bookURL), state.bookLargeVariables.count <= 4_096,
++                  state.bookLargeVariables[Self.originalPreviewContextKey] == nil,
++                  state.chapterVariables.count <= 20_000, state.chapterLargeVariables.count <= 20_000 else {
++                throw failure("STATE_LIMIT", "Original refreshed URL compartment is invalid")
++            }
++            try LegadoPreviewVariableCodec.validateRepresentable([try previewVariableMap(record.book.variable) ?? [:], state.bookLargeVariables])
++            if let toc = state.originalTOC { try validateOriginalPreviewTOC(toc, bookURL: url) }
++            for map in Array(state.chapterVariables.values) + Array(state.chapterLargeVariables.values) {
++                guard map.count <= 4_096, map[Self.originalPreviewContextKey] == nil else { throw failure("STATE_LIMIT", "Original refreshed chapter variables exceed their budget") }
++                try LegadoPreviewVariableCodec.validateRepresentable([map])
++            }
++        }
+@@ -1500 +1604 @@
+-    private func makePreviewGrant(_ reference: ContextReference, read: PreviewRead, chapter: LegadoOriginalChapter?, discoveringChapters: Bool = false, deadline: Date) throws -> OriginalRuntimePreviewGrant {
++    private func makePreviewGrant(_ reference: ContextReference, read: PreviewRead, chapter: LegadoOriginalChapter?, discoveringChapters: Bool = false, allowsBookIdentityRefresh: Bool = false, deadline: Date) throws -> OriginalRuntimePreviewGrant {
+@@ -1504 +1608 @@
+-            chapter: chapter, discoveringChapters: discoveringChapters, expiresAt: deadline,
++            chapter: chapter, discoveringChapters: discoveringChapters, allowsBookIdentityRefresh: allowsBookIdentityRefresh, expiresAt: deadline,
+@@ -1509 +1613 @@
+-            bookRecordID: grant.recordID, bookURL: grant.bookURL)
++            bookRecordID: grant.recordID, bookURL: grant.initialBookURL)

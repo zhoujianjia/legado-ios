@@ -5,6 +5,18 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 /** Owned variables with optional embedding persistence; closing discards only transient views. */
 class RuleStateStore internal constructor(private val ensureOpen: () -> Unit, private val persistence: RulePersistenceBinding? = null) {
+    // The locked SearchBook.toBook conversion carries its own variable String.
+    // Only its synchronous constructor is detached from automatic restore; this
+    // neither permits a new storage key nor bypasses later read/write grants.
+    private val detachedBookConstruction = ThreadLocal<String>()
+    internal fun <T> constructMatchedSearchBook(bookUrl: String, block: () -> T): T {
+        ensureOpen()
+        val previous = detachedBookConstruction.get()
+        detachedBookConstruction.set(bookUrl)
+        return try { block() } finally {
+            if (previous == null) detachedBookConstruction.remove() else detachedBookConstruction.set(previous)
+        }
+    }
     private data class Key(val kind: String, val owner: String, val chapter: String?, val name: String)
     private val bigVariables = ConcurrentHashMap<Key, String>()
     internal fun putBook(bookUrl: String, key: String, value: String?) = put(Key("book", bookUrl, null, key), value)
@@ -22,6 +34,7 @@ class RuleStateStore internal constructor(private val ensureOpen: () -> Unit, pr
     private fun get(key: Key): String? { ensureOpen(); return if (persistence != null) persistence.read(storageKey(key))?.toString(Charsets.UTF_8) else bigVariables[key] }
     internal fun restoreVariables(kind: String, owner: String, chapter: String, initial: String?): String? {
         ensureOpen()
+        if (kind == "book" && chapter.isEmpty() && detachedBookConstruction.get() == owner) return initial
         val restored = persistence?.read(persistence.key("variables", kind, owner, chapter))?.toString(Charsets.UTF_8) ?: return initial
         decodePersistent("entity variables") { requireNotNull(GSON.fromJsonObject<HashMap<String, String>>(restored).getOrThrow()) }
         return restored

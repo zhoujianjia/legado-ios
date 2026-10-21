@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "status": "Production draft source review and authored regression sources; no Swift syntax/compiler/runtime acceptance",
+  "frozenUTC": "2026-10-21T02:10:44.308982+00:00",
+  "productionDraft": {
+    "path": ".build/original-preupdate-app-step/production-draft-v1.json",
+    "bytes": 1248,
+    "sha256": "990889d19b3af14ed14247aad3ca055af6fcc2353204802fe7b9abf55b296179"
+  },
+  "productionSourceRoot": ".build/original-preupdate-app-step/production-draft-v1",
+  "productionFiles": [
+    {
+      "path": "Modules/Services/LibraryStore/BookStore.swift",
+      "bytes": 219041,
+      "sha256": "cee22b2206c6dfa1c8a54abd894b2d0a12f5ca832186c3ff62f30b81975f3aee"
+    },
+    {
+      "path": "Modules/Services/LibraryStore/Models.swift",
+      "bytes": 48636,
+      "sha256": "c7510d05971af6cd61f7cdd74a55763943f94358c5fac3ae0b995477cbd23574"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "bytes": 134237,
+      "sha256": "4b5e0c2b3c476a12f02f2ea2b5061532cd5e59a2a3ce1ef391bf006c8a05fcab"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "bytes": 128094,
+      "sha256": "03e495463199075cdc6a7f2a070a2505acde9e3b74d3c05f6083c7c6c371ad81"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPreviewStateOwner.swift",
+      "bytes": 32758,
+      "sha256": "b821a5fa1c19edd147f56b45d2b687bdb5d43afeb9e992ae2a8c777fff67a85e"
+    }
+  ],
+  "remainingConfirmedSourceFindings": [],
+  "sourceConclusions": [
+    "Only the existing opt-in preview TOC grant can accept task-local identity change; Host binds exact owner/source/task/revision/deadline and rechecks after actor hop before ACK. No BookStore or body-cache grant is minted.",
+    "Grant initialBookURL remains its durable reference until a sealed successful TOC result; current bookURL changes only on its internal synchronized capability. Host removes existing entity and TOC leases, and snapshots bind bookURL as well as revision/hash.",
+    "URL-scoped large variables/chapter maps/original TOC are stored only inside the same record alternateURLState, keyed by exact UTF8 URL. The global small map follows original reGetBook RAM behavior. No new-URL data is copied from the old large-variable bucket or another book record.",
+    "Successful finish validates current grant URL and only a TOC result can swap active URL state; identityBookURL anchors the original record ID and new ContextReference points at the same ID/new URL. Failed/cancelled business leaves durable book URL unchanged while accepted state writes remain factual.",
+    "TOCPackage carries the actual new optional bookURL. BookStore validates its old App UUID/source/URL and chapter metadata CAS before committing the new bookInfoURL; sourceChanged participates in saveMeta. It does not replace the stored UUID or reading position.",
+    "Root known fixes are present: read/commit chapter lookup filters current book URL, empty/null small maps compare by contents, and Host ACK rechecks active grant/cancellation. No confirmed additional blocker found in this source pass."
+  ],
+  "authoredSourceRoot": ".build/original-preupdate-app-step/test-snapshot-v1/work",
+  "files": [
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+      "baseline": {
+        "path": ".build/original-preupdate-app-step/rawbaseline/Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+        "bytes": 44002,
+        "sha256": "62e93456a757c9a7e8b236384e4e49c814df1ecc1766a025c7c0791405180ced"
+      },
+      "candidate": {
+        "path": ".build/original-preupdate-app-step/test-snapshot-v1/work/Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+        "bytes": 59867,
+        "sha256": "e02c0cc0f7148cfc00bd40384c3025caf22a9befa4d07cdf550ac275442a2611"
+      },
+      "diff": {
+        "path": ".build/original-preupdate-app-step/test-diffs-v1/Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift.diff",
+        "bytes": 18211,
+        "sha256": "f5802751572ee949fd97a6e1e1103a655e9bc0833c13359005e73d8a40a8b9ee"
+      }
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "baseline": {
+        "path": ".build/original-preupdate-app-step/rawbaseline/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+        "bytes": 109194,
+        "sha256": "ddf09646d1221b8bf659cb8311d814278a521bb97a44e09917d61e94397ab8c1"
+      },
+      "candidate": {
+        "path": ".build/original-preupdate-app-step/test-snapshot-v1/work/Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+        "bytes": 116776,
+        "sha256": "6c790fe4d691aa52a84a8250136736a4ee6b4adb9bcb59f6fbb9c8348b07b19f"
+      },
+      "diff": {
+        "path": ".build/original-preupdate-app-step/test-diffs-v1/Tests/iOS/LegadoNativeOriginalReaderTests.swift.diff",
+        "bytes": 8385,
+        "sha256": "6c479cf053cf67ce5f29bf50d1d192be7cdc67ca605c11a6fa535a451137599a"
+      }
+    }
+  ],
+  "AppRegressions": {
+    "existingDefinitions": 15,
+    "candidateDefinitions": 19,
+    "newNoArgumentDefinitions": [
+      "preUpdateIdentityGrantRequiresTaskTOCAndOptIn",
+      "preUpdateIdentityRefreshRejectsStaleEntityAndTOCLeases",
+      "preUpdateSuccessfulTOCReopensSameRecordWithoutOldURLState",
+      "preUpdateFailureAndCancellationKeepOldContextUsable"
+    ],
+    "oldTestBodiesExact": true,
+    "mechanism": "Existing fake executor replaces only JNI execution and emits real Host requests; real production service/grant/Host/CAS and actual owned context files remain. No mocked Host acceptance.",
+    "vectors": [
+      "No owner/details/non-opt-in TOC/content/wrong-task rejection; valid opt-in identity ACK; null stored map versus empty GSON map contents.",
+      "Old entity and original TOC leases rejected after identity ACK; fresh new-URL snapshots and commits accepted.",
+      "Old large value and same chapter URL old variables do not project into the new book identity; TOC bookURL/context swap; same record file/identity anchor; cold service reopening and public content.",
+      "Error and explicit cancellation after accepted URL-compartment writes preserve old active URL/context and its large values, retain accepted new-compartment facts, and permit a cold ordinary old-URL TOC."
+    ]
+  },
+  "NativeRegression": {
+    "existingSourceMethods": 15,
+    "candidateSourceMethods": 16,
+    "newMethod": "testNativeOriginalPreUpdateRefreshKeepsPublicBookIdentityAndProgressWithNewURLContext",
+    "allOldMethodBodiesAndWholeBaselineReconstructionExact": true,
+    "mechanism": "Existing required real ordinary runtime/JNI, actual production fetcher/service/Host and owned NW loopback, public BookStore.refreshOnlineBookMetadata. No fake executor/runtime/transport.",
+    "vectors": [
+      "Existing public search/detail/TOC + real App transfer create the book; force-save a real currentPosition.",
+      "Same source finite precise-search page1 matches exact current name/author to moved-book, reGetBook plus refreshTocUrl execute real original WebBook code.",
+      "Moved info rejects inherited old URL big variable, writes a new 10000-character companion through the same owner; authored renamed h1 must not rename existing book.",
+      "After actual BookStore refresh/handoff, assert same UUID/progress/addedDate, new bookInfoURL/tocURL/variables and old URL index absent; reopen metadata off main and verify persisted values.",
+      "Existing LiveBookSourceFetcher prepares next stored-book context; production originalPreviewSnapshot verifies new URL/context and new variables."
+    ],
+    "loopbackRoutesAdded": [
+      "refresh-search exact decoded name/page1",
+      "moved-book info",
+      "moved-toc two real chapter entries"
+    ],
+    "composition": "Compiler-fixed baseline109194/ddf096 preserved. New method/routes are independent of frozen native-result characterization method/helper/import and resource method/routes; Root must hunk-union, never overwrite entire parent Reader file."
+  },
+  "sourceCounts": {
+    "productionChangedByReviewer": 0,
+    "testFilesAuthored": 2,
+    "newPaths": 0,
+    "AppDefinitionsAdded": 4,
+    "NativeDefinitionsAdded": 1,
+    "parameterLeavesAdded": 4
+  },
+  "actualValidation": {
+    "sourceProvenanceAndInventoryOnly": true,
+    "SwiftParserRuns": 0,
+    "SwiftCompilerRuns": 0,
+    "SwiftSDKRuns": 0,
+    "SwiftTestExecutions": 0,
+    "JVMExecutionsByReviewer": 0,
+    "cloudQueries": 0,
+    "actualAccountRequests": 0
+  },
+  "limits": [
+    "Authored tests are not passing executions; actual typechecking/JNI/SDK must run in a future coherent checkpoint.",
+    "Production review is bound to Root frozen draft-v1, not a whole joint JVM/App final; Kotlin wire/implementation independent review remains separate.",
+    "The Native test requires Root to bind the new ordinary selector and changed Reader source; existing platform characterization selectors remain independently required.",
+    "No production new store/owner/VM/network path is introduced by these regressions. ReadingBook.source is not asserted to change because the production refresh identity is bookInfoURL."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

@@ -2467,7 +2467,7 @@ class BookStore: ObservableObject, BookProvider {
         await MainActor.run {
             guard let idx = records.firstIndex(where: { $0.id == bookId }) else { return }
             records[idx].bookSourceId = origin.sourceId
-            records[idx].bookInfoURL = origin.bookUrl
+            records[idx].bookInfoURL = source.isJsSource ? origin.bookUrl : (tocPackage.bookURL ?? origin.bookUrl)
             records[idx].tocURL = source.isJsSource ? origin.tocUrl : tocPackage.tocURL
             records[idx].runtimeVariables = originalAdoption.variables
             records[idx].onlineChapters = originalAdoption.chapters
@@ -2669,6 +2669,7 @@ class BookStore: ObservableObject, BookProvider {
         }
 
         let finalTOCURL = source.isJsSource ? tocURL : tocPackage.tocURL
+        let finalBookURL = source.isJsSource ? bookURL : (tocPackage.bookURL ?? bookURL)
         let originalAdoption = await OriginalBookAdoption.prepare(runtimeVariables, chapters: tocPackage.chapters)
         let finalRuntimeVariables = source.isJsSource ? runtimeVariables : originalAdoption.variables
         let originalHandoffVariables = runtimeVariables
@@ -2752,7 +2753,7 @@ class BookStore: ObservableObject, BookProvider {
                     )
                 }
                 let updated = commitRefreshedList(
-                    at: idx, plan: plan, source: source, bookURL: bookURL, tocURL: finalTOCURL,
+                    at: idx, plan: plan, source: source, bookURL: finalBookURL, tocURL: finalTOCURL,
                     runtimeVariables: finalRuntimeVariables, infoPackage: finalInfoPackage
                 )
                 return .committed(updated, plan)
@@ -2872,7 +2873,7 @@ class BookStore: ObservableObject, BookProvider {
             || titleChanged || authorChanged || sourceChanged || badgeChanged {
             records[index] = updated
         }
-        if runtimeChanged || plan.chaptersChanged || tocChanged || titleChanged || authorChanged || plan.gainedChapters {
+        if runtimeChanged || plan.chaptersChanged || tocChanged || titleChanged || authorChanged || sourceChanged || plan.gainedChapters {
             saveMeta()
         }
         return readingBook(id: updated.id) ?? records[index]

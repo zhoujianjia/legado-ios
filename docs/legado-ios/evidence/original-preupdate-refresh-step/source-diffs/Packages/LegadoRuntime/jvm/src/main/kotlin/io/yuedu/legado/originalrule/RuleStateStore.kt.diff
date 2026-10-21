@@ -1,0 +1,17 @@
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt
+@@ -7,0 +8,12 @@
++    // The locked SearchBook.toBook conversion carries its own variable String.
++    // Only its synchronous constructor is detached from automatic restore; this
++    // neither permits a new storage key nor bypasses later read/write grants.
++    private val detachedBookConstruction = ThreadLocal<String>()
++    internal fun <T> constructMatchedSearchBook(bookUrl: String, block: () -> T): T {
++        ensureOpen()
++        val previous = detachedBookConstruction.get()
++        detachedBookConstruction.set(bookUrl)
++        return try { block() } finally {
++            if (previous == null) detachedBookConstruction.remove() else detachedBookConstruction.set(previous)
++        }
++    }
+@@ -24,0 +37 @@
++        if (kind == "book" && chapter.isEmpty() && detachedBookConstruction.get() == owner) return initial

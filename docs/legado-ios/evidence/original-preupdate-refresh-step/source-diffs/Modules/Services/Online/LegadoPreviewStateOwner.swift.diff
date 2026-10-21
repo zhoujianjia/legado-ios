@@ -1,0 +1,15 @@
+--- a/Modules/Services/Online/LegadoPreviewStateOwner.swift
++++ b/Modules/Services/Online/LegadoPreviewStateOwner.swift
+@@ -149,0 +150,10 @@
++            if name == "alternateURLState" {
++                if value == Data("null".utf8) { return }
++                try objectFields(value) { encodedURL, compartment in
++                    guard let bytes = Data(base64Encoded: encodedURL), !bytes.isEmpty, bytes.count <= 8_192,
++                          let url = String(data: bytes, encoding: .utf8), LegadoPreviewIdentity.key(url) == encodedURL else {
++                        throw failure("Original refreshed URL identity is invalid")
++                    }
++                    try validateRecordMaps(compartment)
++                }
++            }
+@@ -247,0 +258 @@
++    var bookURL: String? = nil

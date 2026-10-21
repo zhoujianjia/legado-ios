@@ -790,6 +790,7 @@ struct TOCPackage: Codable {
     let sourceId: UUID
     let sourceName: String
     let tocURL: String
+    var bookURL: String? = nil
     let runtimeVariables: [String: String]?
     let chapters: [OnlineChapterRef]
     let rawHTMLFilename: String?

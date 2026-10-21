@@ -431,7 +431,8 @@ object WebBook {
                 shouldBreak = { it > 0 }
             ).firstOrNull()?.let { searchBook ->
                 currentCoroutineContext().ensureActive()
-                return@runCatching searchBook.toBook()
+                val refresh = currentCoroutineContext()[OriginalBookRefreshSearch]
+                return@runCatching refresh?.matched(bookSource, searchBook) ?: searchBook.toBook()
             }
             throw NoStackTraceException("未搜索到 $name($author) 书籍")
         }.onFailure {

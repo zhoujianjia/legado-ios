@@ -1,0 +1,60 @@
+{
+  "version": 2,
+  "operation": "book.refresh.identity",
+  "request": {
+    "owner": "existing session stateOwner",
+    "sourceURL": "existing immutable source key",
+    "fromBookURL": "current parent Book.bookUrl before matched search conversion",
+    "toBookURL": "real exact name+author matched result URL from same retained WebBook.preciseSearchAwait",
+    "bookVariables": "GSON JSON String for current original short variable map",
+    "deadlineEpochMs": "existing parent absolute deadline",
+    "remainingTimeoutMs": "existing parent remaining bound"
+  },
+  "response": {
+    "accepted": "Boolean; false rejects",
+    "bookURL": "exact UTF8 same as toBookURL"
+  },
+  "scope": [
+    "Native App-issued existing preview TOC task with runPreUpdateJS enabled; same task/source/revision/record owner; no chapter/body grant",
+    "Host accepts only a task-local currentBookURL identity grant; record.bookURL and App URL remain unchanged until real sealed successful TOC completion",
+    "All reads/writes remain in the same logical preview record/CAS. Old big-variable URL bucket stays retained; never blindly copied to the new URL or taken from another existing book",
+    "Old entity/TOC leases are invalidated when the task current URL changes. Old ordinary context stays recoverable on failed getInfo/TOC",
+    "No author JSON/Rhino grant; first-party restricted JVM producer boundary. Failed grant cannot assign the RAM Book URL or write new keys."
+  ],
+  "ordering": [
+    "preUpdate guard then type/null; refreshToc fromBookInfo skips; reGetBook fromBookInfo logs only",
+    "reGetBook retained preciseSearch exact name/author finds first result, then internal conversion hook requests checked identity ACK before any new-URL persistent restore or write",
+    "Construct matched Book using its real SearchBook variable String without eager loading unrelated new-URL state; internal synchronous construction scope changes no persistence permission",
+    "After ACK parent book.bookUrl=matchedURL, matched.variableMap entries put one by one, then original getBookInfoAwait(canReName=false)",
+    "refreshTocUrl uses original getBookInfoAwait(false) without identity op",
+    "Both original network blocks have withTimeout(1800000), limited by existing parent task deadline/cancel"
+  ],
+  "effects": [
+    "book.refresh.identity.granted means only an accepted task-local URL grant, never a durable/App URL change",
+    "Final persisted URL changes only through normal sealed successful TOC business completion; later cancellation/error retains accepted variable-write facts without claiming rollback"
+  ],
+  "errors": [
+    "Existing typed STATE_CONFLICT/INVALID_STATE_OWNER/STATE_IO/CANCELLED propagate; response mismatch INVALID_STATE_RESPONSE",
+    "Failed migration cannot assign new parent Book URL or continue new-URL writes"
+  ],
+  "implementationOwners": {
+    "JVM": "original_source_login_info",
+    "Swift": "root",
+    "SwiftPaths": [
+      "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "Modules/Services/Online/LegadoPreviewStateOwner.swift",
+      "Modules/Services/LibraryStore/Models.swift",
+      "Modules/Services/LibraryStore/BookStore.swift"
+    ]
+  },
+  "validationStatus": "interface only; JVM/Swift/SDK execution0 so far",
+  "JVMPaths": [
+    "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+    "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+    "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt",
+    "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalBookRefresh.kt",
+    "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt"
+  ],
+  "ABI": "AnalyzeRule.kt bytes remain unchanged but its full class group is recompiled against RulePlatform.refreshBookInfo/refreshToc Unit descriptors; do not retain its old Nothing callers."
+}

@@ -147,6 +147,16 @@ enum LegadoPreviewVariableCodec {
     static func validateRecordMaps(_ raw: Data) throws {
         try objectFields(raw) { name, value in
             if name == "bookLargeVariables" { try flatMap(value, allowNull: false) }
+            if name == "alternateURLState" {
+                if value == Data("null".utf8) { return }
+                try objectFields(value) { encodedURL, compartment in
+                    guard let bytes = Data(base64Encoded: encodedURL), !bytes.isEmpty, bytes.count <= 8_192,
+                          let url = String(data: bytes, encoding: .utf8), LegadoPreviewIdentity.key(url) == encodedURL else {
+                        throw failure("Original refreshed URL identity is invalid")
+                    }
+                    try validateRecordMaps(compartment)
+                }
+            }
             if name == "chapterVariables" || name == "chapterLargeVariables" {
                 try objectFields(value) { encodedURL, map in
                     guard let bytes = Data(base64Encoded: encodedURL), !bytes.isEmpty, bytes.count <= 8_192,
@@ -245,6 +255,7 @@ struct LegadoPreviewEntitySnapshot: Sendable {
     let recordID: String
     let revision: UInt64
     let rawSHA256: String
+    var bookURL: String? = nil
     let chapterIndex: Int32?
     let chapterURL: String?
     let variables: [String: String]?

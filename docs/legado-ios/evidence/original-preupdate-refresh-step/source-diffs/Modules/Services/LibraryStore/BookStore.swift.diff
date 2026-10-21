@@ -1,0 +1,13 @@
+--- a/Modules/Services/LibraryStore/BookStore.swift
++++ b/Modules/Services/LibraryStore/BookStore.swift
+@@ -2470 +2470 @@
+-            records[idx].bookInfoURL = origin.bookUrl
++            records[idx].bookInfoURL = source.isJsSource ? origin.bookUrl : (tocPackage.bookURL ?? origin.bookUrl)
+@@ -2671,0 +2672 @@
++        let finalBookURL = source.isJsSource ? bookURL : (tocPackage.bookURL ?? bookURL)
+@@ -2755 +2756 @@
+-                    at: idx, plan: plan, source: source, bookURL: bookURL, tocURL: finalTOCURL,
++                    at: idx, plan: plan, source: source, bookURL: finalBookURL, tocURL: finalTOCURL,
+@@ -2875 +2876 @@
+-        if runtimeChanged || plan.chaptersChanged || tocChanged || titleChanged || authorChanged || plan.gainedChapters {
++        if runtimeChanged || plan.chaptersChanged || tocChanged || titleChanged || authorChanged || sourceChanged || plan.gainedChapters {

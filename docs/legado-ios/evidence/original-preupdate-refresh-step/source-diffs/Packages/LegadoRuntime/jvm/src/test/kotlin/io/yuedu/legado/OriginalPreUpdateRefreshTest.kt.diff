@@ -1,0 +1,247 @@
+--- a/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalPreUpdateRefreshTest.kt
++++ b/Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalPreUpdateRefreshTest.kt
+@@ -0,0 +1,244 @@
++package io.yuedu.legado
++
++import com.google.gson.JsonObject
++import com.sun.net.httpserver.HttpExchange
++import com.sun.net.httpserver.HttpServer
++import io.legado.app.data.entities.Book
++import io.legado.app.data.entities.BookSource
++import io.legado.app.data.entities.rule.BookInfoRule
++import io.legado.app.data.entities.rule.TocRule
++import io.legado.app.model.analyzeRule.AnalyzeRule
++import io.legado.app.model.webBook.WebBook
++import io.yuedu.legado.originalrule.*
++import kotlinx.coroutines.Job
++import kotlinx.coroutines.runBlocking
++import org.junit.Assert.*
++import org.junit.Test
++import java.io.Closeable
++import java.io.IOException
++import java.net.InetAddress
++import java.net.InetSocketAddress
++import java.nio.file.Files
++import java.util.UUID
++import java.util.concurrent.CopyOnWriteArrayList
++import java.util.concurrent.CountDownLatch
++import java.util.concurrent.Executors
++import java.util.concurrent.TimeUnit
++
++/** Public retained consumers, owned real loopback HTTP and existing file CAS.
++ * This fixture is not an App UUID grant or a Native/SDK acceptance claim. */
++class OriginalPreUpdateRefreshTest {
++    @Test(timeout = 20_000) fun refreshTocPreservesOriginalPreUpdateNullFromInfoAndNoRenameSemantics() {
++        AnalyzeRule(preUpdateJs = true).use { it.reGetBook(); it.refreshTocUrl() }
++        RuleEnvironment().use { env ->
++            val source = BookSource(env, "https://unowned.invalid", "Typed non-Book data")
++            AnalyzeRule(io.legado.app.data.entities.SearchBook(env), source, preUpdateJs = true).use { it.reGetBook(); it.refreshTocUrl() }
++        }
++        Peer { e -> respond(e, if (e.requestURI.path == "/old")
++            "<h1>must-not-rename</h1><h2>other-author</h2><a id='toc' href='/new-toc'>toc</a>"
++            else "{\"rows\":[{\"name\":\"one\",\"url\":\"/chapter\"}]}") }.use { peer ->
++            Direct(peer.origin).use { owned ->
++                val book = Book(owned.environment, name = "Owned", author = "Author", bookUrl = peer.origin + "/old", tocUrl = peer.origin + "/old-toc")
++                owned.source.ruleBookInfo = BookInfoRule(name = "h1@text", author = "h2@text", canReName = "yes", tocUrl = "#toc@href")
++                owned.source.ruleToc = TocRule(preUpdateJs = "java.refreshTocUrl()", chapterList = "$.rows", chapterName = "$.name", chapterUrl = "$.url")
++                AnalyzeRule(book, owned.source).use { rule ->
++                    for (call in listOf<() -> Unit>({ rule.refreshTocUrl() }, { rule.reGetBook() })) {
++                        val error = assertThrows(io.legado.app.exception.NoStackTraceException::class.java, call)
++                        assertTrue(error.stackTrace.isEmpty())
++                    }
++                }
++                runBlocking { WebBook.runPreUpdateJs(owned.source, book, isFromBookInfo = true).getOrThrow() }
++                assertTrue(peer.requests.isEmpty())
++                AnalyzeRule(source = owned.source, preUpdateJs = true).use { it.refreshTocUrl(); it.reGetBook() }
++                assertTrue(peer.requests.isEmpty())
++                val chapters = runBlocking { WebBook.getChapterListAwait(owned.source, book, runPerJs = true).getOrThrow() }
++                assertEquals(listOf("/old", "/new-toc"), peer.requests.map { it.path })
++                assertEquals("Owned", book.name); assertEquals("Author", book.author)
++                assertEquals(peer.origin + "/new-toc", book.tocUrl)
++                assertEquals(peer.origin + "/old", book.bookUrl)
++                assertEquals(listOf("one"), chapters.map { it.title })
++            }
++        }
++    }
++
++    @Test(timeout = 20_000) fun publicTocReGetBookKeepsExactSearchVariablesHeadersCookiesAndCheckedUrlIdentity() {
++        Peer { e -> when (e.requestURI.path) {
++            "/search" -> { e.responseHeaders.add("Set-Cookie", "owned=present; Path=/"); respond(e,
++                "<div class='book'><a href='/wrong'>Other</a><b>Author</b></div>" +
++                "<div class='book'><a href='/new'>Owned</a><b>Author</b></div>") }
++            "/new" -> respond(e, "<h1>new-name</h1><h2>new-author</h2><a id='toc' href='/new-toc'>toc</a>")
++            "/new-toc" -> respond(e, "{\"rows\":[{\"name\":\"one\",\"url\":\"/chapter\"}]}")
++            else -> error("Unexpected refresh route")
++        } }.use { peer -> Owner(peer.origin).use { owner ->
++            val result = owner.execute(source(peer.origin), fromInfo = true)
++            assertTrue(result.toString(), result["ok"].asBoolean)
++            val book = result["result"].asJsonObject["book"].asJsonObject
++            assertEquals(peer.origin + "/new", book["bookUrl"].asString)
++            assertEquals(peer.origin + "/new-toc", book["tocUrl"].asString)
++            assertEquals("Owned", book["name"].asString); assertEquals("Author", book["author"].asString)
++            val variables = parseObject(book["variable"].asString)
++            assertEquals("kept", variables["old"].asString)
++            assertEquals("search-value", variables["shared"].asString)
++            assertEquals("matched", variables["found"].asString)
++            assertEquals(listOf("/search", "/new", "/new-toc"), peer.requests.map { it.path })
++            assertTrue(peer.requests.first().uri.contains("q=Owned")); assertTrue(peer.requests.first().uri.contains("p=1"))
++            assertTrue(peer.requests.all { it.header("X-Owned") == "header" })
++            assertTrue(peer.requests.drop(1).all { it.header("Cookie").contains("owned=present") })
++            assertEquals(1, owner.grants.size)
++            assertEquals(peer.origin + "/old", owner.grants.single()["fromBookURL"].asString)
++            assertEquals(peer.origin + "/new", owner.grants.single()["toBookURL"].asString)
++            assertEquals("kept", parseObject(owner.grants.single()["bookVariables"].asString)["old"].asString)
++            assertTrue(owner.events.indexOf("granted") < owner.events.indexOf("target-variable-commit"))
++            assertEquals("O".repeat(10_001), owner.value("big-variable", "/old", "old-large"))
++            assertNull(owner.value("big-variable", "/new", "old-large"))
++            assertEquals(0, owner.nativeHttp)
++            assertTrue(result["completedEffects"].asJsonArray.any { it.asString == "book.refresh.identity.granted" })
++        } }
++    }
++
++    @Test(timeout = 20_000) fun rejectedOrCancelledIdentityGrantCannotContinueWithNewUrlAndRetainsAcceptedFacts() {
++        for (mode in listOf("reject", "cancel")) Peer { e ->
++            assertEquals("/search", e.requestURI.path)
++            respond(e, "<div class='book'><a href='/new'>Owned</a><b>Author</b></div>")
++        }.use { peer -> Owner(peer.origin, mode).use { owner ->
++            val result = owner.execute(source(peer.origin))
++            assertFalse(result.toString(), result["ok"].asBoolean)
++            assertEquals(if (mode == "cancel") "CANCELLED" else "INVALID_STATE_RESPONSE", result["error"].asJsonObject["code"].asString)
++            assertEquals(listOf("/search"), peer.requests.map { it.path })
++            assertFalse(owner.events.contains("target-variable-commit"))
++            assertEquals("kept", parseObject(owner.value("variables", "/old")!!)["old"].asString)
++            if (mode == "cancel") assertTrue(result["error"].asJsonObject["completedEffects"].asJsonArray.any { it.asString == "book.refresh.identity.granted" })
++            else assertFalse(result["error"].asJsonObject.has("completedEffects"))
++            assertEquals(0, owner.nativeHttp)
++        } }
++    }
++
++    @Test(timeout = 20_000) fun refreshHttpStillObservesActualCallerCancellationAndParentDeadlineBeforeThirtyMinuteLimit() {
++        for (reason in listOf("caller", "deadline")) {
++            val entered = CountDownLatch(1); val release = CountDownLatch(1)
++            Peer { e -> entered.countDown(); release.await(5, TimeUnit.SECONDS); try { respond(e, "<a id='toc' href='/late'>late</a>") } catch (_: IOException) { } }.use { peer ->
++                Direct(peer.origin, timeoutMs = if (reason == "deadline") 1500 else 10_000).use { owned ->
++                    owned.source.ruleBookInfo = BookInfoRule(tocUrl = "#toc@href")
++                    owned.source.ruleToc = TocRule(preUpdateJs = "java.refreshTocUrl()")
++                    val book = Book(owned.environment, name = "Owned", author = "Author", bookUrl = peer.origin + "/old", tocUrl = peer.origin + "/old-toc")
++                    val pool = Executors.newSingleThreadExecutor()
++                    try {
++                        val future = pool.submit<Throwable?> { try { runBlocking { WebBook.runPreUpdateJs(owned.source, book).getOrThrow() }; null } catch (e: Throwable) { e } }
++                        assertTrue(entered.await(3, TimeUnit.SECONDS))
++                        if (reason == "caller") owned.task.job.cancel()
++                        val failure = future.get(4, TimeUnit.SECONDS)
++                        assertNotNull("A held real HTTP call must stop before the original thirty-minute maximum", failure)
++                        assertEquals(peer.origin + "/old-toc", book.tocUrl)
++                        assertEquals(1, peer.requests.size)
++                    } finally { release.countDown(); pool.shutdownNow(); check(pool.awaitTermination(3, TimeUnit.SECONDS)) }
++                }
++            }
++        }
++    }
++
++    private class Direct(origin: String, timeoutMs: Long = 10_000) : Closeable {
++        val session = RuntimeSession(UUID.randomUUID().toString(), jsonObject("bookSourceUrl" to origin), RuntimeSessionOptions("jvm-okhttp", "owned-refresh-agent"))
++        val task = RuntimeTask(UUID.randomUUID().toString(), session, Job(), System.currentTimeMillis() + timeoutMs)
++        val environment = LegadoRuntime.originalRuleEnvironment(task)
++        val source = BookSource(environment, origin, "Owned refresh")
++        override fun close() { environment.close(); task.job.cancel(); session.closed.set(true); session.http!!.close() }
++    }
++
++    private class Owner(private val origin: String, private val mode: String = "accept") : Closeable {
++        private val directory = Files.createTempDirectory("original-refresh-owner-")
++        private val adapter = FileRulePersistenceAdapter(directory)
++        private val host = RulePersistenceHost(adapter)
++        private var currentURL = origin + "/old"
++        val grants = CopyOnWriteArrayList<JsonObject>()
++        val events = CopyOnWriteArrayList<String>()
++        var nativeHttp = 0
++        init {
++            val changes = mapOf(key("variables", "/old") to "{\"old\":\"kept\",\"shared\":\"old\"}".toByteArray(),
++                key("big-variable", "/old", "old-large") to "O".repeat(10_001).toByteArray())
++            check(adapter.compareAndSet("refresh-owner", 0, changes))
++            LegadoRuntime.setHostCallback { task, operation, raw ->
++                if (operation == "task.cancel") "{}" else {
++                    val input = parseObject(raw)
++                    when (operation) {
++                        "book.refresh.identity" -> {
++                            assertEquals("refresh-owner", input["owner"].asString)
++                            assertEquals(origin, input["sourceURL"].asString)
++                            assertEquals(currentURL, input["fromBookURL"].asString)
++                            assertEquals(origin + "/new", input["toBookURL"].asString)
++                            grants += input.deepCopy()
++                            if (mode == "reject") jsonObject("accepted" to false, "bookURL" to currentURL).toString()
++                            else {
++                                val nextKey = key("variables", "/new")
++                                val before = adapter.read("refresh-owner", setOf(nextKey))
++                                check(adapter.compareAndSet("refresh-owner", before.revision, mapOf(nextKey to input["bookVariables"].asString.toByteArray())))
++                                currentURL = origin + "/new"; events += "granted"
++                                if (mode == "cancel") LegadoRuntime.cancel(task)
++                                jsonObject("accepted" to true, "bookURL" to currentURL,
++                                    "hostEffects" to listOf("book.refresh.identity.granted")).toString()
++                            }
++                        }
++                        "state.read", "state.commit" -> {
++                            val keys = if (operation == "state.read") input["keys"].asJsonArray.map { it.asString }
++                                else input["changes"].asJsonObject.keySet().toList()
++                            for (wire in keys) {
++                                val parts = GSON.fromJson(wire, Array<String>::class.java).toList()
++                                assertEquals(origin, parts.first())
++                                if (parts[1] == "variables" || parts[1] == "big-variable") {
++                                    assertEquals(currentURL, parts[3])
++                                    if (operation == "state.commit" && currentURL.endsWith("/new")) events += "target-variable-commit"
++                                }
++                                if (parts[1] == "toc") assertEquals(currentURL, parts[2])
++                            }
++                            host.dispatch(operation, input).toString()
++                        }
++                        "http.request" -> { nativeHttp++; error("Refresh must use the original JVM HTTP owner") }
++                        else -> error("Unexpected refresh operation $operation")
++                    }
++                }
++            }
++        }
++        private fun key(kind: String, path: String, name: String? = null): String = GSON.toJson(
++            listOf(origin, kind, "book", origin + path, "") + if (name == null) emptyList() else listOf(name))
++        fun value(kind: String, path: String, name: String? = null): String? {
++            val wire = key(kind, path, name)
++            return adapter.read("refresh-owner", setOf(wire)).values[wire]?.toString(Charsets.UTF_8)
++        }
++        fun execute(source: JsonObject, fromInfo: Boolean = false): JsonObject {
++            val created = parseObject(LegadoRuntime.createSession(source.toString(), jsonObject("httpTransport" to "jvm-okhttp",
++                "sourceMode" to "original-traditional", "stateOwner" to "refresh-owner").toString()))
++            assertTrue(created.toString(), created["ok"].asBoolean)
++            val session = created["sessionId"].asString
++            try { return parseObject(LegadoRuntime.execute(session, UUID.randomUUID().toString(), "toc",
++                jsonObject("book" to jsonObject("origin" to origin, "bookUrl" to origin + "/old", "tocUrl" to origin + "/old-toc",
++                    "name" to "Owned", "author" to "Author"), "runPreUpdateJs" to true, "isFromBookInfo" to fromInfo).toString())) }
++            finally { LegadoRuntime.closeSession(session) }
++        }
++        override fun close() { LegadoRuntime.setHostCallback(null); directory.toFile().deleteRecursively() }
++    }
++
++    private data class Capture(val path: String, val uri: String, val headers: Map<String, List<String>>) {
++        fun header(name: String) = headers.entries.firstOrNull { it.key.equals(name, true) }?.value.orEmpty().joinToString("; ")
++    }
++    private class Peer(handler: (HttpExchange) -> Unit) : Closeable {
++        val requests = CopyOnWriteArrayList<Capture>(); private val errors = CopyOnWriteArrayList<Throwable>()
++        private val pool = Executors.newCachedThreadPool { Thread(it, "owned-refresh-peer").apply { isDaemon = true } }
++        private val server = HttpServer.create(InetSocketAddress(InetAddress.getByAddress(byteArrayOf(127, 0, 0, 1)), 0), 0).apply {
++            executor = pool
++            createContext("/") { e -> try { requests += Capture(e.requestURI.path, e.requestURI.toString(), e.requestHeaders.mapValues { it.value.toList() }); handler(e) }
++                catch (failure: Throwable) { errors += failure } finally { e.close() } }; start()
++        }
++        val origin = "http://127.0.0.1:${server.address.port}"
++        override fun close() { server.stop(0); pool.shutdownNow(); check(pool.awaitTermination(3, TimeUnit.SECONDS)); if (errors.isNotEmpty()) throw AssertionError("Owned refresh peer failed", errors.first()) }
++    }
++
++    companion object {
++        private fun respond(e: HttpExchange, text: String) { val bytes = text.toByteArray(Charsets.UTF_8); e.responseHeaders.add("Content-Type", "text/html; charset=utf-8"); e.sendResponseHeaders(200, bytes.size.toLong()); e.responseBody.write(bytes) }
++        private fun source(origin: String): JsonObject = jsonObject("bookSourceUrl" to origin, "bookSourceType" to 0,
++            "header" to "{\"X-Owned\":\"header\"}", "enabledCookieJar" to true,
++            "searchUrl" to "@js:java.put('shared','search-value');java.put('found','matched');'/search?q='+encodeURIComponent(key)+'&p='+page",
++            "ruleSearch" to jsonObject("bookList" to ".book", "name" to "a@text", "author" to "b@text", "bookUrl" to "a@href"),
++            "ruleBookInfo" to jsonObject("name" to "h1@text", "author" to "h2@text", "canReName" to "yes", "tocUrl" to "#toc@href"),
++            "ruleToc" to jsonObject("preUpdateJs" to "java.reGetBook();if(String(java.get('found'))!=='matched')throw Error('lost matched variable');if(String(java.get('old-large'))!=='')throw Error('old large value leaked');",
++                "chapterList" to "$.rows", "chapterName" to "$.name", "chapterUrl" to "$.url"), "ruleContent" to JsonObject())
++    }
++}

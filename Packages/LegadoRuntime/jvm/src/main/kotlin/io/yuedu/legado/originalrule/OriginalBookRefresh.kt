@@ -1,0 +1,29 @@
+package io.yuedu.legado.originalrule
+
+import io.legado.app.data.entities.Book
+import io.legado.app.data.entities.BookSource
+import io.legado.app.data.entities.SearchBook
+import kotlin.coroutines.AbstractCoroutineContextElement
+import kotlin.coroutines.CoroutineContext
+
+/** Private execution provenance around the actual retained precise-search call.
+ * No source-authored value can create a grant or choose an unrelated Book. */
+internal class OriginalBookRefreshSearch(
+    private val source: BookSource,
+    private val book: Book,
+    private val acceptIdentity: (SearchBook) -> Unit,
+) : AbstractCoroutineContextElement(Key) {
+    companion object Key : CoroutineContext.Key<OriginalBookRefreshSearch>
+    private var converted = false
+
+    fun matched(actualSource: BookSource, result: SearchBook): Book {
+        check(!converted && actualSource === source && book.environment === source.environment &&
+            result.environment === source.environment) { "Precise refresh result belongs to another execution" }
+        check(result.name == book.name && result.author == book.author) { "Precise refresh result differs from the requested book" }
+        // The original consumer constructs from SearchBook.variable, without
+        // reading another persisted Book at its newly discovered URL.
+        acceptIdentity(result)
+        converted = true
+        return source.environment.state.constructMatchedSearchBook(result.bookUrl) { result.toBook() }
+    }
+}

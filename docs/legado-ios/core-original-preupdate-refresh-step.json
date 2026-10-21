@@ -1,0 +1,1019 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T02:18:57.283774+00:00",
+  "status": "original-preUpdate-two-public-APIs-and-App-identity-handoff-connected-actual-JVM-checked-SDK-pending",
+  "canonicalSources": [
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt",
+      "bytes": 12878,
+      "sha256": "bc0d1426c7e68b8ae225da1474a34040f864abb22688702ce332b05d0a7ed1f9"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt",
+      "bytes": 47669,
+      "sha256": "7996b0dc34d2a6c670d62dbec9ec37c0b3ec4a8e2a8db158051a712a23ad2492"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt",
+      "bytes": 13607,
+      "sha256": "89924e1bbe893898b2ab122fa0ea76735b6e9ac6def3df96481bd746314b90d6"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalBookRefresh.kt",
+      "bytes": 1473,
+      "sha256": "b553ffef202785d93afe245355ac88c61e06051fd87fcbb4b16ce92e350f5e13"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt",
+      "bytes": 37676,
+      "sha256": "c6ad4f2b447bc372c8a546a5fb7c8d97d10a0b178c8db5928dfcc0643a9f70bc"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt",
+      "bytes": 20281,
+      "sha256": "fbc60bc6c29b37413d507c3d255228e8e1d7ce285e6f057c26cb0ff13608d02e"
+    },
+    {
+      "path": "Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalPreUpdateRefreshTest.kt",
+      "bytes": 17421,
+      "sha256": "05360ff78298928fe73c0c7ad4d233bd79e5bc4c4bc111b214fefeba99ea81d4"
+    },
+    {
+      "path": "Packages/LegadoRuntime/vendor/original-rule/manifest.json",
+      "bytes": 139704,
+      "sha256": "950c152d519f20de64153a615e3dbf49e4319e5afa2e91562c52ff8ef1c34fac"
+    },
+    {
+      "path": "Modules/Services/LibraryStore/BookStore.swift",
+      "bytes": 219041,
+      "sha256": "cee22b2206c6dfa1c8a54abd894b2d0a12f5ca832186c3ff62f30b81975f3aee"
+    },
+    {
+      "path": "Modules/Services/LibraryStore/Models.swift",
+      "bytes": 48636,
+      "sha256": "c7510d05971af6cd61f7cdd74a55763943f94358c5fac3ae0b995477cbd23574"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoMainJSSourceService.swift",
+      "bytes": 134237,
+      "sha256": "4b5e0c2b3c476a12f02f2ea2b5061532cd5e59a2a3ce1ef391bf006c8a05fcab"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPersistentStateHost.swift",
+      "bytes": 128094,
+      "sha256": "03e495463199075cdc6a7f2a070a2505acde9e3b74d3c05f6083c7c6c371ad81"
+    },
+    {
+      "path": "Modules/Services/Online/LegadoPreviewStateOwner.swift",
+      "bytes": 32758,
+      "sha256": "b821a5fa1c19edd147f56b45d2b687bdb5d43afeb9e992ae2a8c777fff67a85e"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+      "bytes": 59867,
+      "sha256": "e02c0cc0f7148cfc00bd40384c3025caf22a9befa4d07cdf550ac275442a2611"
+    },
+    {
+      "path": "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+      "bytes": 139151,
+      "sha256": "93b99960f1239b785098a6393d9d31a786380210bb48de502aaad43a775b6b1b"
+    }
+  ],
+  "sourceCounts": {
+    "changedOrNewCanonicalFiles": 15,
+    "productionJVM": 6,
+    "productionSwift": 5,
+    "originalSourceManifest": 1,
+    "JVMTestFiles": 1,
+    "AppTestFiles": 1,
+    "NativeTestFiles": 1
+  },
+  "productionBehavior": [
+    "Both retained AnalyzeRule.reGetBook/refreshTocUrl now reach the same task-owned original WebBook/HTTP/state path.",
+    "preUpdate-only guards use original exception class; source/Book casts/null return are in public AnalyzeRule before the platform. fromBookInfo skips refreshToc only.",
+    "Original precise name+author search result crosses a checked task-local identity grant before new URL state use; same-RAM Book then updates URL, merges matched short variables and gets details with canReName false.",
+    "Private coroutine provenance and a synchronous constructor-restore suppression preserve matched SearchBook variables without granting arbitrary persisted books. No new network/store/VM.",
+    "Original 1800000ms max remains bounded by current parent deadline/cancel; real held HTTP tested.",
+    "The two RulePlatform methods change Nothing to Unit. All AnalyzeRule class files are freshly compiled; exact retained binary links are checked.",
+    "Same task opt-in TOC grant accepts exact owner/source/revision/current URL and invalidates stale entity/TOC leases. It grants no library or body write permission.",
+    "The same durable preview record keeps its original logical identity and URL-specific large/chapter/TOC state. The RAM/global short map follows original puts; new URL does not inherit the old URL large bucket.",
+    "Only a sealed successful TOC publishes the new book URL and context reference. Failure retains old active identity and accepted partial state facts.",
+    "The actual returned URL crosses TOCPackage to BookStore old-identity CAS. It preserves App UUID/reading position/chapter ownership and persists URL-only changes through existing metadata owner."
+  ],
+  "actualJVMValidation": {
+    "mainK2": [
+      {
+        "path": ".build/original-preupdate-refresh-step/execution-v1/compile-main.json",
+        "bytes": 5714,
+        "sha256": "958b0871dad7cd53038be77edb7d65b06262e14a3f2266843e018a31522c5908"
+      },
+      {
+        "path": ".build/original-preupdate-refresh-step/execution-guard-v2/compile-guard.json",
+        "bytes": 3499,
+        "sha256": "f93caebc43126022d583e7fc9a1702fb8c60ca61d1f89283085146b8c3767100"
+      },
+      {
+        "path": ".build/original-preupdate-refresh-step/execution-guard-v3/compile-guard.json",
+        "bytes": 3508,
+        "sha256": "7ec7479cb7e3cb1015e8b9c11bedc9feeeacd6087386e7e2b282aca7b2e877d6"
+      }
+    ],
+    "mainK2Description": "Initial six-root coherent compile exit0; after a real guard-class failure only AnalyzeRule recompiled exit0; a later null/public-type correction only AnalyzeRule recompiled exit0. Other five successful roots unchanged. Same module name,160MiB heap/Serial. Not full Gradle.",
+    "JUnitRuns": [
+      {
+        "run": 1,
+        "tests": 4,
+        "failures": 2,
+        "skipped": 0,
+        "xml": {
+          "path": ".build/original-preupdate-refresh-step/test-execution-v1/actual-tests.xml",
+          "bytes": 3840,
+          "sha256": "2fa99503146944e45cfeff48c29d45c96e57b2c5ae7cda850065fba4fc7ad4cf"
+        },
+        "commands": {
+          "path": ".build/original-preupdate-refresh-step/test-execution-v1/commands.json",
+          "bytes": 6586,
+          "sha256": "9972d7936bf194f1334353d4baa9c9ae777d313e31d3c97866c49b0e60c09443"
+        }
+      },
+      {
+        "run": 2,
+        "tests": 2,
+        "failures": 0,
+        "skipped": 0,
+        "xml": {
+          "path": ".build/original-preupdate-refresh-step/test-execution-v2/actual-tests.xml",
+          "bytes": 418,
+          "sha256": "1984a96fc0cca4a9449a3a950b56812518ff05f4e62dc9e07e38c58c14ddca6e"
+        },
+        "commands": {
+          "path": ".build/original-preupdate-refresh-step/test-execution-v2/commands.json",
+          "bytes": 6803,
+          "sha256": "a0bea67276c97d6a7e4640b6cceffab5b30604207c06d4caca13e3c4fbba170e"
+        }
+      },
+      {
+        "run": 3,
+        "tests": 4,
+        "failures": 1,
+        "skipped": 0,
+        "xml": {
+          "path": ".build/original-preupdate-refresh-step/test-execution-v3/actual-tests.xml",
+          "bytes": 2151,
+          "sha256": "33237d5670301cc3a1beb1c8d612ead08916643af20676685f19bc0470d90dc4"
+        },
+        "commands": {
+          "path": ".build/original-preupdate-refresh-step/test-execution-v3/commands.json",
+          "bytes": 6601,
+          "sha256": "a1699ce1fdb4b720cebf8f34592468ff713c6a418325dafad3a3260f1deaf3bc"
+        }
+      },
+      {
+        "run": 4,
+        "tests": 1,
+        "failures": 0,
+        "skipped": 0,
+        "xml": {
+          "path": ".build/original-preupdate-refresh-step/test-execution-v4/actual-tests.xml",
+          "bytes": 253,
+          "sha256": "bb1bcf8b92f3c1bbe72f09138b2a9e6712c6302bfa7be73528486abd38f4bf12"
+        },
+        "commands": {
+          "path": ".build/original-preupdate-refresh-step/test-execution-v4/commands.json",
+          "bytes": 6669,
+          "sha256": "03100c6a96cbf8e78dd41043481e6c1f0bb2dddad6be64a2a48a8d5bf01a5abd"
+        }
+      }
+    ],
+    "totalJUnitExecutions": 11,
+    "distinctMethodsWithFinalSuccessfulEvidence": 4,
+    "singleFreshFourGreenRun": false,
+    "finalEvidenceReuse": "Final caller/JAR tested by v3(three unchanged methods passed) plus v4(only failed first method fixture corrected and passed). All transitive helper/production bytes for the three reused methods unchanged; see test-input-reuse.json.",
+    "ordinaryJava": {
+      "commands": {
+        "path": ".build/original-preupdate-refresh-step/ordinary-consumer/execution-v2/commands.json",
+        "bytes": 2163,
+        "sha256": "2cc49a27caa06659294eb4eae95195d382d62ced81d1a7c02da25b19257bc63d"
+      },
+      "result": {
+        "sessions": 2,
+        "httpRequests": 5,
+        "alternateNativeCalls": 0,
+        "identityGrants": 1,
+        "publicNullCalls": 2,
+        "UnitABI": true
+      },
+      "classpath": "Final ordinary JAR and independent outside Java consumer classes only; no JUnit or compiled test dirs",
+      "history": "First ordinary attempt javac0 then rejected createSession before a protocol call because required embedding stateOwner was omitted. Corrected consumer uses one explicit synthetic adapter/RulePersistenceHost; first logs retained."
+    },
+    "finalJar": {
+      "path": ".build/original-preupdate-refresh-step/ordinary-jar-v3/legado-runtime-preupdate-refresh.jar",
+      "bytes": 10961412,
+      "sha256": "2963249f7f2fdace332e76f4fd16982ebc3afe60e6b0f897999e97dc036841c1"
+    },
+    "productionClasses": 428,
+    "freshClassGroups": 64,
+    "retainedParentClasses": 364,
+    "actualCompilationInputs": 133,
+    "mainCompilationInputs": 130,
+    "buildInputs": 3,
+    "portedRows": 61,
+    "SDK": 0,
+    "JNI": 0,
+    "SwiftExecution": 0,
+    "fullGradle": 0,
+    "old23Replay": 0
+  },
+  "authoredAppRegressions": {
+    "existingDefinitions": 15,
+    "candidateDefinitions": 19,
+    "newNoArgumentDefinitions": [
+      "preUpdateIdentityGrantRequiresTaskTOCAndOptIn",
+      "preUpdateIdentityRefreshRejectsStaleEntityAndTOCLeases",
+      "preUpdateSuccessfulTOCReopensSameRecordWithoutOldURLState",
+      "preUpdateFailureAndCancellationKeepOldContextUsable"
+    ],
+    "oldTestBodiesExact": true,
+    "mechanism": "Existing fake executor replaces only JNI execution and emits real Host requests; real production service/grant/Host/CAS and actual owned context files remain. No mocked Host acceptance.",
+    "vectors": [
+      "No owner/details/non-opt-in TOC/content/wrong-task rejection; valid opt-in identity ACK; null stored map versus empty GSON map contents.",
+      "Old entity and original TOC leases rejected after identity ACK; fresh new-URL snapshots and commits accepted.",
+      "Old large value and same chapter URL old variables do not project into the new book identity; TOC bookURL/context swap; same record file/identity anchor; cold service reopening and public content.",
+      "Error and explicit cancellation after accepted URL-compartment writes preserve old active URL/context and its large values, retain accepted new-compartment facts, and permit a cold ordinary old-URL TOC."
+    ]
+  },
+  "authoredNativeProductRegression": {
+    "existingSourceMethods": 15,
+    "candidateSourceMethods": 16,
+    "newMethod": "testNativeOriginalPreUpdateRefreshKeepsPublicBookIdentityAndProgressWithNewURLContext",
+    "allOldMethodBodiesAndWholeBaselineReconstructionExact": true,
+    "mechanism": "Existing required real ordinary runtime/JNI, actual production fetcher/service/Host and owned NW loopback, public BookStore.refreshOnlineBookMetadata. No fake executor/runtime/transport.",
+    "vectors": [
+      "Existing public search/detail/TOC + real App transfer create the book; force-save a real currentPosition.",
+      "Same source finite precise-search page1 matches exact current name/author to moved-book, reGetBook plus refreshTocUrl execute real original WebBook code.",
+      "Moved info rejects inherited old URL big variable, writes a new 10000-character companion through the same owner; authored renamed h1 must not rename existing book.",
+      "After actual BookStore refresh/handoff, assert same UUID/progress/addedDate, new bookInfoURL/tocURL/variables and old URL index absent; reopen metadata off main and verify persisted values.",
+      "Existing LiveBookSourceFetcher prepares next stored-book context; production originalPreviewSnapshot verifies new URL/context and new variables."
+    ],
+    "loopbackRoutesAdded": [
+      "refresh-search exact decoded name/page1",
+      "moved-book info",
+      "moved-toc two real chapter entries"
+    ],
+    "composition": "Compiler-fixed baseline109194/ddf096 preserved. New method/routes are independent of frozen native-result characterization method/helper/import and resource method/routes; Root must hunk-union, never overwrite entire parent Reader file."
+  },
+  "authoredNativePlatformCharacterization": {
+    "selector": "LegadoNativeOriginalReaderTests/testNativeOriginalWebJSNativeResultBridgeCharacterizesAndroidConversionInformation",
+    "mechanism": "Direct WK native Program result and primitive post-callback observation. No stringify/conversion production is enabled.",
+    "programRecords": 14,
+    "plannedCallbacks": 28,
+    "actualWKExecutions": 0
+  },
+  "newAppDefinitions": 4,
+  "newAppArgumentLeaves": 4,
+  "newNativeProductDefinitions": 1,
+  "newNativePlatformDefinitions": 1,
+  "actualSwiftCompilerExecutions": 0,
+  "actualSwiftTestExecutions": 0,
+  "actualNativeJNIExecutions": 0,
+  "newCloudRunsOrTags": 0,
+  "resourceProductionActivated": false,
+  "independentSourceReviewApproved": true,
+  "preservedEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/baseline-v1.json",
+      "bytes": 3163,
+      "sha256": "3a23d86104cff7cb515bbdfe6f5f3ddb46c605e20a685358eecd74962de36b35",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/baseline-v1.json",
+        "bytes": 3163,
+        "sha256": "3a23d86104cff7cb515bbdfe6f5f3ddb46c605e20a685358eecd74962de36b35"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/primary-binding-v2.json",
+      "bytes": 3164,
+      "sha256": "ca98f99da03cedbd1e720b7cbe61d83054a34c99958061db61ea75045cc69a6c",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/primary-binding-v2.json",
+        "bytes": 3164,
+        "sha256": "ca98f99da03cedbd1e720b7cbe61d83054a34c99958061db61ea75045cc69a6c"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/interface-v2.json",
+      "bytes": 4039,
+      "sha256": "d0c458771f571ee4767d6cbe487ed1240221b30771714e8fa64850ffc25d8b0f",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/interface-v2.json",
+        "bytes": 4039,
+        "sha256": "d0c458771f571ee4767d6cbe487ed1240221b30771714e8fa64850ffc25d8b0f"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/execution-v1/compile-main-request.json",
+      "bytes": 5456,
+      "sha256": "8b3d6d4393c9f4d07933a8dfe8a199120103423dcc02688737c0eee167f70e92",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/execution-v1/compile-main-request.json",
+        "bytes": 5456,
+        "sha256": "8b3d6d4393c9f4d07933a8dfe8a199120103423dcc02688737c0eee167f70e92"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/execution-v1/compile-main.json",
+      "bytes": 5714,
+      "sha256": "958b0871dad7cd53038be77edb7d65b06262e14a3f2266843e018a31522c5908",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/execution-v1/compile-main.json",
+        "bytes": 5714,
+        "sha256": "958b0871dad7cd53038be77edb7d65b06262e14a3f2266843e018a31522c5908"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/execution-v1/compile-main.log",
+      "bytes": 283,
+      "sha256": "e5df64373073e68eaf6ba74b76830b16367c072e5127ac5a49501830d0591f86",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/execution-v1/compile-main.log",
+        "bytes": 286,
+        "sha256": "0fb6586fabbd905db3f800abf9fda2776abae35fdbc172045017ed3e867d5d40"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/execution-guard-v2/request.json",
+      "bytes": 3256,
+      "sha256": "e88b8dbf532c260854ec5f5e0999076be4e5083ba844a06161de3b4a94e0d1e6",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/execution-guard-v2/request.json",
+        "bytes": 3256,
+        "sha256": "e88b8dbf532c260854ec5f5e0999076be4e5083ba844a06161de3b4a94e0d1e6"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/execution-guard-v2/compile-guard.json",
+      "bytes": 3499,
+      "sha256": "f93caebc43126022d583e7fc9a1702fb8c60ca61d1f89283085146b8c3767100",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/execution-guard-v2/compile-guard.json",
+        "bytes": 3499,
+        "sha256": "f93caebc43126022d583e7fc9a1702fb8c60ca61d1f89283085146b8c3767100"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/execution-guard-v2/compile-guard.log",
+      "bytes": 283,
+      "sha256": "e5df64373073e68eaf6ba74b76830b16367c072e5127ac5a49501830d0591f86",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/execution-guard-v2/compile-guard.log",
+        "bytes": 286,
+        "sha256": "0fb6586fabbd905db3f800abf9fda2776abae35fdbc172045017ed3e867d5d40"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/execution-guard-v3/request.json",
+      "bytes": 3265,
+      "sha256": "5b83e1cd023e8d11c145c82d69a09004332add5fa358d0d233a03f77e2041037",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/execution-guard-v3/request.json",
+        "bytes": 3265,
+        "sha256": "5b83e1cd023e8d11c145c82d69a09004332add5fa358d0d233a03f77e2041037"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/execution-guard-v3/compile-guard.json",
+      "bytes": 3508,
+      "sha256": "7ec7479cb7e3cb1015e8b9c11bedc9feeeacd6087386e7e2b282aca7b2e877d6",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/execution-guard-v3/compile-guard.json",
+        "bytes": 3508,
+        "sha256": "7ec7479cb7e3cb1015e8b9c11bedc9feeeacd6087386e7e2b282aca7b2e877d6"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/execution-guard-v3/compile-guard.log",
+      "bytes": 283,
+      "sha256": "e5df64373073e68eaf6ba74b76830b16367c072e5127ac5a49501830d0591f86",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/execution-guard-v3/compile-guard.log",
+        "bytes": 286,
+        "sha256": "0fb6586fabbd905db3f800abf9fda2776abae35fdbc172045017ed3e867d5d40"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/ordinary-jar/production-binding.json",
+      "bytes": 157264,
+      "sha256": "920e698ca10743567ae7de6c85dcc73a5364ec098c7c10acf20167b40debc5a1",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/ordinary-jar/production-binding.json",
+        "bytes": 157264,
+        "sha256": "920e698ca10743567ae7de6c85dcc73a5364ec098c7c10acf20167b40debc5a1"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/ordinary-jar-v2/guard-successor-binding.json",
+      "bytes": 1092072,
+      "sha256": "567a4b43b02a35e0189f947483b779055aa6c319d2c6ca6de91a8302b7a6abdf",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/ordinary-jar-v2/guard-successor-binding.json",
+        "bytes": 1092072,
+        "sha256": "567a4b43b02a35e0189f947483b779055aa6c319d2c6ca6de91a8302b7a6abdf"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/ordinary-jar-v3/guard-successor-binding.json",
+      "bytes": 1092281,
+      "sha256": "ceb81eb19463ad57122a1ffe85b2d5d5a8bc0feaec8682387ddeec1a0e99b28b",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/ordinary-jar-v3/guard-successor-binding.json",
+        "bytes": 1092281,
+        "sha256": "ceb81eb19463ad57122a1ffe85b2d5d5a8bc0feaec8682387ddeec1a0e99b28b"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/ordinary-jar-v3/abi-and-input-closure.json",
+      "bytes": 1891,
+      "sha256": "e77b4cffca590b06b81654ca990f12a01789bc92e68d877386aecb364a2ae2bf",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/ordinary-jar-v3/abi-and-input-closure.json",
+        "bytes": 1891,
+        "sha256": "e77b4cffca590b06b81654ca990f12a01789bc92e68d877386aecb364a2ae2bf"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/actual-jvm-compilation-inputs-final.json",
+      "bytes": 51867,
+      "sha256": "6b009ab740b9db5a4d06eee03e47470941c900bdc2873b1dd76d1599b1dc5bf1",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/actual-jvm-compilation-inputs-final.json",
+        "bytes": 51867,
+        "sha256": "6b009ab740b9db5a4d06eee03e47470941c900bdc2873b1dd76d1599b1dc5bf1"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-input-reuse.json",
+      "bytes": 1401,
+      "sha256": "c5ecd65c52e62ce1fd327b3b7e52f073f593718235c733e5835f05356b3efb2f",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-input-reuse.json",
+        "bytes": 1401,
+        "sha256": "c5ecd65c52e62ce1fd327b3b7e52f073f593718235c733e5835f05356b3efb2f"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/history/first-execution-v1/source-bindings.json",
+      "bytes": 1135,
+      "sha256": "a0c6ff310de13a385277ead1680df1bc599f068784059ca63cb547defb70713c",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/history/first-execution-v1/source-bindings.json",
+        "bytes": 1135,
+        "sha256": "a0c6ff310de13a385277ead1680df1bc599f068784059ca63cb547defb70713c"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/history/abi-check-overbroad-v1.json",
+      "bytes": 503,
+      "sha256": "9fcb8a9aa2233778cc9dd0690f84f634a5236cb0797d6e88b706335c5bbe58da",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/history/abi-check-overbroad-v1.json",
+        "bytes": 503,
+        "sha256": "9fcb8a9aa2233778cc9dd0690f84f634a5236cb0797d6e88b706335c5bbe58da"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/ordinary-consumer/execution-v1/commands.json",
+      "bytes": 2163,
+      "sha256": "c56e2719fe95b1088489ac6721186919c8bebaf1d4ad01f4e1ebecfab8eba309",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/ordinary-consumer/execution-v1/commands.json",
+        "bytes": 2163,
+        "sha256": "c56e2719fe95b1088489ac6721186919c8bebaf1d4ad01f4e1ebecfab8eba309"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/ordinary-consumer/execution-v1/ordinary-java.log",
+      "bytes": 319,
+      "sha256": "4d6ac221a3b42c74b69142a2fd7feea3f641a5cfe7dab899d2a2c12acc645d29",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/ordinary-consumer/execution-v1/ordinary-java.log",
+        "bytes": 322,
+        "sha256": "f988eda425818e791d17b2c40266c762682bb5ca23a39dbff3e4ca0d2e4077fa"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/ordinary-consumer/execution-v2/commands.json",
+      "bytes": 2163,
+      "sha256": "2cc49a27caa06659294eb4eae95195d382d62ced81d1a7c02da25b19257bc63d",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/ordinary-consumer/execution-v2/commands.json",
+        "bytes": 2163,
+        "sha256": "2cc49a27caa06659294eb4eae95195d382d62ced81d1a7c02da25b19257bc63d"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/ordinary-consumer/execution-v2/ordinary-java.log",
+      "bytes": 297,
+      "sha256": "8a1c07ab06d7f5aa51d5dc21c9a366cd2ff62c1a7797c576be5cd1d15e89384d",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/ordinary-consumer/execution-v2/ordinary-java.log",
+        "bytes": 301,
+        "sha256": "18333177cce062bc70ceb466d8c63d2636ffd1580eaeb40e8177d0bc097e3518"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/ordinary-consumer/PreUpdateConsumer.java",
+      "bytes": 8428,
+      "sha256": "3e8ef66ffba15e3e8fe1a0435db91f6f01a0231d91f3719d4d967d4273cec9e6",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/ordinary-consumer/PreUpdateConsumer.java",
+        "bytes": 8428,
+        "sha256": "3e8ef66ffba15e3e8fe1a0435db91f6f01a0231d91f3719d4d967d4273cec9e6"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v1/commands.json",
+      "bytes": 6586,
+      "sha256": "9972d7936bf194f1334353d4baa9c9ae777d313e31d3c97866c49b0e60c09443",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v1/commands.json",
+        "bytes": 6586,
+        "sha256": "9972d7936bf194f1334353d4baa9c9ae777d313e31d3c97866c49b0e60c09443"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v1/actual-tests.xml",
+      "bytes": 3811,
+      "sha256": "c06f2384eb75afa794a8d65d4a1a6e651dfe254548f1172361231e3821a87d39",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v1/actual-tests.xml",
+        "bytes": 3840,
+        "sha256": "2fa99503146944e45cfeff48c29d45c96e57b2c5ae7cda850065fba4fc7ad4cf"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v1/compile-tests.log",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v1/compile-tests.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v1/compile-runner.log",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v1/compile-runner.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v1/junit-selected.log",
+      "bytes": 3187,
+      "sha256": "e73f38baaa98307e0a52a44f118a537b97dae1ebce4b8bd9ac6a016f9c77682b",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v1/junit-selected.log",
+        "bytes": 3213,
+        "sha256": "432b85a952b72eeaf2ddc97cb3a355f0d8b79ac9eb6fdfdb5963c8fe73b957dd"
+      },
+      "originalTextEncoding": "cp936",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v2/commands.json",
+      "bytes": 6803,
+      "sha256": "a0bea67276c97d6a7e4640b6cceffab5b30604207c06d4caca13e3c4fbba170e",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v2/commands.json",
+        "bytes": 6803,
+        "sha256": "a0bea67276c97d6a7e4640b6cceffab5b30604207c06d4caca13e3c4fbba170e"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v2/actual-tests.xml",
+      "bytes": 418,
+      "sha256": "1984a96fc0cca4a9449a3a950b56812518ff05f4e62dc9e07e38c58c14ddca6e",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v2/actual-tests.xml",
+        "bytes": 418,
+        "sha256": "1984a96fc0cca4a9449a3a950b56812518ff05f4e62dc9e07e38c58c14ddca6e"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v2/compile-tests.log",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v2/compile-tests.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v2/compile-runner.log",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v2/compile-runner.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v2/junit-selected.log",
+      "bytes": 228,
+      "sha256": "5dad416f9653f0b5f0763f61b16fed2fd4a7a9e39e8aa80e5d06e0ad9649c859",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v2/junit-selected.log",
+        "bytes": 232,
+        "sha256": "8d1e32b6be69c7f05fcd32a0b52037da815d1d275eeeb6a62b4038bf6f537ec8"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v3/commands.json",
+      "bytes": 6601,
+      "sha256": "a1699ce1fdb4b720cebf8f34592468ff713c6a418325dafad3a3260f1deaf3bc",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v3/commands.json",
+        "bytes": 6601,
+        "sha256": "a1699ce1fdb4b720cebf8f34592468ff713c6a418325dafad3a3260f1deaf3bc"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v3/actual-tests.xml",
+      "bytes": 2136,
+      "sha256": "cee639dd401ea2cc8e0475b146ad2d3e2cd192e714e91d3ab6ad3e6e6b1f69ba",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v3/actual-tests.xml",
+        "bytes": 2151,
+        "sha256": "33237d5670301cc3a1beb1c8d612ead08916643af20676685f19bc0470d90dc4"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v3/compile-tests.log",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v3/compile-tests.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v3/compile-runner.log",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v3/compile-runner.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v3/junit-selected.log",
+      "bytes": 1701,
+      "sha256": "91a5d868a748d753392be31d99a5a941e4abdf15a03394c1d61dd37714cdd6da",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v3/junit-selected.log",
+        "bytes": 1721,
+        "sha256": "73060f1bfaf39053952762d94ac7f62cfc463e2fb9d2d38c4d4a1f297fe609b4"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v4/commands.json",
+      "bytes": 6669,
+      "sha256": "03100c6a96cbf8e78dd41043481e6c1f0bb2dddad6be64a2a48a8d5bf01a5abd",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v4/commands.json",
+        "bytes": 6669,
+        "sha256": "03100c6a96cbf8e78dd41043481e6c1f0bb2dddad6be64a2a48a8d5bf01a5abd"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v4/actual-tests.xml",
+      "bytes": 253,
+      "sha256": "bb1bcf8b92f3c1bbe72f09138b2a9e6712c6302bfa7be73528486abd38f4bf12",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v4/actual-tests.xml",
+        "bytes": 253,
+        "sha256": "bb1bcf8b92f3c1bbe72f09138b2a9e6712c6302bfa7be73528486abd38f4bf12"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v4/compile-tests.log",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v4/compile-tests.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v4/compile-runner.log",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v4/compile-runner.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/test-execution-v4/junit-selected.log",
+      "bytes": 228,
+      "sha256": "f162a123d4c729331c42df9cecad73ac5d5ac7d7506044aab94bd6c64b8bf133",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/test-execution-v4/junit-selected.log",
+        "bytes": 232,
+        "sha256": "d388aceb2882b427675354d15620e4646ec92968c08c06a099e1606fab352080"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/jvm/reviewed-backend.json",
+      "bytes": 26026,
+      "sha256": "9bbff85345d1d0cead95a16fce1dd322d0e8406788ae624cbd5b4c5cd7afb7a1",
+      "original": {
+        "path": ".build/original-preupdate-refresh-step/backend-final-v1.json",
+        "bytes": 26026,
+        "sha256": "9bbff85345d1d0cead95a16fce1dd322d0e8406788ae624cbd5b4c5cd7afb7a1"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/app/baseline.json",
+      "bytes": 1210,
+      "sha256": "3e79959eda223a4610f83cfd2707b0e6599fe6ad03815e3ef7457cf4cb391fad",
+      "original": {
+        "path": ".build/original-preupdate-app-step/baseline.json",
+        "bytes": 1210,
+        "sha256": "3e79959eda223a4610f83cfd2707b0e6599fe6ad03815e3ef7457cf4cb391fad"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/app/reviewed-production.json",
+      "bytes": 1248,
+      "sha256": "990889d19b3af14ed14247aad3ca055af6fcc2353204802fe7b9abf55b296179",
+      "original": {
+        "path": ".build/original-preupdate-app-step/production-draft-v1.json",
+        "bytes": 1248,
+        "sha256": "990889d19b3af14ed14247aad3ca055af6fcc2353204802fe7b9abf55b296179"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/app/authored-regressions.json",
+      "bytes": 9306,
+      "sha256": "503542211a64a63370a9bb39594c0578f9a61b31ea201c7d1aa9154373799e27",
+      "original": {
+        "path": ".build/original-preupdate-app-step/app-native-tests-final-v1.json",
+        "bytes": 9306,
+        "sha256": "503542211a64a63370a9bb39594c0578f9a61b31ea201c7d1aa9154373799e27"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/reader/composition.json",
+      "bytes": 2314,
+      "sha256": "e4fe7cbdbc06e3ac8e2fbcbf56822298bc26b30919f443f231e65e27b3514b47",
+      "original": {
+        "path": ".build/original-preupdate-native-result-union/composition-v1.json",
+        "bytes": 2314,
+        "sha256": "e4fe7cbdbc06e3ac8e2fbcbf56822298bc26b30919f443f231e65e27b3514b47"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/reader/Reader-union.diff",
+      "bytes": 31782,
+      "sha256": "3cd5c5deb93a64d7268b9a746ccf780dae26308ce19e55142041f70e04413b75",
+      "original": {
+        "path": ".build/original-preupdate-native-result-union/Reader-union.diff",
+        "bytes": 31783,
+        "sha256": "c598610bbae41cb7b346b22923e4ed863aa49a31cd380668df4bba9698b40278"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/reader/compose-union.py",
+      "bytes": 4904,
+      "sha256": "a93ba5e91110331c559f9233dbf478edc21c48065331ba1fb6eba6085c7b0e0c",
+      "original": {
+        "path": ".build/compose-preupdate-native-result-union.py",
+        "bytes": 4904,
+        "sha256": "a93ba5e91110331c559f9233dbf478edc21c48065331ba1fb6eba6085c7b0e0c"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/reader/native-result-reviewed-candidate.json",
+      "bytes": 4468,
+      "sha256": "73ccb5f0a83a996f975e58348769fa643eb4345e22afda86434141101b072ab7",
+      "original": {
+        "path": ".build/original-general-webjs-native-result-characterization-step/final-v1.json",
+        "bytes": 4568,
+        "sha256": "980c522b4af97533f43dc74be307f146b6e3e0d111d2803870ab4db73afc3ec7"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/reader/native-result/contract-v1.json",
+      "bytes": 2327,
+      "sha256": "f63970a80c912377bf60a11ad9ba42017789f05e9e3f6d3266906acaf6c6adb1",
+      "original": {
+        "path": ".build/original-general-webjs-native-result-characterization-step/contract-v1.json",
+        "bytes": 2353,
+        "sha256": "97a09bc4161a1a3abaca1540cbaaaf59ea946033e08f16c0ba0bd8aa53985e41"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/reader/native-result/evidence/source-checks-v1.json",
+      "bytes": 2468,
+      "sha256": "080745614035d24dbf2fc508e3fc9a84fc35f4c599fa5e9e923a82c61513a4a9",
+      "original": {
+        "path": ".build/original-general-webjs-native-result-characterization-step/evidence/source-checks-v1.json",
+        "bytes": 2521,
+        "sha256": "f5f7d64faf94d890e523413a7d5d11f92471988ab9e2fc552146c76d21ef3c21"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/reader/native-result/new-method.swiftpart",
+      "bytes": 4235,
+      "sha256": "3b6cf921d9373e07f0f2316c700e15cca3f3d66a494f6d35541947129910d000",
+      "original": {
+        "path": ".build/original-general-webjs-native-result-characterization-step/new-method.swiftpart",
+        "bytes": 4236,
+        "sha256": "7d08f0f27ae116e23a3e9a513a8f29a9b48e10ad11e1d098cce4c7b16c8c1cf4"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/reader/native-result/new-helper.swiftpart",
+      "bytes": 18117,
+      "sha256": "689f8f3044052c3bd29d2b00fea3b77cd77a3fd374abecbad1f8a1838f3c3332",
+      "original": {
+        "path": ".build/original-general-webjs-native-result-characterization-step/new-helper.swiftpart",
+        "bytes": 18117,
+        "sha256": "689f8f3044052c3bd29d2b00fea3b77cd77a3fd374abecbad1f8a1838f3c3332"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/reader/native-result-independent-review.json",
+      "bytes": 6663,
+      "sha256": "fbed7ae60b6a68d3c9f8216bc299f6602765e3575795e259333e4a41bfbb651d",
+      "original": {
+        "path": ".build/native-result-and-remote-jslib-independent-review/review-v1.json",
+        "bytes": 6663,
+        "sha256": "fbed7ae60b6a68d3c9f8216bc299f6602765e3575795e259333e4a41bfbb651d"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/cross-independent-review.json",
+      "bytes": 17017,
+      "sha256": "d83ea12854873580371796e28a6c06a05334be6b89a01891cb9932cac4a152b8",
+      "original": {
+        "path": ".build/original-preupdate-cross-independent-review/review-v1.json",
+        "bytes": 17017,
+        "sha256": "d83ea12854873580371796e28a6c06a05334be6b89a01891cb9932cac4a152b8"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/original-preupdate-refresh-step/root-integration.py",
+      "bytes": 12063,
+      "sha256": "887e7e091182f3de148cee47762232053182311c93bd8c1e12f8e175bc6214ee",
+      "original": {
+        "path": ".build/integrate-reviewed-original-preupdate.py",
+        "bytes": 12063,
+        "sha256": "887e7e091182f3de148cee47762232053182311c93bd8c1e12f8e175bc6214ee"
+      },
+      "originalTextEncoding": "utf-8-sig",
+      "normalization": "UTF8/LF and trailing whitespace only; original facts retained"
+    }
+  ],
+  "limits": [
+    "This backend freeze is not complete until Root actual Swift Host/PreviewGrant/TOCPackage/BookStore production slice and regressions are composed and reviewed.",
+    "Accepted book.refresh.identity.granted records only task-local authority, not persistent URL migration or App save. Successful sealed TOC owns final persisted URL; failure must retain accepted partial variable facts.",
+    "Existing strict source/book/chapter permissions remain; unrelated SearchBook writes to unknown URL and arbitrary library access are not newly authorized.",
+    "Existing RuleJsExtensions no-argument refreshBookInfo/refreshBookToc helpers remain a separate unsupported API; they are not the two original AnalyzeRule APIs implemented here.",
+    "No Apple SDK, Native runtime, visual/device, complete Legado compatibility or renewal acceptance is asserted.",
+    "The two public original APIs are connected; separate no-argument RuleJsExtensions helpers remain explicitly unsupported.",
+    "New Swift/App/Native tests are authored source, awaiting actual SDK execution in a single coherent checkpoint.",
+    "Native platform observations do not establish Android parity and do not enable object-result or resource-sniff compatibility.",
+    "No renewal account registration, authenticated installation, device replacement or unattended execution result is established by this reader change."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

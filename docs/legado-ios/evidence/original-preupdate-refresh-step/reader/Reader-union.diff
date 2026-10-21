@@ -1,0 +1,487 @@
+--- a/Tests/iOS/LegadoNativeOriginalReaderTests.swift
++++ b/Tests/iOS/LegadoNativeOriginalReaderTests.swift
+@@ -1,3 +1,4 @@
++import CoreFoundation
+ import CryptoKit
+ import Foundation
+ import LegadoRuntime
+@@ -10,6 +11,70 @@
+ /// All service/executor/Host/client/cache implementations below are production defaults.
+ /// The loopback peer supplies bytes only; it is never a runtime transport substitute.
+ final class LegadoNativeOriginalReaderTests: XCTestCase {
++    /// Platform information only: this does not execute Android or enable a
++    /// product result encoder. Unsupported WK values remain recorded failures
++    /// of information transport, even when this observation test completes.
++    func testNativeOriginalWebJSNativeResultBridgeCharacterizesAndroidConversionInformation() async throws {
++        guard #available(iOS 17.0, *) else {
++            throw XCTSkip("Native-result bridge characterization requires the supported iOS 17+ WK host")
++        }
++        executionTimeAllowance = 90
++        let probe = await MainActor.run { OriginalNativeResultBridgeCharacterization() }
++        var records: [OriginalNativeResultBridgeCharacterization.Record] = []
++        let vectors = OriginalNativeResultBridgeCharacterization.vectors
++        do {
++            let loaded = expectation(description: "Owned native-result document loaded")
++            try await probe.load(finished: loaded)
++            await fulfillment(of: [loaded], timeout: 10)
++            try await probe.requireLoaded()
++            for (index, vector) in vectors.enumerated() {
++                // One direct native Program execution. There is no eval,
++                // function wrapper, stringify, or preliminary value traversal.
++                let program = try await probe.evaluate(vector.program, label: vector.id)
++                // These trusted primitive observations happen only AFTER the
++                // actual native callback, never before a getter/toJSON runs.
++                let page = try await probe.evaluate(vector.pageObservation, label: vector.id + ".page")
++                XCTAssertNil(page.errorDomain, "The owned page observation must remain callable: \(vector.id)")
++                XCTAssertTrue(page.nativeString?.hasPrefix("\(index + 1)|") == true,
++                    "The original Program must execute exactly once: \(vector.id)")
++                if let expected = vector.expectedPageObservation {
++                    XCTAssertEqual(page.nativeString, expected, "Owned page facts changed: \(vector.id)")
++                }
++                if vector.requiresOrdinaryNativeDictionary {
++                    XCTAssertNil(program.errorDomain, "Ordinary object control failed: \(vector.id)")
++                    XCTAssertEqual(program.nodes.first?.kind, "dictionary")
++                }
++                records.append(.init(id: vector.id, sourceDerivedAndroidExpectation: vector.androidExpectation,
++                    native: program, pageAfterNativeCallback: page))
++            }
++            let lifecycle = await probe.close()
++            XCTAssertEqual(records.count, 14)
++            XCTAssertEqual(lifecycle.createdViews, 1)
++            XCTAssertEqual(lifecycle.evaluationsIssued, 28)
++            XCTAssertEqual(lifecycle.evaluationsCompleted, lifecycle.evaluationsIssued)
++            XCTAssertEqual(lifecycle.evaluationsInFlight, 0)
++            let report = OriginalNativeResultBridgeCharacterization.Report(records: records,
++                lifecycle: lifecycle, infrastructureFailure: nil)
++            let reportData = try await OriginalNativeResultBridgeCharacterization.encodeReport(report)
++            print("YUEDU_WK_NATIVE_RESULT_BRIDGE_JSON " + String(decoding: reportData, as: UTF8.self))
++            let attachment = XCTAttachment(data: reportData, uniformTypeIdentifier: "public.json")
++            attachment.name = "WK-native-result-bridge-observations.json"
++            attachment.lifetime = .keepAlways
++            add(attachment)
++        } catch {
++            let lifecycle = await probe.close()
++            let report = OriginalNativeResultBridgeCharacterization.Report(records: records,
++                lifecycle: lifecycle, infrastructureFailure: String(describing: error))
++            let reportData = try await OriginalNativeResultBridgeCharacterization.encodeReport(report)
++            print("YUEDU_WK_NATIVE_RESULT_BRIDGE_JSON " + String(decoding: reportData, as: UTF8.self))
++            let attachment = XCTAttachment(data: reportData, uniformTypeIdentifier: "public.json")
++            attachment.name = "WK-native-result-bridge-partial-observations.json"
++            attachment.lifetime = .keepAlways
++            add(attachment)
++            throw error
++        }
++    }
++
+     /// Test-only WK characterization. This does not grant support to the product
+     /// object-result path, and deliberately never calls the JVM/source service.
+     func testNativeOriginalOrderedWebJSCharacterizesCSPAndOriginalJSONInSamePageWorld() async throws {
+@@ -1057,6 +1122,88 @@
+         }
+     }
+
++    func testNativeOriginalPreUpdateRefreshKeepsPublicBookIdentityAndProgressWithNewURLContext() async throws {
++        executionTimeAllowance = 180
++        try await withFixture { fixture in
++            try await self.withPublicOwnedBook(fixture) { fetcher, owned in
++                let savedPosition = 0.375
++                await MainActor.run { owned.store.updatePosition(bookId: owned.book.id, position: savedPosition, forceSave: true) }
++                await BookStore.queuedWritesLanded()
++                let beforeValue = await MainActor.run { owned.store.readingBook(id: owned.book.id) }
++                let before = try XCTUnwrap(beforeValue)
++                XCTAssertEqual(before.currentPosition, savedPosition)
++                XCTAssertEqual(before.runtimeVariables?["nativeBig"], String(repeating: "L", count: 10_000))
++                var authored = fixture.source
++                authored.searchUrl = fixture.baseURL + "/refresh-search?key={{key}}&page={{page}}"
++                authored.ruleBookInfo.initScript = """
++                @js:if(String(book.bookUrl).indexOf('/moved-book')>=0){
++                  if(String(java.get('nativeBig')).length===10000)throw new Error('old URL big variable migrated');
++                  book.putVariable('nativeMovedInfo','accepted');
++                  java.put('nativeRenewedBig','R'.repeat(10000));
++                }else{throw new Error('preUpdate fetched old book info');}result
++                """
++                authored.ruleToc.preUpdateJs = """
++                if(String(book.bookUrl).indexOf('/moved-book')<0){java.reGetBook();java.refreshTocUrl();}
++                book.putVariable('nativePreUpdate','completed');
++                """
++                let source = authored
++                let requestsBefore = fixture.peer.snapshot.requests.count
++                let refreshed = try await owned.store.refreshOnlineBookMetadata(bookId: owned.book.id,
++                    bookSourceFetcher: LiveBookSourceFetcher(bookSourceFetcher: fetcher), sourceResolver: { _ in source })
++                await BookStore.queuedWritesLanded()
++                let newURL = fixture.baseURL + "/moved-book"
++                XCTAssertEqual(refreshed.id, owned.book.id)
++                XCTAssertEqual(refreshed.currentPosition, savedPosition)
++                XCTAssertEqual(refreshed.addedDate, before.addedDate)
++                XCTAssertEqual(refreshed.title, before.title, "reGetBook getInfo(false) must not rename the existing book")
++                XCTAssertEqual(refreshed.bookInfoURL, newURL)
++                XCTAssertEqual(refreshed.tocURL, fixture.baseURL + "/moved-toc")
++                XCTAssertEqual(refreshed.runtimeVariables?["nativePreUpdate"], "completed")
++                XCTAssertEqual(refreshed.runtimeVariables?["nativeMovedInfo"], "accepted")
++                XCTAssertEqual(refreshed.runtimeVariables?["nativeRenewedBig"], String(repeating: "R", count: 10_000))
++                XCTAssertNil(refreshed.runtimeVariables?["nativeBig"])
++                XCTAssertEqual(refreshed.onlineChapters?.map(\.url), [fixture.baseURL + "/moved-c1", fixture.baseURL + "/moved-c2"])
++                let afterRequests = Array(fixture.peer.snapshot.requests.dropFirst(requestsBefore))
++                let search = try XCTUnwrap(afterRequests.first { $0.target.hasPrefix(fixture.prefix + "/refresh-search?") })
++                let components = try XCTUnwrap(URLComponents(string: "http://127.0.0.1" + search.target))
++                XCTAssertEqual(components.queryItems?.first(where: { $0.name == "key" })?.value, before.title)
++                XCTAssertEqual(components.queryItems?.first(where: { $0.name == "page" })?.value, "1")
++                XCTAssertTrue(afterRequests.contains { $0.target == fixture.prefix + "/moved-book" })
++                XCTAssertTrue(afterRequests.contains { $0.target == fixture.prefix + "/moved-toc" })
++                XCTAssertFalse(afterRequests.contains { $0.target == fixture.prefix + "/book" })
++                let newID = await owned.store.originalStoredOnlineBookID(sourceID: source.id, bookURL: newURL)
++                let oldID = await owned.store.originalStoredOnlineBookID(sourceID: source.id, bookURL: owned.dto.bookURL)
++                XCTAssertEqual(newID, owned.book.id); XCTAssertNil(oldID)
++                let reopened = await Task.detached { BookStore(metadataFileURL: fixture.metadata, legacyMetadataDefaults: nil) }.value
++                let restoredValue = await MainActor.run { reopened.readingBook(id: owned.book.id) }
++                let restored = try XCTUnwrap(restoredValue)
++                XCTAssertEqual(restored.id, owned.book.id)
++                XCTAssertEqual(restored.currentPosition, savedPosition)
++                XCTAssertEqual(restored.bookInfoURL, newURL)
++                XCTAssertEqual(restored.tocURL, fixture.baseURL + "/moved-toc")
++                XCTAssertEqual(restored.runtimeVariables?["nativeRenewedBig"], String(repeating: "R", count: 10_000))
++                XCTAssertNil(restored.runtimeVariables?["nativeBig"])
++                // After the real App handoff, obtain the next ordinary context
++                // through its existing public preparer; no fabricated grant/DTO.
++                let known = OnlineBook(name: restored.title, author: restored.author, intro: "", coverUrl: "",
++                    bookUrl: newURL, tocUrl: try XCTUnwrap(restored.tocURL), wordCount: "", lastChapter: "", kind: "",
++                    sourceId: source.id, sourceName: source.bookSourceName, runtimeVariables: restored.runtimeVariables)
++                let restoredChapters = try XCTUnwrap(restored.onlineChapters)
++                let live = LiveBookSourceFetcher(bookSourceFetcher: fetcher)
++                let context = try await live.prepareOriginalStoredBookPreview(source: source, knownBook: known,
++                    chapters: restoredChapters)
++                let wire = try XCTUnwrap(context?[LegadoMainJSSourceService.originalPreviewContextKey])
++                let reference = try XCTUnwrap(try JSONSerialization.jsonObject(with: Data(wire.utf8)) as? [String: Any])
++                XCTAssertEqual(reference["bookURL"] as? String, newURL)
++                let snapshot = try await fixture.service.originalPreviewSnapshot(source: source, runtimeVariables: context)
++                XCTAssertEqual(snapshot.bookURL, newURL)
++                XCTAssertEqual(snapshot.chapters.map(\.url), restoredChapters.map(\.url))
++                XCTAssertEqual(snapshot.runtimeVariables?["nativeRenewedBig"], String(repeating: "R", count: 10_000))
++                XCTAssertNil(snapshot.runtimeVariables?["nativeBig"])
++            }
++        }
++    }
++
+     private struct Fixture: @unchecked Sendable {
+         let runID: String
+         let prefix: String
+@@ -1409,6 +1556,18 @@
+         let body: String
+         if target == prefix + "/search?key=native-original&page=2" {
+             body = "<div class='book'><a href='\(prefix)/book'>Original JNI</a><b>Owned author</b></div>"
++        } else if target.hasPrefix(prefix + "/refresh-search?") {
++            guard let query = URLComponents(string: "http://127.0.0.1" + target)?.queryItems,
++                  query.first(where: { $0.name == "key" })?.value == "Original JNI Updated",
++                  query.first(where: { $0.name == "page" })?.value == "1" else {
++                throw NativeOriginalReaderError.failed("Unexpected precise-search identity/page")
++            }
++            body = "<div class='book'><a href='\(prefix)/moved-book'>Original JNI Updated</a><b>Owned author</b></div>"
++        } else if target == prefix + "/moved-book" {
++            body = "<h1>Unwanted moved rename</h1><a id='toc' href='\(prefix)/moved-toc'>toc</a>"
++        } else if target == prefix + "/moved-toc" {
++            body = try Self.json(["chapters": [["name": "One", "url": prefix + "/moved-c1"],
++                ["name": "Two", "url": prefix + "/moved-c2"]], "next": []])
+         } else if target == prefix + "/book" {
+             body = "<h1>Original JNI Updated</h1><a id='toc' href='\(prefix)/toc'>toc</a>"
+         } else if target == prefix + "/toc" || target == prefix + "/toc-rewritten" {
+@@ -1630,3 +1789,300 @@
+         navigation = nil
+     }
+ }
++
++/// A test-owned single WKWebView, with actual Program callbacks. The flat native
++/// observation contains UTF16 key units rather than Swift String dictionary keys.
++/// An error is data here, not successful conversion or an encoder fallback.
++@MainActor
++private final class OriginalNativeResultBridgeCharacterization: NSObject, WKNavigationDelegate {
++    struct Vector: Sendable {
++        let id: String
++        let program: String
++        let pageObservation: String
++        let expectedPageObservation: String?
++        let androidExpectation: String
++        let requiresOrdinaryNativeDictionary: Bool
++    }
++    struct Node: Codable, Sendable {
++        let id: Int
++        let parent: Int?
++        let relation: String
++        let index: Int?
++        let keyUTF16: [UInt16]?
++        let keyNativeClass: String?
++        let nativeClass: String
++        var kind: String
++        var count: Int?
++        var textUTF16: [UInt16]?
++        var numberObjCType: String?
++        var numberString: String?
++        var doubleBitsHex: String?
++        var doubleIsFinite: Bool?
++        var booleanValue: Bool?
++    }
++    struct Observation: Codable, Sendable {
++        let label: String
++        let hasNativeValue: Bool
++        let rawNativeClass: String?
++        let errorDomain: String?
++        let errorCode: Int?
++        let errorDescriptionUTF16: [UInt16]?
++        let javaScriptExceptionUTF16: [UInt16]?
++        let projectionLimit: String?
++        let nodes: [Node]
++        var nativeString: String? {
++            guard let root = nodes.first, root.kind == "string", let units = root.textUTF16 else { return nil }
++            return String(decoding: units, as: UTF16.self)
++        }
++    }
++    struct Record: Codable, Sendable {
++        let id: String
++        let sourceDerivedAndroidExpectation: String
++        let native: Observation
++        let pageAfterNativeCallback: Observation
++    }
++    struct Lifecycle: Codable, Sendable {
++        let createdViews: Int
++        let evaluationsIssued: Int
++        let evaluationsCompleted: Int
++        let evaluationsInFlight: Int
++        let closed: Bool
++    }
++    struct Report: Codable, Sendable {
++        let purpose = "WK native Program result information characterization; not Android execution or product compatibility approval"
++        let actualAndroidExecuted = false
++        let actualCallerFlagsProvenByPinnedSource = true
++        let androidSourceCommit = "1b10defa68c2f01621bc3795169817d777aa714a"
++        let callerFlags = "Ordinary caller sets DateAllowed/RegExpAllowed=true; no Function/Strategy/StripNull/NegativeZero setters"
++        let fixtureGroups = 10
++        let nativeProgramRecords = 14
++        let records: [Record]
++        let lifecycle: Lifecycle
++        let infrastructureFailure: String?
++    }
++    // WK returns a completed immutable Foundation graph. This probe never
++    // mutates or shares it before the off-main bounded snapshot finishes.
++    private struct Completion: @unchecked Sendable {
++        let value: Any?
++        let error: NSError?
++    }
++
++    nonisolated static var vectors: [Vector] {
++        let bodies: [(String, String, String, String?, String, Bool)] = [
++            ("object-special-members", "window.__bridgeValue={present:1,undefinedValue:undefined,functionValue:function(){},symbolValue:Symbol('owned'),nan:NaN,positiveInfinity:Infinity,negativeInfinity:-Infinity,nullValue:null};window.__bridgeValue",
++             "Object.keys(window.__bridgeValue).length", "1|8",
++             "Default converter omits undefined/function/symbol/nonfinite object members; preserves present=1 and nullValue=null", false),
++            ("array-special-members", "window.__bridgeValue=[undefined,function(){},Symbol('owned'),NaN,Infinity,-Infinity,null,1];window.__bridgeValue",
++             "window.__bridgeValue.length", "2|8",
++             "Converter array slots for unsupported values become null and array length/order remain eight", false),
++            ("raw-unicode-and-numeric-keys", "window.__bridgeValue={'\\u00e9':1,'e\\u0301':2,'2':2,'10':10,b:2,a:1};window.__bridgeValue",
++             "Object.getOwnPropertyNames(window.__bridgeValue).map(function(k){var r=[];for(var i=0;i<k.length;i++)r.push(k.charCodeAt(i));return r.join(',');}).join(';')",
++             "3|50;49,48;233;101,769;98;97",
++             "Base dictionary stores distinct UTF8 names and sorts keys; Swift canonical-equivalent String keys must not silently coalesce", true),
++            ("numeric-boundaries", "window.__bridgeValue={minimum:-2147483648,maximum:2147483647,overflow:2147483648,minusZero:-0,one:1.0,fraction:1.25,large:1e100};window.__bridgeValue",
++             "String(Object.is(window.__bridgeValue.minusZero,-0))+'|'+String(window.__bridgeValue.overflow)+'|'+String(window.__bridgeValue.large)", "4|true|2147483648|1e+100",
++             "Converter tests IsInt32 before double; default writer preserves double category. Observe NSNumber type/bits, especially negative zero and integral overflow", true),
++            ("cycle", "window.__bridgeValue={};window.__bridgeValue.self=window.__bridgeValue;window.__bridgeValue",
++             "window.__bridgeValue.self===window.__bridgeValue", "5|true",
++             "Converter replaces the cyclic child with null; native bridge may instead reject the whole completion, which remains an information gap", false),
++            ("dom-api-wrapper", "window.__bridgeValue=document.body;window.__bridgeValue",
++             "window.__bridgeValue.tagName", "6|BODY",
++             "Bound converter API wrapper branch yields empty dictionary; a WK error or a different native projection must be recorded", false),
++            ("throwing-getter", "window.__bridgeGetterReads=0;window.__bridgeValue={get a(){window.__bridgeGetterReads++;throw Error('owned getter');},b:2};window.__bridgeValue",
++             "window.__bridgeGetterReads", nil,
++             "Converter catches a throwing getter, substitutes null for that property, and does not execute the authored Program a second time", false),
++            ("observable-toJSON", "window.__bridgeToJSONCalls=0;window.__bridgeValue={a:1,toJSON:function(){window.__bridgeToJSONCalls++;return 7;}};window.__bridgeValue",
++             "window.__bridgeToJSONCalls", nil,
++             "Converter does not invoke toJSON; its function-valued property is omitted. Page counter must show whether WK projection introduces an incompatible call", false),
++            ("date-and-regexp-caller-flags", "window.__bridgeValue={date:new Date(1250),regexp:/owned/gi};window.__bridgeValue",
++             "String(window.__bridgeValue.date.getTime())+'|'+String(window.__bridgeValue.regexp)", "9|1250|/owned/gi",
++             "Actual ordinary caller explicitly allows Date as seconds-double (1.25) and RegExp as string (/owned/gi); constructor defaults are not the caller contract", false),
++            ("special-objects.boxed-number", "window.__bridgeValue=new Number(7);window.__bridgeValue",
++             "typeof window.__bridgeValue+'|'+String(window.__bridgeValue)", "10|object|7",
++             "Number wrapper enters converter Object handling rather than scalar Number; native unboxing would lose that distinction", false),
++            ("special-objects.boxed-string", "window.__bridgeValue=new String('owned');window.__bridgeValue",
++             "typeof window.__bridgeValue+'|'+String(window.__bridgeValue)", "11|object|owned",
++             "String wrapper enters Object own-property conversion rather than scalar String; record whether WK silently unboxes it", false),
++            ("special-objects.boxed-boolean", "window.__bridgeValue=new Boolean(false);window.__bridgeValue",
++             "typeof window.__bridgeValue+'|'+String(window.__bridgeValue)", "12|object|false",
++             "Boolean wrapper enters Object handling rather than scalar Boolean; native NSNumber unboxing would be irreversible", false),
++            ("special-objects.promise", "window.__bridgeValue=Promise.resolve('owned');window.__bridgeValue",
++             "window.__bridgeValue instanceof Promise", "13|true",
++             "Ordinary native Program execution has no ForTests resolve_promises flag; record actual WK result/error rather than awaiting or stringifying the Promise", false),
++            ("special-objects.typed-array", "window.__bridgeValue=new Uint8Array([1,2]);window.__bridgeValue",
++             "String(window.__bridgeValue.byteLength)+'|'+String(window.__bridgeValue[0])", "14|2|1",
++             "Converter returns binary storage for typed arrays; default WriteJson refuses binary and callback becomes empty text. Native unboxing into ordinary array/object must not be treated as parity", false)
++        ]
++        return bodies.map { body in
++            Vector(id: body.0,
++                program: "window.__nativeBridgeRuns=(window.__nativeBridgeRuns||0)+1;\n" + body.1,
++                pageObservation: "String(window.__nativeBridgeRuns)+'|'+String((" + body.2 + "))",
++                expectedPageObservation: body.3, androidExpectation: body.4,
++                requiresOrdinaryNativeDictionary: body.5)
++        }
++    }
++
++    private let view: WKWebView
++    private var navigation: WKNavigation?
++    private var navigationFinished: XCTestExpectation?
++    private var navigationTerminal = false
++    private var navigationFailure: Error?
++    private var issued = 0
++    private var completed = 0
++    private var inFlight = 0
++    private var drain: CheckedContinuation<Void, Never>?
++    private var closed = false
++
++    override init() {
++        let configuration = WKWebViewConfiguration()
++        configuration.websiteDataStore = .nonPersistent()
++        view = WKWebView(frame: .zero, configuration: configuration)
++        super.init()
++        view.navigationDelegate = self
++    }
++
++    func load(finished: XCTestExpectation) throws {
++        guard !closed, navigation == nil, inFlight == 0 else {
++            throw NativeOriginalReaderError.failed("Native-result probe lifetime mismatch")
++        }
++        navigationFinished = finished
++        // No page eval/JSON helper or source bridge is installed. The finite
++        // owned HTML blocks network loads; all scripts below use native Program.
++        navigation = view.loadHTMLString("<!doctype html><html><head><meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'none'\"></head><body>Owned native result</body></html>",
++            baseURL: URL(string: "https://native-result.invalid/"))
++        guard navigation != nil else { throw NativeOriginalReaderError.failed("Native-result navigation did not start") }
++    }
++
++    func requireLoaded() throws {
++        guard !closed, navigationTerminal else { throw NativeOriginalReaderError.failed("Native-result navigation did not finish") }
++        if let navigationFailure { throw navigationFailure }
++    }
++
++    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { finishNavigation(navigation, error: nil) }
++    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { finishNavigation(navigation, error: error) }
++    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { finishNavigation(navigation, error: error) }
++    private func finishNavigation(_ finished: WKNavigation?, error: Error?) {
++        guard !closed, finished === navigation, !navigationTerminal else { return }
++        navigationTerminal = true
++        navigationFailure = error
++        let waiting = navigationFinished
++        navigationFinished = nil
++        waiting?.fulfill()
++    }
++
++    func evaluate(_ script: String, label: String) async throws -> Observation {
++        try Task.checkCancellation()
++        try requireLoaded()
++        issued += 1
++        inFlight += 1
++        let completion: Completion = await withCheckedContinuation { continuation in
++            view.evaluateJavaScript(script) { [self] value, error in
++                completed += 1
++                inFlight -= 1
++                if inFlight == 0 {
++                    let waiting = drain
++                    drain = nil
++                    waiting?.resume()
++                }
++                continuation.resume(returning: Completion(value: value, error: error as NSError?))
++            }
++        }
++        return await Self.inspect(completion, label: label)
++    }
++
++    nonisolated private static func inspect(_ completion: Completion, label: String) async -> Observation {
++        SourcePerfTrace.span("legado.test.webview.native-result", "main=\(Thread.isMainThread) values=1") {
++            var nodes: [Node] = []
++            var active: Set<ObjectIdentifier> = []
++            var limit: String?
++            func units(_ value: NSString, maximum: Int = 4096) -> [UInt16] {
++                (0..<min(value.length, maximum)).map { value.character(at: $0) }
++            }
++            func append(_ candidate: Any?, parent: Int?, relation: String, index: Int? = nil,
++                        key: NSString? = nil, depth: Int = 0) {
++                guard nodes.count < 512, depth <= 16 else { limit = "native observation depth/node budget"; return }
++                let id = nodes.count
++                let nativeClass = candidate.map { String(reflecting: type(of: $0)) } ?? "nil"
++                var node = Node(id: id, parent: parent, relation: relation, index: index,
++                    keyUTF16: key.map { units($0) }, keyNativeClass: key.map { String(reflecting: type(of: $0)) },
++                    nativeClass: nativeClass, kind: "opaque-native-value")
++                guard let candidate else { node.kind = "nil"; nodes.append(node); return }
++                if candidate is NSNull { node.kind = "null"; nodes.append(node); return }
++                if let number = candidate as? NSNumber {
++                    let boolean = CFGetTypeID(number) == CFBooleanGetTypeID()
++                    node.kind = boolean ? "boolean" : "number"
++                    node.numberObjCType = String(cString: number.objCType)
++                    node.numberString = number.stringValue
++                    node.doubleBitsHex = String(number.doubleValue.bitPattern, radix: 16)
++                    node.doubleIsFinite = number.doubleValue.isFinite
++                    if boolean { node.booleanValue = number.boolValue }
++                    nodes.append(node); return
++                }
++                if let text = candidate as? NSString {
++                    node.kind = "string"; node.count = text.length; node.textUTF16 = units(text)
++                    if text.length > 4096 { limit = "native observation string budget" }
++                    nodes.append(node); return
++                }
++                if let dictionary = candidate as? NSDictionary {
++                    node.kind = "dictionary"; node.count = dictionary.count
++                    let identity = ObjectIdentifier(dictionary)
++                    guard active.insert(identity).inserted else { node.kind = "native-cycle"; nodes.append(node); return }
++                    nodes.append(node)
++                    let keys = dictionary.keyEnumerator()
++                    var offset = 0
++                    while let rawKey = keys.nextObject() {
++                        guard offset < 64 else { limit = "native observation dictionary budget"; break }
++                        // Keep the native NSString key and exact code units. Do
++                        // not convert through Dictionary<String, Any>.
++                        if let text = rawKey as? NSString {
++                            append(dictionary.object(forKey: text), parent: id, relation: "member", index: offset,
++                                key: text, depth: depth + 1)
++                        } else {
++                            append(rawKey, parent: id, relation: "non-string-key", index: offset, depth: depth + 1)
++                        }
++                        offset += 1
++                    }
++                    active.remove(identity); return
++                }
++                if let array = candidate as? NSArray {
++                    node.kind = "array"; node.count = array.count
++                    let identity = ObjectIdentifier(array)
++                    guard active.insert(identity).inserted else { node.kind = "native-cycle"; nodes.append(node); return }
++                    nodes.append(node)
++                    if array.count > 64 { limit = "native observation array budget" }
++                    for index in 0..<min(array.count, 64) {
++                        append(array.object(at: index), parent: id, relation: "element", index: index, depth: depth + 1)
++                    }
++                    active.remove(identity); return
++                }
++                nodes.append(node)
++            }
++            append(completion.value, parent: nil, relation: "root")
++            let error = completion.error
++            let exception = error?.userInfo["WKJavaScriptExceptionMessage"] as? NSString
++            return Observation(label: label, hasNativeValue: completion.value != nil,
++                rawNativeClass: completion.value.map { String(reflecting: type(of: $0)) },
++                errorDomain: error?.domain, errorCode: error?.code,
++                errorDescriptionUTF16: error.map { units($0.localizedDescription as NSString) },
++                javaScriptExceptionUTF16: exception.map { units($0) }, projectionLimit: limit, nodes: nodes)
++        }
++    }
++
++    nonisolated static func encodeReport(_ report: Report) async throws -> Data {
++        try SourcePerfTrace.span("legado.test.webview.native-result-report", "main=\(Thread.isMainThread) cases=\(report.records.count)") {
++            try JSONEncoder().encode(report)
++        }
++    }
++
++    func close() async -> Lifecycle {
++        closed = true
++        view.stopLoading()
++        if inFlight != 0 { await withCheckedContinuation { drain = $0 } }
++        view.navigationDelegate = nil
++        view.configuration.userContentController.removeAllUserScripts()
++        navigationFinished = nil
++        navigation = nil
++        return Lifecycle(createdViews: 1, evaluationsIssued: issued, evaluationsCompleted: completed,
++            evaluationsInFlight: inFlight, closed: closed)
++    }
++}

@@ -1,0 +1,18 @@
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt
+@@ -965 +965 @@
+-        if (!preUpdateJs) throw NoStackTraceException("只能在 preUpdateJs 中调用")
++        if (!preUpdateJs) throw io.legado.app.exception.NoStackTraceException("只能在 preUpdateJs 中调用")
+@@ -969 +969,3 @@
+-        runtime.platform.refreshBookInfo(book, source, coroutineContext)
++        val bookSource = source as? io.legado.app.data.entities.BookSource ?: return
++        val actualBook = book as? io.legado.app.data.entities.Book ?: return
++        runtime.platform.refreshBookInfo(actualBook, bookSource, coroutineContext)
+@@ -977 +979 @@
+-        if (!preUpdateJs) throw NoStackTraceException("只能在 preUpdateJs 中调用")
++        if (!preUpdateJs) throw io.legado.app.exception.NoStackTraceException("只能在 preUpdateJs 中调用")
+@@ -982 +984,3 @@
+-        runtime.platform.refreshToc(book, source, coroutineContext)
++        val bookSource = source as? io.legado.app.data.entities.BookSource ?: return
++        val actualBook = book as? io.legado.app.data.entities.Book ?: return
++        runtime.platform.refreshToc(actualBook, bookSource, coroutineContext)

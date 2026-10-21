@@ -1,0 +1,48 @@
+{
+  "scope": "Binary/ref/source closure only, no functional test",
+  "jar": {
+    "path": ".build/original-preupdate-refresh-step/ordinary-jar-v3/legado-runtime-preupdate-refresh.jar",
+    "bytes": 10961412,
+    "sha256": "2963249f7f2fdace332e76f4fd16982ebc3afe60e6b0f897999e97dc036841c1"
+  },
+  "baseJar": {
+    "path": ".build/original-proxy-remote-union-step/ordinary-jar/legado-runtime-proxy-remote.jar",
+    "bytes": 10944634,
+    "sha256": "ef05d83752a897c043351a416e3c4885e01745306cbc3bd4615dd410c7b2bc48"
+  },
+  "freshClassGroups": 64,
+  "retainedProjectClasses": 364,
+  "totalProductionClasses": 428,
+  "intentionalUnitABIRemovals": [
+    [
+      "io/yuedu/legado/originalrule/RulePlatform",
+      "method",
+      "refreshBookInfo",
+      "(Lio/legado/app/data/entities/BaseBook;Lio/legado/app/data/entities/BaseSource;Lkotlin/coroutines/CoroutineContext;)Ljava/lang/Void;"
+    ],
+    [
+      "io/yuedu/legado/originalrule/RulePlatform",
+      "method",
+      "refreshToc",
+      "(Lio/legado/app/data/entities/BaseBook;Lio/legado/app/data/entities/BaseSource;Lkotlin/coroutines/CoroutineContext;)Ljava/lang/Void;"
+    ]
+  ],
+  "recompiledAnalyzeRuleRefreshReferences": [
+    [
+      "method",
+      "io/yuedu/legado/originalrule/RulePlatform",
+      "refreshBookInfo",
+      "(Lio/legado/app/data/entities/BaseBook;Lio/legado/app/data/entities/BaseSource;Lkotlin/coroutines/CoroutineContext;)V"
+    ],
+    [
+      "method",
+      "io/yuedu/legado/originalrule/RulePlatform",
+      "refreshToc",
+      "(Lio/legado/app/data/entities/BaseBook;Lio/legado/app/data/entities/BaseSource;Lkotlin/coroutines/CoroutineContext;)V"
+    ]
+  ],
+  "missingRetainedMemberReferences": [],
+  "portedSourcesVerified": 61,
+  "actualMainBuildInputs": 133,
+  "allOtherParentResources": "Exact across the two independently bound one-source successors; old module and both earlier overlays preserved."
+}

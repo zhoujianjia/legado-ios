@@ -1,0 +1,54 @@
+{
+  "scope": "External Java only ordinary JAR plus independent consumer classes; no JUnit/test output dirs",
+  "jar": {
+    "path": ".build/original-preupdate-refresh-step/ordinary-jar-v3/legado-runtime-preupdate-refresh.jar",
+    "bytes": 10961412,
+    "sha256": "2963249f7f2fdace332e76f4fd16982ebc3afe60e6b0f897999e97dc036841c1"
+  },
+  "source": {
+    "path": ".build/original-preupdate-refresh-step/ordinary-consumer/PreUpdateConsumer.java",
+    "bytes": 8428,
+    "sha256": "3e8ef66ffba15e3e8fe1a0435db91f6f01a0231d91f3719d4d967d4273cec9e6"
+  },
+  "commands": [
+    {
+      "argv": [
+        "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\javac.exe",
+        "-J-Xmx64m",
+        "-encoding",
+        "UTF-8",
+        "-classpath",
+        "F:\\yuedu-reader\\.build\\original-preupdate-refresh-step\\ordinary-jar-v3\\legado-runtime-preupdate-refresh.jar",
+        "-d",
+        "F:\\yuedu-reader\\.build\\original-preupdate-refresh-step\\ordinary-consumer\\execution-v2\\classes",
+        "F:\\yuedu-reader\\.build\\original-preupdate-refresh-step\\ordinary-consumer\\PreUpdateConsumer.java"
+      ],
+      "exitCode": 0,
+      "seconds": 0.671,
+      "log": {
+        "path": ".build/original-preupdate-refresh-step/ordinary-consumer/execution-v2/javac.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "F:\\yuedu-reader\\.tools\\jdk21\\jdk-21.0.12.1+1\\bin\\java.exe",
+        "-Xms16m",
+        "-Xmx128m",
+        "-XX:MaxMetaspaceSize=96m",
+        "-XX:+UseSerialGC",
+        "-cp",
+        "F:\\yuedu-reader\\.build\\original-preupdate-refresh-step\\ordinary-consumer\\execution-v2\\classes;F:\\yuedu-reader\\.build\\original-preupdate-refresh-step\\ordinary-jar-v3\\legado-runtime-preupdate-refresh.jar",
+        "PreUpdateConsumer"
+      ],
+      "exitCode": 0,
+      "seconds": 1.281,
+      "log": {
+        "path": ".build/original-preupdate-refresh-step/ordinary-consumer/execution-v2/ordinary-java.log",
+        "bytes": 301,
+        "sha256": "18333177cce062bc70ceb466d8c63d2636ffd1580eaeb40e8177d0bc097e3518"
+      }
+    }
+  ]
+}

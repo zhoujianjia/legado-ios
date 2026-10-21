@@ -1,0 +1,6 @@
+--- a/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt
++++ b/Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt
+@@ -434 +434,2 @@
+-                return@runCatching searchBook.toBook()
++                val refresh = currentCoroutineContext()[OriginalBookRefreshSearch]
++                return@runCatching refresh?.matched(bookSource, searchBook) ?: searchBook.toBook()

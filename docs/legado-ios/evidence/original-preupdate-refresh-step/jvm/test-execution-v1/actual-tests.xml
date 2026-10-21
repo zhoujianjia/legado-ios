@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><testsuite tests="4" failures="2" skipped="0">
+<testcase classname="io.yuedu.legado.OriginalPreUpdateRefreshTest" name="publicTocReGetBookKeepsExactSearchVariablesHeadersCookiesAndCheckedUrlIdentity"><failure>java.lang.AssertionError: {&quot;ok&quot;:false,&quot;taskId&quot;:&quot;8293ccf4-2cb0-4a34-b0f8-cbf77058007d&quot;,&quot;error&quot;:{&quot;code&quot;:&quot;SCRIPT_ERROR&quot;,&quot;message&quot;:&quot;Error: lost matched variable\nSource context:\n> 1: java.reGetBook();if(java.get('found')!=='matched')throw Error('lost matched variable');if(java.get('old-large')!=='')throw Error('old large value leaked'); in &lt;script-3> at line number 1&quot;,&quot;completedEffects&quot;:[&quot;book.refresh.identity.granted&quot;]}}
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at io.yuedu.legado.OriginalPreUpdateRefreshTest.publicTocReGetBookKeepsExactSearchVariablesHeadersCookiesAndCheckedUrlIdentity(OriginalPreUpdateRefreshTest.kt:69)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure></testcase>
+<testcase classname="io.yuedu.legado.OriginalPreUpdateRefreshTest" name="refreshTocPreservesOriginalPreUpdateNullFromInfoAndNoRenameSemantics"><failure>java.lang.AssertionError: unexpected exception type thrown; expected:&lt;io.legado.app.exception.NoStackTraceException> but was:&lt;io.yuedu.legado.originalrule.NoStackTraceException>
+	at org.junit.Assert.assertThrows(Assert.java:1020)
+	at org.junit.Assert.assertThrows(Assert.java:981)
+	at io.yuedu.legado.OriginalPreUpdateRefreshTest.refreshTocPreservesOriginalPreUpdateNullFromInfoAndNoRenameSemantics(OriginalPreUpdateRefreshTest.kt:41)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:299)
+	at org.junit.internal.runners.statements.FailOnTimeout$CallableStatement.call(FailOnTimeout.java:293)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: io.yuedu.legado.originalrule.NoStackTraceException: 只能在 preUpdateJs 中调用
+</failure></testcase>
+<testcase classname="io.yuedu.legado.OriginalPreUpdateRefreshTest" name="rejectedOrCancelledIdentityGrantCannotContinueWithNewUrlAndRetainsAcceptedFacts"></testcase>
+<testcase classname="io.yuedu.legado.OriginalPreUpdateRefreshTest" name="refreshHttpStillObservesActualCallerCancellationAndParentDeadlineBeforeThirtyMinuteLimit"></testcase>
+</testsuite>

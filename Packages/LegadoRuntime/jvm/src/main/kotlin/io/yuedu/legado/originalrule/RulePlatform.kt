@@ -99,9 +99,9 @@ open class RulePlatform {
     open fun webView(requester: RuleJsExtensions, html: String?, url: String?, js: String?, cacheFirst: Boolean,
                      sourceRegex: String? = null, overrideUrlRegex: String? = null, delayTime: Long = 0): StrResponse =
         unsupportedRule("original general WebView")
-    open fun refreshBookInfo(book: BaseBook?, source: BaseSource?, context: CoroutineContext): Nothing =
+    open fun refreshBookInfo(book: BaseBook?, source: BaseSource?, context: CoroutineContext): Unit =
         unsupportedRule("original-rule WebBook refresh")
-    open fun refreshToc(book: BaseBook?, source: BaseSource?, context: CoroutineContext): Nothing =
+    open fun refreshToc(book: BaseBook?, source: BaseSource?, context: CoroutineContext): Unit =
         unsupportedRule("original-rule WebBook TOC refresh")
     open fun log(value: Any?): Any? { Logger.getLogger("io.yuedu.legado.originalrule").fine(value?.toString()); return value }
 }

@@ -962,11 +962,13 @@ class AnalyzeRule(
      */
     fun reGetBook() {
         ensureOpen()
-        if (!preUpdateJs) throw NoStackTraceException("只能在 preUpdateJs 中调用")
+        if (!preUpdateJs) throw io.legado.app.exception.NoStackTraceException("只能在 preUpdateJs 中调用")
         if (isFromBookInfo) {
             log("重新获取book")
         }
-        runtime.platform.refreshBookInfo(book, source, coroutineContext)
+        val bookSource = source as? io.legado.app.data.entities.BookSource ?: return
+        val actualBook = book as? io.legado.app.data.entities.Book ?: return
+        runtime.platform.refreshBookInfo(actualBook, bookSource, coroutineContext)
     }
 
     /**
@@ -974,12 +976,14 @@ class AnalyzeRule(
      */
     fun refreshTocUrl() {
         ensureOpen()
-        if (!preUpdateJs) throw NoStackTraceException("只能在 preUpdateJs 中调用")
+        if (!preUpdateJs) throw io.legado.app.exception.NoStackTraceException("只能在 preUpdateJs 中调用")
         if (isFromBookInfo) {
             log("已跳过重复加载详情页，请优化代码")
             return
         }
-        runtime.platform.refreshToc(book, source, coroutineContext)
+        val bookSource = source as? io.legado.app.data.entities.BookSource ?: return
+        val actualBook = book as? io.legado.app.data.entities.Book ?: return
+        runtime.platform.refreshToc(actualBook, bookSource, coroutineContext)
     }
 
     companion object {
