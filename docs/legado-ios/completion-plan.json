@@ -674,6 +674,10 @@
             {
               "record": "docs/legado-ios/core-original-ordered-webjs-characterization-step.json",
               "scope": "One reviewed test-only owned WK characterization for the still-unsupported ordered-object branch. All behaviors and Apple compilation pending; no compatibility acceptance."
+            },
+            {
+              "record": "docs/legado-ios/core-original-webrequest-characterization-step.json",
+              "scope": "Reviewed one owned public WKWebExtension resource-event/cleanup test. Actual SDK/WK/HTTP0; additional background context and OS18.4 floor explicit. No sourceRegex production support."
             }
           ],
           "nextActionZh": "公开原WebBook四段与同owner正文链保持既有接线；先取得本批实际SDK/JNI结果。完整WebBook能力和默认产品入口验收继续未完成，不能用局部登录浏览器结果代替。",
@@ -1964,6 +1968,17 @@
         "full353SuiteRerun": false,
         "actualSwiftSDK_JNI_WK": 0,
         "futureControlRebindRequired": true
+      },
+      "publicWebRequestCharacterization": {
+        "record": "docs/legado-ios/core-original-webrequest-characterization-step.json",
+        "productionChanges": 0,
+        "authoredTests": 1,
+        "actualSwiftCompiler_SDK_WK_HTTP": 0,
+        "addedToExistingSynchronizedTestTarget": true,
+        "requiresExplicitFutureSelectorAndRoster": true,
+        "extraExtensionBackgroundWK": true,
+        "minimumOS": "iOS18.4",
+        "fullResourceInterceptionEstablished": false
       }
     }
   },
@@ -6327,6 +6342,7 @@
     "docs/legado-ios/core-general-webjs-runtime-repairs-checkpoint.json",
     "docs/legado-ios/core-original-ordered-webjs-characterization-step.json",
     "docs/legado-ios/core-native-88c61ee-terminal-result.json",
-    "docs/legado-ios/core-native88-jvm-expectation-repairs-step.json"
+    "docs/legado-ios/core-native88-jvm-expectation-repairs-step.json",
+    "docs/legado-ios/core-original-webrequest-characterization-step.json"
   ]
 }

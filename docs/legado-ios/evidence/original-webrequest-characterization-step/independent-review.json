@@ -1,0 +1,338 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-21T00:35:03.170503+00:00",
+  "status": "Independent bounded source review complete. No definite new P1/P2 found; test-only candidate suitable for root integration with pending actual Apple SDK characterization.",
+  "parent": {
+    "path": ".build/original-webrequest-native-characterization-step/final-v1.json",
+    "bytes": 5508,
+    "sha256": "b435d4a7d18b8ed2216e2caba3cd874f3b5dbd205aff62f56da358ab23cfecd0"
+  },
+  "source": {
+    "path": "Tests/iOS/LegadoNativeWebRequestCharacterizationTests.swift",
+    "candidate": {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/work/Tests/iOS/LegadoNativeWebRequestCharacterizationTests.swift",
+      "bytes": 26766,
+      "sha256": "267589c56d9b7200292671f59edaeddfd6e9af44a03d2fa04e47472a16a70515"
+    },
+    "baseline": null
+  },
+  "newNativeSelector": "LegadoNativeWebRequestCharacterizationTests/testPublicWebRequestCharacterizesOwnedFramesResourcesAndObserverCancellation",
+  "newDefinitions": 1,
+  "productionChanges": 0,
+  "APIReview": [
+    {
+      "area": "Resource initializer",
+      "primary": "Apple-WKWebExtension-init.md",
+      "conclusion": "Pinned Apple Swift declaration is @MainActor @preconcurrency convenience init(resourceBaseURL: URL) async throws; source uses try await under @MainActor and iOS18.4 admission."
+    },
+    {
+      "area": "Configuration",
+      "primary": "WKWebExtensionControllerConfiguration.h",
+      "conclusion": "Public WKWebExtensionController.Configuration, nonPersistent configuration and defaultWebsiteDataStore are pinned. Both controller and actual page use the same newly allocated nonpersistent store; no existing Cookie store is consulted."
+    },
+    {
+      "area": "Controller/load/delegates/window/tab",
+      "primary": "WKWebExtensionControllerDelegate.h, WKWebExtensionController.h, WKWebExtensionContext.h, WKWebExtensionWindow.h, WKWebExtensionTab.h",
+      "conclusion": "Objective-C NS_SWIFT_NAME signatures support the written openWindowsFor/focusedWindowFor/sendMessage reply handler, tabs/activeTab/window/webView/isPrivate/shouldBypassPermissions, load/unload and background-content methods. Actual Swift importer/conformance/typecheck remains SDK-only."
+    }
+  ],
+  "observations": [
+    {
+      "area": "Real observer vs page coordination",
+      "sourceLines": [
+        238,
+        241,
+        255,
+        269,
+        277,
+        299
+      ],
+      "conclusion": "Receipt admission requires exact owned controller/context/application identifier/nonce and owned origin+nonce URL. Extension before/redirect receipts fulfill required observer expectations; page WKScriptMessage only coordinates fixture completion. It is not substituted for a resource event."
+    },
+    {
+      "area": "Cross-origin frame and worker",
+      "sourceLines": [
+        32,
+        46,
+        50,
+        51,
+        314,
+        316,
+        324,
+        325,
+        363
+      ],
+      "conclusion": "Two host origins on one owned listener are distinct origins. Test checks the sub_frame ID and child-only frame relation, worker resource event and absence of child/worker nested resources in parent ResourceTiming. The real browser must execute those requests before acceptance; source review does not prove platform delivery."
+    },
+    {
+      "area": "Redirect/cache/body limits",
+      "sourceLines": [
+        54,
+        55,
+        57,
+        317,
+        318,
+        327,
+        406
+      ],
+      "conclusion": "Redirect event must carry actual child-origin target; HTTP peer counts are exact per named route except cache permits1..2 as an observation. This does not assert an actual cache hit, every cache event, response-body visibility or first-match Android timing parity."
+    },
+    {
+      "area": "Owned permissions and contexts",
+      "sourceLines": [
+        143,
+        144,
+        151,
+        152,
+        154,
+        157,
+        192,
+        193
+      ],
+      "conclusion": "Additional extension background context is explicit. Private-data access is only granted to a newly owned empty nonpersistent context/store and the two owned URLs; shouldBypassPermissions is false. No real account, browser window, source rule, production persistence/HTTP owner or JSC fallback is used."
+    },
+    {
+      "area": "Observer stop and cleanup",
+      "sourceLines": [
+        203,
+        208,
+        210,
+        220,
+        228,
+        246,
+        271,
+        297,
+        298,
+        367,
+        371,
+        382
+      ],
+      "conclusion": "Cancellation waits an actual held native ACK, aborts the page fetch, seals admission, stops loading and responds stop. Background removes listeners before its stopped receipt. unload removes the exact context/handler/delegate; listener and accepted connections are separately cancelled and observed drained. This is explicit observer cleanup, not proof all WebContent processes have died or already sent HTTP was rolled back."
+    },
+    {
+      "area": "Setup/failure bounds",
+      "sourceLines": [
+        12,
+        20,
+        38,
+        40,
+        61,
+        63,
+        69,
+        70,
+        87,
+        95,
+        178
+      ],
+      "conclusion": "OS<18.4 reports unsupported skip and never a compatibility pass; API/permission/ready/required-event failures cannot fabricate observer success. Test cleanup retains primary failure and reports secondary failures. External Swift Task cancellation during setup and process death remain stated untested branches."
+    }
+  ],
+  "targetMembershipClarification": {
+    "severity": "Metadata clarification; not a source blocker",
+    "parentWording": "Standalone candidate not target registered",
+    "actual": "It is outside the canonical tree while kept in ignored staging. Once copied to canonical Tests/iOS, the existing PBXFileSystemSynchronizedRootGroup automatically compiles it into yuedu appTests. There is no membership exception and no pbxproj edit is needed. Explicit selector and strict source roster wiring remain future controls work.",
+    "project": {
+      "path": "Yuedu-Reader.xcodeproj/project.pbxproj",
+      "bytes": 55843,
+      "sha256": "51dc69ae13c60bb330d1f61222c7b36e5e5c5e2576fe900061121f913920871e"
+    },
+    "groupLines": [
+      134,
+      139
+    ],
+    "testTargetLines": [
+      352,
+      366
+    ]
+  },
+  "primaryBindings": [
+    {
+      "path": ".build/original-general-webjs-resource-api-characterization-step/primary/WKWebExtension.h",
+      "bytes": 14211,
+      "sha256": "4259a365e91d6c7df1d9093db3a717a5b8f697c15c08665a1e2aafd8b36471c9"
+    },
+    {
+      "path": ".build/original-general-webjs-resource-api-characterization-step/primary/WKWebExtensionContext.h",
+      "bytes": 51310,
+      "sha256": "5ae923493a4ccccbefd849b8308a876e69de2ebc34425fdd829c9f0e7e8a153f"
+    },
+    {
+      "path": ".build/original-general-webjs-resource-api-characterization-step/primary/WKWebExtensionController.h",
+      "bytes": 15103,
+      "sha256": "8908206a2f797adfdcf9ac2496808318a15fb62e7509cb61a66283fdeab261b6"
+    },
+    {
+      "path": ".build/original-general-webjs-resource-api-characterization-step/primary/WKWebViewConfiguration.h",
+      "bytes": 13807,
+      "sha256": "2e86754775506528a49c9bb6a15dc3366c8edd2a6d74b5b5b49be6d2747e2724"
+    },
+    {
+      "path": ".build/original-general-webjs-resource-api-characterization-step/primary/WKNavigationDelegate.h",
+      "bytes": 12805,
+      "sha256": "25aadd7c74eeed80dbd1207830b3eb6fa3056c5caad44dd53848cf19a24b0e48"
+    },
+    {
+      "path": ".build/original-general-webjs-resource-api-characterization-step/primary/WKURLSchemeHandler.h",
+      "bytes": 2711,
+      "sha256": "703b7a5cc0b81b32685ca4dafbfe565af26305c128b09c6bb171cdf0853224fd"
+    },
+    {
+      "path": ".build/original-general-webjs-resource-api-characterization-step/primary/WKWebExtensionAPIWebRequest.mm",
+      "bytes": 105440,
+      "sha256": "9e824bcd728d0ae9f6553465fa4a3da5375346e6fce4e7f05b043b48aca39fc9"
+    },
+    {
+      "path": ".build/original-general-webjs-resource-api-characterization-step/primary/WebExtensionContextCocoa.mm",
+      "bytes": 155318,
+      "sha256": "cf6c5acd38d65d50719ea4654d051bab1ea41a2baa3f1a09b17520056c75a5ac"
+    },
+    {
+      "path": ".build/original-general-webjs-resource-api-characterization-step/primary/apple-WKWebExtensionController.json",
+      "bytes": 77504,
+      "sha256": "2fd37f4f459e8326dccece3134ea6a2cd079a2d81fe779b91b6cab1556df97b2"
+    },
+    {
+      "path": ".build/original-general-webjs-resource-api-characterization-step/primary/apple-webExtensionController-property.json",
+      "bytes": 8721,
+      "sha256": "cbe19e463309ba98c5cf1c0cb49a6ab7d98f373fdf4ea736d3588cf288a5a179"
+    },
+    {
+      "path": ".build/original-general-webjs-resource-api-characterization-step/primary/apple-webRequest-permission.json",
+      "bytes": 34509,
+      "sha256": "ae143cca4caa4b5b8026f5c8f04f49a6aba748b8c36bc33d8a0b144172055f90"
+    },
+    {
+      "path": ".build/original-general-webjs-resource-api-characterization-step/primary/resource-timing-20260901.html",
+      "bytes": 385511,
+      "sha256": "bc9099e1f54b9dca199d69ea7b9f34f7fc082696a9bd2e3219eb018df79f2519"
+    },
+    {
+      "path": ".build/original-general-webjs-resource-api-characterization-step/primary/WKWebExtensionControllerDelegate.h",
+      "bytes": 17531,
+      "sha256": "3cc26b2d6c918e39089dc4a809f5747bfb7af7028e8e4463aa0d1b934cf0292c"
+    },
+    {
+      "path": ".build/original-general-webjs-resource-api-characterization-step/primary/WKWebExtensionControllerConfiguration.h",
+      "bytes": 4429,
+      "sha256": "2fce0ed89154868f5817abcc6e718362f359d376743a8adb36cf593547f05c89"
+    },
+    {
+      "path": ".build/original-general-webjs-resource-api-characterization-step/primary/WKWebExtensionTab.h",
+      "bytes": 23206,
+      "sha256": "e7b9c3e228e087dd48cf835c8c8ebe4d983f4500e88c70b2c6e77f0ca5d21a04"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/primary/WKWebExtensionPermission.h",
+      "bytes": 6012,
+      "sha256": "39edc859c18be4e2f19df84f0990dab1a76b6abc1bc846bdd675a4321ac8e528"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/primary/WKWebExtensionWindow.h",
+      "bytes": 8877,
+      "sha256": "8672106536f4c74e533e2100ecd141db16e275664db2cf0abc6f830bba93380d"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/primary/WKWebExtensionController.mm",
+      "bytes": 13557,
+      "sha256": "d00f529232322818e4779654b92de224a24ab0a43bedaddf43765b1dd1e12c50"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/primary/Apple-WKWebExtension-init.md",
+      "bytes": 1508,
+      "sha256": "ae98ef35e0029696cf13aaac773dd222c7f4c8a6339ab1d9c3435f5a6c03efa3"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/primary/Apple-WKWebExtensionController-Configuration.md",
+      "bytes": 3551,
+      "sha256": "f8ac3e4db119ce7fccdac0c5857ce9ce1a34a9eb8473d14fcf89b53b42f494f3"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/primary/Apple-nativeMessaging-delegate.md",
+      "bytes": 2559,
+      "sha256": "73c448c0564d9c78af11cbc63e2ad8e90131647200f02800ae96e55f726d0931"
+    }
+  ],
+  "reusedAuthorEvidence": [
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/evidence/additional-primary-v1.json",
+      "bytes": 1621,
+      "sha256": "b4add7b284048a9ec08f02c7f0bbcb9e6bb006e3083f90a0c496b17a3fd145fb"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/evidence/contract-v1.json",
+      "bytes": 8265,
+      "sha256": "51ea1873169aa1598feae69eb0af6d35af2d12d2a2787015f1ada54222eba326"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/evidence/final-source-grammar.json",
+      "bytes": 857,
+      "sha256": "5a38b5d841d813b7d6baf3216bc1284d9eb491cb2d0bb7eac927cf3df00ac409"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/evidence/inputs-v1.json",
+      "bytes": 12396,
+      "sha256": "190840c4a2ad1feab1603510d7ba5701001d86dc007e179e8830195812688201"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/evidence/lookup-history-v1.json",
+      "bytes": 1471,
+      "sha256": "943aa3e680c0c3dccef389c83c9956cab5dad48e191c1b4d6963c2ee65e1d1db"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/evidence/native-message-api-binding-v1.json",
+      "bytes": 352,
+      "sha256": "eb52cc2853357ff8126d2a9a32796e934209e7bf3cd7cc76f1fe1aafd94e3bb9"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/evidence/preparation-history-v1.json",
+      "bytes": 493,
+      "sha256": "7c8827ea4e81abb888995d40ebe0f6b956c8a03d8f0cddb244627ebd084501ae"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/validation/source-syntax-v1.json",
+      "bytes": 3527,
+      "sha256": "561cc222fc3bf4991774f35d082402a52c9a4afce67514a3308367c0d1992434"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/validation/source-syntax-v2.json",
+      "bytes": 1070,
+      "sha256": "8189560c69ed3bae6ff091c906572cc1bb23de1ffbca47f502f430be8beef012"
+    }
+  ],
+  "publicPrimaryVerification": {
+    "openedOfficialPinnedHeaderURLs": [
+      "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebKit/UIProcess/API/Cocoa/WKWebExtensionControllerConfiguration.h",
+      "https://raw.githubusercontent.com/WebKit/WebKit/0cdff65f65d6846840d6ac43fb3a035bd4bcb957/Source/WebKit/UIProcess/API/Cocoa/WKWebExtensionControllerDelegate.h"
+    ],
+    "AppleMarkdownBrowserAttempt": "Browser open rejected text/markdown content type. Exact previously pinned Apple Markdown bytes and Swift declaration were read locally; no invented fresh fetch success."
+  },
+  "unresolvedFindings": [],
+  "limits": [
+    "No Apple SDK/compiler/WK/HTTP/extension result has executed locally.",
+    "This test does not implement sourceRegex or generalWebPolicy.resource; it characterizes the public event path only.",
+    "Additional extension background WK context/memory and OS18.4 floor require an explicit future production decision; iOS17 remains unsupported by this route.",
+    "No proof of Android resource timing/first-match parity, absence of late events, full resource-body access or all cached/worker/service-worker combinations.",
+    "CSP/DNR-blocked resources, source-revision replacement during background activation, external Swift Task cancellation during setup, process termination and all MIME/request classes remain uncovered.",
+    "Explicit observer seal/stop/unload is tested; no claim public unload waits for every WebContent process to die or rolls back already sent HTTP. Peer counts mean accepted requests, not successful response commits.",
+    "ATS/local-network permission, framework feature availability and real callback delivery must be measured in the future host. Missing API/OS/load/permission cannot become a fake pass.",
+    "Owned WKScriptMessage page completion is only fixture coordination. Only exact extension delegate receipts count as observer proof.",
+    "Source review of declarations is not Apple Swift typechecking. No availability, protocol importer, ATS/local-network permission, background activation, WK callback delivery or cross-origin behavior is accepted until actual selected SDK execution.",
+    "Candidate OS skip is unsupported evidence, not success. Any future strict acceptance wrapper must continue rejecting skipped/missing observer execution.",
+    "This test-only public API experiment does not implement generalWebPolicy.resource or production sourceRegex, does not resolve the iOS17 floor, and does not establish complete source compatibility or renewal."
+  ],
+  "workPerformed": {
+    "readOnlySourceAndPrimaryReview": true,
+    "newTestRuns": 0,
+    "newGrammarRuns": 0,
+    "NodeRuns": 0,
+    "nativeTreeSitterTraversals": 0,
+    "SwiftCompiler": 0,
+    "SDK": 0,
+    "WK": 0,
+    "JVM": 0,
+    "cloud": 0,
+    "Git": 0,
+    "canonicalWrites": 0,
+    "peerWrites": 0
+  }
+}

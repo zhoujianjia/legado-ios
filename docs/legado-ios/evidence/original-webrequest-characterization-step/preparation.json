@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-21T00:31:29.567381+00:00",
+  "author": "/root/original_source_login_info",
+  "status": "Frozen standalone test-only source candidate, not target registered; pending independent source review and future real Apple SDK characterization.",
+  "sourceRoot": ".build/original-webrequest-native-characterization-step/snapshot-v1/work",
+  "files": [
+    {
+      "path": "Tests/iOS/LegadoNativeWebRequestCharacterizationTests.swift",
+      "baseline": null,
+      "candidate": {
+        "bytes": 26766,
+        "sha256": "267589c56d9b7200292671f59edaeddfd6e9af44a03d2fa04e47472a16a70515"
+      }
+    }
+  ],
+  "NativeDefinitionsAdded": 1,
+  "productionChanged": 0,
+  "currentControlsChanged": 0,
+  "contract": {
+    "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/evidence/contract-v1.json",
+    "bytes": 8265,
+    "sha256": "51ea1873169aa1598feae69eb0af6d35af2d12d2a2787015f1ada54222eba326"
+  },
+  "inputs": {
+    "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/evidence/inputs-v1.json",
+    "bytes": 12396,
+    "sha256": "190840c4a2ad1feab1603510d7ba5701001d86dc007e179e8830195812688201"
+  },
+  "evidence": [
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/evidence/additional-primary-v1.json",
+      "bytes": 1621,
+      "sha256": "b4add7b284048a9ec08f02c7f0bbcb9e6bb006e3083f90a0c496b17a3fd145fb"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/evidence/contract-v1.json",
+      "bytes": 8265,
+      "sha256": "51ea1873169aa1598feae69eb0af6d35af2d12d2a2787015f1ada54222eba326"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/evidence/final-source-grammar.json",
+      "bytes": 857,
+      "sha256": "5a38b5d841d813b7d6baf3216bc1284d9eb491cb2d0bb7eac927cf3df00ac409"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/evidence/inputs-v1.json",
+      "bytes": 12396,
+      "sha256": "190840c4a2ad1feab1603510d7ba5701001d86dc007e179e8830195812688201"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/evidence/lookup-history-v1.json",
+      "bytes": 1471,
+      "sha256": "943aa3e680c0c3dccef389c83c9956cab5dad48e191c1b4d6963c2ee65e1d1db"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/evidence/native-message-api-binding-v1.json",
+      "bytes": 352,
+      "sha256": "eb52cc2853357ff8126d2a9a32796e934209e7bf3cd7cc76f1fe1aafd94e3bb9"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/evidence/preparation-history-v1.json",
+      "bytes": 493,
+      "sha256": "7c8827ea4e81abb888995d40ebe0f6b956c8a03d8f0cddb244627ebd084501ae"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/validation/source-syntax-v1.json",
+      "bytes": 3527,
+      "sha256": "561cc222fc3bf4991774f35d082402a52c9a4afce67514a3308367c0d1992434"
+    },
+    {
+      "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/validation/source-syntax-v2.json",
+      "bytes": 1070,
+      "sha256": "8189560c69ed3bae6ff091c906572cc1bb23de1ffbca47f502f430be8beef012"
+    }
+  ],
+  "primaryParent": {
+    "path": ".build/original-general-webjs-resource-api-characterization-step/primary-binding-v2.json",
+    "bytes": 9125,
+    "sha256": "ac7fd17feb8e569ce7b9d8ee89519387ea46f148be270076c0ce6ccf2e89bfdd"
+  },
+  "lookupHistory": {
+    "path": ".build/original-webrequest-native-characterization-step/snapshot-v1/evidence/lookup-history-v1.json",
+    "bytes": 1471,
+    "sha256": "943aa3e680c0c3dccef389c83c9956cab5dad48e191c1b4d6963c2ee65e1d1db"
+  },
+  "actual": {
+    "SwiftCompiler": 0,
+    "SDK": 0,
+    "WK": 0,
+    "Native": 0,
+    "HTTP": 0,
+    "JVM": 0,
+    "Java": 0,
+    "NodeFunctional": 0,
+    "NodeSyntax": 4,
+    "finalSwiftSyntaxInputs": 1
+  },
+  "proofLimits": [
+    "No Apple SDK/compiler/WK/HTTP/extension result has executed locally.",
+    "This test does not implement sourceRegex or generalWebPolicy.resource; it characterizes the public event path only.",
+    "Additional extension background WK context/memory and OS18.4 floor require an explicit future production decision; iOS17 remains unsupported by this route.",
+    "No proof of Android resource timing/first-match parity, absence of late events, full resource-body access or all cached/worker/service-worker combinations.",
+    "CSP/DNR-blocked resources, source-revision replacement during background activation, external Swift Task cancellation during setup, process termination and all MIME/request classes remain uncovered.",
+    "Explicit observer seal/stop/unload is tested; no claim public unload waits for every WebContent process to die or rolls back already sent HTTP. Peer counts mean accepted requests, not successful response commits.",
+    "ATS/local-network permission, framework feature availability and real callback delivery must be measured in the future host. Missing API/OS/load/permission cannot become a fake pass.",
+    "Owned WKScriptMessage page completion is only fixture coordination. Only exact extension delegate receipts count as observer proof."
+  ],
+  "mutations": {
+    "canonical": false,
+    "Git": false,
+    "cloud": false,
+    "tags": false,
+    "production": false,
+    "currentTargetRegistration": false,
+    "currentControls": false
+  }
+}

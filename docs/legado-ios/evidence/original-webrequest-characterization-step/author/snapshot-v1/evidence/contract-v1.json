@@ -1,0 +1,185 @@
+{
+  "status": "Test-only public API characterization candidate; no SDK compilation or WK execution.",
+  "minimum": {
+    "iOS": "18.4",
+    "SDK": "Must contain public WKWebExtension APIs introduced with iOS18.4; runtime availability guard is not a substitute for SDK declarations.",
+    "oldOS": "Explicit XCTSkip with UNSUPPORTED_PUBLIC_API; must never be counted as resource-compatibility acceptance."
+  },
+  "APIShape": [
+    {
+      "file": {
+        "path": ".build/original-webrequest-native-characterization-step/primary/Apple-WKWebExtension-init.md",
+        "bytes": 1508,
+        "sha256": "ae98ef35e0029696cf13aaac773dd222c7f4c8a6339ab1d9c3435f5a6c03efa3"
+      },
+      "lines": [
+        35,
+        37
+      ],
+      "fact": "Official Swift async throwing resourceBaseURL initializer, no guessed underscored/refined call."
+    },
+    {
+      "file": {
+        "path": ".build/original-webrequest-native-characterization-step/primary/Apple-nativeMessaging-delegate.md",
+        "bytes": 2559,
+        "sha256": "73c448c0564d9c78af11cbc63e2ad8e90131647200f02800ae96e55f726d0931"
+      },
+      "lines": [
+        35,
+        42
+      ],
+      "fact": "Exact optional delegate completion-handler signature is public; async alternative is not required by this callback implementation."
+    },
+    {
+      "file": {
+        "path": ".build/original-general-webjs-resource-api-characterization-step/primary/WKWebExtensionController.h",
+        "bytes": 15103,
+        "sha256": "8908206a2f797adfdcf9ac2496808318a15fb62e7509cb61a66283fdeab261b6"
+      },
+      "lines": [
+        78,
+        94
+      ],
+      "fact": "Public load/unload with checked errors; no testing-mode switch or private API."
+    },
+    {
+      "file": {
+        "path": ".build/original-general-webjs-resource-api-characterization-step/primary/WKWebExtensionContext.h",
+        "bytes": 51310,
+        "sha256": "5ae923493a4ccccbefd849b8308a876e69de2ebc34425fdd829c9f0e7e8a153f"
+      },
+      "lines": [
+        434,
+        495
+      ],
+      "fact": "Grant only webRequest/nativeMessaging and the two owned loopback URL host scopes, not all URLs. Permission bypass method explicitly returns false."
+    },
+    {
+      "file": {
+        "path": ".build/original-general-webjs-resource-api-characterization-step/primary/WKWebExtensionContext.h",
+        "bytes": 51310,
+        "sha256": "5ae923493a4ccccbefd849b8308a876e69de2ebc34425fdd829c9f0e7e8a153f"
+      },
+      "lines": [
+        302,
+        311
+      ],
+      "fact": "Private-data access is restricted to the new empty, nonpersistent test data store; not existing Safari/App data or a production permission decision."
+    },
+    {
+      "file": {
+        "path": ".build/original-general-webjs-resource-api-characterization-step/primary/WKWebExtensionTab.h",
+        "bytes": 23206,
+        "sha256": "e7b9c3e228e087dd48cf835c8c8ebe4d983f4500e88c70b2c6e77f0ca5d21a04"
+      },
+      "lines": [
+        112,
+        120
+      ],
+      "fact": "Tab returns the exact probe WKWebView whose configuration references the same controller."
+    },
+    {
+      "file": {
+        "path": ".build/original-general-webjs-resource-api-characterization-step/primary/WKWebExtensionContext.h",
+        "bytes": 51310,
+        "sha256": "5ae923493a4ccccbefd849b8308a876e69de2ebc34425fdd829c9f0e7e8a153f"
+      },
+      "lines": [
+        541,
+        548
+      ],
+      "fact": "Await actual background-load completion plus exact extension native-ready receipt before page navigation."
+    },
+    {
+      "file": {
+        "path": ".build/original-general-webjs-resource-api-characterization-step/primary/WebExtensionContextCocoa.mm",
+        "bytes": 155318,
+        "sha256": "cf6c5acd38d65d50719ea4654d051bab1ea41a2baa3f1a09b17520056c75a5ac"
+      },
+      "lines": [
+        2744,
+        2766
+      ],
+      "fact": "The engine allocates an additional background WKWebView. This is an explicit additional WebKit runtime context, not a single-page cost claim."
+    },
+    {
+      "file": {
+        "path": ".build/original-webrequest-native-characterization-step/primary/WKWebExtensionController.mm",
+        "bytes": 13557,
+        "sha256": "d00f529232322818e4779654b92de224a24ab0a43bedaddf43765b1dd1e12c50"
+      },
+      "lines": [
+        281,
+        308
+      ],
+      "fact": "Feature-disabled implementation can return nil/unsupported. Public source availability is not proof a particular host/OS enables the feature."
+    }
+  ],
+  "lifecycle": [
+    "Write only a unique temporary owned extension fixture off main; initialize through public API.",
+    "Bind one nonpersistent data store to the probe page and controller configuration; create matching window/tab adapters.",
+    "Load context and real background; validate controller identity, context identity, application id and random nonce on every native message.",
+    "Register observers before real ready ACK, then load owned loopback parent.",
+    "Record actual before/redirect/completed/error packets, request/frame ids, browser timestamp, native arrival ordinal and optional cache flag. Do not use parent Resource Timing as event proof.",
+    "Hold one real cancel-route native reply; seal event admission; await actual owned AbortController evaluation; issue stop ACK. Background really removes observers and sends stopped through nativeMessaging; test waits that receipt.",
+    "Checked public unload must yield isLoaded false. Reply pending native callback on failure, detach own handlers even when unload throws. Fixture peer stops and drains its own accepted TCP connections."
+  ],
+  "fixtures": {
+    "originA": "127.0.0.1 dynamic loopback port",
+    "originB": "localhost same owned listener/port, distinct origin",
+    "routes": [
+      "parent",
+      "child",
+      "child-only",
+      "image",
+      "redirect",
+      "redirect-target",
+      "worker.js",
+      "worker-only",
+      "cache",
+      "cancel"
+    ],
+    "finiteLimits": {
+      "HTTPAccepted": 32,
+      "nativePackets": 256,
+      "URIBytes": 4096,
+      "requestIDBytes": 256,
+      "parentTiming": 64
+    },
+    "cache": "Two force-cache fetches; accept one or two actual peer requests and record extension event count. No assumed cached-event parity.",
+    "redirect": "Actual HTTP302 from A to B and real extension redirect event required.",
+    "frame": "Require cross-origin child navigation frame and nested fetch frame identity; parent timing must not claim nested child/worker entries."
+  },
+  "production": {
+    "changes": 0,
+    "sourceRulesExecuted": false,
+    "JVMPolicyInvoked": false,
+    "HTTPClientOwnerAdded": false,
+    "CookieOwnerAdded": false,
+    "privateAPIUsed": false,
+    "currentControlsChanged": false,
+    "targetRegistered": false
+  },
+  "explicitLimits": [
+    "No Apple SDK/compiler/WK/HTTP/extension result has executed locally.",
+    "This test does not implement sourceRegex or generalWebPolicy.resource; it characterizes the public event path only.",
+    "Additional extension background WK context/memory and OS18.4 floor require an explicit future production decision; iOS17 remains unsupported by this route.",
+    "No proof of Android resource timing/first-match parity, absence of late events, full resource-body access or all cached/worker/service-worker combinations.",
+    "CSP/DNR-blocked resources, source-revision replacement during background activation, external Swift Task cancellation during setup, process termination and all MIME/request classes remain uncovered.",
+    "Explicit observer seal/stop/unload is tested; no claim public unload waits for every WebContent process to die or rolls back already sent HTTP. Peer counts mean accepted requests, not successful response commits.",
+    "ATS/local-network permission, framework feature availability and real callback delivery must be measured in the future host. Missing API/OS/load/permission cannot become a fake pass.",
+    "Owned WKScriptMessage page completion is only fixture coordination. Only exact extension delegate receipts count as observer proof."
+  ],
+  "actual": {
+    "SwiftCompiler": 0,
+    "SDK": 0,
+    "WK": 0,
+    "Native": 0,
+    "HTTP": 0,
+    "JVM": 0,
+    "Java": 0,
+    "NodeFunctional": 0,
+    "NodeSyntax": 4,
+    "finalSwiftSyntaxInputs": 1
+  }
+}
