@@ -288,9 +288,6 @@ actor SelfRenewalDeveloperAccountClient {
         var certificateIntent = false, profileIntent = false
         do {
             let account = try await validateRemote(credentials, expected: loaded.record.pin, epoch: operationEpoch)
-            let csr = try await vault.certificateSigningRequest(in: namespace, keyID: keyID,
-                expectedGeneration: expectedGeneration, commonName: account.commonName, emailAddress: account.pin.email)
-            try check(operationEpoch)
             let appIDs = try await request(.appIDs, credentials: credentials, team: teamID, epoch: operationEpoch)
             let identifiers = try registeredAppIDs(appIDs)
             let publication = try await vault.publicationBaseline(in: namespace, expectedGeneration: expectedGeneration)
@@ -298,6 +295,21 @@ actor SelfRenewalDeveloperAccountClient {
             try check(operationEpoch)
             let currentPublication = try await vault.publicationBaseline(in: namespace, expectedGeneration: expectedGeneration)
             guard currentPublication == publication else { throw Failure.staleOperation }
+            if let reusable = try await vault.reusableSigningIdentity(in: namespace, keyID: keyID,
+                expectedGeneration: expectedGeneration), let leaf = reusable.certificateChainDER.first,
+               certificates.contains(where: { $0.der == leaf && $0.publicKeySHA256 == reusable.publicKeySHA256 }) {
+                // A locally valid certificate is not remote account authority.
+                // The exact DER must be in this just-checked account/team list;
+                // unknown/missing remote identities are never revoked here.
+                let profiles = try await downloadProfiles(identifiers: identifiers, credentials: credentials,
+                    operationEpoch: operationEpoch, profileIntent: &profileIntent)
+                _ = try await validateRemote(credentials, expected: loaded.record.pin, epoch: operationEpoch)
+                try check(operationEpoch)
+                return try await vault.refreshProfiles(reusing: reusable, profiles: profiles)
+            }
+            let csr = try await vault.certificateSigningRequest(in: namespace, keyID: keyID,
+                expectedGeneration: expectedGeneration, commonName: account.commonName, emailAddress: account.pin.email)
+            try check(operationEpoch)
             let currentRequest = try await vault.certificateSigningRequest(in: namespace, keyID: keyID,
                 expectedGeneration: expectedGeneration, commonName: account.commonName, emailAddress: account.pin.email)
             guard currentRequest.der == csr.der, currentRequest.publicKeySHA256 == csr.publicKeySHA256 else { throw Failure.keyMismatch }
@@ -343,17 +355,8 @@ actor SelfRenewalDeveloperAccountClient {
     private func completeEnrollment(loaded: inout Loaded, certificate: Data, csr: Vault.CertificateRequest,
         account: RemoteAccount, identifiers: [String: String], credentials: Credentials,
         operationEpoch: UInt64, profileIntent: inout Bool) async throws -> Vault.Lease {
-        var profiles: [Vault.ProfileInput] = []
-        for bundle in bundles {
-            try check(operationEpoch)
-            guard let identifier = identifiers[bundle.identifier] else { throw Failure.appIdentifierMissing }
-            profileIntent = true
-            let response = try await request(.profile, credentials: credentials, team: teamID,
-                parameters: ["appIdId": identifier], epoch: operationEpoch)
-            let container = try Self.dictionary(response["provisioningProfile"])
-            let bytes = try Self.bytes(container["encodedProfile"], maximum: Vault.Limits.profileBytes)
-            profiles.append(.init(componentRelativePath: bundle.component, bytes: bytes))
-        }
+        let profiles = try await downloadProfiles(identifiers: identifiers, credentials: credentials,
+            operationEpoch: operationEpoch, profileIntent: &profileIntent)
         // Recheck remote account/team and the real persisted key after all
         // awaits. A retained CSR or raw token is not a commit capability.
         _ = try await validateRemote(credentials, expected: loaded.record.pin, epoch: operationEpoch)
@@ -373,6 +376,22 @@ actor SelfRenewalDeveloperAccountClient {
             _ = try save(loaded.record, replacing: loaded.encoded)
         } catch { throw PublicationFinalizationFailure(publishedLease: lease, underlying: error) }
         return lease
+    }
+
+    private func downloadProfiles(identifiers: [String: String], credentials: Credentials,
+        operationEpoch: UInt64, profileIntent: inout Bool) async throws -> [Vault.ProfileInput] {
+        var profiles: [Vault.ProfileInput] = []
+        for bundle in bundles {
+            try check(operationEpoch)
+            guard let identifier = identifiers[bundle.identifier] else { throw Failure.appIdentifierMissing }
+            profileIntent = true
+            let response = try await request(.profile, credentials: credentials, team: teamID,
+                parameters: ["appIdId": identifier], epoch: operationEpoch)
+            let container = try Self.dictionary(response["provisioningProfile"])
+            let bytes = try Self.bytes(container["encodedProfile"], maximum: Vault.Limits.profileBytes)
+            profiles.append(.init(componentRelativePath: bundle.component, bytes: bytes))
+        }
+        return profiles
     }
 
     /// A read-only certificate-list reconciliation never submits another CSR.

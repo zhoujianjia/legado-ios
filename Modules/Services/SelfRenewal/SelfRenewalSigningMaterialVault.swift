@@ -119,6 +119,24 @@ actor SelfRenewalSigningMaterialVault {
             self.keyID = keyID; leafCertificateSHA256 = leafHash
         }
     }
+    /// Certificate-only refresh capability. Old profiles are authenticated at
+    /// their acknowledged publication date, not accepted for signing now. Only
+    /// the Vault constructs this value after reopening the exact permanent key
+    /// and verifying its certificate chain at the current clock.
+    struct ReusableSigningIdentity: Sendable {
+        let namespace: Namespace
+        let generation: UInt64
+        let keyID: UUID
+        let certificateChainDER: [Data]
+        let publicKeySHA256: Data
+        fileprivate let previousProfileExpiries: [String: Date]
+        fileprivate init(namespace: Namespace, generation: UInt64, keyID: UUID,
+            chain: [Data], publicHash: Data, expiries: [String: Date]) {
+            self.namespace = namespace; self.generation = generation; self.keyID = keyID
+            certificateChainDER = chain; publicKeySHA256 = publicHash
+            previousProfileExpiries = expiries
+        }
+    }
     /// Account enrollment is scoped by the original identity already saved in
     /// this Keychain manifest. The installed-file observations below only
     /// refuse a changed route; they do not authenticate expired code or create
@@ -344,6 +362,74 @@ actor SelfRenewalSigningMaterialVault {
         }
         return PublicationBaseline(namespace: namespace, generation: session.manifest.generation,
             keyID: published.keyID, leafHash: Data(SHA256.hash(data: leaf)))
+    }
+
+    /// Expired profiles do not force another certificate issue. Historical
+    /// verification only authenticates their exact identity/expiry baseline;
+    /// the separate current-date chain check is mandatory for certificate reuse.
+    /// Only an absent/different publication or an explicitly expired certificate
+    /// returns nil. Storage, key, trust and stale-generation failures propagate.
+    func reusableSigningIdentity(in namespace: Namespace, keyID: UUID,
+        expectedGeneration: UInt64) throws -> ReusableSigningIdentity? {
+        let started = SourcePerfTrace.now
+        defer { trace("reusable-certificate", bytes: 0, since: started) }
+        let session = try current(namespace)
+        guard session.manifest.generation == expectedGeneration else { throw Failure.staleGeneration }
+        guard let published = session.manifest.published, published.keyID == keyID else { return nil }
+        let date = clock()
+        guard date.timeIntervalSince1970.isFinite, date >= published.publishedAt else { throw Failure.clockMovedBackwards }
+        let (key, oldProfiles) = try verify(published, manifest: session.manifest, at: published.publishedAt)
+        // This is only date classification of an already authenticated chain,
+        // using the existing bounded DER/date decoder. It cannot grant trust.
+        for bytes in published.chain {
+            let fields = try SelfRenewalCMSVerifier.children(of: SelfRenewalCMSVerifier.parseDER(bytes))
+            guard fields.count == 3, fields[0].tag == 0x30 else { throw Failure.invalidCertificate }
+            let tbs = try SelfRenewalCMSVerifier.children(of: fields[0])
+            let start = tbs.first?.tag == 0xa0 ? 1 : 0
+            guard tbs.count > start + 3,
+                  case .array(let validity) = try SelfRenewalDERPropertyList.decode(tbs[start + 3].full),
+                  validity.count == 2, case .date(let begins) = validity[0],
+                  case .date(let ends) = validity[1], begins < ends else { throw Failure.invalidCertificate }
+            guard date >= begins else { throw Failure.untrustedCertificate }
+            if date >= ends { return nil }
+        }
+        _ = try Self.validateChain(published.chain, anchors: codeAnchors, at: date)
+        try Task.checkCancellation()
+        let expiries = try Dictionary(uniqueKeysWithValues: session.manifest.identity.map { identity -> (String, Date) in
+            let path = identity.component == "." ? "embedded.mobileprovision" : identity.component + "/embedded.mobileprovision"
+            guard let profile = oldProfiles.first(where: { $0.file.relativePath == path }) else { throw Failure.invalidProfiles }
+            return (identity.component, profile.summary.expiresAt)
+        })
+        return ReusableSigningIdentity(namespace: namespace, generation: expectedGeneration, keyID: keyID,
+            chain: published.chain, publicHash: try Self.publicHash(key), expiries: expiries)
+    }
+
+    /// Same publication CAS and full current profile verifier as normal issue.
+    /// Every bundle's signed expiry must advance; unchanged/shorter profiles
+    /// cannot be reported as a successful renewal or cause a generation write.
+    func refreshProfiles(reusing identity: ReusableSigningIdentity, profiles: [ProfileInput]) throws -> Lease {
+        let started = SourcePerfTrace.now
+        defer { trace("refresh-profiles", bytes: profiles.reduce(0) { $0 + $1.bytes.count }, since: started) }
+        guard let current = try reusableSigningIdentity(in: identity.namespace, keyID: identity.keyID,
+            expectedGeneration: identity.generation),
+              current.certificateChainDER == identity.certificateChainDER,
+              current.publicKeySHA256 == identity.publicKeySHA256,
+              current.previousProfileExpiries == identity.previousProfileExpiries else { throw Failure.staleGeneration }
+        let session = try self.current(identity.namespace)
+        let date = clock()
+        let candidate = Published(keyID: identity.keyID, chain: identity.certificateChainDER,
+            profiles: profiles, publishedAt: date)
+        let (_, verified) = try verify(candidate, manifest: session.manifest, at: date)
+        for profile in verified {
+            guard let component = profiles.first(where: { input in
+                let path = input.componentRelativePath == "." ? "embedded.mobileprovision" : input.componentRelativePath + "/embedded.mobileprovision"
+                return path == profile.file.relativePath
+            })?.componentRelativePath,
+                  let previous = identity.previousProfileExpiries[component],
+                  profile.summary.expiresAt > previous else { throw Failure.invalidProfiles }
+        }
+        return try publish(in: identity.namespace, keyID: identity.keyID, expectedGeneration: identity.generation,
+            certificateChainDER: identity.certificateChainDER, profiles: profiles)
     }
 
     /// Called only after the App has refused unresolved account intent and

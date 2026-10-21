@@ -1,0 +1,53 @@
+--- a/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift
++++ b/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift
+@@ -291,3 +290,0 @@
+-            let csr = try await vault.certificateSigningRequest(in: namespace, keyID: keyID,
+-                expectedGeneration: expectedGeneration, commonName: account.commonName, emailAddress: account.pin.email)
+-            try check(operationEpoch)
+@@ -300,0 +298,15 @@
++            if let reusable = try await vault.reusableSigningIdentity(in: namespace, keyID: keyID,
++                expectedGeneration: expectedGeneration), let leaf = reusable.certificateChainDER.first,
++               certificates.contains(where: { $0.der == leaf && $0.publicKeySHA256 == reusable.publicKeySHA256 }) {
++                // A locally valid certificate is not remote account authority.
++                // The exact DER must be in this just-checked account/team list;
++                // unknown/missing remote identities are never revoked here.
++                let profiles = try await downloadProfiles(identifiers: identifiers, credentials: credentials,
++                    operationEpoch: operationEpoch, profileIntent: &profileIntent)
++                _ = try await validateRemote(credentials, expected: loaded.record.pin, epoch: operationEpoch)
++                try check(operationEpoch)
++                return try await vault.refreshProfiles(reusing: reusable, profiles: profiles)
++            }
++            let csr = try await vault.certificateSigningRequest(in: namespace, keyID: keyID,
++                expectedGeneration: expectedGeneration, commonName: account.commonName, emailAddress: account.pin.email)
++            try check(operationEpoch)
+@@ -346,11 +358,2 @@
+-        var profiles: [Vault.ProfileInput] = []
+-        for bundle in bundles {
+-            try check(operationEpoch)
+-            guard let identifier = identifiers[bundle.identifier] else { throw Failure.appIdentifierMissing }
+-            profileIntent = true
+-            let response = try await request(.profile, credentials: credentials, team: teamID,
+-                parameters: ["appIdId": identifier], epoch: operationEpoch)
+-            let container = try Self.dictionary(response["provisioningProfile"])
+-            let bytes = try Self.bytes(container["encodedProfile"], maximum: Vault.Limits.profileBytes)
+-            profiles.append(.init(componentRelativePath: bundle.component, bytes: bytes))
+-        }
++        let profiles = try await downloadProfiles(identifiers: identifiers, credentials: credentials,
++            operationEpoch: operationEpoch, profileIntent: &profileIntent)
+@@ -375,0 +379,16 @@
++    }
++
++    private func downloadProfiles(identifiers: [String: String], credentials: Credentials,
++        operationEpoch: UInt64, profileIntent: inout Bool) async throws -> [Vault.ProfileInput] {
++        var profiles: [Vault.ProfileInput] = []
++        for bundle in bundles {
++            try check(operationEpoch)
++            guard let identifier = identifiers[bundle.identifier] else { throw Failure.appIdentifierMissing }
++            profileIntent = true
++            let response = try await request(.profile, credentials: credentials, team: teamID,
++                parameters: ["appIdId": identifier], epoch: operationEpoch)
++            let container = try Self.dictionary(response["provisioningProfile"])
++            let bytes = try Self.bytes(container["encodedProfile"], maximum: Vault.Limits.profileBytes)
++            profiles.append(.init(componentRelativePath: bundle.component, bytes: bytes))
++        }
++        return profiles

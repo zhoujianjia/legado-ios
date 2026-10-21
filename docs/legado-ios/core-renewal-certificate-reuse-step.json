@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "recordedUTC": "2026-10-21T02:03:29.574528+00:00",
+  "status": "same-key-certificate-reuse-and-profile-renewal-connected-SwiftSDK-pending",
+  "baselineCommit": "74259e2031c5496c5530af371d920a694603541a",
+  "canonicalSources": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "bytes": 59200,
+      "sha256": "e3d5ac75aa256802fb3c4bebb2c22eb5d8a0cd27d53b84cdb6e1ba352e88f974"
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "bytes": 60118,
+      "sha256": "f208882eeb1b484e7ac0f29c10e0d4ee83b3fc4f9b0276956b11cdcfbe1033cc"
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "bytes": 67014,
+      "sha256": "26123de7377357839b14bf05ab2c18c5af0c678459de285ce94bb21eda599ba0"
+    }
+  ],
+  "productionBoundary": [
+    "AppSession already passes its current publication key ID. Reuse is restricted to that same requested key, namespace and generation; an explicitly different ready key retains the original deliberate key-rotation CSR path.",
+    "The Vault reopens the permanent Keychain key and fully authenticates the exact old publication at its acknowledged publication date solely to obtain an identity/expiry baseline. It then classifies bounded certificate DER times with the existing parser and separately requires the complete certificate chain to validate at the real current date against configured anchors without network fetching.",
+    "Only absent/different publication or explicitly expired chain dates mean no reusable certificate. Clock rollback, malformed old material, missing/revoked/mismatched key, storage failures, stale generations and other trust errors propagate. Historical profile verification grants no current signing lease.",
+    "The same real account/team checks and complete development-certificate-list request run before reuse. Its exact DER and public-key hash must match the Vault capability. Missing remote DER takes the existing CSR path and does not revoke any certificate.",
+    "Both reuse and CSR branches call the same extracted existing three-profile network loop. Account/team are rechecked after all profile awaits. Reuse publication reopens the key, rechecks generation and exact chain/baseline, validates every new profile at now through the original double-CMS/identity/leaf verifier, and requires each component expiry strictly advance.",
+    "Publication still uses the existing Vault publish/CAS/Keychain save. No post-commit cancellation check hides a successful publication. Reuse performs no CSR and needs no account-journal rewrite; pending unknown CSR is refused before selecting either branch, and existing issue/reconcile/finalization logic is byte-exact."
+  ],
+  "authoredRegressions": {
+    "existingSuite": "SelfRenewalDeveloperAccountClientTests",
+    "baselineDefinitions": 15,
+    "candidateDefinitions": 19,
+    "newNoArgumentDefinitions": [
+      "reusesPublishedCertificateAcrossProfileExpiryWithoutAnotherCSR",
+      "expiredCertificateUsesExistingIssuanceAndReconciliationPath",
+      "refusesUnextendedOrTamperedProfilesWithoutCertificateChurn",
+      "heldReuseRejectsCancellationAndRevokedGenerationWithoutIssuance"
+    ],
+    "newParameterLeaves": 4,
+    "changedExistingDefinitions": [
+      "excludesBaselineAndPublishedLeafWhenReusingTheKey"
+    ],
+    "scenarios": [
+      "Two real URLSession/Keychain/Vault profile renewals keep the original certificate and key; the second runs after the first signed profiles have expired and still issues zero CSRs.",
+      "A genuinely short-lived certificate expires according to its signed DER while old profiles remain valid; the normal CSR/profile/Vault chain then produces another certificate.",
+      "Unchanged expiry and tampered remote profile CMS both retain the old publication and create no certificate or unknown CSR intent.",
+      "An actual held URLSession profile request signals admission before cancellation or permanent-key revocation. Cancellation retains old material; revocation changes the real Vault generation and prevents late publication or CSR fallthrough."
+    ],
+    "fixtureNotes": "Serialized suite reuses existing URLProtocol transport and dynamic owned PKI. A locked injectable clock advances only explicit expiry scenarios; an AsyncStream/continuation drives held-profile admission/release without sleep or polling. The old same-key lost-ACK method now deliberately omits the old published DER from its first remote list so it continues testing unknown issuance and exclusion of old certificates rather than accidentally testing reuse."
+  },
+  "actualSwiftCompilerExecutions": 0,
+  "actualSwiftTestExecutions": 0,
+  "actualAppleAccountRequests": 0,
+  "newCloudRunsOrTags": 0,
+  "preservedEvidence": [
+    {
+      "path": "docs/legado-ios/evidence/renewal-certificate-reuse-step/reviewed-candidate.json",
+      "bytes": 11674,
+      "sha256": "ceba566ec8a2859b77aa0480b8aada02f4c8ceb882efd3e0ba91b1851583a474",
+      "original": {
+        "path": ".build/s2-certificate-reuse-step/final-v1.json",
+        "bytes": 11674,
+        "sha256": "ceba566ec8a2859b77aa0480b8aada02f4c8ceb882efd3e0ba91b1851583a474"
+      },
+      "normalization": "UTF8/LF and line-end whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-certificate-reuse-step/independent-review.json",
+      "bytes": 10114,
+      "sha256": "9cd520785a596210f627779ad7c0fd1c7241400df86a1b49c3d89c6040299dc0",
+      "original": {
+        "path": ".build/s2-certificate-reuse-independent-review/review-v1.json",
+        "bytes": 10114,
+        "sha256": "9cd520785a596210f627779ad7c0fd1c7241400df86a1b49c3d89c6040299dc0"
+      },
+      "normalization": "UTF8/LF and line-end whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-certificate-reuse-step/source-validation.json",
+      "bytes": 4749,
+      "sha256": "76f878e140f3471e0de8b4fc1018f734ad58f325227c983dec525a4d399720f6",
+      "original": {
+        "path": ".build/s2-certificate-reuse-step/source-validation-v1.json",
+        "bytes": 4749,
+        "sha256": "76f878e140f3471e0de8b4fc1018f734ad58f325227c983dec525a4d399720f6"
+      },
+      "normalization": "UTF8/LF and line-end whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-certificate-reuse-step/source-validation.py",
+      "bytes": 4621,
+      "sha256": "65c7237aaf2ffbd0b070ac90f8578e86e3a7bc71420e2bbb09e06ef6c12dc6b8",
+      "original": {
+        "path": ".build/s2-certificate-reuse-step/validate-source.py",
+        "bytes": 4621,
+        "sha256": "65c7237aaf2ffbd0b070ac90f8578e86e3a7bc71420e2bbb09e06ef6c12dc6b8"
+      },
+      "normalization": "UTF8/LF and line-end whitespace only; original facts retained"
+    },
+    {
+      "path": "docs/legado-ios/evidence/renewal-certificate-reuse-step/root-integration.py",
+      "bytes": 6297,
+      "sha256": "5b507d28760324de3fbd10b7e117adfdb25efdd40841eb5e6790ddaa3fbcd8cf",
+      "original": {
+        "path": ".build/integrate-reviewed-s2-certificate-reuse.py",
+        "bytes": 6297,
+        "sha256": "5b507d28760324de3fbd10b7e117adfdb25efdd40841eb5e6790ddaa3fbcd8cf"
+      },
+      "normalization": "UTF8/LF and line-end whitespace only; original facts retained"
+    }
+  ],
+  "limits": [
+    "Authored regressions and source review only. Actual target compiler/runtime validation is pending.",
+    "Current trusted identity, exact remote certificate match and later component expiries are mandatory; historical profiles grant no current signing permission.",
+    "An explicitly different requested key retains the existing deliberate issuance path. No unknown certificate is revoked.",
+    "Device/App ID/App Group initial registration, real Apple authorization, the actual complete JVM IPA and authenticated same-device installation remain separately unfinished.",
+    "No cryptographic or controlled-peer result establishes computer independence, no-VPN routing, actual replacement, cold launch or unattended renewal."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

@@ -1,0 +1,137 @@
+{
+  "validationKind": "source-byte provenance and test inventory only; not Swift grammar/type checking or runtime tests",
+  "checks": [
+    {
+      "name": "all existing Vault implementation bytes remain exact after removing only new capability and two methods",
+      "passed": true
+    },
+    {
+      "name": "CSR request creation remains one exact block",
+      "passed": true
+    },
+    {
+      "name": "existing enrollment profile loop extracted exactly once",
+      "passed": true
+    },
+    {
+      "name": "all other Account code exact including pending intent reconciliation and post-commit finalization",
+      "passed": true
+    },
+    {
+      "name": "15 original test identities preserve order",
+      "passed": true
+    },
+    {
+      "name": "exactly four authored no-argument regression identities",
+      "passed": true
+    },
+    {
+      "name": "existing test method remains present: submitsRealVaultCSRAndPublishesOnlyVerifiedOriginalIdentity",
+      "passed": true
+    },
+    {
+      "name": "existing test method remains present: rejectsWrongCertificateKeyBeforeProfileRequests",
+      "passed": true
+    },
+    {
+      "name": "existing test method remains present: rejectsTamperedRemoteProfilesWithoutChangingPublication",
+      "passed": true
+    },
+    {
+      "name": "existing test method remains present: invalidatesExpiredOrChangedPortalSession",
+      "passed": true
+    },
+    {
+      "name": "existing test method remains present: cancellationRetainsRemoteIntentAndPreventsDuplicateIssuance",
+      "passed": true
+    },
+    {
+      "name": "existing test method remains present: retainsCommittedPublicationWhenAccountFinalizationFails",
+      "passed": true
+    },
+    {
+      "name": "existing test method remains present: rejectsStaleKeysAndMissingOriginalAppIDsBeforeRemoteMutation",
+      "passed": true
+    },
+    {
+      "name": "existing test method remains present: rejectsUnsafeResponseEnvelopesAndRedactsCredentialDescriptions",
+      "passed": true
+    },
+    {
+      "name": "existing test method remains present: erasesStoredCredentialsWithoutMaterialAuthorityAndPreservesIntent",
+      "passed": true
+    },
+    {
+      "name": "existing test method remains present: reconcilesLostCertificateACKWithUniqueActualCandidate",
+      "passed": true
+    },
+    {
+      "name": "existing test method remains present: excludesBaselineAndPublishedLeafWhenReusingTheKey",
+      "passed": true
+    },
+    {
+      "name": "existing test method remains present: retainsIntentForAmbiguousMissingAndIncompleteCertificateLists",
+      "passed": true
+    },
+    {
+      "name": "existing test method remains present: rejectsLegacyCSRBindingAndChangedGenerationWithoutReissue",
+      "passed": true
+    },
+    {
+      "name": "existing test method remains present: resumesObservedCertificateAndFinalizesItsActualPublicationLocally",
+      "passed": true
+    },
+    {
+      "name": "existing test method remains present: cancellationDuringCertificateListRetainsUnknownIntent",
+      "passed": true
+    },
+    {
+      "name": "only intended old same-key issuance test body changes",
+      "passed": true
+    },
+    {
+      "name": "new regressions use no sleep or timing polling",
+      "passed": true
+    },
+    {
+      "name": "canonical source still exact baseline: Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "passed": true
+    },
+    {
+      "name": "candidate uses LF: Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "passed": true
+    },
+    {
+      "name": "canonical source still exact baseline: Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "passed": true
+    },
+    {
+      "name": "candidate uses LF: Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "passed": true
+    },
+    {
+      "name": "canonical source still exact baseline: Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "passed": true
+    },
+    {
+      "name": "candidate uses LF: Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "passed": true
+    }
+  ],
+  "failedChecks": 0,
+  "baselineTestDefinitions": 15,
+  "candidateTestDefinitions": 19,
+  "addedNoArgumentDefinitions": [
+    "reusesPublishedCertificateAcrossProfileExpiryWithoutAnotherCSR",
+    "expiredCertificateUsesExistingIssuanceAndReconciliationPath",
+    "refusesUnextendedOrTamperedProfilesWithoutCertificateChurn",
+    "heldReuseRejectsCancellationAndRevokedGenerationWithoutIssuance"
+  ],
+  "changedExistingTestDefinitions": [
+    "excludesBaselineAndPublishedLeafWhenReusingTheKey"
+  ],
+  "actualSwiftSDKExecutions": 0,
+  "actualSwiftTestExecutions": 0,
+  "actualAppleRequests": 0,
+  "cloudQueries": 0
+}

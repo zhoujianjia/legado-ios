@@ -35,6 +35,126 @@ struct SelfRenewalDeveloperAccountClientTests {
         }
     }
 
+    @Test("published certificate and real permanent key survive two profile renewals including an expired old profile")
+    func reusesPublishedCertificateAcrossProfileExpiryWithoutAnotherCSR() async throws {
+        try await Self.fixture { f in
+            var previous = try await f.vault.lease(in: f.namespace)
+            let peer = Peer(material: f.material, issuer: f.issuer, key: previous.keyMaterial, date: f.date)
+            PeerProtocol.install(peer)
+            for elapsed in [300.0, 4_000.0] {
+                f.clock.set(f.date.addingTimeInterval(elapsed))
+                await peer.issueNewMaterial(at: f.clock.now)
+                // Reopening the real stored account and key must not force issue.
+                let client = try await f.client()
+                _ = try await client.connect(.init(dsid: f.credentials.dsid, xcodeToken: f.credentials.xcodeToken,
+                    expiresAt: f.date.addingTimeInterval(86_400)))
+                let renewed = try await client.refreshMaterials(keyID: previous.keyID,
+                    expectedGeneration: previous.generation, machineName: "Owned reuse")
+                #expect(renewed.keyID == previous.keyID && renewed.generation == previous.generation + 1)
+                #expect(renewed.keyMaterial.certificateChainDER == previous.keyMaterial.certificateChainDER)
+                for profile in renewed.profiles {
+                    let old = try #require(previous.profiles.first { $0.file.relativePath == profile.file.relativePath })
+                    #expect(profile.summary.expiresAt > old.summary.expiresAt)
+                }
+                try await f.vault.validate(renewed, for: f.material)
+                #expect(try await client.pendingEnrollment() == nil)
+                previous = renewed
+            }
+            let facts = await peer.facts()
+            #expect(facts.validCSRs == 0 && facts.profileRequests == 6 && facts.certificateListRequests == 2)
+            #expect(!facts.paths.contains("ios/submitDevelopmentCSR.action"))
+        }
+    }
+
+    @Test("an actually expired published certificate takes the existing CSR path instead of accepting historical trust")
+    func expiredCertificateUsesExistingIssuanceAndReconciliationPath() async throws {
+        try await Self.fixture { f in
+            let old = try await f.vault.lease(in: f.namespace)
+            let shortLeaf = try PKI.certificate(for: old.keyMaterial.privateKey, signedBy: f.issuer,
+                at: f.date.addingTimeInterval(-86_400 * 30 + 120))
+            let profiles = try f.material.bundles.map { bundle -> Vault.ProfileInput in
+                let original = try #require(f.material.profiles.profiles.first { $0.file.relativePath == bundle.profileRelativePath })
+                return .init(componentRelativePath: bundle.componentRelativePath,
+                    bytes: try PKI.profile(from: original, developerCertificate: shortLeaf, issuer: f.issuer, at: f.date))
+            }
+            let short = try await f.vault.publish(in: f.namespace, keyID: old.keyID, expectedGeneration: old.generation,
+                certificateChainDER: [shortLeaf] + f.issuer.certificateChainDER, profiles: profiles)
+            f.clock.set(f.date.addingTimeInterval(180))
+            let peer = Peer(material: f.material, issuer: f.issuer, key: short.keyMaterial, date: f.date)
+            await peer.issueNewMaterial(at: f.clock.now)
+            PeerProtocol.install(peer)
+            let client = try await f.client(); _ = try await client.connect(f.credentials)
+            let renewed = try await client.refreshMaterials(keyID: short.keyID,
+                expectedGeneration: short.generation, machineName: "Owned expired certificate")
+            #expect(renewed.keyMaterial.certificateChainDER.first != shortLeaf)
+            try await f.vault.validate(renewed, for: f.material)
+            let facts = await peer.facts()
+            #expect(facts.validCSRs == 1 && facts.profileRequests == 3)
+        }
+    }
+
+    @Test("reuse refuses unchanged expiry and tampered signed profiles without issuing or replacing anything")
+    func refusesUnextendedOrTamperedProfilesWithoutCertificateChurn() async throws {
+        for mode in [Mode.normal, .tamperedProfile] {
+            try await Self.fixture { f in
+                let old = try await f.vault.lease(in: f.namespace)
+                let peer = Peer(material: f.material, issuer: f.issuer, key: old.keyMaterial, date: f.date)
+                await peer.set(mode); PeerProtocol.install(peer)
+                let client = try await f.client(); _ = try await client.connect(f.credentials)
+                do {
+                    _ = try await client.refreshMaterials(keyID: old.keyID,
+                        expectedGeneration: old.generation, machineName: "Owned rejected refresh")
+                    Issue.record("Unextended or unauthentic profiles were accepted")
+                } catch let failure as Client.EnrollmentFailure {
+                    #expect(!failure.remoteCertificateMayHaveBeenIssued && failure.remoteProfilesMayHaveBeenRefreshed)
+                    if mode == .normal { #expect(failure.underlying as? Vault.Failure == .invalidProfiles) }
+                    else { #expect(failure.underlying is SelfRenewalCMSVerifier.Failure) }
+                }
+                let retained = try await f.vault.lease(in: f.namespace)
+                #expect(retained.generation == old.generation && retained.profileInputs == old.profileInputs)
+                #expect(try await client.pendingEnrollment() == nil)
+                let facts = await peer.facts()
+                #expect(facts.validCSRs == 0 && facts.profileRequests == 3)
+            }
+        }
+    }
+
+    @Test("held reuse-profile cancellation or key revocation cannot publish or fall through to another CSR")
+    func heldReuseRejectsCancellationAndRevokedGenerationWithoutIssuance() async throws {
+        for revoke in [false, true] {
+            try await Self.fixture { f in
+                let old = try await f.vault.lease(in: f.namespace)
+                let peer = Peer(material: f.material, issuer: f.issuer, key: old.keyMaterial, date: f.date)
+                await peer.set(.holdProfile); PeerProtocol.install(peer)
+                let client = try await f.client(); _ = try await client.connect(f.credentials)
+                let operation = Task {
+                    do {
+                        _ = try await client.refreshMaterials(keyID: old.keyID,
+                            expectedGeneration: old.generation, machineName: "Owned held profiles")
+                        await peer.refreshFinished(); Issue.record("Held reuse unexpectedly published")
+                    } catch { await peer.refreshFinished() }
+                }
+                let event = await peer.waitForCSROrRefreshCompletion()
+                #expect(event == .profileArrived)
+                if revoke {
+                    try await f.vault.revoke(old.keyID, in: f.namespace, expectedGeneration: old.generation)
+                    await peer.releaseProfiles(at: f.date.addingTimeInterval(120))
+                } else { operation.cancel() }
+                await operation.value
+                #expect(try await client.pendingEnrollment() == nil)
+                let facts = await peer.facts()
+                #expect(facts.validCSRs == 0)
+                if revoke {
+                    #expect(try await f.vault.publicationBaseline(in: f.namespace,
+                        expectedGeneration: old.generation + 1) == nil)
+                } else {
+                    let retained = try await f.vault.lease(in: f.namespace)
+                    #expect(retained.generation == old.generation && retained.profileInputs == old.profileInputs)
+                }
+            }
+        }
+    }
+
     @Test("wrong returned public key cannot reach profiles or replace the previous publication")
     func rejectsWrongCertificateKeyBeforeProfileRequests() async throws {
         try await Self.fixture { f in
@@ -293,11 +413,12 @@ struct SelfRenewalDeveloperAccountClientTests {
                 let prior = omitPublished ? [] : [leaf, spare]
                 let peer = Peer(material: f.material, issuer: f.issuer, key: old.keyMaterial, date: f.date, priorCertificates: prior)
                 PeerProtocol.install(peer)
+                await peer.setCertificateList(.withoutPublished)
                 let client = try await f.client(); _ = try await client.connect(f.credentials)
                 try await Self.loseCertificateACK(client, peer: peer, keyID: old.keyID, generation: old.generation)
                 let before = try #require(try await client.pendingEnrollment())
                 #expect(before.reconciliationBaseline?.priorPublishedLeafSHA256 == Data(SHA256.hash(data: leaf)))
-                #expect(before.reconciliationBaseline?.certificateSHA256s.count == prior.count)
+                #expect(before.reconciliationBaseline?.certificateSHA256s.count == (omitPublished ? 0 : 1))
                 await peer.usePEMCertificateList()
                 await peer.setCertificateList(omitPublished ? .publishedOnly : .priorOnly)
                 do { _ = try await client.reconcilePendingMaterials(); Issue.record("An old same-key certificate was called a new issue") }
@@ -473,11 +594,11 @@ struct SelfRenewalDeveloperAccountClientTests {
     }
 
     enum Mode: Sendable {
-        case normal, wrongCertificate, tamperedProfile, expired, changedAccount, changedTeam, holdCSR, missingApp
+        case normal, wrongCertificate, tamperedProfile, expired, changedAccount, changedTeam, holdCSR, missingApp, holdProfile
         case redirect, oversized, unauthorized, malformedSuccess, lostCSRACK, holdCertificateList
     }
     enum CertificateListMode: Sendable {
-        case normal, priorOnly, publishedOnly, ambiguous, missingCompleteness, paginated, nextCursor, truncatedMetadata, missingDER, wrongMachine
+        case normal, priorOnly, publishedOnly, withoutPublished, ambiguous, missingCompleteness, paginated, nextCursor, truncatedMetadata, missingDER, wrongMachine
     }
     actor Peer {
         let material: SelfRenewalApplicationMaterialVerifier.Materials
@@ -499,8 +620,10 @@ struct SelfRenewalDeveloperAccountClientTests {
         enum ListEvent: Sendable, Equatable { case listArrived, operationFinished }
         private var firstListEvent: ListEvent?
         private var listWaiters: [CheckedContinuation<ListEvent, Never>] = []
-        enum EnrollmentEvent: Sendable, Equatable { case csrArrived, refreshFinished }
+        enum EnrollmentEvent: Sendable, Equatable { case csrArrived, profileArrived, refreshFinished }
         private var firstEnrollmentEvent: EnrollmentEvent?
+        private var profileContinuation: AsyncStream<Void>.Continuation?
+        private var profilesReleased = false
         private var enrollmentWaiters: [CheckedContinuation<EnrollmentEvent, Never>] = []
         init(material: SelfRenewalApplicationMaterialVerifier.Materials, issuer: Vault.KeyMaterial, key: Vault.KeyMaterial,
             date: Date, priorCertificates: [Data]? = nil, acceptsInitialCSR: Bool = false) {
@@ -510,6 +633,10 @@ struct SelfRenewalDeveloperAccountClientTests {
             self.priorCertificates = priorCertificates ?? key.certificateChainDER.first.map { [$0] } ?? []
         }
         func set(_ mode: Mode) { self.mode = mode }
+        func releaseProfiles(at date: Date) {
+            issuedMaterialDate = date; profilesReleased = true
+            profileContinuation?.finish(); profileContinuation = nil
+        }
         func issueNewMaterial(at date: Date) { issuedMaterialDate = date }
         func setCertificateList(_ value: CertificateListMode) { certificateListMode = value }
         func usePEMCertificateList() { pemCertificateList = true }
@@ -588,12 +715,20 @@ struct SelfRenewalDeveloperAccountClientTests {
                 return try Self.plist(["resultCode": 0, "certRequest": ["certContent": leaf]])
             case "ios/downloadTeamProvisioningProfile.action":
                 profileRequests += 1
+                if mode == .holdProfile && !profilesReleased {
+                    let pair = AsyncStream<Void>.makeStream()
+                    profileContinuation = pair.continuation
+                    observe(.profileArrived)
+                    for await _ in pair.stream {}
+                    profileContinuation = nil
+                    try Task.checkCancellation()
+                }
                 let id = try #require(body["appIdId"] as? String)
                 let index = try #require(Int(id))
                 #expect(material.bundles.indices.contains(index))
                 let bundle = material.bundles[index]
                 let original = try #require(material.profiles.profiles.first { $0.file.relativePath == bundle.profileRelativePath })
-                let leaf = try #require(certificate)
+                let leaf = try #require(certificate ?? key.certificateChainDER.first)
                 var bytes = try PKI.profile(from: original, developerCertificate: leaf, issuer: issuer, at: issuedMaterialDate)
                 if mode == .tamperedProfile { bytes[10] ^= 1 }
                 return try Self.plist(["resultCode": 0, "provisioningProfile": ["encodedProfile": bytes]])
@@ -622,6 +757,7 @@ struct SelfRenewalDeveloperAccountClientTests {
                 throw CancellationError()
             }
             var certs = priorCertificates
+            if certificateListMode == .withoutPublished { certs.removeAll { $0 == key.certificateChainDER.first } }
             if certificateListMode == .publishedOnly { certs = key.certificateChainDER.first.map { [$0] } ?? [] }
             else if certificateListMode != .priorOnly, let certificate { certs.append(certificate) }
             if certificateListMode == .ambiguous {
@@ -753,25 +889,32 @@ struct SelfRenewalDeveloperAccountClientTests {
             guard KeychainHelper.delete(account: namespace.uuidString, service: "com.yuedu.selfRenewal.developerSession.v1", synchronizable: false) else { throw Client.Failure.storage }
         }
     }
+    final class Clock: @unchecked Sendable {
+        private let lock = NSLock()
+        private var value: Date
+        init(_ value: Date) { self.value = value }
+        var now: Date { lock.lock(); defer { lock.unlock() }; return value }
+        func set(_ value: Date) { lock.lock(); self.value = value; lock.unlock() }
+    }
     final class Fixture: @unchecked Sendable {
         let directory: URL; let material: SelfRenewalApplicationMaterialVerifier.Materials
-        let date: Date; let vault: Vault; let namespace: Vault.Namespace; let pending: Vault.PendingKey
+        let date: Date; let clock: Clock; let vault: Vault; let namespace: Vault.Namespace; let pending: Vault.PendingKey
         let oldKeyID: UUID; let issuer: Vault.KeyMaterial; let storage = FaultStorage(); let peer: Peer
         var credentials: Client.Credentials { .init(dsid: "2000000", xcodeToken: "OWNED-CONTROLLED-PEER-TOKEN-CANARY", expiresAt: date.addingTimeInterval(3_600)) }
         init(directory: URL, material: SelfRenewalApplicationMaterialVerifier.Materials, date: Date,
             vault: Vault, namespace: Vault.Namespace, pending: Vault.PendingKey, oldKeyID: UUID, issuer: Vault.KeyMaterial,
-            priorCertificate: Data?) {
+            priorCertificate: Data?, clock: Clock) {
             self.directory = directory; self.material = material; self.date = date; self.vault = vault; self.namespace = namespace
-            self.pending = pending; self.oldKeyID = oldKeyID; self.issuer = issuer
+            self.pending = pending; self.oldKeyID = oldKeyID; self.issuer = issuer; self.clock = clock
             peer = Peer(material: material, issuer: issuer,
                 key: Vault.KeyMaterial(privateKey: pending.privateKey, certificateChainDER: []), date: date, priorCertificates: priorCertificate.map { [$0] } ?? [])
         }
         func client() async throws -> Client {
-            let date = date
+            let clock = clock
             return try await Client.open(vault: vault, namespace: namespace, identity: material, issuerChainDER: issuer.certificateChainDER,
                 transport: SelfRenewalDeveloperURLSessionTransport(protocolClasses: [PeerProtocol.self]), storage: storage,
                 freshAnisette: { Client.Anisette(machineID: "owned-machine", oneTimePassword: "owned-fresh-otp", localUserID: "owned-local-user",
-                    routingInfo: 1, deviceID: "owned-device-id", clientInfo: "Owned controlled peer", issuedAt: date, locale: "en_US", timeZone: "UTC") }, clock: { date })
+                    routingInfo: 1, deviceID: "owned-device-id", clientInfo: "Owned controlled peer", issuedAt: clock.now, locale: "en_US", timeZone: "UTC") }, clock: { clock.now })
         }
         func cleanup() async throws {
             // Cleanup owns only this fixture's exact resources. Await it even
@@ -814,7 +957,8 @@ struct SelfRenewalDeveloperAccountClientTests {
                         codeAnchors: [SelfRenewalCMSFixture.rootCertificate], profileAnchors: [SelfRenewalCMSFixture.rootCertificate], at: date)
                 } else { date = originalDate; material = originalMaterial }
                 let issuer = try PKI.issuer(at: date)
-                let vault = Vault(codeAnchors: issuer.certificateChainDER, profileAnchors: issuer.certificateChainDER, clock: { date }); cleanupVault = vault
+                let clock = Clock(date)
+                let vault = Vault(codeAnchors: issuer.certificateChainDER, profileAnchors: issuer.certificateChainDER, clock: { clock.now }); cleanupVault = vault
                 let namespace = try await vault.create(identity: material); cleanupNamespace = namespace
                 let generation = try await vault.generation(in: namespace)
                 let old = try await vault.generateKey(in: namespace, expectedGeneration: generation)
@@ -831,7 +975,7 @@ struct SelfRenewalDeveloperAccountClientTests {
                 let currentGeneration = try await vault.generation(in: namespace)
                 let pending = try await vault.generateKey(in: namespace, expectedGeneration: currentGeneration)
                 let fixture = Fixture(directory: directory, material: material, date: date, vault: vault, namespace: namespace,
-                    pending: pending, oldKeyID: old.id, issuer: issuer, priorCertificate: includePublishedMaterial ? leaf : nil)
+                    pending: pending, oldKeyID: old.id, issuer: issuer, priorCertificate: includePublishedMaterial ? leaf : nil, clock: clock)
                 PeerProtocol.install(fixture.peer)
                 return fixture
             } catch {

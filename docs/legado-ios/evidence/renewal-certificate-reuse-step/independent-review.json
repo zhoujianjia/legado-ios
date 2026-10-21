@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "frozenUTC": "2026-10-21T02:00:00.235760+00:00",
+  "reviewer": "/root/login_info_v2_review",
+  "final": {
+    "path": ".build/s2-certificate-reuse-step/final-v1.json",
+    "bytes": 11674,
+    "sha256": "ceba566ec8a2859b77aa0480b8aada02f4c8ceb882efd3e0ba91b1851583a474"
+  },
+  "approved": true,
+  "approvalScope": "Frozen production source and authored regressions only; Swift SDK execution remains pending.",
+  "failedChecks": 0,
+  "remainingConfirmedFindings": [],
+  "remainingConfirmedSourceBlockers": [],
+  "baselineCommit": "74259e2031c5496c5530af371d920a694603541a",
+  "sourceRoot": ".build/s2-certificate-reuse-step/snapshot-v1/work",
+  "files": [
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+      "baseline": {
+        "path": ".build/s2-certificate-reuse-step/rawbaseline/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+        "bytes": 57793,
+        "sha256": "2b46314c0920eaf82d8ea87941636230fb24d6fb7d9c84e56c461339fd01bcb0"
+      },
+      "candidate": {
+        "path": ".build/s2-certificate-reuse-step/snapshot-v1/work/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+        "bytes": 59200,
+        "sha256": "e3d5ac75aa256802fb3c4bebb2c22eb5d8a0cd27d53b84cdb6e1ba352e88f974"
+      },
+      "diff": {
+        "path": ".build/s2-certificate-reuse-step/diffs-v1/Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift.diff",
+        "bytes": 5565,
+        "sha256": "ddc12e760ceeae8693b3995daeef1a7d09430021e7c558a63b2560f9423f6fdf"
+      }
+    },
+    {
+      "path": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+      "baseline": {
+        "path": ".build/s2-certificate-reuse-step/rawbaseline/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+        "bytes": 54233,
+        "sha256": "d27ca57eda321ee8f57edc3b85e25738faeb3241c38a0ca45d50b8fe9ba1ac02"
+      },
+      "candidate": {
+        "path": ".build/s2-certificate-reuse-step/snapshot-v1/work/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+        "bytes": 60118,
+        "sha256": "f208882eeb1b484e7ac0f29c10e0d4ee83b3fc4f9b0276956b11cdcfbe1033cc"
+      },
+      "diff": {
+        "path": ".build/s2-certificate-reuse-step/diffs-v1/Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift.diff",
+        "bytes": 6766,
+        "sha256": "10ba676f1308352322ebfe182535b4d24f546cb4f540eaeabd8f63dbb24768e7"
+      }
+    },
+    {
+      "path": "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+      "baseline": {
+        "path": ".build/s2-certificate-reuse-step/rawbaseline/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+        "bytes": 57804,
+        "sha256": "6f4fd67d76ca0e94accb7fa50d3e53ed850c5fea09b6a45028673e72cd71abec"
+      },
+      "candidate": {
+        "path": ".build/s2-certificate-reuse-step/snapshot-v1/work/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift",
+        "bytes": 67014,
+        "sha256": "26123de7377357839b14bf05ab2c18c5af0c678459de285ce94bb21eda599ba0"
+      },
+      "diff": {
+        "path": ".build/s2-certificate-reuse-step/diffs-v1/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift.diff",
+        "bytes": 18739,
+        "sha256": "24de3e116fad048dcf19b72999c6484f6ca40d10d35a7432733b4d21730469de"
+      }
+    }
+  ],
+  "verification": {
+    "path": ".build/s2-certificate-reuse-independent-review/verification-v1.json",
+    "bytes": 5411,
+    "sha256": "28edca0d7e52d1895c8fe1c1bc96236e14e6e2be473908641372b350143b1c9b"
+  },
+  "actualEvidence": {
+    "changedSources": 3,
+    "production": 2,
+    "existingTestSource": 1,
+    "oldDefinitions": 15,
+    "newNoArgumentDefinitions": 4,
+    "candidateDefinitions": 19,
+    "SwiftSyntaxChecksByReviewer": 0,
+    "SwiftSDKExecutions": 0,
+    "SwiftTestExecutions": 0,
+    "ActualAppleRequests": 0
+  },
+  "sourceConclusions": [
+    {
+      "topic": "Expired profiles authenticate history only",
+      "evidence": {
+        "file": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+        "line": 372
+      },
+      "finding": "The exact published key/chain/profiles are reverified at publishedAt solely to obtain signed prior component expiry and identity. Current finite nonrollback time, bounded certificate DER validity and a separate full current-date configured-anchor trust evaluation are then mandatory. Old profiles do not mint a current signing lease."
+    },
+    {
+      "topic": "Exact key/account/team authority",
+      "evidence": {
+        "file": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+        "line": 298
+      },
+      "finding": "Vault current() reloads and compares the stored manifest, expected generation and same requested key. Existing verify reopens the permanent Keychain key and verifies its hash against the leaf. Existing complete certificate-list proof, teamId/IOS_DEVELOPMENT query and repeated validateRemote checks remain exact. Reuse additionally requires exact listed DER and public-key SHA256."
+    },
+    {
+      "topic": "Pending CSR and failure flow",
+      "evidence": {
+        "file": "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift",
+        "line": 286
+      },
+      "finding": "An unresolved pending record is refused before either branch; existing explicit reconcile behavior is byte-exact. Only no/different publication, explicitly expired certificate dates, or a missing exact remote leaf select the existing normal CSR path. Storage/trust/key/cancellation/CAS errors are throws; a selected reuse branch cannot catch them and fall through to issue. Deliberately different requested ready keys retain the original explicit rotation behavior."
+    },
+    {
+      "topic": "Revalidation and publication",
+      "evidence": {
+        "file": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+        "line": 410
+      },
+      "finding": "After all network awaits, account/team/operation are rechecked. Vault refresh reopens and rechecks generation/chain/public hash/prior expiries, fully validates all newly signed profiles at current time, requires every component expiry to advance, then calls the unchanged publish/manifest save. It neither grants from historical profiles nor skips CMS/leaf/team/entitlement checks. Existing postcommit no-cancellation-check behavior preserves the acknowledged publication."
+    },
+    {
+      "topic": "Ownership/performance/API",
+      "evidence": {
+        "file": "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
+        "line": 628
+      },
+      "finding": "No new storage/network owner, account scope, AppSession method, raw-key export or certificate revoke endpoint is added. New synchronous Vault work is actor-owned and guarded by existing off-main current(); new traces record counts/main only. Reusable identity init/private expiry capability is fileprivate and not Codable. New method calls, optional bindings and existing error types show no confirmed static API/type blocker; only an Apple compiler can establish typechecking."
+    }
+  ],
+  "authoredRegressionAssessment": [
+    {
+      "method": "reusesPublishedCertificateAcrossProfileExpiryWithoutAnotherCSR",
+      "actualCalls": "Actual account URLSession -> URLProtocol peer -> dynamically signed profiles -> real permanent Keychain/Vault publish/validate. Reopens account client; two renewals at +300/+4000 seconds, three profile expiry comparisons each, unchanged DER/key and CSR count0. Old profiles are expired on the second refresh.",
+      "executed": false
+    },
+    {
+      "method": "expiredCertificateUsesExistingIssuanceAndReconciliationPath",
+      "actualCalls": "Dynamically generated leaf has signed expiry at baseline+120; refresh clock+180. Normal issuance/profile/Vault verifier must return a different real certificate and count exactly one CSR.",
+      "executed": false
+    },
+    {
+      "method": "refusesUnextendedOrTamperedProfilesWithoutCertificateChurn",
+      "actualCalls": "Unchanged expiry and tampered CMS independently traverse the real URLSession and profile verifier. Require rejected enrollment, no pending intent/no CSR, and identical old generation/profile publication.",
+      "executed": false
+    },
+    {
+      "method": "heldReuseRejectsCancellationAndRevokedGenerationWithoutIssuance",
+      "actualCalls": "Actual profile URLProtocol actor request signals arrival through continuation/AsyncStream. Task cancellation or real Vault revoke/generation advance must refuse publication and keep CSR count0; old publication retained for cancellation, removed only by the explicit revoke case.",
+      "executed": false
+    }
+  ],
+  "limits": [
+    "No Swift syntax parser/compiler/SDK or test was run by author or reviewer; four new definitions and all existing affected regressions require future coherent SDK selection.",
+    "Controlled URLProtocol/dynamic PKI is source-authored integration coverage, not a real Apple account/team/certificate/profile renewal or device installation result.",
+    "Existing Vault/account storage equality is observed single-owner CAS protection; this slice does not create a cross-process transaction lock or atomic remote-revocation guarantee.",
+    "The new held test proves authored admission/termination and state retention; it catches generic terminal error and does not alone prove every exact cancellation wrapper code. Existing error pipeline remains byte-exact.",
+    "Missing exact remote certificate and explicitly expired certificate are allowed normal-issuance admission outcomes; arbitrary reuse errors never imply permission to create another CSR.",
+    "Root must bind three changed existing paths and append four noargument selectors in one future consolidated checkpoint. No current immutable cloud result changes."
+  ],
+  "allNonDeviceWorkComplete": false,
+  "automaticSelfRenewalImplemented": false,
+  "fullLegadoCompatibilityEstablished": false,
+  "legalRedistributionClearanceEstablished": false
+}

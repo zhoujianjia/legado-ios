@@ -1,0 +1,189 @@
+--- a/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift
++++ b/Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift
+@@ -34,0 +35,120 @@
++        }
++    }
++
++    @Test("published certificate and real permanent key survive two profile renewals including an expired old profile")
++    func reusesPublishedCertificateAcrossProfileExpiryWithoutAnotherCSR() async throws {
++        try await Self.fixture { f in
++            var previous = try await f.vault.lease(in: f.namespace)
++            let peer = Peer(material: f.material, issuer: f.issuer, key: previous.keyMaterial, date: f.date)
++            PeerProtocol.install(peer)
++            for elapsed in [300.0, 4_000.0] {
++                f.clock.set(f.date.addingTimeInterval(elapsed))
++                await peer.issueNewMaterial(at: f.clock.now)
++                // Reopening the real stored account and key must not force issue.
++                let client = try await f.client()
++                _ = try await client.connect(.init(dsid: f.credentials.dsid, xcodeToken: f.credentials.xcodeToken,
++                    expiresAt: f.date.addingTimeInterval(86_400)))
++                let renewed = try await client.refreshMaterials(keyID: previous.keyID,
++                    expectedGeneration: previous.generation, machineName: "Owned reuse")
++                #expect(renewed.keyID == previous.keyID && renewed.generation == previous.generation + 1)
++                #expect(renewed.keyMaterial.certificateChainDER == previous.keyMaterial.certificateChainDER)
++                for profile in renewed.profiles {
++                    let old = try #require(previous.profiles.first { $0.file.relativePath == profile.file.relativePath })
++                    #expect(profile.summary.expiresAt > old.summary.expiresAt)
++                }
++                try await f.vault.validate(renewed, for: f.material)
++                #expect(try await client.pendingEnrollment() == nil)
++                previous = renewed
++            }
++            let facts = await peer.facts()
++            #expect(facts.validCSRs == 0 && facts.profileRequests == 6 && facts.certificateListRequests == 2)
++            #expect(!facts.paths.contains("ios/submitDevelopmentCSR.action"))
++        }
++    }
++
++    @Test("an actually expired published certificate takes the existing CSR path instead of accepting historical trust")
++    func expiredCertificateUsesExistingIssuanceAndReconciliationPath() async throws {
++        try await Self.fixture { f in
++            let old = try await f.vault.lease(in: f.namespace)
++            let shortLeaf = try PKI.certificate(for: old.keyMaterial.privateKey, signedBy: f.issuer,
++                at: f.date.addingTimeInterval(-86_400 * 30 + 120))
++            let profiles = try f.material.bundles.map { bundle -> Vault.ProfileInput in
++                let original = try #require(f.material.profiles.profiles.first { $0.file.relativePath == bundle.profileRelativePath })
++                return .init(componentRelativePath: bundle.componentRelativePath,
++                    bytes: try PKI.profile(from: original, developerCertificate: shortLeaf, issuer: f.issuer, at: f.date))
++            }
++            let short = try await f.vault.publish(in: f.namespace, keyID: old.keyID, expectedGeneration: old.generation,
++                certificateChainDER: [shortLeaf] + f.issuer.certificateChainDER, profiles: profiles)
++            f.clock.set(f.date.addingTimeInterval(180))
++            let peer = Peer(material: f.material, issuer: f.issuer, key: short.keyMaterial, date: f.date)
++            await peer.issueNewMaterial(at: f.clock.now)
++            PeerProtocol.install(peer)
++            let client = try await f.client(); _ = try await client.connect(f.credentials)
++            let renewed = try await client.refreshMaterials(keyID: short.keyID,
++                expectedGeneration: short.generation, machineName: "Owned expired certificate")
++            #expect(renewed.keyMaterial.certificateChainDER.first != shortLeaf)
++            try await f.vault.validate(renewed, for: f.material)
++            let facts = await peer.facts()
++            #expect(facts.validCSRs == 1 && facts.profileRequests == 3)
++        }
++    }
++
++    @Test("reuse refuses unchanged expiry and tampered signed profiles without issuing or replacing anything")
++    func refusesUnextendedOrTamperedProfilesWithoutCertificateChurn() async throws {
++        for mode in [Mode.normal, .tamperedProfile] {
++            try await Self.fixture { f in
++                let old = try await f.vault.lease(in: f.namespace)
++                let peer = Peer(material: f.material, issuer: f.issuer, key: old.keyMaterial, date: f.date)
++                await peer.set(mode); PeerProtocol.install(peer)
++                let client = try await f.client(); _ = try await client.connect(f.credentials)
++                do {
++                    _ = try await client.refreshMaterials(keyID: old.keyID,
++                        expectedGeneration: old.generation, machineName: "Owned rejected refresh")
++                    Issue.record("Unextended or unauthentic profiles were accepted")
++                } catch let failure as Client.EnrollmentFailure {
++                    #expect(!failure.remoteCertificateMayHaveBeenIssued && failure.remoteProfilesMayHaveBeenRefreshed)
++                    if mode == .normal { #expect(failure.underlying as? Vault.Failure == .invalidProfiles) }
++                    else { #expect(failure.underlying is SelfRenewalCMSVerifier.Failure) }
++                }
++                let retained = try await f.vault.lease(in: f.namespace)
++                #expect(retained.generation == old.generation && retained.profileInputs == old.profileInputs)
++                #expect(try await client.pendingEnrollment() == nil)
++                let facts = await peer.facts()
++                #expect(facts.validCSRs == 0 && facts.profileRequests == 3)
++            }
++        }
++    }
++
++    @Test("held reuse-profile cancellation or key revocation cannot publish or fall through to another CSR")
++    func heldReuseRejectsCancellationAndRevokedGenerationWithoutIssuance() async throws {
++        for revoke in [false, true] {
++            try await Self.fixture { f in
++                let old = try await f.vault.lease(in: f.namespace)
++                let peer = Peer(material: f.material, issuer: f.issuer, key: old.keyMaterial, date: f.date)
++                await peer.set(.holdProfile); PeerProtocol.install(peer)
++                let client = try await f.client(); _ = try await client.connect(f.credentials)
++                let operation = Task {
++                    do {
++                        _ = try await client.refreshMaterials(keyID: old.keyID,
++                            expectedGeneration: old.generation, machineName: "Owned held profiles")
++                        await peer.refreshFinished(); Issue.record("Held reuse unexpectedly published")
++                    } catch { await peer.refreshFinished() }
++                }
++                let event = await peer.waitForCSROrRefreshCompletion()
++                #expect(event == .profileArrived)
++                if revoke {
++                    try await f.vault.revoke(old.keyID, in: f.namespace, expectedGeneration: old.generation)
++                    await peer.releaseProfiles(at: f.date.addingTimeInterval(120))
++                } else { operation.cancel() }
++                await operation.value
++                #expect(try await client.pendingEnrollment() == nil)
++                let facts = await peer.facts()
++                #expect(facts.validCSRs == 0)
++                if revoke {
++                    #expect(try await f.vault.publicationBaseline(in: f.namespace,
++                        expectedGeneration: old.generation + 1) == nil)
++                } else {
++                    let retained = try await f.vault.lease(in: f.namespace)
++                    #expect(retained.generation == old.generation && retained.profileInputs == old.profileInputs)
++                }
++            }
+@@ -295,0 +416 @@
++                await peer.setCertificateList(.withoutPublished)
+@@ -300 +421 @@
+-                #expect(before.reconciliationBaseline?.certificateSHA256s.count == prior.count)
++                #expect(before.reconciliationBaseline?.certificateSHA256s.count == (omitPublished ? 0 : 1))
+@@ -476 +597 @@
+-        case normal, wrongCertificate, tamperedProfile, expired, changedAccount, changedTeam, holdCSR, missingApp
++        case normal, wrongCertificate, tamperedProfile, expired, changedAccount, changedTeam, holdCSR, missingApp, holdProfile
+@@ -480 +601 @@
+-        case normal, priorOnly, publishedOnly, ambiguous, missingCompleteness, paginated, nextCursor, truncatedMetadata, missingDER, wrongMachine
++        case normal, priorOnly, publishedOnly, withoutPublished, ambiguous, missingCompleteness, paginated, nextCursor, truncatedMetadata, missingDER, wrongMachine
+@@ -502 +623 @@
+-        enum EnrollmentEvent: Sendable, Equatable { case csrArrived, refreshFinished }
++        enum EnrollmentEvent: Sendable, Equatable { case csrArrived, profileArrived, refreshFinished }
+@@ -503,0 +625,2 @@
++        private var profileContinuation: AsyncStream<Void>.Continuation?
++        private var profilesReleased = false
+@@ -512,0 +636,4 @@
++        func releaseProfiles(at date: Date) {
++            issuedMaterialDate = date; profilesReleased = true
++            profileContinuation?.finish(); profileContinuation = nil
++        }
+@@ -590,0 +718,8 @@
++                if mode == .holdProfile && !profilesReleased {
++                    let pair = AsyncStream<Void>.makeStream()
++                    profileContinuation = pair.continuation
++                    observe(.profileArrived)
++                    for await _ in pair.stream {}
++                    profileContinuation = nil
++                    try Task.checkCancellation()
++                }
+@@ -596 +731 @@
+-                let leaf = try #require(certificate)
++                let leaf = try #require(certificate ?? key.certificateChainDER.first)
+@@ -624,0 +760 @@
++            if certificateListMode == .withoutPublished { certs.removeAll { $0 == key.certificateChainDER.first } }
+@@ -755,0 +892,7 @@
++    final class Clock: @unchecked Sendable {
++        private let lock = NSLock()
++        private var value: Date
++        init(_ value: Date) { self.value = value }
++        var now: Date { lock.lock(); defer { lock.unlock() }; return value }
++        func set(_ value: Date) { lock.lock(); self.value = value; lock.unlock() }
++    }
+@@ -758 +901 @@
+-        let date: Date; let vault: Vault; let namespace: Vault.Namespace; let pending: Vault.PendingKey
++        let date: Date; let clock: Clock; let vault: Vault; let namespace: Vault.Namespace; let pending: Vault.PendingKey
+@@ -763 +906 @@
+-            priorCertificate: Data?) {
++            priorCertificate: Data?, clock: Clock) {
+@@ -765 +908 @@
+-            self.pending = pending; self.oldKeyID = oldKeyID; self.issuer = issuer
++            self.pending = pending; self.oldKeyID = oldKeyID; self.issuer = issuer; self.clock = clock
+@@ -770 +913 @@
+-            let date = date
++            let clock = clock
+@@ -774 +917 @@
+-                    routingInfo: 1, deviceID: "owned-device-id", clientInfo: "Owned controlled peer", issuedAt: date, locale: "en_US", timeZone: "UTC") }, clock: { date })
++                    routingInfo: 1, deviceID: "owned-device-id", clientInfo: "Owned controlled peer", issuedAt: clock.now, locale: "en_US", timeZone: "UTC") }, clock: { clock.now })
+@@ -817 +960,2 @@
+-                let vault = Vault(codeAnchors: issuer.certificateChainDER, profileAnchors: issuer.certificateChainDER, clock: { date }); cleanupVault = vault
++                let clock = Clock(date)
++                let vault = Vault(codeAnchors: issuer.certificateChainDER, profileAnchors: issuer.certificateChainDER, clock: { clock.now }); cleanupVault = vault
+@@ -834 +978 @@
+-                    pending: pending, oldKeyID: old.id, issuer: issuer, priorCertificate: includePublishedMaterial ? leaf : nil)
++                    pending: pending, oldKeyID: old.id, issuer: issuer, priorCertificate: includePublishedMaterial ? leaf : nil, clock: clock)

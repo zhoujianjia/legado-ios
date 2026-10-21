@@ -950,6 +950,10 @@
             {
               "record": "docs/legado-ios/core-sdk-fc3-runtime-repairs-step.json",
               "scope": "Actual fc3 runtime failures now have reviewed minimal code/fixture repairs; actual unified Swift/Security/TLS execution remains pending."
+            },
+            {
+              "record": "docs/legado-ios/core-renewal-certificate-reuse-step.json",
+              "scope": "Same-key certificate reuse through the real account/Keychain/Vault owners; current certificate trust, exact remote leaf and per-component profile expiry advance enforced. New four regressions await SDK."
             }
           ],
           "implementedSubtasksZh": [
@@ -961,7 +965,7 @@
             "GSA 登录、可信设备二次认证、真实任务取消和退出已接入同一 AppSession/AppOwner；Task 覆盖材料 owner 打开到认证完成，退出先取消并等实际任务结束，再清内存挑战和原凭据。Session epoch 与 UI 操作 UUID 防止旧结果/旧 defer 影响新状态，确认保存的账号事实不伪装撤回。修正首次登录取消后凭据应为空的测试断言；3 项新回归仍仅定义，SDK 执行 0；默认真实 anisette 和登录界面尚不可用。",
             "已接真实Anisette v3及同owner账号网络/Keychain；设置可选服务、观察注册及确认恢复未知注册。认证/配对/界面共15源已合入，11项有行为回归仍待SDK执行，真实Apple授权未验证。"
           ],
-          "nextActionZh": "按续签可行性复核补证书身份复用、额度及首次账号/设备/AppID登记缺口；保留同team、原主App与扩展身份及未知CSR恢复，真实Apple授权仍未验证。",
+          "nextActionZh": "同key有效证书复用与逐包profile延期验证已接线，待统一SDK执行4项新回归；继续首次设备/AppID登记与真实Apple授权缺口，严格同机安装通道仍未验证。",
           "pendingSDKRequest": "docs/legado-ios/core-sdk-f233826-request.json"
         },
         {
@@ -2076,6 +2080,13 @@
         "record": "docs/legado-ios/self-renewal-feasibility-reassessment-20261021.json",
         "strictStandaloneRouteProven": false,
         "actualImplementationGapsRemain": true
+      },
+      "certificateReuse": {
+        "record": "docs/legado-ios/core-renewal-certificate-reuse-step.json",
+        "productionFiles": 2,
+        "newAuthoredAppDefinitions": 4,
+        "newAuthoredAppArgumentLeaves": 4,
+        "actualSDKExecutions": 0
       }
     }
   },
@@ -6451,6 +6462,7 @@
     "docs/legado-ios/core-original-webjs-android-result-contract-step.json",
     "docs/legado-ios/core-original-proxy-remote-jslib-step.json",
     "docs/legado-ios/self-renewal-feasibility-reassessment-20261021.json",
-    "docs/legado-ios/core-native-f233826-test-compiler-repair.json"
+    "docs/legado-ios/core-native-f233826-test-compiler-repair.json",
+    "docs/legado-ios/core-renewal-certificate-reuse-step.json"
   ]
 }
