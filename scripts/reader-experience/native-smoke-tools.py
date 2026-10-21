@@ -57,13 +57,16 @@ NATIVE_GROUPS = {
             'LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginHeaderUsesExistingOwnersAndKeepsPartialCancellationFacts',
             'LegadoNativeOriginalLoginInfoTests/testNativeOriginalLoginV2BrowserUsesProductServiceAndExistingPageOwner',
             'LegadoNativeOriginalLoginInfoTests/testNativeOriginalLocalHTMLWebJSKeepsSameSessionAfterProducerAndDrainsAwaitCancellation',
-            'LegadoNativeOriginalReaderTests/testNativeOriginalGeneralWebJSUsesPreviewBatchAndBookCallbackOwners')},
+            'LegadoNativeOriginalReaderTests/testNativeOriginalGeneralWebJSUsesPreviewBatchAndBookCallbackOwners',
+            'LegadoNativeOriginalReaderTests/testNativeOriginalPreUpdateRefreshKeepsPublicBookIdentityAndProgressWithNewURLContext')},
 }
-# These two platform characterizations are not production original-rule cases.
-# Keep the established 28 product methods in their original order and host.
+# These three platform characterizations are not production original-rule cases.
+# Keep the established 28 product methods in their original order and host;
+# append the actual preUpdate public-product method before platform cases.
 NATIVE_PLATFORM_CHARACTERIZATION_METHODS = (
     'LegadoNativeOriginalReaderTests/testNativeOriginalOrderedWebJSCharacterizesCSPAndOriginalJSONInSamePageWorld',
     'LegadoNativeWebRequestCharacterizationTests/testPublicWebRequestCharacterizesOwnedFramesResourcesAndObserverCancellation',
+    'LegadoNativeOriginalReaderTests/testNativeOriginalWebJSNativeResultBridgeCharacterizesAndroidConversionInformation',
 )
 NATIVE_GROUPS["original"]["methods"] += NATIVE_PLATFORM_CHARACTERIZATION_METHODS
 
@@ -547,6 +550,11 @@ def _fact(path):
     if not path.is_file() or path.is_symlink():
         raise ValueError("Native evidence must be a regular owned file")
     return {"bytes": path.stat().st_size, "sha256": smoke.config.digest(path)}
+
+
+ORIGINAL_PROXY_REMOTE_CERTIFICATE_PREUPDATE_INPUTS = ('Modules/Core/RuleEngine/ModernParser/JS/LegadoCacheBridge.swift', 'Modules/Services/LibraryStore/BookStore.swift', 'Modules/Services/LibraryStore/Models.swift', 'Modules/Services/Online/LegadoMainJSSourceService.swift', 'Modules/Services/Online/LegadoPersistentStateHost.swift', 'Modules/Services/Online/LegadoPreviewStateOwner.swift', 'Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift', 'Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/HttpProxyConfig.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/OriginalProxyClient.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/Socks5Proxy.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/ProductionHttpTransport.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/SourceHosts.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalBookRefresh.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt', 'Packages/LegadoRuntime/jvm/src/test/kotlin/io/legado/app/help/http/ProxyConfigTest.kt', 'Packages/LegadoRuntime/jvm/src/test/kotlin/io/legado/app/help/http/Socks5ProtocolTest.kt', 'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalAnalyzeRuleTest.kt', 'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalPreUpdateRefreshTest.kt', 'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalProxyExecutionTest.kt', 'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRemoteJsLibTest.kt', 'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalUrlExecutionTest.kt', 'Packages/LegadoRuntime/vendor/original-rule/manifest.json', 'Packages/LegadoRuntime/vendor/runtime-http/manifest.json', 'Tests/iOS/LegadoNativeOriginalReaderTests.swift', 'Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift', 'Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift', 'Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift')
+SOURCE_INPUTS += tuple(path for path in ORIGINAL_PROXY_REMOTE_CERTIFICATE_PREUPDATE_INPUTS if path not in SOURCE_INPUTS)
+assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 180
 
 
 def source_inputs():

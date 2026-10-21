@@ -1,0 +1,11 @@
+--- a/scripts/reader-experience/renewal-probe-tests.sh
++++ b/scripts/reader-experience/renewal-probe-tests.sh
+@@ -32,7 +32,7 @@
+ python3 "$SCRIPT_DIR/renewal-probe-tools.py" prepare --work "$WORK" > "$WORK/prepare.log"
+ xcodebuild -version > "$WORK/xcode-version.log"
+ if [[ $YUEDU_RENEWAL_SELECTION == currentcore ]]; then
+-  # 463 definitions,466 argument leaves: one cold3600-second invocation/xcresult.
++  # 471 definitions,474 argument leaves: one cold3600-second invocation/xcresult.
+   # Run control-reuse checks in the separate native and Package groups.
+   # First failure never gets overwritten; all mandatory producer/fixture gates remain.
+   python3 "$SCRIPT_DIR/renewal-probe-tools.py" run-currentcore --work "$WORK"

@@ -1,0 +1,58 @@
+--- a/scripts/reader-experience/renewal-probe-tools.py
++++ b/scripts/reader-experience/renewal-probe-tools.py
+@@ -569,6 +569,14 @@
+ assert not (EXPECTED_CASES['currentcore'] & CURRENTCORE_FOREGROUND_LIFECYCLE_QUALIFIED_CASES)
+ EXPECTED_CASES['currentcore'] |= CURRENTCORE_FOREGROUND_LIFECYCLE_QUALIFIED_CASES
+ assert len(EXPECTED_CASES['currentcore']) == 463
++
++CURRENTCORE_CERTIFICATE_PREUPDATE_CASES = {'SelfRenewalDeveloperAccountClientTests': ('reusesPublishedCertificateAcrossProfileExpiryWithoutAnotherCSR', 'expiredCertificateUsesExistingIssuanceAndReconciliationPath', 'refusesUnextendedOrTamperedProfilesWithoutCertificateChurn', 'heldReuseRejectsCancellationAndRevokedGenerationWithoutIssuance'), 'LegadoPreviewStateOwnerTests': ('preUpdateIdentityGrantRequiresTaskTOCAndOptIn', 'preUpdateIdentityRefreshRejectsStaleEntityAndTOCLeases', 'preUpdateSuccessfulTOCReopensSameRecordWithoutOldURLState', 'preUpdateFailureAndCancellationKeepOldContextUsable')}
++CURRENTCORE_CERTIFICATE_PREUPDATE_QUALIFIED_CASES = {suite + "/" + method
++    for suite, methods in CURRENTCORE_CERTIFICATE_PREUPDATE_CASES.items() for method in methods}
++assert len(CURRENTCORE_CERTIFICATE_PREUPDATE_QUALIFIED_CASES) == 8
++assert not (EXPECTED_CASES["currentcore"] & CURRENTCORE_CERTIFICATE_PREUPDATE_QUALIFIED_CASES)
++EXPECTED_CASES["currentcore"] |= CURRENTCORE_CERTIFICATE_PREUPDATE_QUALIFIED_CASES
++assert len(EXPECTED_CASES["currentcore"]) == 471
+
+ PARAMETER_MODES = ("transactionrenewal", "handoffrenewal", "currentcore")
+ SDK_MODES = ("integratedrenewal", "transactionrenewal", "handoffrenewal", "currentcore")
+@@ -1124,6 +1132,11 @@
+ assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 349
+
+
++CURRENTCORE_PROXY_REMOTE_CERTIFICATE_PREUPDATE_INPUTS = ('Modules/Core/RuleEngine/ModernParser/JS/LegadoCacheBridge.swift', 'Modules/Services/LibraryStore/BookStore.swift', 'Modules/Services/LibraryStore/Models.swift', 'Modules/Services/Online/LegadoMainJSSourceService.swift', 'Modules/Services/Online/LegadoPersistentStateHost.swift', 'Modules/Services/Online/LegadoPreviewStateOwner.swift', 'Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountClient.swift', 'Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/data/entities/RuleModels.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/HttpProxyConfig.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/OriginalProxyClient.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/help/http/Socks5Proxy.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeRule.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/analyzeRule/AnalyzeUrl.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/legado/app/model/webBook/WebBook.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/ProductionHttpTransport.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/SourceHosts.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/OriginalBookRefresh.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/ProductionRulePlatform.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RulePlatform.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleScopes.kt', 'Packages/LegadoRuntime/jvm/src/main/kotlin/io/yuedu/legado/originalrule/RuleStateStore.kt', 'Packages/LegadoRuntime/jvm/src/test/kotlin/io/legado/app/help/http/ProxyConfigTest.kt', 'Packages/LegadoRuntime/jvm/src/test/kotlin/io/legado/app/help/http/Socks5ProtocolTest.kt', 'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalAnalyzeRuleTest.kt', 'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalPreUpdateRefreshTest.kt', 'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalProxyExecutionTest.kt', 'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalRemoteJsLibTest.kt', 'Packages/LegadoRuntime/jvm/src/test/kotlin/io/yuedu/legado/OriginalUrlExecutionTest.kt', 'Packages/LegadoRuntime/vendor/original-rule/manifest.json', 'Packages/LegadoRuntime/vendor/runtime-http/manifest.json', 'Tests/iOS/LegadoNativeOriginalReaderTests.swift', 'Tests/iOS/yuedu appTests/LegadoPersistentStateHostTests.swift', 'Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift', 'Tests/iOS/yuedu appTests/SelfRenewalDeveloperAccountClientTests.swift')
++SOURCE_INPUTS += tuple(path for path in CURRENTCORE_PROXY_REMOTE_CERTIFICATE_PREUPDATE_INPUTS if path not in SOURCE_INPUTS)
++assert len(SOURCE_INPUTS) == len(set(SOURCE_INPUTS)) == 364
++
++
+ def selection_mode():
+     mode = os.environ.get("YUEDU_RENEWAL_SELECTION", "all")
+     if mode not in SELECTION_GROUPS:
+@@ -2185,7 +2198,7 @@
+     if (selection_mode() != "currentcore" or prepared.get("selectionMode") != "currentcore"
+             or prepared.get("sourceCommit") != validate_tag() or prepared.get("sourceInputs") != current
+             or prepared.get("intendedTests") != {"currentcore": sorted(EXPECTED_CASES["currentcore"])}
+-            or prepared.get("intendedQualifiedMethodDefinitions") != 463 or prepared.get("intendedArgumentLeafCount") != 466
++            or prepared.get("intendedQualifiedMethodDefinitions") != 471 or prepared.get("intendedArgumentLeafCount") != 474
+             or prepared.get("intendedArgumentCases") != {case: {"parameter": name, "values": [False, True]} for case, name in parameter_cases("currentcore").items()}):
+         raise ValueError("Current core phase cannot run with changed preparation/source")
+     return {"sourceCommit": prepared["sourceCommit"], "sourceTag": prepared["sourceTag"],
+@@ -2340,7 +2353,7 @@
+         rows.append(_run_currentcore_phase(work, name, command, timeout, source, _currentcore_blockers(name, rows)))
+     failure = _currentcore_first_failure(rows)
+     ledger = {"schemaVersion": 1, "selectionMode": "currentcore", "source": source,
+-              "qualifiedMethodDefinitions": 463, "argumentLeaves": 466,
++              "qualifiedMethodDefinitions": 471, "argumentLeaves": 474,
+               "phaseOrder": list(CURRENTCORE_PHASES), "phases": rows, "firstFailure": failure,
+               "phaseRecords": [_currentcore_fact(work, "currentcore-phase-" + name + ".json") for name in CURRENTCORE_PHASES],
+               "historicalPackageEvidence": _currentcore_fact(work, "historical-package-evidence.json"),
+@@ -2365,8 +2378,8 @@
+     ledger = smoke.read_json(work / "currentcore-pipeline.json")
+     source = _currentcore_source_state(work)
+     if (ledger.get("schemaVersion") != 1 or ledger.get("selectionMode") != "currentcore"
+-            or ledger.get("source") != source or ledger.get("qualifiedMethodDefinitions") != 463
+-            or ledger.get("argumentLeaves") != 466 or ledger.get("phaseOrder") != list(CURRENTCORE_PHASES)
++            or ledger.get("source") != source or ledger.get("qualifiedMethodDefinitions") != 471
++            or ledger.get("argumentLeaves") != 474 or ledger.get("phaseOrder") != list(CURRENTCORE_PHASES)
+             or ledger.get("firstFailure") is not None or ledger.get("allPhasesSucceeded") is not True):
+         raise ValueError("Missing/failed/changed same-source currentcore pipeline")
+     rows = ledger.get("phases")
