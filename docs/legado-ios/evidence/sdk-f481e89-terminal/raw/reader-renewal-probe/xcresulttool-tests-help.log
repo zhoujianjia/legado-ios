@@ -1,0 +1,16 @@
+OVERVIEW: Get all tests from test report.
+
+Use --schema option to get the output format as JSON Schema. Default schema
+version: 0.1.0.
+
+USAGE: xcresulttool get test-results tests [--schema] [--schema-version <schema-version>] --path <path> [--compact]
+
+OPTIONS:
+  --schema                Show output format as JSON Schema.
+  --schema-version <schema-version>
+                          Schema version in major.minor.patch format. Command
+                          will return an error if unknown version is passed.
+  --path <path>           The result bundle path.
+  --compact               Use compact JSON formatting.
+  --version               Show the version.
+  -h, --help              Show help information.

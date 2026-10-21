@@ -1,0 +1,129 @@
+{
+  "sourceCommit": "f481e89717b96df1d15d5c3f9a72c359d1fcef55",
+  "coreInputs": 364,
+  "sourceInputsSHA256": "7eb5e1c65c84fae7e95b04e13ff7da85e9e96d43b131ae5659f977ddf1647d4a",
+  "phaseLedgers": 11,
+  "sourceSnapshots": 22,
+  "allExact": true,
+  "phases": [
+    {
+      "phase": "producer",
+      "state": "succeeded",
+      "commandExit": 0,
+      "timedOut": false,
+      "elapsedSeconds": 22.565986,
+      "budgetSeconds": 600,
+      "blockedBy": [],
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "stage",
+      "state": "succeeded",
+      "commandExit": 0,
+      "timedOut": false,
+      "elapsedSeconds": 9.282804,
+      "budgetSeconds": 90,
+      "blockedBy": [],
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "before-build",
+      "state": "succeeded",
+      "commandExit": 0,
+      "timedOut": false,
+      "elapsedSeconds": 9.378349,
+      "budgetSeconds": 90,
+      "blockedBy": [],
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "boot",
+      "state": "succeeded",
+      "commandExit": 0,
+      "timedOut": false,
+      "elapsedSeconds": 188.088542,
+      "budgetSeconds": 180,
+      "blockedBy": [],
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "native",
+      "state": "failed",
+      "commandExit": 1,
+      "timedOut": false,
+      "elapsedSeconds": 583.777994,
+      "budgetSeconds": 3720,
+      "blockedBy": [],
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "export",
+      "state": "failed",
+      "commandExit": 1,
+      "timedOut": false,
+      "elapsedSeconds": 17.950055,
+      "budgetSeconds": 330,
+      "blockedBy": [],
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "cases",
+      "state": "failed",
+      "commandExit": 1,
+      "timedOut": false,
+      "elapsedSeconds": 8.654082,
+      "budgetSeconds": 90,
+      "blockedBy": [],
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "test-settings",
+      "state": "succeeded",
+      "commandExit": 0,
+      "timedOut": false,
+      "elapsedSeconds": 44.796594,
+      "budgetSeconds": 120,
+      "blockedBy": [],
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "after-tests",
+      "state": "blocked",
+      "commandExit": null,
+      "timedOut": null,
+      "elapsedSeconds": 9.555365,
+      "budgetSeconds": 120,
+      "blockedBy": [
+        "native",
+        "export",
+        "cases"
+      ],
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "build-settings",
+      "state": "succeeded",
+      "commandExit": 0,
+      "timedOut": false,
+      "elapsedSeconds": 20.187562,
+      "budgetSeconds": 120,
+      "blockedBy": [],
+      "sourceBeforeAfterExact": true
+    },
+    {
+      "phase": "result",
+      "state": "blocked",
+      "commandExit": null,
+      "timedOut": null,
+      "elapsedSeconds": 6.995836,
+      "budgetSeconds": 180,
+      "blockedBy": [
+        "native",
+        "export",
+        "cases",
+        "after-tests"
+      ],
+      "sourceBeforeAfterExact": true
+    }
+  ]
+}

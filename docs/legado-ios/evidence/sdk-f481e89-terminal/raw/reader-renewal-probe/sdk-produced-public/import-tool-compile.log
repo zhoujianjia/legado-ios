@@ -1,0 +1,329 @@
+OWNED_C_BRIDGE
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:91:34: warning: 'SecKeychainGetTypeID' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+   91 |         CFGetTypeID(keychain) != SecKeychainGetTypeID() ||
+      |                                  ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecKeychain.h:270:10: note: 'SecKeychainGetTypeID' has been explicitly marked deprecated here
+  270 | CFTypeID SecKeychainGetTypeID(void)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:98:23: warning: 'SecIdentitySearchCreate' is deprecated: first deprecated in macOS 10.7 [-Wdeprecated-declarations]
+   98 |     OSStatus status = SecIdentitySearchCreate(keychain, CSSM_KEYUSE_SIGN, &search);
+      |                       ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecIdentitySearch.h:71:10: note: 'SecIdentitySearchCreate' has been explicitly marked deprecated here
+   71 | OSStatus SecIdentitySearchCreate(CFTypeRef __nullable keychainOrArray, CSSM_KEYUSE keyUsage, SecIdentitySearchRef * __nullable CF_RETURNS_RETAINED searchRef)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:103:18: warning: 'SecIdentitySearchCopyNext' is deprecated: first deprecated in macOS 10.7 [-Wdeprecated-declarations]
+  103 |         status = SecIdentitySearchCopyNext(search, &identity);
+      |                  ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecIdentitySearch.h:82:10: note: 'SecIdentitySearchCopyNext' has been explicitly marked deprecated here
+   82 | OSStatus SecIdentitySearchCopyNext(SecIdentitySearchRef searchRef, SecIdentityRef * __nullable CF_RETURNS_RETAINED identity)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:152:34: warning: 'SecKeychainGetTypeID' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  152 |         CFGetTypeID(keychain) != SecKeychainGetTypeID() ||
+      |                                  ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecKeychain.h:270:10: note: 'SecKeychainGetTypeID' has been explicitly marked deprecated here
+  270 | CFTypeID SecKeychainGetTypeID(void)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:154:14: warning: 'SecKeychainItemCopyKeychain' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  154 |     status = SecKeychainItemCopyKeychain((SecKeychainItemRef)key, &actual);
+      |              ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecKeychainItem.h:268:10: note: 'SecKeychainItemCopyKeychain' has been explicitly marked deprecated here
+  268 | OSStatus SecKeychainItemCopyKeychain(SecKeychainItemRef itemRef, SecKeychainRef * __nonnull CF_RETURNS_RETAINED keychainRef)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:159:14: warning: 'SecKeychainGetPath' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  159 |     status = SecKeychainGetPath(keychain, &expectedLength, expectedPath);
+      |              ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecKeychain.h:474:10: note: 'SecKeychainGetPath' has been explicitly marked deprecated here
+  474 | OSStatus SecKeychainGetPath(SecKeychainRef __nullable keychain, UInt32 *ioPathLength, char *pathName)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:161:14: warning: 'SecKeychainGetPath' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  161 |     status = SecKeychainGetPath(actual, &actualLength, actualPath);
+      |              ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecKeychain.h:474:10: note: 'SecKeychainGetPath' has been explicitly marked deprecated here
+  474 | OSStatus SecKeychainGetPath(SecKeychainRef __nullable keychain, UInt32 *ioPathLength, char *pathName)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:299:23: warning: 'SecAccessCopyACLList' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  299 |     OSStatus status = SecAccessCopyACLList(access, &list);
+      |                       ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecAccess.h:198:10: note: 'SecAccessCopyACLList' has been explicitly marked deprecated here
+  198 | OSStatus SecAccessCopyACLList(SecAccessRef accessRef, CFArrayRef * __nonnull CF_RETURNS_RETAINED aclList)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:304:14: warning: 'SecTrustedApplicationCreateFromPath' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  304 |     status = SecTrustedApplicationCreateFromPath(NULL, &creator);
+      |              ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecTrustedApplication.h:61:10: note: 'SecTrustedApplicationCreateFromPath' has been explicitly marked deprecated here
+   61 | OSStatus SecTrustedApplicationCreateFromPath(const char * __nullable path, SecTrustedApplicationRef * __nonnull CF_RETURNS_RETAINED app)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:307:14: warning: 'SecTrustedApplicationCopyData' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  307 |     status = SecTrustedApplicationCopyData(creator, &creatorPath);
+      |              ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecTrustedApplication.h:72:10: note: 'SecTrustedApplicationCopyData' has been explicitly marked deprecated here
+   72 | OSStatus SecTrustedApplicationCopyData(SecTrustedApplicationRef appRef, CFDataRef * __nonnull CF_RETURNS_RETAINED data)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:317:33: warning: 'SecACLGetTypeID' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  317 |         if (CFGetTypeID(acl) != SecACLGetTypeID()) { status = errSecDecode; goto finish; }
+      |                                 ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecACL.h:64:11: note: 'SecACLGetTypeID' has been explicitly marked deprecated here
+   64 |         CFTypeID SecACLGetTypeID(void)
+      |                  ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:323:18: warning: 'SecACLGetAuthorizations' is deprecated: first deprecated in macOS 10.7 - CSSM is not supported [-Wdeprecated-declarations]
+  323 |         status = SecACLGetAuthorizations(acl, tags, &tagCount);
+      |                  ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecACL.h:193:11: note: 'SecACLGetAuthorizations' has been explicitly marked deprecated here
+  193 |         OSStatus SecACLGetAuthorizations(SecACLRef acl,
+      |                  ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:352:22: warning: 'SecACLSetAuthorizations' is deprecated: first deprecated in macOS 10.7 - CSSM is not supported [-Wdeprecated-declarations]
+  352 |             status = SecACLSetAuthorizations(acl, tags, tagCount);
+      |                      ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecACL.h:217:11: note: 'SecACLSetAuthorizations' has been explicitly marked deprecated here
+  217 |         OSStatus SecACLSetAuthorizations(SecACLRef acl,
+      |                  ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:356:18: warning: 'SecACLCopyContents' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  356 |         status = SecACLCopyContents(acl, &applications, &description, &prompt);
+      |                  ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecACL.h:141:11: note: 'SecACLCopyContents' has been explicitly marked deprecated here
+  141 |         OSStatus SecACLCopyContents(SecACLRef acl,
+      |                  ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:385:49: warning: 'SecTrustedApplicationGetTypeID' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  385 |                         if (CFGetTypeID(app) != SecTrustedApplicationGetTypeID()) { status = errSecDecode; break; }
+      |                                                 ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecTrustedApplication.h:48:10: note: 'SecTrustedApplicationGetTypeID' has been explicitly marked deprecated here
+   48 | CFTypeID SecTrustedApplicationGetTypeID(void)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:386:34: warning: 'SecTrustedApplicationCopyData' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  386 |                         status = SecTrustedApplicationCopyData(app, &path);
+      |                                  ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecTrustedApplication.h:72:10: note: 'SecTrustedApplicationCopyData' has been explicitly marked deprecated here
+   72 | OSStatus SecTrustedApplicationCopyData(SecTrustedApplicationRef appRef, CFDataRef * __nonnull CF_RETURNS_RETAINED data)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:413:50: warning: 'SecAccessGetTypeID' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  413 |     if (access == NULL || CFGetTypeID(access) != SecAccessGetTypeID()) return errSecParam;
+      |                                                  ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecAccess.h:115:10: note: 'SecAccessGetTypeID' has been explicitly marked deprecated here
+  115 | CFTypeID SecAccessGetTypeID(void)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:420:23: warning: 'SecAccessCopyACLList' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  420 |     OSStatus status = SecAccessCopyACLList(access, &list);
+      |                       ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecAccess.h:198:10: note: 'SecAccessCopyACLList' has been explicitly marked deprecated here
+  198 | OSStatus SecAccessCopyACLList(SecAccessRef accessRef, CFArrayRef * __nonnull CF_RETURNS_RETAINED aclList)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:425:33: warning: 'SecACLGetTypeID' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  425 |         if (CFGetTypeID(acl) != SecACLGetTypeID()) { status = errSecDecode; goto finish; }
+      |                                 ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecACL.h:64:11: note: 'SecACLGetTypeID' has been explicitly marked deprecated here
+   64 |         CFTypeID SecACLGetTypeID(void)
+      |                  ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:427:18: warning: 'SecACLGetAuthorizations' is deprecated: first deprecated in macOS 10.7 - CSSM is not supported [-Wdeprecated-declarations]
+  427 |         status = SecACLGetAuthorizations(acl, tags, &count);
+      |                  ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecACL.h:193:11: note: 'SecACLGetAuthorizations' has been explicitly marked deprecated here
+  193 |         OSStatus SecACLGetAuthorizations(SecACLRef acl,
+      |                  ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:431:18: warning: 'SecACLSetAuthorizations' is deprecated: first deprecated in macOS 10.7 - CSSM is not supported [-Wdeprecated-declarations]
+  431 |         status = SecACLSetAuthorizations(acl, tags, count);
+      |                  ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecACL.h:217:11: note: 'SecACLSetAuthorizations' has been explicitly marked deprecated here
+  217 |         OSStatus SecACLSetAuthorizations(SecACLRef acl,
+      |                  ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:438:14: warning: 'SecACLCopyContents' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  438 |     status = SecACLCopyContents(owner, &applications, &description, &prompt);
+      |              ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecACL.h:141:11: note: 'SecACLCopyContents' has been explicitly marked deprecated here
+  141 |         OSStatus SecACLCopyContents(SecACLRef acl,
+      |                  ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:450:14: warning: 'SecTrustedApplicationCreateFromPath' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  450 |     status = SecTrustedApplicationCreateFromPath(NULL, &creator);
+      |              ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecTrustedApplication.h:61:10: note: 'SecTrustedApplicationCreateFromPath' has been explicitly marked deprecated here
+   61 | OSStatus SecTrustedApplicationCreateFromPath(const char * __nullable path, SecTrustedApplicationRef * __nonnull CF_RETURNS_RETAINED app)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:454:14: warning: 'SecACLSetContents' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  454 |     status = SecACLSetContents(owner, extended, description, prompt);
+      |              ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecACL.h:174:11: note: 'SecACLSetContents' has been explicitly marked deprecated here
+  174 |         OSStatus SecACLSetContents(SecACLRef acl,
+      |                  ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:482:14: warning: 'SecKeychainItemCopyAccess' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  482 |     status = SecKeychainItemCopyAccess((SecKeychainItemRef)privateKey, &access);
+      |              ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecKeychainItem.h:341:10: note: 'SecKeychainItemCopyAccess' has been explicitly marked deprecated here
+  341 | OSStatus SecKeychainItemCopyAccess(SecKeychainItemRef itemRef, SecAccessRef * __nonnull CF_RETURNS_RETAINED access)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:498:18: warning: 'SecACLCopyContents' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  498 |         status = SecACLCopyContents(signACL, &applications, &description, &prompt);
+      |                  ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecACL.h:141:11: note: 'SecACLCopyContents' has been explicitly marked deprecated here
+  141 |         OSStatus SecACLCopyContents(SecACLRef acl,
+      |                  ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:503:18: warning: 'SecTrustedApplicationCreateFromPath' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  503 |         status = SecTrustedApplicationCreateFromPath("/usr/bin/codesign", &codesign);
+      |                  ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecTrustedApplication.h:61:10: note: 'SecTrustedApplicationCreateFromPath' has been explicitly marked deprecated here
+   61 | OSStatus SecTrustedApplicationCreateFromPath(const char * __nullable path, SecTrustedApplicationRef * __nonnull CF_RETURNS_RETAINED app)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:507:18: warning: 'SecACLSetContents' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  507 |         status = SecACLSetContents(signACL, extended, description, prompt);
+      |                  ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecACL.h:174:11: note: 'SecACLSetContents' has been explicitly marked deprecated here
+  174 |         OSStatus SecACLSetContents(SecACLRef acl,
+      |                  ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:509:18: warning: 'SecKeychainItemSetAccess' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  509 |         status = SecKeychainItemSetAccess((SecKeychainItemRef)privateKey, access);
+      |                  ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecKeychainItem.h:352:10: note: 'SecKeychainItemSetAccess' has been explicitly marked deprecated here
+  352 | OSStatus SecKeychainItemSetAccess(SecKeychainItemRef itemRef, SecAccessRef access)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:511:18: warning: 'SecKeychainItemCopyAccess' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  511 |         status = SecKeychainItemCopyAccess((SecKeychainItemRef)privateKey, &persisted);
+      |                  ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecKeychainItem.h:341:10: note: 'SecKeychainItemCopyAccess' has been explicitly marked deprecated here
+  341 | OSStatus SecKeychainItemCopyAccess(SecKeychainItemRef itemRef, SecAccessRef * __nonnull CF_RETURNS_RETAINED access)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:547:11: warning: 'CSSM_KEY' is deprecated: first deprecated in macOS 10.7 [-Wdeprecated-declarations]
+  547 |     const CSSM_KEY *borrowedKey = NULL;
+      |           ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/cssmtype.h:1010:3: note: 'CSSM_KEY' has been explicitly marked deprecated here
+ 1010 | } CSSM_KEY DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER, *CSSM_KEY_PTR DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+      |   ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:553:14: warning: 'SecKeychainItemCopyAccess' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  553 |     status = SecKeychainItemCopyAccess((SecKeychainItemRef)privateKey, &original);
+      |              ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecKeychainItem.h:341:10: note: 'SecKeychainItemCopyAccess' has been explicitly marked deprecated here
+  341 | OSStatus SecKeychainItemCopyAccess(SecKeychainItemRef itemRef, SecAccessRef * __nonnull CF_RETURNS_RETAINED access)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:564:14: warning: 'SecKeyGetCSSMKey' is deprecated: first deprecated in macOS 10.7 [-Wdeprecated-declarations]
+  564 |     status = SecKeyGetCSSMKey(privateKey, &borrowedKey);
+      |              ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecKey.h:340:10: note: 'SecKeyGetCSSMKey' has been explicitly marked deprecated here
+  340 | OSStatus SecKeyGetCSSMKey(SecKeyRef key, const CSSM_KEY * _Nullable * __nonnull cssmKey)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:571:14: warning: 'SecKeyGetCSPHandle' is deprecated: first deprecated in macOS 10.7 [-Wdeprecated-declarations]
+  571 |     status = SecKeyGetCSPHandle(privateKey, &csp);
+      |              ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecKey.h:351:10: note: 'SecKeyGetCSPHandle' has been explicitly marked deprecated here
+  351 | OSStatus SecKeyGetCSPHandle(SecKeyRef keyRef, CSSM_CSP_HANDLE *cspHandle)
+      |          ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:585:5: warning: 'CSSM_LIST_ELEMENT' is deprecated: first deprecated in macOS 10.7 [-Wdeprecated-declarations]
+  585 |     CSSM_LIST_ELEMENT partitionType = {0}, partitionData = {0};
+      |     ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/cssmtype.h:398:3: note: 'CSSM_LIST_ELEMENT' has been explicitly marked deprecated here
+  398 | } CSSM_LIST_ELEMENT DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+      |   ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:593:5: warning: 'CSSM_ACL_ENTRY_INPUT' is deprecated: first deprecated in macOS 10.7 [-Wdeprecated-declarations]
+  593 |     CSSM_ACL_ENTRY_INPUT entry = {0};
+      |     ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/cssmtype.h:668:3: note: 'CSSM_ACL_ENTRY_INPUT' has been explicitly marked deprecated here
+  668 | } CSSM_ACL_ENTRY_INPUT DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER, *CSSM_ACL_ENTRY_INPUT_PTR DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+      |   ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:598:5: warning: 'CSSM_ACL_EDIT' is deprecated: first deprecated in macOS 10.7 [-Wdeprecated-declarations]
+  598 |     CSSM_ACL_EDIT edit = {0};
+      |     ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/cssmtype.h:693:3: note: 'CSSM_ACL_EDIT' has been explicitly marked deprecated here
+  693 | } CSSM_ACL_EDIT DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER, *CSSM_ACL_EDIT_PTR DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+      |   ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:605:5: warning: 'CSSM_LIST_ELEMENT' is deprecated: first deprecated in macOS 10.7 [-Wdeprecated-declarations]
+  605 |     CSSM_LIST_ELEMENT lockType = {0}, passwordType = {0}, passwordData = {0};
+      |     ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/cssmtype.h:398:3: note: 'CSSM_LIST_ELEMENT' has been explicitly marked deprecated here
+  398 | } CSSM_LIST_ELEMENT DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+      |   ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:612:5: warning: 'CSSM_SAMPLE' is deprecated: first deprecated in macOS 10.7 [-Wdeprecated-declarations]
+  612 |     CSSM_SAMPLE sample = {0};
+      |     ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/cssmtype.h:430:3: note: 'CSSM_SAMPLE' has been explicitly marked deprecated here
+  430 | } CSSM_SAMPLE DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER, *CSSM_SAMPLE_PTR DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+      |   ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:615:5: warning: 'CSSM_ACCESS_CREDENTIALS' is deprecated: first deprecated in macOS 10.7 [-Wdeprecated-declarations]
+  615 |     CSSM_ACCESS_CREDENTIALS credentials = {0};
+      |     ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/cssmtype.h:586:3: note: 'CSSM_ACCESS_CREDENTIALS' has been explicitly marked deprecated here
+  586 | } CSSM_ACCESS_CREDENTIALS DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER, *CSSM_ACCESS_CREDENTIALS_PTR DEPRECATED_IN_MAC_OS_X_VERSION_10_7_AND_LATER;
+      |   ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:617:14: warning: 'CSSM_ChangeKeyAcl' is deprecated: first deprecated in macOS 10.7 [-Wdeprecated-declarations]
+  617 |     status = CSSM_ChangeKeyAcl(csp, &credentials, &edit, borrowedKey);
+      |              ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/cssmapi.h:454:1: note: 'CSSM_ChangeKeyAcl' has been explicitly marked deprecated here
+  454 | CSSM_ChangeKeyAcl (CSSM_CSP_HANDLE CSPHandle,
+      | ^
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/OwnedIdentitySearch.c:620:14: warning: 'SecKeychainItemCopyAccess' is deprecated: first deprecated in macOS 10.10 - SecKeychain is deprecated [-Wdeprecated-declarations]
+  620 |     status = SecKeychainItemCopyAccess((SecKeychainItemRef)privateKey, &persisted);
+      |              ^
+/Applications/Xcode_26.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk/System/Library/Frameworks/Security.framework/Headers/SecKeychainItem.h:341:10: note: 'SecKeychainItemCopyAccess' has been explicitly marked deprecated here
+  341 | OSStatus SecKeychainItemCopyAccess(SecKeychainItemRef itemRef, SecAccessRef * __nonnull CF_RETURNS_RETAINED access)
+      |          ^
+42 warnings generated.
+
+OWNED_SWIFT_IMPORTER
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift:68:17: warning: 'SecKeychainSetUserInteractionAllowed' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+ 66 | func fingerprint(_ bytes: Data) -> String { SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined() }
+ 67 | func run() throws -> [String: Any] {
+ 68 |     try require(SecKeychainSetUserInteractionAllowed(false), at: .readInput)
+    |                 `- warning: 'SecKeychainSetUserInteractionAllowed' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+ 69 |     let inputHandle = FileHandle.standardInput
+ 70 |     guard let bytes = try inputHandle.read(upToCount: 1_048_577), bytes.count <= 1_048_576,
+
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift:98:21: warning: 'SecKeychainOpen' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+ 96 |         // caller-owned Keychain; neither default nor global search list changes.
+ 97 |         var reopened: SecKeychain?
+ 98 |         try require(SecKeychainOpen(input.path, &reopened), at: .openKeychain)
+    |                     `- warning: 'SecKeychainOpen' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+ 99 |         guard let reopened else { throw Failure(stage: .openKeychain, status: errSecInvalidKeychain) }
+100 |         var initialStatus: SecKeychainStatus = 0
+
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift:101:21: warning: 'SecKeychainGetStatus' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+ 99 |         guard let reopened else { throw Failure(stage: .openKeychain, status: errSecInvalidKeychain) }
+100 |         var initialStatus: SecKeychainStatus = 0
+101 |         try require(SecKeychainGetStatus(reopened, &initialStatus), at: .keychainStatus)
+    |                     `- warning: 'SecKeychainGetStatus' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+102 |         let initiallyUnlocked = initialStatus & SecKeychainStatus(kSecUnlockStateStatus) != 0
+103 |         try input.keychainPassword.withCString { password in
+
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift:104:25: warning: 'SecKeychainUnlock' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+102 |         let initiallyUnlocked = initialStatus & SecKeychainStatus(kSecUnlockStateStatus) != 0
+103 |         try input.keychainPassword.withCString { password in
+104 |             try require(SecKeychainUnlock(reopened, UInt32(input.keychainPassword.utf8.count), password, true), at: .unlockKeychain)
+    |                         `- warning: 'SecKeychainUnlock' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+105 |         }
+106 |         var keychainStatus: SecKeychainStatus = 0
+
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift:107:21: warning: 'SecKeychainGetStatus' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+105 |         }
+106 |         var keychainStatus: SecKeychainStatus = 0
+107 |         try require(SecKeychainGetStatus(reopened, &keychainStatus), at: .keychainStatus)
+    |                     `- warning: 'SecKeychainGetStatus' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+108 |         let unlocked = keychainStatus & SecKeychainStatus(kSecUnlockStateStatus) != 0
+109 |         let readable = keychainStatus & SecKeychainStatus(kSecReadPermStatus) != 0
+
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift:123:9: warning: 'SecKeychainCreate' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+121 |     var keychain: SecKeychain?
+122 |     let status = input.keychainPassword.withCString { password in
+123 |         SecKeychainCreate(input.path, UInt32(input.keychainPassword.utf8.count), password, false, nil, &keychain)
+    |         `- warning: 'SecKeychainCreate' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+124 |     }
+125 |     try require(status, at: .createKeychain)
+
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift:128:17: warning: 'SecTrustedApplicationCreateFromPath' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+126 |     guard let keychain else { throw Failure(stage: .createKeychain, status: errSecInternalComponent) }
+127 |     var application: SecTrustedApplication?
+128 |     try require(SecTrustedApplicationCreateFromPath("/usr/bin/codesign", &application), at: .createTrustedApplications)
+    |                 `- warning: 'SecTrustedApplicationCreateFromPath' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+129 |     guard let application else {
+130 |         throw Failure(stage: .createTrustedApplications, status: errSecInternalComponent)
+
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift:135:17: warning: 'SecTrustedApplicationCreateFromPath' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+133 |     // current tool and codesign, never an allow-all trusted-application ACL.
+134 |     var thisTool: SecTrustedApplication?
+135 |     try require(SecTrustedApplicationCreateFromPath(nil, &thisTool), at: .createTrustedApplications)
+    |                 `- warning: 'SecTrustedApplicationCreateFromPath' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+136 |     guard let thisTool else { throw Failure(stage: .createTrustedApplications, status: errSecInternalComponent) }
+137 |     var access: SecAccess?
+
+/Users/runner/work/legado-ios/legado-ios/scripts/reader-experience/owned-package-fixture/ImportOwnedIdentity.swift:138:17: warning: 'SecAccessCreate' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+136 |     guard let thisTool else { throw Failure(stage: .createTrustedApplications, status: errSecInternalComponent) }
+137 |     var access: SecAccess?
+138 |     try require(SecAccessCreate("Owned short-lived fixture" as CFString, [application, thisTool] as CFArray, &access), at: .createACL)
+    |                 `- warning: 'SecAccessCreate' was deprecated in macOS 10.10: SecKeychain is deprecated [#DeprecatedDeclaration]
+139 |     guard let access else { throw Failure(stage: .createACL, status: errSecInternalComponent) }
+140 |     // This one new owned identity explicitly authorizes the current importer
+
+[#DeprecatedDeclaration]: <https://docs.swift.org/compiler/documentation/diagnostics/deprecated-declaration>
