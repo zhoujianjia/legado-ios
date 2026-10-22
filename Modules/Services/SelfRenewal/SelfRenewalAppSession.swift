@@ -1587,7 +1587,8 @@ actor SelfRenewalAppSession {
         if let error = error as? SelfRenewalApplicationMaterialVerifier.Failure {
             switch error {
             case .missingComponentMaterial, .unsignedCode, .missingDEREntitlements, .malformedIdentity,
-                 .signerNotInProfile, .applicationIdentifierMismatch, .teamMismatch, .groupNotInProfile: return true
+                 .signerNotInProfile, .applicationIdentifierMismatch, .teamMismatch,
+                 .groupNotInProfile, .keychainGroupNotInProfile: return true
             case .changedInfo, .changedProfileResource: return false
             }
         }

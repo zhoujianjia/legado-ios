@@ -78,6 +78,45 @@ struct SelfRenewalReplacementPolicyTests {
         #expect(Policy.evaluate(installed: twoGroups, candidate: candidate, at: Self.now) == .rejected(.groupsChanged(.application, .keychainAccessGroups)))
         var unknownInstalled = old; unknownInstalled.bundles[1].appGroups = nil
         #expect(Policy.evaluate(installed: unknownInstalled, candidate: Self.snapshot(.candidate), at: Self.now) == .rejected(.groupsUnknown(.installed, .widgetExtension, .appGroups)))
+
+        // A profile-bound signed namespace group is retained as a literal,
+        // including its position as the default group; it grants no pattern match.
+        var literalInstalled = old
+        var literalCandidate = Self.snapshot(.candidate)
+        for index in literalInstalled.bundles.indices {
+            literalInstalled.bundles[index].keychainAccessGroups = ["OLDPREFIX.*", "OLDPREFIX.owned.shared"]
+            literalCandidate.bundles[index].keychainAccessGroups = ["OLDPREFIX.*", "OLDPREFIX.owned.shared"]
+        }
+        let literalDecision = Policy.evaluate(installed: literalInstalled, candidate: literalCandidate, at: Self.now)
+        if case .metadataCompatible(let plan) = literalDecision {
+            #expect(plan.authenticatedTransportGateStillRequired && plan.signedCandidateAndIdentityRevalidationStillRequired)
+            #expect(!plan.cryptographicVerificationPerformed && !plan.signingPerformed && !plan.installationPerformed && !plan.renewalProven)
+        } else {
+            Issue.record("Identical synthetic literal keychain groups did not retain metadata compatibility")
+        }
+        var changedLiteral = literalCandidate
+        changedLiteral.bundles[0].keychainAccessGroups = ["OTHERPREFIX.*", "OLDPREFIX.owned.shared"]
+        #expect(Policy.evaluate(installed: literalInstalled, candidate: changedLiteral, at: Self.now) == .rejected(.groupsChanged(.application, .keychainAccessGroups)))
+        changedLiteral = literalCandidate
+        changedLiteral.bundles[0].keychainAccessGroups = ["OLDPREFIX.owned.shared", "OLDPREFIX.*"]
+        #expect(Policy.evaluate(installed: literalInstalled, candidate: changedLiteral, at: Self.now) == .rejected(.groupsChanged(.application, .keychainAccessGroups)))
+        changedLiteral = literalCandidate
+        changedLiteral.bundles[0].keychainAccessGroups = ["OLDPREFIX." + changedLiteral.bundles[0].bundleIdentifier, "OLDPREFIX.owned.shared"]
+        #expect(Policy.evaluate(installed: literalInstalled, candidate: changedLiteral, at: Self.now) == .rejected(.groupsChanged(.application, .keychainAccessGroups)))
+        for malformed in ["*", ".*", "OLD*PREFIX.*", "OLDPREFIX.*.shared", "OLDPREFIX.**", "OLDPREFIX..*"] {
+            var invalidCandidate = literalCandidate
+            invalidCandidate.bundles[0].keychainAccessGroups = [malformed]
+            #expect(Policy.evaluate(installed: literalInstalled, candidate: invalidCandidate, at: Self.now) == .rejected(.invalidGroups(.candidate, .application, .keychainAccessGroups)))
+            var invalidInstalled = literalInstalled
+            invalidInstalled.bundles[0].keychainAccessGroups = [malformed]
+            #expect(Policy.evaluate(installed: invalidInstalled, candidate: literalCandidate, at: Self.now) == .rejected(.invalidGroups(.installed, .application, .keychainAccessGroups)))
+        }
+        var duplicateLiteral = literalCandidate
+        duplicateLiteral.bundles[0].keychainAccessGroups = ["OLDPREFIX.*", "OLDPREFIX.*"]
+        #expect(Policy.evaluate(installed: literalInstalled, candidate: duplicateLiteral, at: Self.now) == .rejected(.invalidGroups(.candidate, .application, .keychainAccessGroups)))
+        var wildcardAppGroup = literalCandidate
+        wildcardAppGroup.bundles[0].appGroups = ["group.owned.*"]
+        #expect(Policy.evaluate(installed: literalInstalled, candidate: wildcardAppGroup, at: Self.now) == .rejected(.invalidGroups(.candidate, .application, .appGroups)))
     }
 
     @Test("Unverified and partial material, expired/future/invalid windows never pass")

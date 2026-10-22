@@ -221,7 +221,9 @@ enum SelfRenewalReplacementPolicy {
             guard validToken(bundle.build, maximum: 64) else { return .failure(.invalidMetadata(kind, bundle.role, .build)) }
             for (groups, groupKind) in [(bundle.appGroups, GroupKind.appGroups), (bundle.keychainAccessGroups, .keychainAccessGroups)] {
                 guard let groups else { return .failure(.groupsUnknown(kind, bundle.role, groupKind)) }
-                guard groups.count <= 32, groups.allSatisfy(validIdentifier), Set(groups).count == groups.count else {
+                guard groups.count <= 32, groups.allSatisfy({
+                    groupKind == .keychainAccessGroups ? isValidKeychainAccessGroup($0) : validIdentifier($0)
+                }), Set(groups).count == groups.count else {
                     return .failure(.invalidGroups(kind, bundle.role, groupKind))
                 }
             }
@@ -252,6 +254,15 @@ enum SelfRenewalReplacementPolicy {
     private static func validToken(_ value: String, maximum: Int) -> Bool {
         let bytes = value.utf8.prefix(maximum + 1)
         return !bytes.isEmpty && bytes.count <= maximum && bytes.allSatisfy { (33...126).contains($0) }
+    }
+
+    /// Syntax only: a signed namespace group is a literal identity value, not
+    /// permission to use other groups. The material binder also requires its
+    /// exact presence in the verified profile; replacement keeps the raw order.
+    static func isValidKeychainAccessGroup(_ value: String) -> Bool {
+        if validIdentifier(value) { return true }
+        guard value.utf8.prefix(256).count <= 255, value.hasSuffix(".*") else { return false }
+        return validIdentifier(String(value.dropLast(2)))
     }
 
     private static func validIdentifier(_ value: String) -> Bool {

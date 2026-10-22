@@ -32,6 +32,17 @@ struct SelfRenewalApplicationMaterialVerifierTests {
             #expect(!materials.appleSigningAuthorityEstablished && !materials.fullEntitlementAuthorizationEstablished)
             #expect(!materials.accountIdentityEstablished && !materials.deviceEligibilityEstablished && !materials.replacementAuthorized)
         }
+        // The detached worker only returns actual observations or throws. All
+        // Testing assertions remain in this parent case, avoiding orphan issues.
+        let groups = try await Self.readOwnedGroupClaimVectors()
+        #expect(groups.componentCount == 3 && groups.profileCount == 3)
+        #expect(groups.keychainGroups == [["OLDPREFIX.*"]])
+        #expect(groups.actualReads == 8)
+        #expect(groups.failures == [
+            .keychainGroupNotInProfile("."), .keychainGroupNotInProfile("."),
+            .keychainGroupNotInProfile("."), .keychainGroupNotInProfile("."),
+            .keychainGroupNotInProfile("."), .keychainGroupNotInProfile("."),
+            .groupNotInProfile(".")])
     }
 
     @Test("Independently valid signatures cannot hide wrong signer certificate, team, App ID or groups")
@@ -101,6 +112,58 @@ struct SelfRenewalApplicationMaterialVerifierTests {
         }
     }
 
+    private enum GroupClaimFixtureFailure: Error {
+        case invalidPublicBytes, missingObservation, rejectedVectorWasAccepted, cleanupFailed
+    }
+    private static func readOwnedGroupClaimVectors() async throws -> (
+        componentCount: Int, profileCount: Int, keychainGroups: [[String]],
+        failures: [Verifier.Failure], actualReads: Int) {
+        try await Task.detached(priority: .utility) {
+            let directory = FileManager.default.temporaryDirectory.resolvingSymlinksInPath()
+                .appendingPathComponent("owned-group-claim-" + UUID().uuidString)
+            let root = directory.appendingPathComponent("Owned.app")
+            try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+            func write(_ bundle: Fixture.Bundle) throws {
+                let target = bundle.relativePath == "." ? root : root.appendingPathComponent(bundle.relativePath)
+                try FileManager.default.createDirectory(at: target.appendingPathComponent("_CodeSignature"), withIntermediateDirectories: true)
+                for (path, encoded) in [("Info.plist", bundle.infoBase64), ("embedded.mobileprovision", bundle.profileBase64),
+                                        ("_CodeSignature/CodeResources", bundle.resourcesBase64), ("Owned", bundle.codeBase64)] {
+                    guard let bytes = Data(base64Encoded: encoded, options: .ignoreUnknownCharacters) else {
+                        throw GroupClaimFixtureFailure.invalidPublicBytes
+                    }
+                    try bytes.write(to: target.appendingPathComponent(path))
+                }
+                try Data("abc".utf8).write(to: target.appendingPathComponent("chapter.txt"))
+            }
+            do {
+                for bundle in Fixture.bundles { try write(bundle) }
+                typealias Groups = SelfRenewalGroupClaimCompatibilityFixture
+                try write(Groups.exactWildcard)
+                let positive = try await Self.read(root)
+                guard let application = positive.bundles.first(where: { $0.componentRelativePath == "." }),
+                      !application.slices.isEmpty else { throw GroupClaimFixtureFailure.missingObservation }
+                let observedGroups = application.slices.map(\.keychainAccessGroups)
+                var failures: [Verifier.Failure] = []
+                for vector in [Groups.broaderWildcard, Groups.middleWildcard, Groups.bareWildcard,
+                               Groups.crossPrefix, Groups.narrowerWildcard, Groups.wildcardAgainstConcrete,
+                               Groups.appGroupWildcard] {
+                    try write(vector)
+                    do {
+                        _ = try await Self.read(root)
+                        throw GroupClaimFixtureFailure.rejectedVectorWasAccepted
+                    } catch let failure as Verifier.Failure { failures.append(failure) }
+                }
+                try FileManager.default.removeItem(at: directory)
+                return (componentCount: positive.bundles.count, profileCount: positive.profiles.profiles.count,
+                    keychainGroups: observedGroups, failures: failures, actualReads: 1 + failures.count)
+            } catch {
+                let original = error
+                do { try FileManager.default.removeItem(at: directory) }
+                catch { throw GroupClaimFixtureFailure.cleanupFailed }
+                throw original
+            }
+        }.value
+    }
     private static func read(_ root: URL) async throws -> Verifier.Materials {
         try await Verifier.read(unpackedApplication: root, codeAnchors: [Trust.rootCertificate],
             profileAnchors: [Trust.rootCertificate], at: Trust.validationDate)

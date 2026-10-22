@@ -11,6 +11,7 @@ enum SelfRenewalApplicationMaterialVerifier {
         case missingComponentMaterial(String), changedInfo(String), unsignedCode(String)
         case missingDEREntitlements(String), malformedIdentity(String), signerNotInProfile(String)
         case applicationIdentifierMismatch(String), teamMismatch(String), groupNotInProfile(String)
+        case keychainGroupNotInProfile(String)
         case changedProfileResource(String)
 
         /// A bounded public reason for diagnostics. Associated component paths
@@ -26,6 +27,7 @@ enum SelfRenewalApplicationMaterialVerifier {
             case .applicationIdentifierMismatch: return "applicationIdentifierMismatch"
             case .teamMismatch: return "teamMismatch"
             case .groupNotInProfile: return "groupNotInProfile"
+            case .keychainGroupNotInProfile: return "keychainGroupNotInProfile"
             case .changedProfileResource: return "changedProfileResource"
             }
         }
@@ -181,16 +183,27 @@ enum SelfRenewalApplicationMaterialVerifier {
         return Materials(resources: resources, profiles: profiles, bundles: identities)
     }
     private static func groupClaims(_ key: String, claims: [String: Value], permitted: [String: Value], path: String) throws -> [String] {
+        let isKeychain = key == "keychain-access-groups"
+        let failure: Failure = isKeychain ? .keychainGroupNotInProfile(path) : .groupNotInProfile(path)
         guard let raw = claims[key] else { return [] }
-        guard case .array(let values) = raw else { throw Failure.groupNotInProfile(path) }
+        guard case .array(let values) = raw else { throw failure }
         if values.isEmpty { return [] }
-        guard case .array(let allowed)? = permitted[key] else { throw Failure.groupNotInProfile(path) }
+        guard case .array(let allowed)? = permitted[key] else { throw failure }
         var result: [String] = []
         for value in values {
             try Task.checkCancellation()
-            guard case .string(let claim) = value, !claim.isEmpty, !claim.contains("*"),
-                  allowed.contains(where: { if case .string(let pattern) = $0 { return matchesProfilePattern(pattern, claim: claim) }; return false }) else {
-                throw Failure.groupNotInProfile(path)
+            guard case .string(let claim) = value, !claim.isEmpty else { throw failure }
+            if claim.contains("*") {
+                // Some sideloaders copy a profile's namespace group verbatim.
+                // Observe that exact signed string, never expand it into access
+                // to other groups. Bare '*' and wildcard App Groups stay invalid.
+                guard isKeychain, SelfRenewalReplacementPolicy.isValidKeychainAccessGroup(claim),
+                      allowed.contains(.string(claim)) else { throw failure }
+            } else {
+                guard allowed.contains(where: {
+                    if case .string(let pattern) = $0 { return matchesProfilePattern(pattern, claim: claim) }
+                    return false
+                }) else { throw failure }
             }
             result.append(claim)
         }
