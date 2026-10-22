@@ -77,6 +77,43 @@ jobs:
           python -B scripts/reader-experience/renewal-package-tools.py prepare-simulator
       - name: Compile the Simulator host once and run the unchanged complete-package S3 case
         run: python -B scripts/reader-experience/renewal-package-tools.py run
+      - name: Verify initialization failure reporting with the same Simulator host
+        run: |
+          python -B scripts/reader-experience/renewal-package-tools.py validate-tag
+          bash scripts/xctest.sh -l .build/ci-logs/renewal-package-initialization-build.log -t 600 -- \
+            -configuration Debug -onlyUsePackageVersionsFromResolvedFile \
+            CODE_SIGNING_ALLOWED=YES CODE_SIGNING_REQUIRED=YES CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM= CODE_SIGN_ENTITLEMENTS= GATEWAY_BASE_URL= YUEDU_LOCAL_EXPERIENCE=YES \
+            IPHONEOS_DEPLOYMENT_TARGET=18.0 ENABLE_DEBUG_DYLIB=NO \
+            'SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) DEBUG LEGADO_REQUIRE_NATIVE_MAINJS' \
+            -resultBundlePath .build/renewal-package-initialization.xcresult \
+            '-only-testing:yuedu appTests/SelfRenewalDeveloperAccountClientTests/appOwnerInitialMaterialPublicationConnectsWithoutLifecycleRestart()'
+          xcrun xcresulttool get test-results summary --path .build/renewal-package-initialization.xcresult > .build/ci-logs/renewal-package-initialization-summary.json
+          xcrun xcresulttool get test-results tests --path .build/renewal-package-initialization.xcresult > .build/ci-logs/renewal-package-initialization-tests.json
+          python -B - <<'PY'
+          import importlib.util, json, os
+          from pathlib import Path
+          spec = importlib.util.spec_from_file_location('initialization_summary_gate', 'scripts/reader-experience/smoke-tools.py')
+          gate = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(gate)
+          root = Path('.build/ci-logs')
+          summary = gate.verify_summary(json.loads((root/'renewal-package-initialization-summary.json').read_bytes()), 1, 1)
+          expected = 'SelfRenewalDeveloperAccountClientTests/appOwnerInitialMaterialPublicationConnectsWithoutLifecycleRestart'
+          tree = json.loads((root/'renewal-package-initialization-tests.json').read_bytes())
+          cases = []
+          def visit(node):
+              if node.get('nodeType') == 'Test Case':
+                  identifier = '/'.join(node.get('nodeIdentifier', '').removesuffix('()').split('/')[-2:])
+                  if identifier != expected or node.get('result') != 'Passed':
+                      raise ValueError('Unexpected or failing initialization regression case')
+                  cases.append(identifier)
+              for child in node.get('children', []): visit(child)
+          for node in tree['testNodes']: visit(node)
+          if cases != [expected]: raise ValueError('Initialization regression did not execute exactly once')
+          result = {'sourceCommit': os.environ['GITHUB_SHA'], 'workflowRunID': os.environ['GITHUB_RUN_ID'],
+              'status': 'passed', 'summary': summary, 'cases': cases, 'actualDeviceRenewalValidated': False}
+          (root/'renewal-package-initialization-result.json').write_text(json.dumps(result, indent=2)+'\n')
+          PY
       - name: Bind the actual S3 result without changing its outcome
         if: ${{ always() && !cancelled() && steps.device.outcome == 'success' }}
         run: python -B scripts/reader-experience/renewal-package-tools.py collect

@@ -9,6 +9,68 @@ import Testing
 extension SelfRenewalDeveloperAccountClientTests {
     @Test("first material publication reconnects the same live App owner without another foreground")
     func appOwnerInitialMaterialPublicationConnectsWithoutLifecycleRestart() async throws {
+        let rejected = try await Task.detached(priority: .utility) {
+            let directory = FileManager.default.temporaryDirectory.appendingPathComponent("owned-initialization-observation-" + UUID().uuidString)
+            let application = directory.appendingPathComponent("Owned.app")
+            do {
+                for original in SelfRenewalApplicationMaterialFixture.bundles {
+                    let bundle = original.relativePath == "." ? SelfRenewalApplicationMaterialFixture.wrongApplication : original
+                    let target = bundle.relativePath == "." ? application : application.appendingPathComponent(bundle.relativePath)
+                    try FileManager.default.createDirectory(at: target.appendingPathComponent("_CodeSignature"), withIntermediateDirectories: true)
+                    for (path, encoded) in [("Info.plist", bundle.infoBase64), ("embedded.mobileprovision", bundle.profileBase64),
+                                            ("_CodeSignature/CodeResources", bundle.resourcesBase64), ("Owned", bundle.codeBase64)] {
+                        guard let bytes = Data(base64Encoded: encoded, options: .ignoreUnknownCharacters) else {
+                            throw CocoaError(.coderInvalidValue)
+                        }
+                        try bytes.write(to: target.appendingPathComponent(path))
+                    }
+                    try Data("abc".utf8).write(to: target.appendingPathComponent("chapter.txt"))
+                }
+                let input = directory.appendingPathComponent("public-configuration.json")
+                let request = SelfRenewalAppSession.EnrollmentConfiguration(schema: 1, namespaceID: nil,
+                    codeAnchors: [SelfRenewalCMSFixture.rootCertificate], profileAnchors: [SelfRenewalCMSFixture.rootCertificate], device: nil)
+                try JSONEncoder().encode(request).write(to: input)
+                return (directory: directory, application: application, input: input)
+            } catch {
+                try FileManager.default.removeItem(at: directory)
+                throw error
+            }
+        }.value
+        let date = SelfRenewalCMSFixture.validationDate
+        let namespaceStorage = InitialBindingManifestStorage()
+        let ownerRoot = rejected.directory.appendingPathComponent("SelfRenewalApp")
+        let rejectedOwner = await MainActor.run {
+            SelfRenewalAppOwner(root: ownerRoot, currentApplicationRoot: rejected.application,
+                initialNamespaceStorage: namespaceStorage, clock: { date })
+        }
+        do {
+            await rejectedOwner.initializeConfiguration(from: rejected.input)
+            let observation = await rejectedOwner.initializationFailure
+            let failure = try #require(observation)
+            #expect(failure.occurredAt == date && failure.failureCode == "applicationIdentifierMismatch")
+            #expect(failure.errorType == String(reflecting: SelfRenewalApplicationMaterialVerifier.Failure.self))
+            let problem = await rejectedOwner.problem
+            #expect(problem == .signingMaterials)
+            let documentURL = ownerRoot.appendingPathComponent("configuration.json")
+            #expect(!FileManager.default.fileExists(atPath: documentURL.path))
+            #expect(namespaceStorage.facts().loadedAccounts.isEmpty && namespaceStorage.facts().insertedAccounts.isEmpty)
+            await rejectedOwner.bootstrap()
+            let retained = await rejectedOwner.initializationFailure
+            let status = await rejectedOwner.status
+            #expect(retained == failure && status?.state == .unconfigured)
+            let stored = try JSONDecoder().decode(InitialBindingStoredDocument.self, from: Data(contentsOf: documentURL))
+            #expect(stored.configuration == nil && stored.initialNamespaceBinding == nil)
+            #expect(namespaceStorage.facts().loadedAccounts.isEmpty && namespaceStorage.facts().insertedAccounts.isEmpty)
+            try await rejectedOwner.close()
+            let cleared = await rejectedOwner.initializationFailure
+            #expect(cleared == nil)
+            try await Task.detached { try FileManager.default.removeItem(at: rejected.directory) }.value
+        } catch {
+            do { try await rejectedOwner.close() } catch { Issue.record(error) }
+            do { try await Task.detached { try FileManager.default.removeItem(at: rejected.directory) }.value }
+            catch { Issue.record(error) }
+            throw error
+        }
         try await Self.withInitialAccountAppSession { c in
             _ = try await c.session.initializeSigningNamespace(from: c.input)
             _ = try await c.session.connectDeveloperAccount(c.fixture.credentials)

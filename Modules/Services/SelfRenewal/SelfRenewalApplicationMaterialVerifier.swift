@@ -12,6 +12,23 @@ enum SelfRenewalApplicationMaterialVerifier {
         case missingDEREntitlements(String), malformedIdentity(String), signerNotInProfile(String)
         case applicationIdentifierMismatch(String), teamMismatch(String), groupNotInProfile(String)
         case changedProfileResource(String)
+
+        /// A bounded public reason for diagnostics. Associated component paths
+        /// and signing identity values never leave the verifier through this code.
+        var diagnosticCode: String {
+            switch self {
+            case .missingComponentMaterial: return "missingComponentMaterial"
+            case .changedInfo: return "changedInfo"
+            case .unsignedCode: return "unsignedCode"
+            case .missingDEREntitlements: return "missingDEREntitlements"
+            case .malformedIdentity: return "malformedIdentity"
+            case .signerNotInProfile: return "signerNotInProfile"
+            case .applicationIdentifierMismatch: return "applicationIdentifierMismatch"
+            case .teamMismatch: return "teamMismatch"
+            case .groupNotInProfile: return "groupNotInProfile"
+            case .changedProfileResource: return "changedProfileResource"
+            }
+        }
     }
     enum ProfileResourceBinding: Sendable, Equatable {
         case matched([UInt8]), notInResourceSeal

@@ -10,6 +10,11 @@ final class SelfRenewalAppOwner {
         case authenticationNotConfigured, authenticationUnavailable, localStorage
         case operationFailed, cancelled
     }
+    struct InitializationFailureObservation: Sendable, Equatable, Encodable {
+        let occurredAt: Date
+        let errorType: String
+        let failureCode: String
+    }
     let handoff: SelfRenewalUserDataHandoff
     /// Explicit provider configuration/injection only, never Apple authority.
     private(set) var developerServicesConfigured: Bool
@@ -17,9 +22,11 @@ final class SelfRenewalAppOwner {
     private(set) var anisetteRegistration: SelfRenewalAnisetteV3Provider.RegistrationObservation?
     private(set) var anisetteRegistrationProblem: Problem?
     private let session: SelfRenewalAppSession
+    private let clock: @Sendable () -> Date
     private(set) var status: SelfRenewalAppSession.Status?
     private(set) var problem: Problem?
     private(set) var signingMaterialProblem: Problem?
+    private(set) var initializationFailure: InitializationFailureObservation?
     private(set) var isWorking = false {
         didSet { if !isWorking { resumeForegroundWaiters() } }
     }
@@ -53,6 +60,7 @@ final class SelfRenewalAppOwner {
     init(root: URL? = nil, developerServices: SelfRenewalAppSession.DeveloperServices? = nil,
         clock: @escaping @Sendable () -> Date = { Date() }) {
         handoff = SelfRenewalUserDataHandoff(clock: clock)
+        self.clock = clock
         developerServicesConfigured = developerServices != nil
         session = SelfRenewalAppSession(root: root, developerServices: developerServices, clock: clock)
     }
@@ -71,6 +79,7 @@ final class SelfRenewalAppOwner {
         developerAuthenticationRandom: @escaping @Sendable () throws -> Data = SelfRenewalGSASRP.randomExponent,
         clock: @escaping @Sendable () -> Date = { Date() }) {
         handoff = SelfRenewalUserDataHandoff(clock: clock)
+        self.clock = clock
         developerServicesConfigured = developerServices != nil
         self.bootstrapObservation = bootstrapObservation
         self.automaticWorkerObservation = automaticWorkerObservation
@@ -339,14 +348,18 @@ final class SelfRenewalAppOwner {
     func initializeConfiguration(from url: URL) async {
         guard !isWorking else { return }
         isWorking = true; defer { isWorking = false }
-        problem = nil
+        problem = nil; initializationFailure = nil
         do {
             status = try await session.initializeSigningNamespace(from: url)
             bootstrapped = true
         } catch {
             status = await session.status()
             problem = Self.classify(error)
-            AppLogger.parse("Renewal namespace initialization unavailable type=\(String(reflecting: type(of: error)))")
+            let errorType = String(String(reflecting: type(of: error)).prefix(256))
+            let failureCode = (error as? SelfRenewalApplicationMaterialVerifier.Failure)?.diagnosticCode ?? "unclassified"
+            initializationFailure = InitializationFailureObservation(occurredAt: clock(), errorType: errorType,
+                failureCode: failureCode)
+            AppLogger.parse("Renewal namespace initialization unavailable type=\(errorType) code=\(failureCode)", level: .error)
         }
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
@@ -626,6 +639,7 @@ final class SelfRenewalAppOwner {
         isWorking = true; defer { isWorking = false }
         try await session.close()
         status = nil; problem = nil; signingMaterialProblem = nil; recoveryAvailable = false; bootstrapped = false
+        initializationFailure = nil
         developerSession = nil; developerMaterial = nil; developerChallenge = nil
         anisetteProvider = nil
         anisetteRegistration = nil; anisetteRegistrationProblem = nil
@@ -635,6 +649,7 @@ final class SelfRenewalAppOwner {
 
     private static func classify(_ error: Error) -> Problem {
         if error is CancellationError { return .cancelled }
+        if error is SelfRenewalApplicationMaterialVerifier.Failure { return .signingMaterials }
         if let failure = error as? SelfRenewalAnisetteV3Provider.Failure {
             switch failure {
             case .invalidConfiguration: return .invalidConfiguration
