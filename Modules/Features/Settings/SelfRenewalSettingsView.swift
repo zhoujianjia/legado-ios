@@ -427,6 +427,17 @@ struct SelfRenewalSettingsView: View {
                         .foregroundStyle(DSColor.textSecondary)
                 }
             }
+        } footer: {
+            if !owner.developerServicesConfigured {
+                Text(localized("請先設定 Anisette 服務。"))
+                    .dsSectionFooter()
+            } else if owner.developerSession == nil {
+                Text(localized("需要登入 Apple ID"))
+                    .dsSectionFooter()
+            } else if machineName.isEmpty {
+                Text(localized("請填寫裝置名稱。"))
+                    .dsSectionFooter()
+            }
         }
         .interfaceSectionSurface()
     }

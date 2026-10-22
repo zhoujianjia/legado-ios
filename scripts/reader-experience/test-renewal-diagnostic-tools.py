@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+"""Small portable admission/settings/budget checks; no Apple build or runtime claim."""
+import copy
+import fnmatch
+import importlib.util
+import json
+import os
+from pathlib import Path
+import tempfile
+from types import SimpleNamespace
+import unittest
+from unittest.mock import patch
+import zipfile
+
+HERE = Path(__file__).resolve().parent
+spec = importlib.util.spec_from_file_location("renewal_diagnostic_gate_tests", HERE / "renewal-diagnostic-tools.py")
+diagnostic = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(diagnostic)
+config = diagnostic.config
+SOURCE = "a" * 40
+
+
+class DiagnosticGates(unittest.TestCase):
+    def settings(self, root):
+        return [{"target": target, "buildSettings": {
+            "CONFIGURATION": "Release", "SWIFT_VERSION": "5.0", "IPHONEOS_DEPLOYMENT_TARGET": "18.0",
+            "PLATFORM_NAME": "iphoneos", "FULL_PRODUCT_NAME": product, "PRODUCT_BUNDLE_IDENTIFIER": identifier,
+            "ARCHS": "arm64", "CODE_SIGNING_ALLOWED": "NO", "CODE_SIGNING_REQUIRED": "NO",
+            "CODE_SIGN_ENTITLEMENTS": "", "GATEWAY_BASE_URL": "", "YUEDU_LOCAL_EXPERIENCE": "YES",
+            "TARGET_BUILD_DIR": str(root), "MARKETING_VERSION": "3.0", "CURRENT_PROJECT_VERSION": "18",
+            "SWIFT_OPTIMIZATION_LEVEL": "-Onone", "SWIFT_COMPILATION_MODE": "singlefile",
+            "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "", "GCC_PREPROCESSOR_DEFINITIONS": "NDEBUG=1",
+            "OTHER_SWIFT_FLAGS": "-D YUEDU_LOCAL_EXPERIENCE"}}
+            for target, (product, identifier) in config.DIAGNOSTIC_TARGETS.items()]
+
+    def test_three_actual_targets_require_diagnostic_settings_without_debug_or_optimization_override(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            valid = self.settings(Path(tmp).resolve())
+            result = config.inspect_settings(valid, with_jvm=True, diagnostic=True)
+            self.assertEqual(set(result["diagnosticTargets"]), set(config.DIAGNOSTIC_TARGETS))
+            self.assertTrue(result["diagnosticOnly"])
+            self.assertFalse(result["releaseAcceptance"])
+            self.assertEqual(result["S3Acceptance"], "not_run")
+            # The ordinary path retains its original output contract.
+            self.assertNotIn("diagnosticOnly", config.inspect_settings(valid, with_jvm=True))
+            for index in range(3):
+                for key, value in [("CONFIGURATION", "Debug"), ("SWIFT_OPTIMIZATION_LEVEL", "-O"),
+                    ("SWIFT_COMPILATION_MODE", "wholemodule"), ("SWIFT_ACTIVE_COMPILATION_CONDITIONS", "DEBUG"),
+                    ("GCC_PREPROCESSOR_DEFINITIONS", "DEBUG=0"), ("OTHER_SWIFT_FLAGS", "-DDEBUG=0"),
+                    ("OTHER_SWIFT_FLAGS", "-D DEBUG"), ("OTHER_SWIFT_FLAGS", "-Osize"),
+                    ("OTHER_SWIFT_FLAGS", "-whole-module-optimization"), ("CURRENT_PROJECT_VERSION", "17"),
+                    ("PRODUCT_BUNDLE_IDENTIFIER", "changed.fixture"), ("PLATFORM_NAME", "iphonesimulator")]:
+                    invalid = copy.deepcopy(valid); invalid[index]["buildSettings"][key] = value
+                    with self.subTest(target=index, key=key, value=value), self.assertRaises(ValueError):
+                        config.inspect_settings(invalid, with_jvm=True, diagnostic=True)
+            for invalid in (valid[:-1], valid + [valid[1]]):
+                with self.assertRaises(ValueError):
+                    config.inspect_settings(invalid, with_jvm=True, diagnostic=True)
+            with self.assertRaises(ValueError):
+                config.inspect_settings(valid, with_jvm=False, diagnostic=True)
+
+    def test_exact_diagnostic_tag_does_not_trigger_other_builds_and_rejects_wrong_source_or_refs(self):
+        tag = "yuedu-renewal-diagnostic-" + SOURCE[:7]
+        env = {"GITHUB_SHA": SOURCE, "GITHUB_RUN_ID": "123", "GITHUB_REF_NAME": tag, "GITHUB_REF": "refs/tags/" + tag}
+        with patch.object(diagnostic.native.smoke, "source_sha", return_value=SOURCE), patch.object(diagnostic.sys, "platform", "darwin"):
+            with patch.dict(os.environ, env, clear=True):
+                self.assertEqual(diagnostic.source(), SOURCE)
+            for key, value in [("GITHUB_SHA", "b" * 40), ("GITHUB_REF", "refs/heads/" + tag),
+                               ("GITHUB_REF_NAME", "yuedu-renewal-package-" + SOURCE[:7]), ("GITHUB_RUN_ID", "")]:
+                with self.subTest(key=key), patch.dict(os.environ, dict(env, **{key: value}), clear=True), self.assertRaises(ValueError):
+                    diagnostic.source()
+        for pattern in ("reader-renewal-*", "legado-native-reader-test-*", "reader-legado-*", "yuedu-renewal-package-*"):
+            self.assertFalse(fnmatch.fnmatchcase(tag, pattern))
+
+    def test_real_file_and_zip_budget_gates_and_old_s3_kind_rejection(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp).resolve(); app = root / "App"; app.mkdir()
+            item = app / "executable"; item.write_bytes(b"synthetic-owned" * 2)
+            ipa = root / "input.ipa"
+            def archive(values):
+                with zipfile.ZipFile(ipa, "w", compression=zipfile.ZIP_DEFLATED) as stream:
+                    for name, value in values.items(): stream.writestr(name, value)
+            archive({"Payload/App/executable": item.read_bytes()})
+            # Small thresholds exercise the same strict production comparisons
+            # without allocating hundreds of MiB of synthetic fixture data.
+            with patch.object(config, "DIAGNOSTIC_FILE_BYTES", 512), patch.object(config, "DIAGNOSTIC_PACKAGE_BYTES", 1024):
+                self.assertTrue(config.diagnostic_package_budget(app, ipa)["crcVerified"])
+                item.write_bytes(b"x" * 513)
+                with self.assertRaisesRegex(ValueError, "file exceeds"):
+                    config.diagnostic_package_budget(app, ipa)
+                item.write_bytes(b"x" * 400)
+                (app / "second").write_bytes(b"x" * 400); (app / "third").write_bytes(b"x" * 400)
+                with self.assertRaisesRegex(ValueError, "app exceeds"):
+                    config.diagnostic_package_budget(app, ipa)
+                (app / "second").unlink(); (app / "third").unlink(); item.write_bytes(b"small")
+                archive({"Payload/App/executable": b"x" * 513})
+                with self.assertRaisesRegex(ValueError, "ZIP entry"):
+                    config.diagnostic_package_budget(app, ipa)
+                archive({str(i): b"x" * 400 for i in range(3)})
+                with self.assertRaisesRegex(ValueError, "ZIP exceeds"):
+                    config.diagnostic_package_budget(app, ipa)
+            producer = diagnostic.full.load("diagnostic_old_s3_gate_test", HERE / "owned-package-fixture/full-application-package.py")
+            build = root / "build"; (build / "output").mkdir(parents=True)
+            (build / "output/build-manifest.json").write_text(json.dumps({
+                "sourceCommit": SOURCE, "artifactKind": config.DIAGNOSTIC_KIND, "configuration": "Release",
+                "platform": "iPhoneOS", "architecture": "arm64", "signed": False,
+                "deviceCompilationPassed": True, "jvmIntegratedIntoReading": True, "deviceValidationPassed": False}))
+            base = SimpleNamespace(HERE=HERE / "owned-package-fixture", run=lambda argv: SOURCE.encode())
+            with self.assertRaisesRegex(ValueError, "fresh Release"):
+                producer.validate_input(base, build)
+
+
+if __name__ == "__main__":
+    unittest.main()

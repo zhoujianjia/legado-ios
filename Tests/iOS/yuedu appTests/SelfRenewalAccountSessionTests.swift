@@ -9,6 +9,32 @@ import Testing
 extension SelfRenewalDeveloperAccountClientTests {
     @Test("first material publication reconnects the same live App owner without another foreground")
     func appOwnerInitialMaterialPublicationConnectsWithoutLifecycleRestart() async throws {
+        // The real device currently fails before account I/O. Distinguish the
+        // four Vault branches even through existing transaction wrappers.
+        let vaultCases: [(SelfRenewalSigningMaterialVault.Failure, String)] = [
+            (.limit, "vault.limit"), (.namespaceUnavailable, "vault.namespaceUnavailable"),
+            (.malformedManifest, "vault.malformedManifest"), (.identityChanged, "vault.identityChanged")]
+        for (error, code) in vaultCases {
+            let wrapped = SelfRenewalAppSession.Unavailable(
+                underlying: SelfRenewalAppSession.InitialNamespaceBindingFailure(namespaceID: UUID(), underlying: error),
+                problem: .signingMaterials, statusPersistenceError: nil)
+            let observation = SelfRenewalDiagnosticFailure.capture(wrapped)
+            #expect(observation.failureCode == code)
+            #expect(observation.errorType == String(reflecting: SelfRenewalAppSession.Unavailable.self))
+            #expect(observation.causeType == String(reflecting: SelfRenewalSigningMaterialVault.Failure.self))
+        }
+        let privateText = "private-account-path-token-must-not-enter-diagnostics"
+        let sensitive = SelfRenewalDiagnosticFailure.capture(
+            SelfRenewalApplicationMaterialVerifier.Failure.applicationIdentifierMismatch(privateText))
+        let unknown = SelfRenewalDiagnosticFailure.capture(NSError(domain: "owned-fixture", code: 42,
+            userInfo: [NSLocalizedDescriptionKey: privateText]))
+        let encoded = String(decoding: try JSONEncoder().encode([sensitive, unknown]), as: UTF8.self)
+        #expect(sensitive.failureCode == "applicationIdentifierMismatch" && unknown.failureCode == "unclassified")
+        #expect(!encoded.contains(privateText) && !encoded.contains("owned-fixture"))
+        let transport = SelfRenewalDiagnosticFailure.capture(SelfRenewalAnisetteV3Provider.Failure.http(503))
+        let keychain = SelfRenewalDiagnosticFailure.capture(SelfRenewalSigningMaterialVault.Failure.keychain(-34018))
+        #expect(transport.httpStatus == 503 && transport.osStatus == nil)
+        #expect(keychain.osStatus == -34018 && keychain.httpStatus == nil)
         let rejected = try await Task.detached(priority: .utility) {
             let directory = FileManager.default.temporaryDirectory.appendingPathComponent("owned-initialization-observation-" + UUID().uuidString)
             let application = directory.appendingPathComponent("Owned.app")
@@ -49,6 +75,10 @@ extension SelfRenewalDeveloperAccountClientTests {
             let failure = try #require(observation)
             #expect(failure.occurredAt == date && failure.failureCode == "applicationIdentifierMismatch")
             #expect(failure.errorType == String(reflecting: SelfRenewalApplicationMaterialVerifier.Failure.self))
+            let actionObservation = await rejectedOwner.operationFailure
+            let actionFailure = try #require(actionObservation)
+            #expect(actionFailure.operation == .initialization && actionFailure.occurredAt == date)
+            #expect(actionFailure.failure.failureCode == failure.failureCode)
             let problem = await rejectedOwner.problem
             #expect(problem == .signingMaterials)
             let documentURL = ownerRoot.appendingPathComponent("configuration.json")
@@ -58,12 +88,16 @@ extension SelfRenewalDeveloperAccountClientTests {
             let retained = await rejectedOwner.initializationFailure
             let status = await rejectedOwner.status
             #expect(retained == failure && status?.state == .unconfigured)
+            let retainedAction = await rejectedOwner.operationFailure
+            #expect(retainedAction == actionFailure)
             let stored = try JSONDecoder().decode(InitialBindingStoredDocument.self, from: Data(contentsOf: documentURL))
             #expect(stored.configuration == nil && stored.initialNamespaceBinding == nil)
             #expect(namespaceStorage.facts().loadedAccounts.isEmpty && namespaceStorage.facts().insertedAccounts.isEmpty)
             try await rejectedOwner.close()
             let cleared = await rejectedOwner.initializationFailure
             #expect(cleared == nil)
+            let clearedAction = await rejectedOwner.operationFailure
+            #expect(clearedAction == nil)
             try await Task.detached { try FileManager.default.removeItem(at: rejected.directory) }.value
         } catch {
             do { try await rejectedOwner.close() } catch { Issue.record(error) }
@@ -88,6 +122,8 @@ extension SelfRenewalDeveloperAccountClientTests {
                 #expect(status?.access == .signing && status?.state == .ready)
                 #expect(material?.namespaceID == (try c.configuration()).namespaceID)
                 #expect(problem == nil && materialProblem == nil)
+                let actionFailure = await owner.operationFailure
+                #expect(actionFailure == nil)
                 let facts = await c.peer.facts()
                 #expect(facts.validCSRs == 1 && facts.profileRequests == 3)
                 #expect(try Data(contentsOf: c.sentinel) == c.sentinelBytes)

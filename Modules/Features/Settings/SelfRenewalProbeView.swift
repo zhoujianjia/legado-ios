@@ -319,6 +319,8 @@ private enum SelfRenewalProbeExport {
         /// The last initialization attempt survives a later state refresh.
         /// It includes fixed reason codes, never identities or imported bytes.
         let initializationFailure: SelfRenewalAppOwner.InitializationFailureObservation?
+        /// Explicit action context with bounded codes, never account inputs.
+        let operationFailure: SelfRenewalAppOwner.OperationFailureObservation?
         let status: Status?
         let automaticRenewal: AutomaticRenewal?
         /// Dates of the last published developer materials, not proof that the
@@ -337,6 +339,7 @@ private enum SelfRenewalProbeExport {
             ownerProblem: owner?.problem.map(problemCode),
             signingMaterialProblem: owner?.signingMaterialProblem.map(problemCode),
             initializationFailure: owner?.initializationFailure,
+            operationFailure: owner?.operationFailure,
             status: owner?.status.map { .init(state: $0.state.rawValue, phase: $0.phase?.rawValue,
                 observedAt: $0.observedAt, problem: $0.problem?.rawValue, access: $0.access?.rawValue) },
             automaticRenewal: owner?.automaticRenewal.map { .init(isEnabled: $0.isEnabled,

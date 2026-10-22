@@ -15,6 +15,17 @@ final class SelfRenewalAppOwner {
         let errorType: String
         let failureCode: String
     }
+    enum DiagnosticOperation: String, Sendable, Equatable, Encodable {
+        case persistenceBinding, bootstrap, pairingImport, configurationImport, initialization
+        case packagePreparation, installationSubmission, recovery, providerConfiguration, providerReset
+        case signIn, verification, loginCancellation, accountObservation
+        case materialRefresh, materialReconciliation, publicationFinalization, signOut, automaticRenewal
+    }
+    struct OperationFailureObservation: Sendable, Equatable, Encodable {
+        let occurredAt: Date
+        let operation: DiagnosticOperation
+        let failure: SelfRenewalDiagnosticFailure
+    }
     let handoff: SelfRenewalUserDataHandoff
     /// Explicit provider configuration/injection only, never Apple authority.
     private(set) var developerServicesConfigured: Bool
@@ -27,6 +38,8 @@ final class SelfRenewalAppOwner {
     private(set) var problem: Problem?
     private(set) var signingMaterialProblem: Problem?
     private(set) var initializationFailure: InitializationFailureObservation?
+    /// Passive status refreshes do not erase the latest explicit action failure.
+    private(set) var operationFailure: OperationFailureObservation?
     private(set) var isWorking = false {
         didSet { if !isWorking { resumeForegroundWaiters() } }
     }
@@ -134,7 +147,7 @@ final class SelfRenewalAppOwner {
         do { try handoff.bind(books: books, sources: sources, positions: positions) }
         catch {
             problem = .operationFailed
-            AppLogger.parse("Renewal App persistence binding unavailable type=\(String(reflecting: type(of: error)))")
+            recordFailure(error, operation: .persistenceBinding, context: "Renewal App persistence binding unavailable")
             return
         }
         let generation = automatically ? reserveActivation(foregroundGeneration) : nil
@@ -160,7 +173,7 @@ final class SelfRenewalAppOwner {
             status = await session.status()
             problem = Self.classify(error)
             bootstrapped = false
-            AppLogger.parse("Renewal App bootstrap unavailable type=\(String(reflecting: type(of: error)))")
+            recordFailure(error, operation: .bootstrap, context: "Renewal App bootstrap unavailable", preserveAction: true)
         }
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
@@ -267,7 +280,10 @@ final class SelfRenewalAppOwner {
         guard automaticOperation?.id == id else { return }
         automaticRenewal = observed; self.status = status
         recoveryAvailable = recovery; signingMaterialProblem = material == nil ? nil : .signingMaterials
-        if case .failure(let error) = result { problem = Self.classify(error) }
+        if case .failure(let error) = result {
+            problem = Self.classify(error)
+            recordFailure(error, operation: .automaticRenewal, context: "Renewal automatic operation unavailable", preserveAction: true)
+        }
         automaticOperation = nil; isWorking = false
         scheduleAutomaticRenewal()
     }
@@ -281,7 +297,7 @@ final class SelfRenewalAppOwner {
     func importPairingIdentity(pkcs12: URL, password: String, publicConfiguration: URL) async -> Bool {
         guard !isWorking else { return false }
         isWorking = true
-        problem = nil
+        problem = nil; operationFailure = nil
         let id = UUID(), session = self.session, handoff = self.handoff
         let worker = Task {
             try await session.importPairingIdentity(pkcs12: pkcs12, password: password,
@@ -320,7 +336,7 @@ final class SelfRenewalAppOwner {
             bootstrapped = true
         case .failure(let error):
             problem = Self.classify(error)
-            AppLogger.parse("Renewal pairing identity import unavailable type=\(String(reflecting: type(of: error)))")
+            recordFailure(error, operation: .pairingImport, context: "Renewal pairing identity import unavailable")
         }
         // A failed durable ACK can already have invalidated Session's epoch.
         // Re-observation obtains any account facts still usable after import.
@@ -332,14 +348,14 @@ final class SelfRenewalAppOwner {
     func importConfiguration(_ url: URL) async {
         guard !isWorking else { return }
         isWorking = true; defer { isWorking = false }
-        problem = nil
+        problem = nil; operationFailure = nil
         do {
             status = try await session.configure(from: url, handoff: handoff)
             bootstrapped = true
         } catch {
             status = await session.status()
             problem = Self.classify(error)
-            AppLogger.parse("Renewal configuration unavailable type=\(String(reflecting: type(of: error)))")
+            recordFailure(error, operation: .configurationImport, context: "Renewal configuration unavailable")
         }
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
@@ -348,18 +364,17 @@ final class SelfRenewalAppOwner {
     func initializeConfiguration(from url: URL) async {
         guard !isWorking else { return }
         isWorking = true; defer { isWorking = false }
-        problem = nil; initializationFailure = nil
+        problem = nil; initializationFailure = nil; operationFailure = nil
         do {
             status = try await session.initializeSigningNamespace(from: url)
             bootstrapped = true
         } catch {
             status = await session.status()
             problem = Self.classify(error)
-            let errorType = String(String(reflecting: type(of: error)).prefix(256))
-            let failureCode = (error as? SelfRenewalApplicationMaterialVerifier.Failure)?.diagnosticCode ?? "unclassified"
-            initializationFailure = InitializationFailureObservation(occurredAt: clock(), errorType: errorType,
-                failureCode: failureCode)
-            AppLogger.parse("Renewal namespace initialization unavailable type=\(errorType) code=\(failureCode)", level: .error)
+            let failure = SelfRenewalDiagnosticFailure.capture(error)
+            initializationFailure = InitializationFailureObservation(occurredAt: clock(), errorType: failure.errorType,
+                failureCode: failure.failureCode)
+            recordFailure(error, operation: .initialization, context: "Renewal namespace initialization unavailable")
         }
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
@@ -370,12 +385,12 @@ final class SelfRenewalAppOwner {
     func prepareRenewal(from ipa: URL) async {
         guard !isWorking else { return }
         isWorking = true; defer { isWorking = false }
-        problem = nil
+        problem = nil; operationFailure = nil
         do { status = try await session.prepareRenewal(from: ipa) }
         catch {
             status = await session.status()
             problem = Self.classify(error)
-            AppLogger.parse("Renewal preparation unavailable type=\(String(reflecting: type(of: error)))")
+            recordFailure(error, operation: .packagePreparation, context: "Renewal preparation unavailable")
         }
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
@@ -386,12 +401,12 @@ final class SelfRenewalAppOwner {
     func submitPreparedRenewal() async {
         guard !isWorking else { return }
         isWorking = true; defer { isWorking = false }
-        problem = nil
+        problem = nil; operationFailure = nil
         do { status = try await session.submitPreparedRenewal(handoff: handoff) }
         catch {
             status = await session.status()
             problem = Self.classify(error)
-            AppLogger.parse("Renewal submission unavailable type=\(String(reflecting: type(of: error)))")
+            recordFailure(error, operation: .installationSubmission, context: "Renewal submission unavailable")
         }
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
@@ -400,12 +415,12 @@ final class SelfRenewalAppOwner {
     func recoverExplicitly() async {
         guard !isWorking else { return }
         isWorking = true; defer { isWorking = false }
-        problem = nil
+        problem = nil; operationFailure = nil
         do { status = try await session.recoverExplicitly(handoff: handoff) }
         catch {
             status = await session.status()
             problem = Self.classify(error)
-            AppLogger.parse("Renewal recovery unavailable type=\(String(reflecting: type(of: error)))")
+            recordFailure(error, operation: .recovery, context: "Renewal recovery unavailable")
         }
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
@@ -429,7 +444,7 @@ final class SelfRenewalAppOwner {
         } catch {
             guard developerOperationID == id else { return false }
             problem = Self.classify(error)
-            AppLogger.parse("Renewal anisette configuration unavailable type=\(String(reflecting: type(of: error)))")
+            recordFailure(error, operation: .providerConfiguration, context: "Renewal anisette configuration unavailable")
         }
         anisetteProvider = await session.configuredAnisetteProvider()
         developerServicesConfigured = await session.developerServicesAreConfigured()
@@ -460,7 +475,7 @@ final class SelfRenewalAppOwner {
         } catch {
             guard developerOperationID == id else { return }
             problem = Self.classify(error)
-            AppLogger.parse("Renewal anisette reset unavailable type=\(String(reflecting: type(of: error)))")
+            recordFailure(error, operation: .providerReset, context: "Renewal anisette reset unavailable")
         }
         // Credential removal may have committed before a later reset failure.
         developerSession = nil; developerMaterial = nil; developerChallenge = nil
@@ -491,7 +506,7 @@ final class SelfRenewalAppOwner {
         } catch {
             guard developerOperationID == id else { return }
             problem = Self.classify(error)
-            AppLogger.parse("Renewal account login unavailable type=\(String(reflecting: type(of: error)))")
+            recordFailure(error, operation: .signIn, context: "Renewal account login unavailable")
         }
         await refreshAnisetteRegistration()
     }
@@ -507,7 +522,7 @@ final class SelfRenewalAppOwner {
         } catch {
             guard developerOperationID == id else { return }
             problem = Self.classify(error)
-            AppLogger.parse("Renewal verification unavailable type=\(String(reflecting: type(of: error)))")
+            recordFailure(error, operation: .verification, context: "Renewal verification unavailable")
         }
         await refreshAnisetteRegistration()
     }
@@ -524,7 +539,7 @@ final class SelfRenewalAppOwner {
         } catch {
             guard developerOperationID == id else { return }
             problem = Self.classify(error)
-            AppLogger.parse("Renewal login cancellation unavailable type=\(String(reflecting: type(of: error)))")
+            recordFailure(error, operation: .loginCancellation, context: "Renewal login cancellation unavailable")
         }
         await refreshAnisetteRegistration()
     }
@@ -532,7 +547,7 @@ final class SelfRenewalAppOwner {
     private func beginDeveloperAuthentication() -> UUID {
         let id = takeDeveloperAuthentication()
         authenticatingOperationID = id
-        problem = nil; developerSession = nil; developerChallenge = nil
+        problem = nil; developerSession = nil; developerChallenge = nil; operationFailure = nil
         return id
     }
     private var canTakeDeveloperAuthentication: Bool {
@@ -541,6 +556,7 @@ final class SelfRenewalAppOwner {
     private func takeDeveloperAuthentication() -> UUID {
         let id = UUID()
         developerOperationID = id; authenticatingOperationID = nil; isWorking = true
+        operationFailure = nil
         return id
     }
     private func finishDeveloperOperation(_ id: UUID) {
@@ -557,25 +573,26 @@ final class SelfRenewalAppOwner {
     func observeDeveloperAccount() async {
         guard !isWorking else { return }
         isWorking = true; defer { isWorking = false }
-        problem = nil; developerSession = nil
+        problem = nil; developerSession = nil; operationFailure = nil
         do { developerSession = try await session.observeDeveloperAccount() }
         catch {
             problem = Self.classify(error)
-            AppLogger.parse("Renewal account observation unavailable type=\(String(reflecting: type(of: error)))")
+            recordFailure(error, operation: .accountObservation, context: "Renewal account observation unavailable")
         }
     }
 
     func refreshDeveloperMaterials(machineName: String) async {
         guard !isWorking else { return }
         isWorking = true; defer { isWorking = false }
-        problem = nil
+        problem = nil; operationFailure = nil
         do { developerMaterial = try await session.refreshDeveloperMaterials(machineName: machineName) }
         catch let failure as SelfRenewalAppSession.DeveloperMaterialFinalizationFailure {
             developerMaterial = failure.published
             problem = Self.classify(failure.underlying)
+            recordFailure(failure, operation: .materialRefresh, context: "Renewal account material refresh finalization unavailable")
         } catch {
             problem = Self.classify(error)
-            AppLogger.parse("Renewal account material refresh unavailable type=\(String(reflecting: type(of: error)))")
+            recordFailure(error, operation: .materialRefresh, context: "Renewal account material refresh unavailable")
         }
         await synchronizeDeveloperMaterialState()
     }
@@ -585,14 +602,15 @@ final class SelfRenewalAppOwner {
     func reconcileDeveloperMaterials() async {
         guard !isWorking else { return }
         isWorking = true; defer { isWorking = false }
-        problem = nil
+        problem = nil; operationFailure = nil
         do { developerMaterial = try await session.reconcileDeveloperMaterials() }
         catch let failure as SelfRenewalAppSession.DeveloperMaterialFinalizationFailure {
             developerMaterial = failure.published
             problem = Self.classify(failure.underlying)
+            recordFailure(failure, operation: .materialReconciliation, context: "Renewal account material reconciliation finalization unavailable")
         } catch {
             problem = Self.classify(error)
-            AppLogger.parse("Renewal account material reconciliation unavailable type=\(String(reflecting: type(of: error)))")
+            recordFailure(error, operation: .materialReconciliation, context: "Renewal account material reconciliation unavailable")
         }
         await synchronizeDeveloperMaterialState()
     }
@@ -600,14 +618,15 @@ final class SelfRenewalAppOwner {
     func finalizeDeveloperMaterialPublication() async {
         guard !isWorking else { return }
         isWorking = true; defer { isWorking = false }
-        problem = nil
+        problem = nil; operationFailure = nil
         do { developerMaterial = try await session.finalizeDeveloperMaterialPublication() }
         catch let failure as SelfRenewalAppSession.DeveloperMaterialFinalizationFailure {
             developerMaterial = failure.published
             problem = Self.classify(failure.underlying)
+            recordFailure(failure, operation: .publicationFinalization, context: "Renewal account publication finalization unavailable")
         } catch {
             problem = Self.classify(error)
-            AppLogger.parse("Renewal account publication observation unavailable type=\(String(reflecting: type(of: error)))")
+            recordFailure(error, operation: .publicationFinalization, context: "Renewal account publication observation unavailable")
         }
         await synchronizeDeveloperMaterialState()
     }
@@ -616,6 +635,21 @@ final class SelfRenewalAppOwner {
         status = await session.status()
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
+    }
+
+    /// Fixed codes and numeric protocol statuses only. Associated paths,
+    /// identities, credentials and server messages never enter this surface.
+    private func recordFailure(_ error: Error, operation: DiagnosticOperation, context: String,
+        preserveAction: Bool = false) {
+        let failure = SelfRenewalDiagnosticFailure.capture(error)
+        if !preserveAction || operationFailure == nil {
+            operationFailure = OperationFailureObservation(occurredAt: clock(), operation: operation, failure: failure)
+        }
+        var fields = ["type=\(failure.errorType)", "code=\(failure.failureCode)", "phase=\(operation.rawValue)"]
+        if let cause = failure.causeType { fields.append("causeType=\(cause)") }
+        if let status = failure.httpStatus { fields.append("httpStatus=\(status)") }
+        if let status = failure.osStatus { fields.append("osStatus=\(status)") }
+        AppLogger.parse(context + " " + fields.joined(separator: " "), level: .error)
     }
 
     func signOutDeveloperAccount() async {
@@ -627,7 +661,7 @@ final class SelfRenewalAppOwner {
         catch {
             guard developerOperationID == id else { return }
             problem = Self.classify(error)
-            AppLogger.parse("Renewal account sign-out unavailable type=\(String(reflecting: type(of: error)))")
+            recordFailure(error, operation: .signOut, context: "Renewal account sign-out unavailable")
         }
     }
 
@@ -639,7 +673,7 @@ final class SelfRenewalAppOwner {
         isWorking = true; defer { isWorking = false }
         try await session.close()
         status = nil; problem = nil; signingMaterialProblem = nil; recoveryAvailable = false; bootstrapped = false
-        initializationFailure = nil
+        initializationFailure = nil; operationFailure = nil
         developerSession = nil; developerMaterial = nil; developerChallenge = nil
         anisetteProvider = nil
         anisetteRegistration = nil; anisetteRegistrationProblem = nil

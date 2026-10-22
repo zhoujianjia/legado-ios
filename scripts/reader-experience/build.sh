@@ -14,6 +14,9 @@ for tool in python3 xcrun xcodebuild ditto lipo otool git; do
 done
 export DEVELOPER_DIR=${DEVELOPER_DIR:-$(bash "$REPO_DIR/scripts/sim.sh" xcode)}
 RUNTIME_ARGS=()
+MANIFEST_ARGS=()
+DIAGNOSTIC=${YUEDU_READER_DIAGNOSTIC:-0}
+[[ "$DIAGNOSTIC" == 0 || "$DIAGNOSTIC" == 1 ]] || { echo 'Unknown reader build purpose.' >&2; exit 2; }
 MIN_IOS=17.0
 if [[ ${LEGADO_READER_WITH_JVM:-0} == 1 ]]; then
   unset LEGADO_RUNTIME_SOURCE_ONLY
@@ -35,11 +38,9 @@ python3 "$SCRIPT_DIR/stage-config.py" overlay-project \
   --report "$WORK_DIR/project-overlay.json" > "$WORK_DIR/project-overlay.log"
 xcodebuild -version > "$WORK_DIR/xcode-version.log"
 xcodebuild -showsdks > "$WORK_DIR/apple-sdks.log"
-BUILD_ARGS=(
-  -project "$REPO_DIR/Yuedu-Reader.xcodeproj" -scheme Yuedu-Reader
-  -configuration Release -destination 'generic/platform=iOS'
+COMMON_SETTINGS=(
   -onlyUsePackageVersionsFromResolvedFile
-  CURRENT_PROJECT_VERSION=17
+  CURRENT_PROJECT_VERSION=18
   IPHONEOS_DEPLOYMENT_TARGET="$MIN_IOS"
   ARCHS=arm64 CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= CODE_SIGN_ENTITLEMENTS=
   GATEWAY_BASE_URL=
@@ -51,10 +52,40 @@ BUILD_ARGS=(
   INFOPLIST_KEY_firebase_performance_collection_enabled=NO
   INFOPLIST_KEY_firebase_performance_instrumentation_enabled=NO
 )
+if [[ "$DIAGNOSTIC" == 1 ]]; then
+  [[ ${LEGADO_READER_WITH_JVM:-0} == 1 ]] || { echo 'Diagnostic builds require the complete JVM.' >&2; exit 2; }
+  COMMON_SETTINGS+=(SWIFT_OPTIMIZATION_LEVEL=-Onone SWIFT_COMPILATION_MODE=singlefile)
+  MANIFEST_ARGS+=(--diagnostic)
+fi
+BUILD_ARGS=(
+  -project "$REPO_DIR/Yuedu-Reader.xcodeproj" -scheme Yuedu-Reader
+  -configuration Release -destination 'generic/platform=iOS'
+  "${COMMON_SETTINGS[@]}"
+)
 xcodebuild "${BUILD_ARGS[@]}" -resultBundlePath "$WORK_DIR/reader-device.xcresult" build
 xcodebuild "${BUILD_ARGS[@]}" -showBuildSettings -json > "$WORK_DIR/build-settings.json"
+if [[ "$DIAGNOSTIC" == 1 ]]; then
+  # The scheme's sole BuildAction entry is the main App. Query each dependency's
+  # actual settings separately with the identical configuration/overrides.
+  for target in 'Yuedu-Reader Widget' 'Yuedu-Reader ShareExtension'; do
+    xcodebuild -project "$REPO_DIR/Yuedu-Reader.xcodeproj" -target "$target" \
+      -configuration Release -sdk iphoneos "${COMMON_SETTINGS[@]}" \
+      -showBuildSettings -json > "$WORK_DIR/settings-$target.json"
+  done
+  python3 - "$WORK_DIR" <<'PY'
+import json, sys
+from pathlib import Path
+root = Path(sys.argv[1])
+items = json.loads((root/'build-settings.json').read_bytes())
+items = [item for item in items if item.get('target') == 'yuedu app']
+for target in ('Yuedu-Reader Widget', 'Yuedu-Reader ShareExtension'):
+    values = json.loads((root/('settings-' + target + '.json')).read_bytes())
+    items.extend(item for item in values if item.get('target') == target)
+(root/'build-settings.json').write_text(json.dumps(items), encoding='utf-8')
+PY
+fi
 APP=$(python3 "$SCRIPT_DIR/stage-config.py" inspect-settings \
-  --settings "$WORK_DIR/build-settings.json" --output "$WORK_DIR/verified-settings.json" "${RUNTIME_ARGS[@]}")
+  --settings "$WORK_DIR/build-settings.json" --output "$WORK_DIR/verified-settings.json" "${RUNTIME_ARGS[@]}" "${MANIFEST_ARGS[@]}")
 [[ -d "$APP" ]] || { echo "Built reader app is absent: $APP" >&2; exit 4; }
 python3 "$SCRIPT_DIR/stage-config.py" finalize --app "$APP" --source "$SOURCE_COMMIT" "${RUNTIME_ARGS[@]}" > "$WORK_DIR/bundle-validation.json"
 python3 "$SCRIPT_DIR/stage-config.py" require-no-source-pack \
@@ -73,8 +104,22 @@ python3 "$SCRIPT_DIR/stage-config.py" manifest \
   --app "$OUTPUT/Payload/YueduReader.app" --ipa "$OUTPUT/YueduReader-experience-unsigned.ipa" \
   --settings "$WORK_DIR/verified-settings.json" --source "$SOURCE_COMMIT" \
   --xcode-file "$WORK_DIR/xcode-version.log" --overlay "$WORK_DIR/project-overlay.json" \
-  --output "$OUTPUT/build-manifest.json" "${RUNTIME_ARGS[@]}"
-if [[ ${LEGADO_READER_WITH_JVM:-0} == 1 ]]; then
+  --output "$OUTPUT/build-manifest.json" "${RUNTIME_ARGS[@]}" "${MANIFEST_ARGS[@]}"
+if [[ "$DIAGNOSTIC" == 1 ]]; then
+cat > "$OUTPUT/README.txt" <<'TEXT'
+Yuedu renewal diagnostic device package (unsigned)
+This complete JVM reader uses the Release configuration with Swift -Onone and
+singlefile compilation. DEBUG production conditional branches remain disabled.
+It is for diagnosing renewal initialization and account-stage failures only.
+It is not optimized Release acceptance, S3 acceptance or a performance build.
+No Simulator, controlled signing, Apple login, installation or renewal is proved.
+Sign with the original installation tool/account before installing; preserve the
+existing app identity and verify existing books, sources and reading positions.
+Keep build-manifest.json, delivery-binding.json and the exact source.zip together.
+No book-source pack, private signing key or user account data is included.
+Runtime licensing/notices and the bounded temporary distribution policy apply.
+TEXT
+elif [[ ${LEGADO_READER_WITH_JVM:-0} == 1 ]]; then
 cat > "$OUTPUT/README.txt" <<'TEXT'
 阅读（unsigned，独立修改版）
 

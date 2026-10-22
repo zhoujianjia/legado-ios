@@ -1,0 +1,86 @@
+name: Yuedu Renewal Diagnostic Device
+
+on:
+  push:
+    tags:
+      - 'yuedu-renewal-diagnostic-*'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: yuedu-renewal-diagnostic-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  diagnostic:
+    runs-on: macos-15
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Bind this diagnostic source and compile its complete ordinary JAR
+        run: |
+          mkdir -p .build/ci-logs
+          python -B scripts/reader-experience/renewal-diagnostic-tools.py validate-tag
+          bash Packages/LegadoRuntime/jvm/gradlew -p Packages/LegadoRuntime/jvm --no-daemon runtimeJar 2>&1 | tee .build/ci-logs/renewal-diagnostic-jar.log
+          python -B scripts/reader-experience/runtime-packaging.py inspect-jar --output .build/ci-logs/renewal-diagnostic-jar.json
+      - name: Restore the existing audited native interpreter without recompiling it
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python -B scripts/reader-experience/renewal-diagnostic-tools.py restore
+      - name: Compile the complete non-DEBUG device diagnostic with unoptimized Swift
+        run: |
+          export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
+          python -B scripts/reader-experience/renewal-diagnostic-tools.py prepare-device
+      - name: Export the exact-source diagnostic compilation package
+        env:
+          YUEDU_PACKAGE_REPOSITORY_PRIVATE: ${{ github.event.repository.private }}
+        run: python -B scripts/reader-experience/renewal-diagnostic-tools.py export-unsigned
+      - name: Retain the diagnostic unsigned device package
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: yuedu-renewal-diagnostic-unsigned-${{ github.sha }}
+          path: |
+            .build/renewal-diagnostic-public/YueduReader-experience-unsigned.ipa
+            .build/renewal-diagnostic-public/build-manifest.json
+            .build/renewal-diagnostic-public/README.txt
+            .build/renewal-diagnostic-public/delivery-binding.json
+            .build/renewal-diagnostic-public/source.zip
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 1
+          compression-level: 0
+      - name: Retain bounded diagnostic build evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: yuedu-renewal-diagnostic-evidence-${{ github.sha }}
+          path: |
+            .build/ci-logs/renewal-diagnostic-*
+            .build/renewal-diagnostic/*.json
+            .build/renewal-diagnostic/diagnostic-device-build.log
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 1
+      - name: State the diagnostic acceptance boundary
+        if: always()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
+          This isolated diagnostic builds the complete iPhoneOS JVM reader, main App, Widget and Share extension with the Release configuration and Swift -Onone/singlefile, retaining non-DEBUG production conditional branches. It reuses the audited native runtime and compiles this exact source's ordinary JAR.
+          This is not optimized Release/S3 acceptance or a performance build. No Simulator, controlled signing, Apple login, physical installation or automatic renewal is executed or established. The unchanged complete workflows retain their original gates and meanings. Sign the unsigned package with the original installation tool/account before device diagnostics.
+          Only the three unsigned build outputs, delivery binding and exact Git source.zip are exported under the current bounded temporary distribution policy, with one-day artifact retention. No private producer directory, P12, signing key, user account data or private book-source pack is uploaded. License clearance is not established.
+          TEXT
