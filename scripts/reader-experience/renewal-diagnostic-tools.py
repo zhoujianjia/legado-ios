@@ -86,7 +86,18 @@ def prepare():
             "--destination", REPO / "Resources/LegadoRuntime", "--replace"], 300)
         environment = dict(os.environ, LEGADO_READER_WITH_JVM="1", YUEDU_READER_DIAGNOSTIC="1",
                            YUEDU_READER_BUILD_DIR=str(BUILD))
-        full.command(WORK, "diagnostic-device-build", ["bash", HERE / "build.sh"], 3600, environment)
+        try:
+            full.command(WORK, "diagnostic-device-build", ["bash", HERE / "build.sh"], 3600, environment)
+        except Exception:
+            # This build has no account inputs or signing secrets. Expose its
+            # bounded compiler/gate tail so a failure needs no artifact roundtrip.
+            log = WORK / "diagnostic-device-build.log"
+            if log.is_file():
+                with log.open("rb") as stream:
+                    stream.seek(max(0, log.stat().st_size - 32768))
+                    tail = stream.read().decode("utf-8", errors="replace")
+                print("\n".join(tail.splitlines()[-100:]), file=sys.stderr, flush=True)
+            raise
     finally:
         full.restore_build_overlays(config, original, BUILD)
     validated = validate_build(receipt)

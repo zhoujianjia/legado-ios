@@ -25,7 +25,7 @@ class DiagnosticGates(unittest.TestCase):
         return [{"target": target, "buildSettings": {
             "CONFIGURATION": "Release", "SWIFT_VERSION": "5.0", "IPHONEOS_DEPLOYMENT_TARGET": "18.0",
             "PLATFORM_NAME": "iphoneos", "FULL_PRODUCT_NAME": product, "PRODUCT_BUNDLE_IDENTIFIER": identifier,
-            "ARCHS": "arm64", "CODE_SIGNING_ALLOWED": "NO", "CODE_SIGNING_REQUIRED": "NO",
+            "ARCHS": "arm64", "CODE_SIGNING_ALLOWED": "NO", "CODE_SIGNING_REQUIRED": "NO", "ENABLE_DEBUG_DYLIB": "NO",
             "CODE_SIGN_ENTITLEMENTS": "", "GATEWAY_BASE_URL": "", "YUEDU_LOCAL_EXPERIENCE": "YES",
             "TARGET_BUILD_DIR": str(root), "MARKETING_VERSION": "3.0", "CURRENT_PROJECT_VERSION": "18",
             "SWIFT_OPTIMIZATION_LEVEL": "-Onone", "SWIFT_COMPILATION_MODE": "singlefile",
@@ -45,7 +45,7 @@ class DiagnosticGates(unittest.TestCase):
             self.assertNotIn("diagnosticOnly", config.inspect_settings(valid, with_jvm=True))
             for index in range(3):
                 for key, value in [("CONFIGURATION", "Debug"), ("SWIFT_OPTIMIZATION_LEVEL", "-O"),
-                    ("SWIFT_COMPILATION_MODE", "wholemodule"), ("SWIFT_ACTIVE_COMPILATION_CONDITIONS", "DEBUG"),
+                    ("SWIFT_COMPILATION_MODE", "wholemodule"), ("ENABLE_DEBUG_DYLIB", "YES"), ("SWIFT_ACTIVE_COMPILATION_CONDITIONS", "DEBUG"),
                     ("GCC_PREPROCESSOR_DEFINITIONS", "DEBUG=0"), ("OTHER_SWIFT_FLAGS", "-DDEBUG=0"),
                     ("OTHER_SWIFT_FLAGS", "-D DEBUG"), ("OTHER_SWIFT_FLAGS", "-Osize"),
                     ("OTHER_SWIFT_FLAGS", "-whole-module-optimization"), ("CURRENT_PROJECT_VERSION", "17"),

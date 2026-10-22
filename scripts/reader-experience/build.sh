@@ -54,7 +54,7 @@ COMMON_SETTINGS=(
 )
 if [[ "$DIAGNOSTIC" == 1 ]]; then
   [[ ${LEGADO_READER_WITH_JVM:-0} == 1 ]] || { echo 'Diagnostic builds require the complete JVM.' >&2; exit 2; }
-  COMMON_SETTINGS+=(SWIFT_OPTIMIZATION_LEVEL=-Onone SWIFT_COMPILATION_MODE=singlefile)
+  COMMON_SETTINGS+=(SWIFT_OPTIMIZATION_LEVEL=-Onone SWIFT_COMPILATION_MODE=singlefile ENABLE_DEBUG_DYLIB=NO)
   MANIFEST_ARGS+=(--diagnostic)
 fi
 BUILD_ARGS=(
