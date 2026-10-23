@@ -27,7 +27,7 @@ class DiagnosticGates(unittest.TestCase):
             "PLATFORM_NAME": "iphoneos", "FULL_PRODUCT_NAME": product, "PRODUCT_BUNDLE_IDENTIFIER": identifier,
             "ARCHS": "arm64", "CODE_SIGNING_ALLOWED": "NO", "CODE_SIGNING_REQUIRED": "NO", "ENABLE_DEBUG_DYLIB": "NO",
             "CODE_SIGN_ENTITLEMENTS": "", "GATEWAY_BASE_URL": "", "YUEDU_LOCAL_EXPERIENCE": "YES",
-            "TARGET_BUILD_DIR": str(root), "MARKETING_VERSION": "3.0", "CURRENT_PROJECT_VERSION": "18",
+            "TARGET_BUILD_DIR": str(root), "MARKETING_VERSION": "3.0", "CURRENT_PROJECT_VERSION": "19",
             "SWIFT_OPTIMIZATION_LEVEL": "-Onone", "SWIFT_COMPILATION_MODE": "singlefile",
             "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "", "GCC_PREPROCESSOR_DEFINITIONS": "NDEBUG=1",
             "OTHER_SWIFT_FLAGS": "-D YUEDU_LOCAL_EXPERIENCE"}}
@@ -71,6 +71,27 @@ class DiagnosticGates(unittest.TestCase):
                     diagnostic.source()
         for pattern in ("reader-renewal-*", "legado-native-reader-test-*", "reader-legado-*", "yuedu-renewal-package-*"):
             self.assertFalse(fnmatch.fnmatchcase(tag, pattern))
+        summary = {"totalTestCount": 1, "passedTests": 1, "failedTests": 0, "skippedTests": 0,
+            "expectedFailures": 0, "devicesAndConfigurations": [
+                {"passedTests": 1, "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}]}
+        case = {"nodeType": "Test Case", "nodeIdentifier": "yuedu appTests/" + diagnostic.ENROLLMENT_CASE + "()", "result": "Passed"}
+        tree = {"testNodes": [{"nodeType": "Test Suite", "children": [case]}]}
+        self.assertEqual(diagnostic.verify_enrollment(summary, tree)["cases"], [diagnostic.ENROLLMENT_CASE])
+        for invalid in ({"testNodes": []}, {"testNodes": [case, case]},
+                {"testNodes": [dict(case, result="Failed")]},
+                {"testNodes": [dict(case, nodeIdentifier="OtherTests/anotherCase()")]},
+                {"testNodes": [dict(case, children={})]}):
+            with self.subTest(tree=invalid), self.assertRaises(ValueError):
+                diagnostic.verify_enrollment(summary, invalid)
+        for invalid in (dict(summary, totalTestCount=2, failedTests=1), dict(summary, expectedFailures=1),
+                dict(summary, devicesAndConfigurations=[]), dict(summary, passedTests=0, skippedTests=1)):
+            with self.subTest(summary=invalid), self.assertRaises(ValueError):
+                diagnostic.verify_enrollment(invalid, tree)
+        workflow = (HERE.parents[1] / ".github/workflows/yuedu-renewal-diagnostic.yml").read_text()
+        self.assertLess(workflow.index("name: Retain the diagnostic unsigned device package"), workflow.index("prepare-simulator"))
+        self.assertLess(workflow.index("prepare-simulator"), workflow.index("run-enrollment"))
+        self.assertNotIn("renewal-package-tools.py run", workflow)
+        self.assertNotIn("full-application-signing-tools.py", workflow)
 
     def test_real_file_and_zip_budget_gates_and_old_s3_kind_rejection(self):
         with tempfile.TemporaryDirectory() as tmp:

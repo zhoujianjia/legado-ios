@@ -330,6 +330,7 @@ struct SelfRenewalSigningMaterialVaultTests {
             #expect(before == after && kept.keyID == first.id && kept.generation == pending.generation)
             try Self.signAndVerify(kept.keyMaterial)
         }
+        try await Self.frameworkEnrollmentPreservesPendingIntent()
     }
 
     @Test("CSR rejects stale revoked foreign and deleted keys despite retained pending handles")
@@ -397,6 +398,112 @@ struct SelfRenewalSigningMaterialVaultTests {
         }
     }
 
+    nonisolated private static func frameworkEnrollmentPreservesPendingIntent() async throws {
+        let observations = try await Task.detached {
+            var checks: [Bool] = []
+            func required<T>(_ value: T?) throws -> T {
+                guard let value else { throw CocoaError(.coderInvalidValue) }
+                return value
+            }
+            func requireCondition(_ value: Bool) throws {
+                guard value else { throw CocoaError(.coderInvalidValue) }
+            }
+            let sdk = try SelfRenewalSDKOwnedPackageFixture.load()
+            let directory = FileManager.default.temporaryDirectory.appendingPathComponent("owned-enrollment-framework-" + UUID().uuidString)
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
+            let input = directory.appendingPathComponent("owned.ipa")
+            let storage = FaultStorage()
+            let vault = Vault(codeAnchors: [sdk.anchor], profileAnchors: [sdk.anchor], storage: storage, clock: { sdk.date })
+            var ownedNamespace: Vault.Namespace?
+            func cleanup() async throws {
+                storage.clearSaveFailure()
+                if let namespace = ownedNamespace {
+                    let generation = try await vault.generation(in: namespace)
+                    try await vault.destroy(namespace, expectedGeneration: generation)
+                    ownedNamespace = nil
+                }
+                if FileManager.default.fileExists(atPath: directory.path) { try FileManager.default.removeItem(at: directory) }
+            }
+            do {
+                try sdk.archive.write(to: input, options: .withoutOverwriting)
+                let verified = try await SelfRenewalIPAUnpacker.verify(ipa: input,
+                    codeAnchors: [sdk.anchor], profileAnchors: [sdk.anchor], at: sdk.date)
+                let observed = verified.application.resources.executableMaterials
+                try requireCondition(observed.inventory.components.filter { $0.kind == .framework }.count == 1)
+                try requireCondition(observed.inventory.issues.contains { issue in
+                    if case .unexpectedComponent(let path) = issue {
+                        return observed.inventory.components.first { $0.relativePath == path }?.kind == .framework
+                    }
+                    return false
+                })
+                let namespace = try await vault.create(identity: verified.application)
+                ownedNamespace = namespace
+                let originalGeneration = try await vault.generation(in: namespace)
+                // Persist a real generateKey pending intent, then fail only its
+                // ready write. The owner removes the issued key but retains the
+                // durable pending record; enrollment reads must not retire it.
+                storage.failSave(afterSuccessfulSaves: 1)
+                do {
+                    _ = try await vault.generateKey(in: namespace, expectedGeneration: originalGeneration)
+                    checks.append(false)
+                } catch let failure as Vault.Failure {
+                    checks.append(failure == .manifestWrite)
+                }
+                let generation = try await vault.generation(in: namespace)
+                let account = "owned-v1-" + namespace.id.uuidString.lowercased()
+                let before = try required(try storage.load(account: account))
+                let manifest = try required(try JSONSerialization.jsonObject(with: Data(before.utf8)) as? [String: Any])
+                let keys = try required(manifest["keys"] as? [[String: Any]])
+                try requireCondition(keys.count == 1 && keys[0]["state"] as? String == "pending")
+                let pendingIDString = try required(keys[0]["id"] as? String)
+                let pendingID = try required(UUID(uuidString: pendingIDString))
+                checks.append(Self.status(Self.tag(namespace: namespace, keyID: pendingID)) == errSecItemNotFound)
+                let reopened = Vault(codeAnchors: [sdk.anchor], profileAnchors: [sdk.anchor], storage: storage, clock: { sdk.date })
+                let enrollment = try await reopened.resumeForEnrollment(namespaceID: namespace.id, observed: observed)
+                checks.append(enrollment.namespace == namespace && enrollment.bundles.count == 3)
+                checks.append(!enrollment.currentSigningMaterialsVerified && !enrollment.appleAuthorizationEstablished)
+                let afterGeneration = try await reopened.generation(in: namespace)
+                let after = try required(try storage.load(account: account))
+                checks.append(afterGeneration == generation && Data(after.utf8) == Data(before.utf8))
+
+                // Negative structural observations copy genuine parsed material;
+                // they add no authentication result or caller success flag.
+                let inventory = observed.inventory
+                let denied: [SelfRenewalMaterialInventory.Issue] = [
+                    .missingRole(.shareExtension), .duplicateRole(.widgetExtension),
+                    .missingOrInvalidInfo("owned-negative"), .unexpectedComponent("."),
+                    .unexpectedComponent("owned-missing.framework"), .invalidRoleLocation("owned-negative"),
+                    .invalidParentIdentifier("owned-negative"), .duplicateBundleIdentifier,
+                    .missingExecutable("owned-negative"), .unrecognizedExecutableHeader("owned-negative")]
+                for issue in denied {
+                    let changed = SelfRenewalMaterialInventory.Inventory(components: inventory.components,
+                        codeFiles: inventory.codeFiles, files: inventory.files, directories: inventory.directories,
+                        issues: inventory.issues + [issue], entriesVisited: inventory.entriesVisited,
+                        declaredFileBytes: inventory.declaredFileBytes, bytesRead: inventory.bytesRead)
+                    let rejected = SelfRenewalMachOSignatureReader.Materials(inventory: changed, code: observed.code,
+                        signatureStructureBytesRead: observed.signatureStructureBytesRead,
+                        contentHashBytesRead: observed.contentHashBytesRead,
+                        signatureVerificationBytesRead: observed.signatureVerificationBytesRead)
+                    do {
+                        _ = try await reopened.resumeForEnrollment(namespaceID: namespace.id, observed: rejected)
+                        checks.append(false)
+                    } catch let failure as Vault.Failure {
+                        checks.append(failure == .identityChanged)
+                    }
+                    let unchanged = try required(try storage.load(account: account))
+                    let unchangedGeneration = try await reopened.generation(in: namespace)
+                    checks.append(Data(unchanged.utf8) == Data(before.utf8) && unchangedGeneration == generation)
+                }
+                try await cleanup()
+                return checks
+            } catch {
+                try await cleanup()
+                throw error
+            }
+        }.value
+        #expect(observations.count == 25 && observations.allSatisfy { $0 })
+    }
+
     nonisolated private static func failure(_ expected: Vault.Failure, _ action: @Sendable () async throws -> Void) async throws {
         do { try await action(); Issue.record("Expected \(expected)") }
         catch let error as Vault.Failure { #expect(error == expected) }
@@ -457,6 +564,7 @@ struct SelfRenewalSigningMaterialVaultTests {
         private var remaining: Int?
         private var nextLoadFailure: Vault.Failure?
         func failSave(afterSuccessfulSaves count: Int) { lock.lock(); defer { lock.unlock() }; remaining = count }
+        func clearSaveFailure() { lock.lock(); defer { lock.unlock() }; remaining = nil }
         func failNextLoad(_ failure: Vault.Failure) { lock.lock(); defer { lock.unlock() }; nextLoadFailure = failure }
         func load(account: String) throws -> String? {
             lock.lock(); let failure = nextLoadFailure; nextLoadFailure = nil; lock.unlock()

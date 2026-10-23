@@ -403,6 +403,14 @@ struct SelfRenewalSettingsView: View {
             if !owner.developerServicesConfigured {
                 Text(localized("帳號認證服務尚未配置，暫時無法登入或申請簽名材料。"))
                     .dsSectionFooter()
+            } else if !owner.isWorking, owner.developerSession == nil,
+                      let operation = owner.operationFailure?.operation,
+                      operation == .signIn || operation == .verification,
+                      let problem = owner.problem {
+                Text(localized(problemKey(problem)))
+                    .dsSectionFooter()
+                    .foregroundStyle(DSColor.destructive)
+                    .accessibilityIdentifier("self_renewal_account_problem")
             }
         }
         .interfaceSectionSurface()

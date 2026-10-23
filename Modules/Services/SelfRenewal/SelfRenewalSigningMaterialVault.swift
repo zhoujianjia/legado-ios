@@ -324,20 +324,41 @@ actor SelfRenewalSigningMaterialVault {
         guard let encoded = try storage.load(account: Self.account(namespaceID)) else { throw Failure.namespaceUnavailable }
         let manifest = try Self.decode(encoded, namespace: namespaceID)
         let components = observed.inventory.components.filter { $0.kind == .application || $0.kind == .appExtension }
-        guard observed.inventory.issues.isEmpty, components.count == manifest.identity.count,
-              Set(manifest.identity.map(\.component)).count == manifest.identity.count,
-              Set(manifest.identity.map(\.bundleIdentifier)).count == manifest.identity.count else { throw Failure.identityChanged }
+        let applications = components.filter { $0.kind == .application }.count
+        let extensions = components.filter { $0.kind == .appExtension }.count
+        let frameworks = observed.inventory.components.filter { $0.kind == .framework }.count
+        func rejected(_ reason: EnrollmentIdentityRejection) -> Failure {
+            SourcePerfTrace.record("renewal.signing.vault.enrollment-rejected",
+                "reason=\(reason.rawValue) manifest=\(manifest.identity.count) apps=\(applications) appex=\(extensions) frameworks=\(frameworks)",
+                since: started, thresholdMs: 0)
+            return .identityChanged
+        }
+        // The inventory's three application roles deliberately do not include
+        // frameworks. Match the package signer's exact framework-only exception;
+        // an unknown component or any other issue still fails closed.
+        let allowedIssues = observed.inventory.issues.allSatisfy { issue in
+            if case .unexpectedComponent(let path) = issue {
+                return observed.inventory.components.first(where: { $0.relativePath == path })?.kind == .framework
+            }
+            return false
+        }
+        guard allowedIssues else { throw rejected(.inventoryIssues) }
+        guard components.count == manifest.identity.count else { throw rejected(.componentCount) }
+        guard Set(manifest.identity.map(\.component)).count == manifest.identity.count else { throw rejected(.manifestComponentUniqueness) }
+        guard Set(manifest.identity.map(\.bundleIdentifier)).count == manifest.identity.count else { throw rejected(.manifestIdentifierUniqueness) }
         let bundles = try manifest.identity.map { identity -> EnrollmentIdentity.Bundle in
-            guard let component = components.first(where: { $0.relativePath == identity.component }),
-                  component.metadata?.bundleIdentifier == identity.bundleIdentifier,
-                  let executable = component.executable,
-                  let code = observed.code.first(where: { $0.file == executable.file }),
-                  !code.structure.slices.isEmpty, code.structure.slices.count <= SelfRenewalMachOSignatureReader.Limits.architectures,
-                  code.structure.slices.allSatisfy({ slice in
-                      guard let signature = slice.signature, let cmsBytes = signature.cmsPayloadByteCount,
-                            cmsBytes > 0, let primary = signature.codeDirectories.first(where: { $0.slot == 0 }) else { return false }
-                      return primary.teamIdentifier == nil || primary.teamIdentifier == identity.team
-                  }) else { throw Failure.identityChanged }
+            guard let component = components.first(where: { $0.relativePath == identity.component }) else { throw rejected(.componentPath) }
+            guard component.metadata?.bundleIdentifier == identity.bundleIdentifier else { throw rejected(.bundleIdentifier) }
+            guard let executable = component.executable else { throw rejected(.executable) }
+            guard let code = observed.code.first(where: { $0.file == executable.file }) else { throw rejected(.code) }
+            guard !code.structure.slices.isEmpty,
+                  code.structure.slices.count <= SelfRenewalMachOSignatureReader.Limits.architectures else { throw rejected(.slices) }
+            for slice in code.structure.slices {
+                guard let signature = slice.signature else { throw rejected(.signature) }
+                guard let cmsBytes = signature.cmsPayloadByteCount, cmsBytes > 0 else { throw rejected(.cms) }
+                guard let primary = signature.codeDirectories.first(where: { $0.slot == 0 }) else { throw rejected(.primaryDirectory) }
+                guard primary.teamIdentifier == nil || primary.teamIdentifier == identity.team else { throw rejected(.team) }
+            }
             return EnrollmentIdentity.Bundle(identity, sliceCount: code.structure.slices.count)
         }
         let chain = manifest.published?.chain ?? manifest.enrollmentIssuerCertificates ?? []
@@ -347,6 +368,11 @@ actor SelfRenewalSigningMaterialVault {
         sessions[namespaceID] = Session(manifest: manifest, encoded: encoded)
         let issuers = manifest.published == nil ? chain : Array(chain.dropFirst())
         return EnrollmentIdentity(namespace: Namespace(namespaceID), bundles: bundles, issuerChainDER: issuers)
+    }
+
+    private enum EnrollmentIdentityRejection: String {
+        case inventoryIssues, componentCount, manifestComponentUniqueness, manifestIdentifierUniqueness
+        case componentPath, bundleIdentifier, executable, code, slices, signature, cms, primaryDirectory, team
     }
 
     func generation(in namespace: Namespace) throws -> UInt64 { try current(namespace).manifest.generation }
