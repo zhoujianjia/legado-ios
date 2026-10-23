@@ -33,6 +33,7 @@ EXTENSIONS = {
     "yuedu_app_ShareExtension.appex": (MAIN_BUNDLE + ".shareextension", "com.apple.share-services"),
 }
 DIAGNOSTIC_KIND = "yuedu-renewal-diagnostic-device"
+DIAGNOSTIC_AUTH_TEST_ROOT = ".build/renewal-diagnostic-private/simulator-tests"
 DIAGNOSTIC_TARGETS = {
     MAIN_TARGET: (MAIN_PRODUCT, MAIN_BUNDLE),
     "Yuedu-Reader Widget": ("yuedu_app_Widget.appex", MAIN_BUNDLE + ".widget"),
@@ -108,7 +109,7 @@ def stage(destination):
             "upstreamCredentialsUsed": False}
 
 
-def project_overlay(original):
+def project_overlay(original, *, diagnostic_auth_tests=False):
     """Derive the exact permitted project bytes without touching the file."""
     text = original.decode("utf-8")
     pattern = re.compile(r"(?m)^(?P<prefix>[ \t]*PRODUCT_BUNDLE_IDENTIFIER = )"
@@ -130,13 +131,32 @@ def project_overlay(original):
         overlaid = pattern.sub(lambda item: item["prefix"] + MAIN_BUNDLE
                                + item["identifier"][len(UPSTREAM_BUNDLE):] + item["tail"], text).encode("utf-8")
         counts, before_family = upstream_counts, UPSTREAM_BUNDLE
+    if diagnostic_auth_tests:
+        # The diagnostic's -only-testing selects execution, not compilation.
+        # Redirect only this test group to audited copies of its actual source
+        # dependencies; the complete App and extension groups stay untouched.
+        group = re.compile(r'(?m)^(?P<head>[ \t]*[A-F0-9]{24} /\* Tests/iOS \*/ = \{\r?\n)'
+            r'[ \t]*isa = PBXFileSystemSynchronizedRootGroup;\r?\n'
+            r'[ \t]*explicitFolders = \(\r?\n[ \t]*"yuedu appTests/Fixtures/UMD",\r?\n[ \t]*\);\r?\n'
+            r'[ \t]*path = Tests/iOS;\r?\n[ \t]*sourceTree = "<group>";\r?\n(?P<tail>[ \t]*\};\r?)$')
+        text = overlaid.decode("utf-8")
+        if len(group.findall(text)) != 1:
+            raise ValueError("Expected the original single synchronized Tests/iOS group")
+        newline = "\r\n" if "\r\n" in text else "\n"
+        text = group.sub(lambda match: match["head"] + "\t\t\tisa = PBXFileSystemSynchronizedRootGroup;" + newline
+            + '\t\t\tpath = "' + DIAGNOSTIC_AUTH_TEST_ROOT + '";' + newline
+            + '\t\t\tsourceTree = "<group>";' + newline + match["tail"], text)
+        overlaid = text.encode("utf-8")
     record = {"schemaVersion": 1, "path": PROJECT, "replacementCount": 0 if already_independent else 10,
               "identifiersAlreadyIndependent": already_independent,
               "originalSHA256": hashlib.sha256(original).hexdigest(),
-              "overlaySHA256": hashlib.sha256(overlaid).hexdigest(), "expectedTrackedOverlay": not already_independent,
+              "overlaySHA256": hashlib.sha256(overlaid).hexdigest(), "expectedTrackedOverlay": diagnostic_auth_tests or not already_independent,
               "settings": [{"before": before_family + suffix, "after": MAIN_BUNDLE + suffix, "count": count}
                            for suffix, count in counts.items()],
               "scope": "Only PRODUCT_BUNDLE_IDENTIFIER settings; entitlements and other identifiers are unchanged in source."}
+    if diagnostic_auth_tests:
+        record.update(diagnosticAuthTestRoot=DIAGNOSTIC_AUTH_TEST_ROOT,
+            scope="Only PRODUCT_BUNDLE_IDENTIFIER settings and the diagnostic Simulator test source group; complete App and extension source groups are unchanged.")
     return overlaid, record
 
 
@@ -211,7 +231,7 @@ def inspect_settings(settings, with_jvm=False, diagnostic=False):
             actual = actual[0]
             expected = dict(required, FULL_PRODUCT_NAME=product, PRODUCT_BUNDLE_IDENTIFIER=identifier,
                             SWIFT_OPTIMIZATION_LEVEL="-Onone", SWIFT_COMPILATION_MODE="singlefile",
-                            CODE_SIGNING_REQUIRED="NO", ENABLE_DEBUG_DYLIB="NO", CURRENT_PROJECT_VERSION="20")
+                            CODE_SIGNING_REQUIRED="NO", ENABLE_DEBUG_DYLIB="NO", CURRENT_PROJECT_VERSION="21")
             for key, value in expected.items():
                 if actual.get(key, "" if value == "" else None) != value:
                     raise ValueError("Unexpected diagnostic setting " + target + " " + key)

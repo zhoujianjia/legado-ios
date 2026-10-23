@@ -64,7 +64,7 @@ jobs:
           include-hidden-files: true
           retention-days: 1
           compression-level: 0
-      - name: Prepare the independent one-case authentication Simulator regression after IPA delivery
+      - name: Prepare only the authentication suite and its source fixtures after IPA delivery
         run: |
           test "$(uname -m)" = arm64
           export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
@@ -93,6 +93,6 @@ jobs:
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
           This isolated diagnostic builds the complete iPhoneOS JVM reader, main App, Widget and Share extension with the Release configuration and Swift -Onone/singlefile, retaining non-DEBUG production conditional branches. It reuses the audited native runtime and compiles this exact source's ordinary JAR.
-          This is not optimized Release/S3 acceptance or a performance build. After the unsigned IPA is retained, a separate Simulator regression runs only SelfRenewalDeveloperAuthenticationTests/connectsOnlyThroughActualMaterialAccountValidation with the controlled account transport and a strict 1/1 result gate. This is not S3, full SDK/Native acceptance, actual Apple login, physical installation or automatic renewal. The unchanged complete workflows retain their original gates and meanings. Sign the unsigned package with the original installation tool/account before device diagnostics.
+          This is not optimized Release/S3 acceptance or a performance build. After the unsigned IPA is retained, the diagnostic Simulator test group compiles only the authentication suite and its three actual source fixtures, preserving the complete App and extension source groups. The independent regression runs only SelfRenewalDeveloperAuthenticationTests/connectsOnlyThroughActualMaterialAccountValidation with the controlled account transport and a strict 1/1 result gate. This is not S3, full SDK/Native acceptance, actual Apple login, physical installation or automatic renewal. The unchanged complete workflows retain their original gates and meanings. Sign the unsigned package with the original installation tool/account before device diagnostics.
           Only the three unsigned build outputs, delivery binding and exact Git source.zip are exported under the current bounded temporary distribution policy, with one-day artifact retention. No private producer directory, P12, signing key, user account data or private book-source pack is uploaded. License clearance is not established.
           TEXT

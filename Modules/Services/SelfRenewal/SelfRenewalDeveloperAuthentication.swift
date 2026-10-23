@@ -165,8 +165,14 @@ actor SelfRenewalDeveloperAuthentication {
             let values = try Self.dictionary(SelfRenewalDERPropertyList.decodeXMLPropertyList(plain))
             Self.traceResponse(.decryptedSPD, values)
             stage = .spdAdsid
-            let dsid = try Self.string(values["adsid"], maximum: 64)
-            guard dsid.utf8.allSatisfy({ (48...57).contains($0) }) else { throw Failure.malformedResponse }
+            guard case .string(let dsid) = values["adsid"] else { throw Failure.malformedResponse }
+            let identifier = SelfRenewalGSASRP.accountIdentifierValidation(dsid)
+            guard identifier.isValid else {
+                // Fixed rejection flags only; never expose account text, length
+                // or a fingerprint of authenticated/decrypted identity data.
+                AppLogger.parse("Renewal GSA adsid rejected nonempty=\(identifier.nonempty) within128=\(identifier.within128) noControl=\(identifier.noControl)")
+                throw Failure.malformedResponse
+            }
             stage = .spdIDMSToken
             let idms = try Self.string(values["GsIdmsToken"], maximum: 8_192)
             stage = .secondaryStatus

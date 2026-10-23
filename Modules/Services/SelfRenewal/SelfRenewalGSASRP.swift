@@ -118,8 +118,22 @@ struct SelfRenewalGSASRP: Sendable, CustomStringConvertible, CustomDebugStringCo
             return Data(try CryptoSwift.AES(key: Array(key), blockMode: gcm, padding: .noPadding).decrypt(Array(envelope.dropFirst(19).dropLast(16))))
         } catch { throw Failure.encryptedData }
     }
+    /// GSA's authenticated ADSID is opaque text, not a decimal DSID. Preserve
+    /// its exact UTF-8 for 2FA, app-token checksums and developer headers. Use
+    /// the material account client's size bound and retain Auth's control filter.
+    /// Primary protocol usage: https://github.com/rileytestut/AltSign/blob/master/AltSign/Apple%20API/ALTAppleAPI%2BAuthentication.m
+    struct AccountIdentifierValidation {
+        let nonempty: Bool
+        let within128: Bool
+        let noControl: Bool
+        var isValid: Bool { nonempty && within128 && noControl }
+    }
+    static func accountIdentifierValidation(_ value: String) -> AccountIdentifierValidation {
+        AccountIdentifierValidation(nonempty: !value.isEmpty, within128: value.utf8.count <= 128,
+            noControl: !value.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) }))
+    }
     static func appTokenChecksum(key: Data, dsid: String) throws -> Data {
-        guard [16, 24, 32].contains(key.count), !dsid.isEmpty, dsid.utf8.count <= 64, dsid.utf8.allSatisfy({ (48...57).contains($0) }) else { throw Failure.invalidInput }
+        guard [16, 24, 32].contains(key.count), accountIdentifierValidation(dsid).isValid else { throw Failure.invalidInput }
         return mac(key, Data(("apptokens" + dsid + "com.apple.gs.xcode.auth").utf8))
     }
     static func equal(_ left: Data, _ right: Data) -> Bool {

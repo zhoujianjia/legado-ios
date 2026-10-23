@@ -27,7 +27,7 @@ class DiagnosticGates(unittest.TestCase):
             "PLATFORM_NAME": "iphoneos", "FULL_PRODUCT_NAME": product, "PRODUCT_BUNDLE_IDENTIFIER": identifier,
             "ARCHS": "arm64", "CODE_SIGNING_ALLOWED": "NO", "CODE_SIGNING_REQUIRED": "NO", "ENABLE_DEBUG_DYLIB": "NO",
             "CODE_SIGN_ENTITLEMENTS": "", "GATEWAY_BASE_URL": "", "YUEDU_LOCAL_EXPERIENCE": "YES",
-            "TARGET_BUILD_DIR": str(root), "MARKETING_VERSION": "3.0", "CURRENT_PROJECT_VERSION": "20",
+            "TARGET_BUILD_DIR": str(root), "MARKETING_VERSION": "3.0", "CURRENT_PROJECT_VERSION": "21",
             "SWIFT_OPTIMIZATION_LEVEL": "-Onone", "SWIFT_COMPILATION_MODE": "singlefile",
             "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "", "GCC_PREPROCESSOR_DEFINITIONS": "NDEBUG=1",
             "OTHER_SWIFT_FLAGS": "-D YUEDU_LOCAL_EXPERIENCE"}}
@@ -94,6 +94,66 @@ class DiagnosticGates(unittest.TestCase):
         self.assertLess(workflow.index("prepare-simulator"), workflow.index("run-enrollment"))
         self.assertNotIn("renewal-package-tools.py run", workflow)
         self.assertNotIn("full-application-signing-tools.py", workflow)
+
+    def test_focused_authentication_group_is_an_explicit_private_simulator_overlay(self):
+        original = (diagnostic.REPO / config.PROJECT).read_bytes()
+        ordinary, ordinary_record = config.project_overlay(original)
+        focused, record = config.project_overlay(original, diagnostic_auth_tests=True)
+        self.assertNotEqual(ordinary, focused)
+        self.assertEqual(record["diagnosticAuthTestRoot"], config.DIAGNOSTIC_AUTH_TEST_ROOT)
+        self.assertTrue(record["expectedTrackedOverlay"])
+        self.assertIn(b'path = "' + config.DIAGNOSTIC_AUTH_TEST_ROOT.encode() + b'";', focused)
+        for path in (b"path = Modules;", b"path = Targets/Yuedu;", b"path = Widget;", b"path = ShareExtension;"):
+            self.assertEqual(original.count(path), focused.count(path))
+        settings = diagnostic.native.smoke.config
+        original_adapter = settings.project_overlay
+        with diagnostic.enrollment_project_overlay():
+            self.assertEqual(settings.project_overlay(original), (focused, record))
+            self.assertTrue(settings.review_project_overlay(record, original, focused))
+            with self.assertRaises(ValueError):
+                settings.review_project_overlay(record, original, focused.replace(b"path = Modules;", b"path = Elsewhere;"))
+        self.assertIs(settings.project_overlay, original_adapter)
+        self.assertEqual(config.project_overlay(original), (ordinary, ordinary_record))
+        with self.assertRaises(ValueError):
+            config.review_project_overlay(record, original, focused)
+        for changed in (original.replace(b"path = Tests/iOS;", b"path = OtherTests;"), original + original):
+            with self.assertRaises(ValueError):
+                config.project_overlay(changed, diagnostic_auth_tests=True)
+
+    def test_focused_authentication_source_closure_rejects_extra_changed_or_missing_inputs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp).resolve()
+            stage = root / config.DIAGNOSTIC_AUTH_TEST_ROOT
+            for relative in diagnostic.ENROLLMENT_SOURCES:
+                target = root / relative; target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes((diagnostic.REPO / relative).read_bytes())
+            resource = root / diagnostic.SDK_RESOURCE
+            resource.write_text('{"controlledFixture":true}')
+            unrelated = resource.with_name("UnrelatedTests.swift")
+            unrelated.write_text("import Testing\n@Test func unrelated() {}\n")
+            with patch.object(diagnostic, "REPO", root), patch.object(diagnostic, "SIMULATOR_TESTS", stage):
+                record = diagnostic.enrollment_source_stage(create=True)
+                self.assertEqual(record["swiftSourceCount"], 4)
+                self.assertEqual(record, diagnostic.enrollment_source_stage())
+                self.assertEqual({row["sourcePath"] for row in record["files"]},
+                    {*diagnostic.ENROLLMENT_SOURCES, diagnostic.SDK_RESOURCE})
+                self.assertEqual({path.name for path in stage.rglob("*.swift")},
+                    {Path(relative).name for relative in diagnostic.ENROLLMENT_SOURCES})
+                self.assertTrue(unrelated.is_file())
+                self.assertFalse((stage / "yuedu appTests" / unrelated.name).exists())
+                with self.assertRaises(ValueError):
+                    diagnostic.enrollment_source_stage(create=True)
+                fixture = stage / record["files"][1]["stagedPath"]
+                raw = fixture.read_bytes(); fixture.write_bytes(raw + b"\n// changed\n")
+                with self.assertRaises(ValueError):
+                    diagnostic.enrollment_source_stage()
+                fixture.write_bytes(raw)
+                extra = fixture.with_name("Unexpected.swift"); extra.write_text("// unexpected source")
+                with self.assertRaises(ValueError):
+                    diagnostic.enrollment_source_stage()
+                extra.unlink(); fixture.unlink()
+                with self.assertRaises(FileNotFoundError):
+                    diagnostic.enrollment_source_stage()
 
     def test_real_file_and_zip_budget_gates_and_old_s3_kind_rejection(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Complete, unoptimized device diagnostics; never Release or S3 acceptance."""
 import argparse
+from contextlib import contextmanager
 import importlib.util
 import json
 import os
@@ -23,9 +24,13 @@ WORK = REPO / ".build/renewal-diagnostic"
 BUILD = REPO / ".build/renewal-diagnostic-private/device-build"
 PUBLIC = REPO / ".build/renewal-diagnostic-public"
 SIMULATOR = REPO / ".build/renewal-diagnostic-private/simulator"
+SIMULATOR_TESTS = REPO / config.DIAGNOSTIC_AUTH_TEST_ROOT
 PRODUCED = REPO / ".build/renewal-diagnostic-private/sdk-produced"
 LOGS = REPO / ".build/ci-logs"
 ENROLLMENT_CASE = "SelfRenewalDeveloperAuthenticationTests/connectsOnlyThroughActualMaterialAccountValidation"
+ENROLLMENT_SOURCES = tuple("Tests/iOS/yuedu appTests/" + name for name in (
+    "SelfRenewalDeveloperAuthenticationTests.swift", "SelfRenewalSigningOwnedPKIFixture.swift",
+    "SelfRenewalCMSFixture.swift", "SelfRenewalApplicationMaterialFixture.swift"))
 SDK_RESOURCE = "Tests/iOS/yuedu appTests/owned-sdk-package.json"
 SDK_TOOLS = ("generate-sdk-owned-package.py", "ImportOwnedIdentity.swift", "OwnedIdentitySearch.h",
              "OwnedIdentitySearch.c", "main.c", "extension.c", "framework.c")
@@ -38,7 +43,9 @@ INPUTS = (".github/workflows/yuedu-renewal-diagnostic.yml", "scripts/reader-expe
           "Modules/Services/SelfRenewal/SelfRenewalAnisetteV3Provider.swift",
           "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
           "Modules/Services/SelfRenewal/SelfRenewalGSASRP.swift",
-          "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
+          *ENROLLMENT_SOURCES,
+          "docs/legado-ios/evidence/renewal-opaque-adsid-step/generate-owned-vectors.py",
+          "docs/legado-ios/evidence/renewal-opaque-adsid-step/owned-vectors.json",
           *("scripts/reader-experience/owned-package-fixture/" + name for name in SDK_TOOLS), *package.INPUTS)
 
 
@@ -129,10 +136,10 @@ def validate_build(receipt):
             or manifest.get("diagnosticOnly") is not True or manifest.get("releaseAcceptance") is not False
             or manifest.get("S3Acceptance") != "not_run" or manifest.get("configuration") != "Release"
             or manifest.get("platform") != "iPhoneOS" or manifest.get("architecture") != "arm64"
-            or manifest.get("build") != "20" or manifest.get("signed") is not False
+            or manifest.get("build") != "21" or manifest.get("signed") is not False
             or manifest.get("deviceCompilationPassed") is not True or manifest.get("jvmIntegratedIntoReading") is not True
             or manifest.get("deviceValidationPassed") is not False):
-        raise ValueError("Expected this source's complete, unsigned build20 diagnostic manifest")
+        raise ValueError("Expected this source's complete, unsigned build21 diagnostic manifest")
     settings = config.inspect_settings(json.loads((BUILD / "build-settings.json").read_bytes()), with_jvm=True, diagnostic=True)
     if settings != manifest.get("actualBuildSettings"):
         raise ValueError("Diagnostic settings changed after compilation")
@@ -145,7 +152,7 @@ def validate_build(receipt):
         raise ValueError("Complete diagnostic runtime/bundle material changed")
     for bundle in [app, *config.extension_bundles(app).values()]:
         info = plistlib.loads((bundle / "Info.plist").read_bytes())
-        if info.get("YueduExperienceSourceCommit") != receipt["sourceCommit"] or info.get("CFBundleVersion") != "20":
+        if info.get("YueduExperienceSourceCommit") != receipt["sourceCommit"] or info.get("CFBundleVersion") != "21":
             raise ValueError("Diagnostic embedded bundle source/build differs")
     proof = json.loads((BUILD / "native-reuse.json").read_bytes())
     if (proof != json.loads((WORK / "native-restore.json").read_bytes())
@@ -193,10 +200,54 @@ def export_unsigned():
         scope="Complete device diagnostic with Release configuration, Swift -Onone/singlefile and no DEBUG. Not optimized Release/S3 acceptance, signing, installation or automatic renewal."))
 
 
+@contextmanager
+def enrollment_project_overlay():
+    """Opt only this private Simulator adapter into the focused test group."""
+    settings = native.smoke.config
+    original = settings.project_overlay
+    try:
+        settings.project_overlay = lambda raw: original(raw, diagnostic_auth_tests=True)
+        yield
+    finally:
+        settings.project_overlay = original
+
+
+def enrollment_source_stage(*, create=False):
+    """Require exact source copies, including fixtures needed to compile the suite."""
+    stage = full.checked(SIMULATOR_TESTS)
+    paths = (*ENROLLMENT_SOURCES, SDK_RESOURCE)
+    if create:
+        if stage.exists():
+            raise ValueError("Enrollment source staging requires a fresh directory")
+        stage.mkdir(parents=True)
+    records = []
+    for relative in paths:
+        original = full.checked(REPO / relative)
+        member = Path(relative).relative_to("Tests/iOS")
+        staged = full.checked(stage / member)
+        if create:
+            staged.parent.mkdir(parents=True, exist_ok=True)
+            with staged.open("xb") as output:
+                with original.open("rb") as stream:
+                    shutil.copyfileobj(stream, output)
+        if full.fact(staged) != full.fact(original):
+            raise ValueError("Enrollment staged source/resource differs from checkout: " + relative)
+        records.append({"sourcePath": relative, "stagedPath": member.as_posix(), **full.fact(staged)})
+    actual = set()
+    for path in stage.rglob("*"):
+        path = full.checked(path)
+        if path.is_file():
+            actual.add(path.relative_to(stage).as_posix())
+    if actual != {row["stagedPath"] for row in records}:
+        raise ValueError("Unexpected file in focused enrollment test source group")
+    return {"root": config.DIAGNOSTIC_AUTH_TEST_ROOT, "files": records,
+        "swiftSourceCount": len(ENROLLMENT_SOURCES), "completeAppAndExtensionsUnchanged": True}
+
+
 def prepare_simulator():
     receipt = check_binding()
     target = full.checked(REPO / SDK_RESOURCE)
-    if SIMULATOR.exists() or PRODUCED.exists() or target.exists():
+    if SIMULATOR.exists() or SIMULATOR_TESTS.exists() or PRODUCED.exists() or target.exists():
         raise ValueError("Enrollment regression requires fresh owned Simulator and fixture outputs")
     LOGS.mkdir(parents=True, exist_ok=True)
     full.command(LOGS, "renewal-diagnostic-sdk-producer", [sys.executable,
@@ -207,14 +258,23 @@ def prepare_simulator():
     with target.open("xb") as stream:
         stream.write(raw)
     target.chmod(0o444)
+    staged = enrollment_source_stage(create=True)
+    # Verify the original native closure before applying the additional audited
+    # diagnostic test-group overlay. Its project file is itself a bound input.
+    native_inputs = native.source_inputs()
     original = native.validate_tag
+    original_inputs = native.source_inputs
     try:
         native.validate_tag = source
-        native.prepare(SIMULATOR)
+        native.source_inputs = lambda: native_inputs
+        with enrollment_project_overlay():
+            native.prepare(SIMULATOR)
     finally:
         native.validate_tag = original
+        native.source_inputs = original_inputs
     full.write_new(WORK / "enrollment-prepared.json", dict(receipt,
         requiredCase=ENROLLMENT_CASE, fixture=resource_fact, producerManifest=verified["manifest"],
+        testSourceStage=staged,
         regressionScope="Independent one-case owned-fixture Simulator regression after unsigned IPA export"))
 
 
@@ -245,10 +305,12 @@ def run_enrollment():
     prepared = json.loads((WORK / "enrollment-prepared.json").read_bytes())
     if (any(prepared.get(key) != value for key, value in receipt.items())
             or prepared.get("requiredCase") != ENROLLMENT_CASE
+            or prepared.get("testSourceStage") != enrollment_source_stage()
             or prepared.get("fixture") != full.fact(full.checked(REPO / SDK_RESOURCE))
             or prepared.get("producerManifest") != full.fact(PRODUCED / "sdk-produced-fixture-manifest.json")):
         raise ValueError("Enrollment fixture preparation changed")
-    native.smoke.review_overlays(json.loads((SIMULATOR / "overlays.json").read_bytes()))
+    with enrollment_project_overlay():
+        native.smoke.review_overlays(json.loads((SIMULATOR / "overlays.json").read_bytes()))
     result_bundle = REPO / ".build/renewal-diagnostic-enrollment.xcresult"
     failure = None
     observed = None
