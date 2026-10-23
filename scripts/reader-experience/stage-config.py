@@ -211,7 +211,7 @@ def inspect_settings(settings, with_jvm=False, diagnostic=False):
             actual = actual[0]
             expected = dict(required, FULL_PRODUCT_NAME=product, PRODUCT_BUNDLE_IDENTIFIER=identifier,
                             SWIFT_OPTIMIZATION_LEVEL="-Onone", SWIFT_COMPILATION_MODE="singlefile",
-                            CODE_SIGNING_REQUIRED="NO", ENABLE_DEBUG_DYLIB="NO", CURRENT_PROJECT_VERSION="19")
+                            CODE_SIGNING_REQUIRED="NO", ENABLE_DEBUG_DYLIB="NO", CURRENT_PROJECT_VERSION="20")
             for key, value in expected.items():
                 if actual.get(key, "" if value == "" else None) != value:
                     raise ValueError("Unexpected diagnostic setting " + target + " " + key)

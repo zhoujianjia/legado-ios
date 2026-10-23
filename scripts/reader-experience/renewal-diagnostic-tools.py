@@ -25,7 +25,7 @@ PUBLIC = REPO / ".build/renewal-diagnostic-public"
 SIMULATOR = REPO / ".build/renewal-diagnostic-private/simulator"
 PRODUCED = REPO / ".build/renewal-diagnostic-private/sdk-produced"
 LOGS = REPO / ".build/ci-logs"
-ENROLLMENT_CASE = "SelfRenewalSigningMaterialVaultTests/requestsCertificateWithPersistedKeyAndIndependentPublicVerification"
+ENROLLMENT_CASE = "SelfRenewalDeveloperAuthenticationTests/connectsOnlyThroughActualMaterialAccountValidation"
 SDK_RESOURCE = "Tests/iOS/yuedu appTests/owned-sdk-package.json"
 SDK_TOOLS = ("generate-sdk-owned-package.py", "ImportOwnedIdentity.swift", "OwnedIdentitySearch.h",
              "OwnedIdentitySearch.c", "main.c", "extension.c", "framework.c")
@@ -34,6 +34,11 @@ INPUTS = (".github/workflows/yuedu-renewal-diagnostic.yml", "scripts/reader-expe
           "scripts/reader-experience/renewal-probe-tools.py", "scripts/xctest.sh", "scripts/sim.sh",
           "Modules/Services/SelfRenewal/SelfRenewalSigningMaterialVault.swift",
           "Tests/iOS/yuedu appTests/SelfRenewalSigningMaterialVaultTests.swift",
+          "Modules/Services/SelfRenewal/SelfRenewalDeveloperAuthentication.swift",
+          "Modules/Services/SelfRenewal/SelfRenewalAnisetteV3Provider.swift",
+          "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
+          "Modules/Services/SelfRenewal/SelfRenewalGSASRP.swift",
+          "Tests/iOS/yuedu appTests/SelfRenewalDeveloperAuthenticationTests.swift",
           *("scripts/reader-experience/owned-package-fixture/" + name for name in SDK_TOOLS), *package.INPUTS)
 
 
@@ -124,10 +129,10 @@ def validate_build(receipt):
             or manifest.get("diagnosticOnly") is not True or manifest.get("releaseAcceptance") is not False
             or manifest.get("S3Acceptance") != "not_run" or manifest.get("configuration") != "Release"
             or manifest.get("platform") != "iPhoneOS" or manifest.get("architecture") != "arm64"
-            or manifest.get("build") != "19" or manifest.get("signed") is not False
+            or manifest.get("build") != "20" or manifest.get("signed") is not False
             or manifest.get("deviceCompilationPassed") is not True or manifest.get("jvmIntegratedIntoReading") is not True
             or manifest.get("deviceValidationPassed") is not False):
-        raise ValueError("Expected this source's complete, unsigned build19 diagnostic manifest")
+        raise ValueError("Expected this source's complete, unsigned build20 diagnostic manifest")
     settings = config.inspect_settings(json.loads((BUILD / "build-settings.json").read_bytes()), with_jvm=True, diagnostic=True)
     if settings != manifest.get("actualBuildSettings"):
         raise ValueError("Diagnostic settings changed after compilation")
@@ -140,7 +145,7 @@ def validate_build(receipt):
         raise ValueError("Complete diagnostic runtime/bundle material changed")
     for bundle in [app, *config.extension_bundles(app).values()]:
         info = plistlib.loads((bundle / "Info.plist").read_bytes())
-        if info.get("YueduExperienceSourceCommit") != receipt["sourceCommit"] or info.get("CFBundleVersion") != "19":
+        if info.get("YueduExperienceSourceCommit") != receipt["sourceCommit"] or info.get("CFBundleVersion") != "20":
             raise ValueError("Diagnostic embedded bundle source/build differs")
     proof = json.loads((BUILD / "native-reuse.json").read_bytes())
     if (proof != json.loads((WORK / "native-restore.json").read_bytes())

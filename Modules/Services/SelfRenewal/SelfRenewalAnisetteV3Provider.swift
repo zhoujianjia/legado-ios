@@ -254,7 +254,9 @@ actor SelfRenewalAnisetteV3Provider {
             let committed = try await withTaskCancellationHandler {
                 for step in 0..<4 {
                     try Task.checkCancellation()
+                    AppLogger.parse("Renewal anisette provisioning step=\(step) event=receive.begin")
                     let data = try await receiveMessage(socket)
+                    AppLogger.parse("Renewal anisette provisioning step=\(step) event=receive.end bytes=\(data.count)")
                     guard data.count <= Self.maximumRecordBytes else { throw Failure.limit }
                     let message: Message
                     do { message = try JSONDecoder().decode(Message.self, from: data) }
@@ -299,7 +301,24 @@ actor SelfRenewalAnisetteV3Provider {
     }
 
     private func response(_ request: SelfRenewalAnisetteRequest) async throws -> Data {
+        let stage: String
+        switch request {
+        case .clientInfo: stage = "clientInfo"
+        case .headers: stage = "getHeaders"
+        case .appleLookup: stage = "appleLookup"
+        case .appleStart: stage = "appleStart"
+        case .appleFinish: stage = "appleFinish"
+        }
+        let started = SourcePerfTrace.now
+        var status = 0, bytes = 0
+        AppLogger.parse("Renewal anisette request begin stage=\(stage)")
+        defer {
+            SourcePerfTrace.record("renewal.anisette.request",
+                "stage=\(stage) httpStatus=\(status) bytes=\(bytes) main=\(Thread.isMainThread)",
+                since: started, thresholdMs: 0)
+        }
         let value = try await transport.sendAnisette(request)
+        status = value.statusCode; bytes = value.body.count
         try Task.checkCancellation()
         guard value.statusCode == 200 else { throw Failure.http(value.statusCode) }
         guard !value.body.isEmpty, value.body.count <= Self.maximumRecordBytes else { throw Failure.limit }

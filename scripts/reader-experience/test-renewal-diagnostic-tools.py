@@ -27,7 +27,7 @@ class DiagnosticGates(unittest.TestCase):
             "PLATFORM_NAME": "iphoneos", "FULL_PRODUCT_NAME": product, "PRODUCT_BUNDLE_IDENTIFIER": identifier,
             "ARCHS": "arm64", "CODE_SIGNING_ALLOWED": "NO", "CODE_SIGNING_REQUIRED": "NO", "ENABLE_DEBUG_DYLIB": "NO",
             "CODE_SIGN_ENTITLEMENTS": "", "GATEWAY_BASE_URL": "", "YUEDU_LOCAL_EXPERIENCE": "YES",
-            "TARGET_BUILD_DIR": str(root), "MARKETING_VERSION": "3.0", "CURRENT_PROJECT_VERSION": "19",
+            "TARGET_BUILD_DIR": str(root), "MARKETING_VERSION": "3.0", "CURRENT_PROJECT_VERSION": "20",
             "SWIFT_OPTIMIZATION_LEVEL": "-Onone", "SWIFT_COMPILATION_MODE": "singlefile",
             "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "", "GCC_PREPROCESSOR_DEFINITIONS": "NDEBUG=1",
             "OTHER_SWIFT_FLAGS": "-D YUEDU_LOCAL_EXPERIENCE"}}
@@ -71,6 +71,8 @@ class DiagnosticGates(unittest.TestCase):
                     diagnostic.source()
         for pattern in ("reader-renewal-*", "legado-native-reader-test-*", "reader-legado-*", "yuedu-renewal-package-*"):
             self.assertFalse(fnmatch.fnmatchcase(tag, pattern))
+        self.assertEqual(diagnostic.ENROLLMENT_CASE,
+            "SelfRenewalDeveloperAuthenticationTests/connectsOnlyThroughActualMaterialAccountValidation")
         summary = {"totalTestCount": 1, "passedTests": 1, "failedTests": 0, "skippedTests": 0,
             "expectedFailures": 0, "devicesAndConfigurations": [
                 {"passedTests": 1, "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}]}

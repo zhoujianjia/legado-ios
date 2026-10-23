@@ -25,6 +25,27 @@ actor SelfRenewalDeveloperAuthentication {
         case candidate(Account.Credentials)
         case secondary(dsid: String, idmsToken: String, mode: SecondaryMode)
     }
+    /// Fixed local stages only. Never derive diagnostics from a response key,
+    /// account, server message, or decrypted value.
+    private enum HandshakeStage: String {
+        case srpInit, initRequest, initChallenge, passwordKey, clientProof
+        case completeRequest, completeSPD, completeSC, completeM2, completeNP, serverProof
+        case spdDecrypt, spdDecode, spdAdsid, spdIDMSToken, secondaryStatus, secondaryMode
+        case spdKey, spdCookie, appTokenChecksum, appTokenRequest, appTokenEnvelope
+        case appTokenDecrypt, appTokenDecode, appTokenFields, appTokenExpiry
+    }
+    private enum ResponseStage: String { case initial, complete, decryptedSPD, appToken }
+    private enum RequestOperation: String {
+        case initial = "init", complete, appTokens = "apptokens"
+        var responseStage: ResponseStage {
+            switch self {
+            case .initial: return .initial
+            case .complete: return .complete
+            case .appTokens: return .appToken
+            }
+        }
+    }
+    private enum RequestStage: String { case anisette, metadata, encode, send, envelope, response, status }
     private let account: Account
     private let transport: any SelfRenewalDeveloperAccountTransport
     private let freshAnisette: @Sendable () async throws -> Account.Anisette
@@ -54,7 +75,9 @@ actor SelfRenewalDeveloperAuthentication {
         switch try await handshake(username: username, password: password) {
         case .candidate(let candidate):
             try Task.checkCancellation()
-            return .connected(try await account.connect(candidate))
+            let observation = try await account.connect(candidate)
+            AppLogger.parse("Renewal account login connected personalTeamMatched=\(observation.personalTeamMatched)")
+            return .connected(observation)
         case .secondary(let dsid, let idmsToken, let mode):
             // Only the real, authenticated SPD supplies these values. A pushed
             // code request is explicit login work, never a background retry.
@@ -71,6 +94,7 @@ actor SelfRenewalDeveloperAuthentication {
                 do { try await Task.sleep(for: .seconds(300)) } catch { return }
                 await self?.expire(challengeID)
             }
+            AppLogger.parse("Renewal account verification required")
             return .verificationRequired(challenge)
         }
     }
@@ -90,7 +114,9 @@ actor SelfRenewalDeveloperAuthentication {
         switch try await handshake(username: value.username, password: value.password) {
         case .candidate(let candidate):
             try Task.checkCancellation()
-            return .connected(try await account.connect(candidate))
+            let observation = try await account.connect(candidate)
+            AppLogger.parse("Renewal account verification connected personalTeamMatched=\(observation.personalTeamMatched)")
+            return .connected(observation)
         case .secondary: throw Failure.unsupportedSecondaryAuthentication
         }
     }
@@ -104,46 +130,115 @@ actor SelfRenewalDeveloperAuthentication {
     private func expire(_ id: UUID) { if pending?.challenge.id == id { clearPending() } }
 
     private func handshake(username: String, password: String) async throws -> Handshake {
-        let srp = try SelfRenewalGSASRP(random: random)
-        let first = try await authenticationRequest(["A2k": srp.clientPublic, "ps": ["s2k", "s2k_fo"], "u": username, "o": "init"])
-        guard let protocolName = SelfRenewalGSASRP.PasswordProtocol(rawValue: try Self.string(first["sp"], maximum: 16)) else { throw Failure.unsupportedProtocol }
-        let cookie = try Self.string(first["c"], maximum: 8_192)
-        let salt = try Self.data(first["s"], maximum: 64)
-        let iterations = try Self.integer(first["i"])
-        guard (1...1_000_000).contains(iterations) else { throw Failure.invalidInput }
-        let server = try Self.data(first["B"], maximum: 256)
-        let key = try SelfRenewalGSASRP.passwordKey(password: password, salt: salt, iterations: Int(iterations), protocolName: protocolName)
-        let proof = try srp.respond(username: username, passwordKey: key, salt: salt, serverPublic: server)
-        let complete = try await authenticationRequest(["c": cookie, "M1": proof.clientProof, "u": username, "o": "complete"])
-        let spd = try Self.data(complete["spd"], maximum: 65_536)
-        let sc = try complete["sc"].map { try Self.data($0, maximum: 65_536, allowEmpty: true) }
-        try proof.verify(serverProof: Self.data(complete["M2"], maximum: 32), protocolName: protocolName,
-                         spd: spd, sc: sc, negotiation: Self.data(complete["np"], maximum: 32))
-        let plain = try proof.decryptSPD(spd)
-        let values = try Self.dictionary(SelfRenewalDERPropertyList.decodeXMLPropertyList(plain))
-        let dsid = try Self.string(values["adsid"], maximum: 64)
-        guard dsid.utf8.allSatisfy({ (48...57).contains($0) }) else { throw Failure.malformedResponse }
-        let idms = try Self.string(values["GsIdmsToken"], maximum: 8_192)
-        let status = try Self.dictionary(complete["Status"])
-        if let mode = try Self.secondaryMode(values: values, status: status) {
-            return .secondary(dsid: dsid, idmsToken: idms, mode: mode)
+        var stage = HandshakeStage.srpInit
+        do {
+            let srp = try SelfRenewalGSASRP(random: random)
+            stage = .initRequest
+            let first = try await authenticationRequest(["A2k": srp.clientPublic, "ps": ["s2k", "s2k_fo"], "u": username, "o": "init"], operation: .initial)
+            stage = .initChallenge
+            guard let protocolName = SelfRenewalGSASRP.PasswordProtocol(rawValue: try Self.string(first["sp"], maximum: 16)) else { throw Failure.unsupportedProtocol }
+            let cookie = try Self.string(first["c"], maximum: 8_192)
+            let salt = try Self.data(first["s"], maximum: 64)
+            let iterations = try Self.integer(first["i"])
+            guard (1...1_000_000).contains(iterations) else { throw Failure.invalidInput }
+            let server = try Self.data(first["B"], maximum: 256)
+            stage = .passwordKey
+            let key = try SelfRenewalGSASRP.passwordKey(password: password, salt: salt, iterations: Int(iterations), protocolName: protocolName)
+            stage = .clientProof
+            let proof = try srp.respond(username: username, passwordKey: key, salt: salt, serverPublic: server)
+            stage = .completeRequest
+            let complete = try await authenticationRequest(["c": cookie, "M1": proof.clientProof, "u": username, "o": "complete"], operation: .complete)
+            stage = .completeSPD
+            let spd = try Self.data(complete["spd"], maximum: 65_536)
+            stage = .completeSC
+            let sc = try complete["sc"].map { try Self.data($0, maximum: 65_536, allowEmpty: true) }
+            stage = .completeM2
+            let serverProof = try Self.data(complete["M2"], maximum: 32)
+            stage = .completeNP
+            let negotiation = try Self.data(complete["np"], maximum: 32)
+            stage = .serverProof
+            try proof.verify(serverProof: serverProof, protocolName: protocolName,
+                             spd: spd, sc: sc, negotiation: negotiation)
+            stage = .spdDecrypt
+            let plain = try proof.decryptSPD(spd)
+            stage = .spdDecode
+            let values = try Self.dictionary(SelfRenewalDERPropertyList.decodeXMLPropertyList(plain))
+            Self.traceResponse(.decryptedSPD, values)
+            stage = .spdAdsid
+            let dsid = try Self.string(values["adsid"], maximum: 64)
+            guard dsid.utf8.allSatisfy({ (48...57).contains($0) }) else { throw Failure.malformedResponse }
+            stage = .spdIDMSToken
+            let idms = try Self.string(values["GsIdmsToken"], maximum: 8_192)
+            stage = .secondaryStatus
+            let status = try Self.dictionary(complete["Status"])
+            stage = .secondaryMode
+            if let mode = try Self.secondaryMode(values: values, status: status) {
+                return .secondary(dsid: dsid, idmsToken: idms, mode: mode)
+            }
+            stage = .spdKey
+            let tokenKey = try Self.data(values["sk"], maximum: 32)
+            guard [16, 24, 32].contains(tokenKey.count) else { throw Failure.malformedResponse }
+            stage = .spdCookie
+            let tokenCookie = try Self.data(values["c"], maximum: 8_192)
+            stage = .appTokenChecksum
+            let checksum = try SelfRenewalGSASRP.appTokenChecksum(key: tokenKey, dsid: dsid)
+            stage = .appTokenRequest
+            let response = try await authenticationRequest(["u": dsid, "app": ["com.apple.gs.xcode.auth"], "c": tokenCookie,
+                                                           "t": idms, "checksum": checksum, "o": "apptokens"], operation: .appTokens)
+            stage = .appTokenEnvelope
+            let encrypted = try Self.data(response["et"], maximum: 65_536)
+            stage = .appTokenDecrypt
+            let tokenBytes = try SelfRenewalGSASRP.decryptAppToken(encrypted, key: tokenKey)
+            stage = .appTokenDecode
+            let tokenRoot = try Self.dictionary(SelfRenewalDERPropertyList.decodeXMLPropertyList(tokenBytes))
+            stage = .appTokenFields
+            let tokens = try Self.dictionary(tokenRoot["t"])
+            let token = try Self.dictionary(tokens["com.apple.gs.xcode.auth"])
+            let raw = try Self.string(token["token"], maximum: 8_192)
+            stage = .appTokenExpiry
+            let expiry = try Self.integer(token["expiry"])
+            let expiration = Date(timeIntervalSince1970: Double(expiry) / 1_000)
+            guard expiry > 0, expiration.timeIntervalSince1970.isFinite, expiration > clock() else { throw Failure.expiredChallenge }
+            return .candidate(Account.Credentials(dsid: dsid, xcodeToken: raw, expiresAt: expiration))
+        } catch {
+            AppLogger.parse("Renewal GSA handshake unavailable stage=\(stage.rawValue) type=\(String(reflecting: type(of: error)))")
+            throw error
         }
-        let tokenKey = try Self.data(values["sk"], maximum: 32)
-        guard [16, 24, 32].contains(tokenKey.count) else { throw Failure.malformedResponse }
-        let tokenCookie = try Self.data(values["c"], maximum: 8_192)
-        let checksum = try SelfRenewalGSASRP.appTokenChecksum(key: tokenKey, dsid: dsid)
-        let response = try await authenticationRequest(["u": dsid, "app": ["com.apple.gs.xcode.auth"], "c": tokenCookie,
-                                                       "t": idms, "checksum": checksum, "o": "apptokens"])
-        let encrypted = try Self.data(response["et"], maximum: 65_536)
-        let tokenBytes = try SelfRenewalGSASRP.decryptAppToken(encrypted, key: tokenKey)
-        let tokenRoot = try Self.dictionary(SelfRenewalDERPropertyList.decodeXMLPropertyList(tokenBytes))
-        let tokens = try Self.dictionary(tokenRoot["t"])
-        let token = try Self.dictionary(tokens["com.apple.gs.xcode.auth"])
-        let raw = try Self.string(token["token"], maximum: 8_192)
-        let expiry = try Self.integer(token["expiry"])
-        let expiration = Date(timeIntervalSince1970: Double(expiry) / 1_000)
-        guard expiry > 0, expiration.timeIntervalSince1970.isFinite, expiration > clock() else { throw Failure.expiredChallenge }
-        return .candidate(Account.Credentials(dsid: dsid, xcodeToken: raw, expiresAt: expiration))
+    }
+
+    /// Describe only a fixed whitelist's presence, type, and Data length.
+    /// Values, arbitrary keys, error messages, IDs and decrypted content never
+    /// cross this boundary, including when a response is malformed.
+    private static func traceResponse(_ stage: ResponseStage, _ fields: [String: Value]) {
+        let keys: [String]
+        switch stage {
+        case .initial: keys = ["sp", "s", "i", "B", "c"]
+        case .complete: keys = ["M2", "spd", "sc", "np", "Status"]
+        case .decryptedSPD: keys = ["adsid", "GsIdmsToken", "status-code", "url", "sk", "c"]
+        case .appToken: keys = ["et"]
+        }
+        let shapes = keys.map { "\($0)=\(diagnosticShape(fields[$0]))" }.joined(separator: " ")
+        AppLogger.parse("Renewal GSA response stage=\(stage.rawValue) \(shapes)")
+        if case .dictionary(let status) = fields["Status"] {
+            let statusShapes = ["ec", "au", "hsc", "ecau"].map {
+                "\($0)=\(diagnosticShape(status[$0]))"
+            }.joined(separator: " ")
+            AppLogger.parse("Renewal GSA status stage=\(stage.rawValue) \(statusShapes)")
+        }
+    }
+
+    private static func diagnosticShape(_ value: Value?) -> String {
+        switch value {
+        case nil: return "missing"
+        case .dictionary: return "dictionary"
+        case .array: return "array"
+        case .string: return "string"
+        case .data(let bytes): return "data(\(bytes.count))"
+        case .integer: return "integer"
+        case .boolean: return "boolean"
+        case .date: return "date"
+        case .null: return "null"
+        }
     }
     /// Called only after the server proof, negotiation MAC and SPD decryption.
     /// `url` is a mode label, never a destination for a network request.
@@ -180,34 +275,50 @@ actor SelfRenewalDeveloperAuthentication {
         }
         return nil
     }
-    private func authenticationRequest(_ parameters: [String: Any]) async throws -> [String: Value] {
-        try Task.checkCancellation()
-        let anisette = try await freshAnisette()
-        try Task.checkCancellation()
-        try validate(anisette)
-        guard let serial = anisette.deviceSerialNumber, Self.text(serial, maximum: 128) else { throw Failure.missingDeviceMetadata }
-        var parameters = parameters
-        parameters["cpd"] = ["bootstrap": true, "icscrec": true, "loc": anisette.locale, "pbe": false,
-            "prkgen": true, "svct": "iCloud", "X-Apple-I-Client-Time": Self.timestamp(anisette.issuedAt),
-            "X-Apple-Locale": anisette.locale, "X-Apple-I-TimeZone": anisette.timeZone,
-            "X-Apple-I-MD": anisette.oneTimePassword, "X-Apple-I-MD-LU": anisette.localUserID,
-            "X-Apple-I-MD-M": anisette.machineID, "X-Apple-I-MD-RINFO": anisette.routingInfo,
-            "X-Mme-Device-Id": anisette.deviceID, "X-Apple-I-SRL-NO": serial] as [String: Any]
-        let body: Data
-        do { body = try PropertyListSerialization.data(fromPropertyList: ["Header": ["Version": "1.0.1"], "Request": parameters], format: .xml, options: 0) }
-        catch { throw Failure.invalidInput }
-        guard body.count <= 65_536 else { throw Failure.invalidInput }
-        var request = URLRequest(url: URL(string: "https://gsa.apple.com/grandslam/GsService2")!)
-        request.httpMethod = "POST"; request.httpBody = body
-        request.setValue("text/x-xml-plist", forHTTPHeaderField: "Content-Type")
-        request.setValue("*/*", forHTTPHeaderField: "Accept")
-        request.setValue("akd/1.0 CFNetwork/978.0.7 Darwin/18.7.0", forHTTPHeaderField: "User-Agent")
-        request.setValue(anisette.clientInfo, forHTTPHeaderField: "X-MMe-Client-Info")
-        let result = try await send(request)
-        let envelope = try Self.dictionary(SelfRenewalDERPropertyList.decodeXMLPropertyList(result))
-        let response = try Self.dictionary(envelope["Response"])
-        try Self.status(Self.dictionary(response["Status"]))
-        return response
+    private func authenticationRequest(_ parameters: [String: Any], operation: RequestOperation) async throws -> [String: Value] {
+        var stage = RequestStage.anisette
+        do {
+            try Task.checkCancellation()
+            let anisette = try await freshAnisette()
+            try Task.checkCancellation()
+            stage = .metadata
+            try validate(anisette)
+            guard let serial = anisette.deviceSerialNumber, Self.text(serial, maximum: 128) else { throw Failure.missingDeviceMetadata }
+            var parameters = parameters
+            parameters["cpd"] = ["bootstrap": true, "icscrec": true, "loc": anisette.locale, "pbe": false,
+                "prkgen": true, "svct": "iCloud", "X-Apple-I-Client-Time": Self.timestamp(anisette.issuedAt),
+                "X-Apple-Locale": anisette.locale, "X-Apple-I-TimeZone": anisette.timeZone,
+                "X-Apple-I-MD": anisette.oneTimePassword, "X-Apple-I-MD-LU": anisette.localUserID,
+                "X-Apple-I-MD-M": anisette.machineID, "X-Apple-I-MD-RINFO": anisette.routingInfo,
+                "X-Mme-Device-Id": anisette.deviceID, "X-Apple-I-SRL-NO": serial] as [String: Any]
+            let body: Data
+            stage = .encode
+            do { body = try PropertyListSerialization.data(fromPropertyList: ["Header": ["Version": "1.0.1"], "Request": parameters], format: .xml, options: 0) }
+            catch { throw Failure.invalidInput }
+            guard body.count <= 65_536 else { throw Failure.invalidInput }
+            var request = URLRequest(url: URL(string: "https://gsa.apple.com/grandslam/GsService2")!)
+            request.httpMethod = "POST"; request.httpBody = body
+            request.setValue("text/x-xml-plist", forHTTPHeaderField: "Content-Type")
+            request.setValue("*/*", forHTTPHeaderField: "Accept")
+            request.setValue("akd/1.0 CFNetwork/978.0.7 Darwin/18.7.0", forHTTPHeaderField: "User-Agent")
+            request.setValue(anisette.clientInfo, forHTTPHeaderField: "X-MMe-Client-Info")
+            stage = .send
+            let result = try await send(request)
+            stage = .envelope
+            let decoded = try SelfRenewalDERPropertyList.decodeXMLPropertyList(result)
+            AppLogger.parse("Renewal GSA envelope operation=\(operation.rawValue) root=\(Self.diagnosticShape(decoded))")
+            let envelope = try Self.dictionary(decoded)
+            stage = .response
+            AppLogger.parse("Renewal GSA envelope operation=\(operation.rawValue) response=\(Self.diagnosticShape(envelope["Response"]))")
+            let response = try Self.dictionary(envelope["Response"])
+            Self.traceResponse(operation.responseStage, response)
+            stage = .status
+            try Self.status(Self.dictionary(response["Status"]))
+            return response
+        } catch {
+            AppLogger.parse("Renewal GSA request unavailable operation=\(operation.rawValue) stage=\(stage.rawValue) type=\(String(reflecting: type(of: error)))")
+            throw error
+        }
     }
     private func secondaryRequest(path: String, dsid: String, token: String, code: String?) async throws -> Data {
         let anisette = try await freshAnisette()

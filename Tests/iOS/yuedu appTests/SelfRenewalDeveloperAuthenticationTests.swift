@@ -78,15 +78,59 @@ struct SelfRenewalDeveloperAuthenticationTests {
     }
     @Test("actual SRP login reaches the same URLSession client account/team checks before secure storage")
     func connectsOnlyThroughActualMaterialAccountValidation() async throws {
-        try await Self.fixture { f in
-            let auth = try await f.authentication()
-            guard case .connected(let observation) = try await auth.signIn(appleID: f.vector.username, password: f.vector.password) else { Issue.record("Expected connected account"); return }
-            #expect(observation.personalTeamMatched && !observation.appleSigningAuthorityEstablished && !observation.replacementAuthorized)
-            #expect(await f.peer.paths() == ["init", "complete", "apptokens", "viewDeveloper.action", "listTeams.action"])
-            let stored = try f.storage.load(namespace: f.namespace.id)
-            #expect(stored?.contains(f.vector.token) == true)
-            for secret in [f.vector.password, f.vector.idms, "owned-fresh-otp"] { #expect(stored?.contains(secret) == false) }
+        // Only the worker does fixture I/O, crypto and Keychain work. Every new
+        // assertion is evaluated below on this actual Swift Testing task.
+        let worker = Task.detached { () async throws -> LoginBoundaryFacts in
+            let modes: [Mode] = [.normal, .missingM2, .missingNP, .missingSPD, .malformedSC, .badM2, .badNP]
+            var positive: [Bool] = [], rejected: [[Bool]] = []
+            for mode in modes {
+                let f = try await Fixture.make()
+                do {
+                    await f.peer.set(mode)
+                    let auth = try await f.authentication()
+                    var returnedOutcome = false, personalTeamMatched = false, authorityRemainsUnproved = false
+                    var expectedFailureObserved = false
+                    do {
+                        let outcome = try await auth.signIn(appleID: f.vector.username, password: f.vector.password)
+                        returnedOutcome = true
+                        if case .connected(let observation) = outcome {
+                            personalTeamMatched = observation.personalTeamMatched
+                            authorityRemainsUnproved = !observation.appleSigningAuthorityEstablished && !observation.replacementAuthorized
+                        }
+                    } catch let failure as Auth.Failure {
+                        expectedFailureObserved = [.missingM2, .missingNP, .missingSPD, .malformedSC].contains(mode)
+                            && failure == .malformedResponse
+                    } catch let failure as SRP.Failure {
+                        expectedFailureObserved = (mode == .badM2 && failure == .proof)
+                            || (mode == .badNP && failure == .negotiation)
+                    }
+                    let paths = await f.peer.paths()
+                    let stored = try f.storage.load(namespace: f.namespace.id)
+                    if mode == .normal {
+                        positive = [returnedOutcome && personalTeamMatched, authorityRemainsUnproved,
+                            paths == ["init", "complete", "apptokens", "viewDeveloper.action", "listTeams.action"],
+                            stored?.contains(f.vector.token) == true,
+                            [f.vector.password, f.vector.idms, "owned-fresh-otp"].allSatisfy { stored?.contains($0) == false },
+                            f.storage.successfulSaves() == 1]
+                    } else {
+                        rejected.append([expectedFailureObserved, !returnedOutcome,
+                            paths == ["init", "complete"], stored == nil, f.storage.successfulSaves() == 0])
+                    }
+                    try await f.cleanup()
+                } catch {
+                    // Cleanup errors propagate to the parent test as real errors;
+                    // detached work never records an unowned Testing issue.
+                    try await f.cleanup()
+                    throw error
+                }
+            }
+            return LoginBoundaryFacts(positive: positive, rejected: rejected)
         }
+        let facts = try await withTaskCancellationHandler { try await worker.value } onCancel: { worker.cancel() }
+        #expect(facts.positive.count == 6)
+        #expect(facts.positive.allSatisfy { $0 })
+        #expect(facts.rejected.count == 6)
+        #expect(facts.rejected.allSatisfy { $0.count == 5 && $0.allSatisfy { $0 } })
     }
     @Test("a valid GSA candidate cannot bypass the sealed personal team pin")
     func rejectsWrongTeamAfterValidGSACryptoWithoutPersistingCredentials() async throws {
@@ -320,7 +364,8 @@ struct SelfRenewalDeveloperAuthenticationTests {
         }
     }
 
-    private enum Mode: Sendable { case normal, wrongTeam, secondary, holdInit, badM2, badNP, badTag, missingSerial, storageFailure }
+    private struct LoginBoundaryFacts: Sendable { let positive: [Bool]; let rejected: [[Bool]] }
+    private enum Mode: Sendable { case normal, wrongTeam, secondary, holdInit, badM2, badNP, badTag, missingSerial, storageFailure, missingM2, missingNP, missingSPD, malformedSC }
     private enum SignedScenario: String, CaseIterable, Sendable {
         case manual, trusted, matchedTrusted, normal, manualConflict, trustedConflict, normalConflict
         case sms, absolute, empty, typedURL, textCode, boolCode, unexpected, dangling, repeatManual, outerError
@@ -408,9 +453,14 @@ struct SelfRenewalDeveloperAuthenticationTests {
                     if let kind = signedScenario?.outerMode { status["au"] = kind }
                     if signedScenario == .outerError { status["ec"] = -22406 }
                 }
-                return try Self.plist(["Response": ["Status": status, "M2": mode == .badM2 ? Data(repeating: 0, count: 32) : vector.bytes(vector.M2),
+                var complete: [String: Any] = try ["Status": status, "M2": mode == .badM2 ? Data(repeating: 0, count: 32) : vector.bytes(vector.M2),
                     "spd": vector.bytes(signed?.spd ?? vector.spd), "sc": vector.bytes(vector.sc),
-                    "np": mode == .badNP ? Data(repeating: 0, count: 32) : vector.bytes(signed?.np ?? vector.np)]])
+                    "np": mode == .badNP ? Data(repeating: 0, count: 32) : vector.bytes(signed?.np ?? vector.np)]
+                if mode == .missingM2 { complete.removeValue(forKey: "M2") }
+                if mode == .missingNP { complete.removeValue(forKey: "np") }
+                if mode == .missingSPD { complete.removeValue(forKey: "spd") }
+                if mode == .malformedSC { complete["sc"] = true }
+                return try Self.plist(["Response": complete])
             case "apptokens":
                 #expect(inner["checksum"] as? Data == (try vector.bytes(vector.checksum)))
                 #expect(inner["u"] as? String == vector.dsid && inner["t"] as? String == vector.idms)
@@ -453,10 +503,14 @@ struct SelfRenewalDeveloperAuthenticationTests {
     }
     private final class Storage: @unchecked Sendable, SelfRenewalDeveloperSessionStorage {
         private let base = SelfRenewalDeveloperKeychainSessionStorage()
-        private let lock = NSLock(); private var shouldFail = false
+        private let lock = NSLock(); private var shouldFail = false; private var saves = 0
         var fail: Bool { get { lock.lock(); defer { lock.unlock() }; return shouldFail } set { lock.lock(); defer { lock.unlock() }; shouldFail = newValue } }
         func load(namespace: UUID) throws -> String? { try base.load(namespace: namespace) }
-        func save(namespace: UUID, value: String) throws { guard !fail else { throw Client.Failure.storage }; try base.save(namespace: namespace, value: value) }
+        func save(namespace: UUID, value: String) throws {
+            guard !fail else { throw Client.Failure.storage }; try base.save(namespace: namespace, value: value)
+            lock.lock(); saves += 1; lock.unlock()
+        }
+        func successfulSaves() -> Int { lock.lock(); defer { lock.unlock() }; return saves }
         func cleanup(_ namespace: UUID) throws { guard KeychainHelper.delete(account: namespace.uuidString, service: "com.yuedu.selfRenewal.developerSession.v1", synchronizable: false) else { throw Client.Failure.storage } }
     }
     private final class Fixture: @unchecked Sendable {

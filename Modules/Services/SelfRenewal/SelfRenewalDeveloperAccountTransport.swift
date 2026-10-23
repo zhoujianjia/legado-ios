@@ -180,7 +180,12 @@ final class SelfRenewalDeveloperURLSessionTransport: @unchecked Sendable, SelfRe
             try await withTaskCancellationHandler(operation: { try await task.send(.string(value)) },
                 onCancel: { self.task.cancel(with: .goingAway, reason: nil) })
         }
-        func close() async { task.cancel(with: .normalClosure, reason: nil) }
+        func close() async {
+            // A bounded handshake observation only: no URL, headers or body.
+            let status = (task.response as? HTTPURLResponse)?.statusCode ?? 0
+            AppLogger.parse("Renewal anisette socket close httpStatus=\(status)")
+            task.cancel(with: .normalClosure, reason: nil)
+        }
     }
     private static func allowedEndpoint(_ url: URL, method: String?) -> Bool {
         if url.host == "developerservices2.apple.com" {
