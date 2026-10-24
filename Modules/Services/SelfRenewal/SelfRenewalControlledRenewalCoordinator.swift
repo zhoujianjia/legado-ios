@@ -321,6 +321,29 @@ actor SelfRenewalControlledRenewalCoordinator {
         return try await validatedObservationContext().snapshot
     }
 
+    /// Read-only proof for the first local pairing binding. This neither
+    /// changes the journal nor returns an installation/replacement capability.
+    func revalidateCandidateForFirstPairing(_ expected: Journal.Snapshot) async throws {
+        guard vault != nil, namespace != nil else { throw Failure.signingMaterialsUnavailable }
+        guard !busy else { throw Failure.busy }
+        busy = true; defer { busy = false }
+        try Task.checkCancellation()
+        guard expected.record.phase == .candidateReady, expected.record.remoteHistory == .neverStarted
+        else { throw Failure.candidateNotReady }
+        let started = SourcePerfTrace.now
+        defer { SourcePerfTrace.record("renewal.app.pairing-candidate",
+            "bytes=\(expected.record.candidate?.byteCount ?? 0) main=\(Thread.isMainThread)",
+            since: started, thresholdMs: 0) }
+        // candidateURL/readCandidate run Journal.current's exact owner/raw-CAS
+        // checks. The lease and original verifier retain generation, full IPA,
+        // SHA/byte-count, application identity and current Vault validation.
+        _ = try await journal.readCandidate(expected, at: 0, count: 0)
+        let lease = try await currentLease(expected)
+        _ = try await verifyCandidate(expected, lease: lease)
+        _ = try await journal.readCandidate(expected, at: 0, count: 0)
+        try Task.checkCancellation()
+    }
+
     private func validatedObservationContext() async throws -> (snapshot: Journal.Snapshot?, lease: Vault.Lease) {
         guard let vault, let namespace else { throw Failure.signingMaterialsUnavailable }
         let started = SourcePerfTrace.now

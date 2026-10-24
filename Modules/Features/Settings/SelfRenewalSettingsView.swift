@@ -291,7 +291,7 @@ struct SelfRenewalSettingsView: View {
                 SettingsRowLabel(localized("匯入配對身分"), systemImage: "key", role: .action)
             }
             .disabled(owner.isWorking || action != nil || owner.status?.access != .signing ||
-                (owner.status?.phase != nil && owner.status?.phase != .retired))
+                !owner.pairingIdentityImportAvailable)
             .accessibilityIdentifier("self_renewal_pairing_import")
             if pairingImportSucceeded {
                 Text(localized("已匯入配對身分"))

@@ -45,9 +45,12 @@ ORIGINAL_PREVIEW_COMPLETION_SOURCES = (
     # The native file's unselected cold-process methods also need this existing
     # type to compile; its package/peer fixtures are already in the focused set.
     "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift")
+FIRST_PAIRING_CONFIGURATION_SOURCES = tuple("Tests/iOS/yuedu appTests/" + name for name in (
+    "SelfRenewalPairingIdentityImportTests.swift", "SelfRenewalPairingOwnedPKCS12Fixture.swift"))
 # The existing signing fixture is shared by the two suites, never copied twice.
 FOCUSED_SOURCES = tuple(dict.fromkeys((*ENROLLMENT_SOURCES, *SOURCE_CHANGE_SOURCES,
-    *CURRENT_APP_PREPARATION_SOURCES, *ORIGINAL_SOURCE_ADMISSION_SOURCES, *ORIGINAL_PREVIEW_COMPLETION_SOURCES)))
+    *CURRENT_APP_PREPARATION_SOURCES, *ORIGINAL_SOURCE_ADMISSION_SOURCES, *ORIGINAL_PREVIEW_COMPLETION_SOURCES,
+    *FIRST_PAIRING_CONFIGURATION_SOURCES)))
 CURRENT_APP_PREPARATION_CASES = tuple("SelfRenewalAppExecutionTests/" + name for name in (
     "preparesCurrentApplicationWithoutDeviceOrRemoteWork",
     "appOwnerPreparesAndSubmitsActualCandidateWithoutAutomaticRetry",
@@ -70,6 +73,11 @@ ORIGINAL_PREVIEW_COMPLETION_GROUPS = {
     "original-preview-native": (
         "LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",),
 }
+FIRST_PAIRING_CONFIGURATION_CASES = tuple("SelfRenewalPairingIdentityImportTests/" + name for name in (
+    "firstBindingPreservesReadyCandidateNamespaceMaterialsAndAnisette",
+    "firstBindingRejectsUnknownOrRemoteFactsBeforeP12Import",
+    "firstBindingChecksActualCandidateAndCancellationBeforeP12Import",
+    "firstBindingLostAcknowledgementKeepsCandidateAndActualIdentity"))
 SOURCE_CHANGE_GROUPS = {
     "source-order": tuple("BookSourceSearchOrderTests/" + name for name in (
         "stableSourceOrder", "largeOrderSnapshot", "largePackDoesNotSilentlyStopAtTen",
@@ -105,6 +113,9 @@ INPUTS = (".github/workflows/yuedu-renewal-diagnostic.yml", "scripts/reader-expe
           "Modules/Services/SelfRenewal/SelfRenewalGSASRP.swift",
           "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
           "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+          "Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+          "Modules/Services/SelfRenewal/SelfRenewalPairingIdentityImport.swift",
+          "Modules/Features/Settings/SelfRenewalSettingsView.swift",
           *FOCUSED_SOURCES,
           "Modules/Services/Online/BookSourceSearchOrder.swift",
           "Modules/Services/Online/BookOriginSearchService.swift",
@@ -211,10 +222,10 @@ def validate_build(receipt):
             or manifest.get("diagnosticOnly") is not True or manifest.get("releaseAcceptance") is not False
             or manifest.get("S3Acceptance") != "not_run" or manifest.get("configuration") != "Release"
             or manifest.get("platform") != "iPhoneOS" or manifest.get("architecture") != "arm64"
-            or manifest.get("build") != "27" or manifest.get("signed") is not False
+            or manifest.get("build") != config.DIAGNOSTIC_BUILD_VERSION or manifest.get("signed") is not False
             or manifest.get("deviceCompilationPassed") is not True or manifest.get("jvmIntegratedIntoReading") is not True
             or manifest.get("deviceValidationPassed") is not False):
-        raise ValueError("Expected this source's complete, unsigned build27 diagnostic manifest")
+        raise ValueError(f"Expected this source's complete, unsigned build{config.DIAGNOSTIC_BUILD_VERSION} diagnostic manifest")
     settings = config.inspect_settings(json.loads((BUILD / "build-settings.json").read_bytes()), with_jvm=True, diagnostic=True)
     if settings != manifest.get("actualBuildSettings"):
         raise ValueError("Diagnostic settings changed after compilation")
@@ -227,7 +238,8 @@ def validate_build(receipt):
         raise ValueError("Complete diagnostic runtime/bundle material changed")
     for bundle in [app, *config.extension_bundles(app).values()]:
         info = plistlib.loads((bundle / "Info.plist").read_bytes())
-        if info.get("YueduExperienceSourceCommit") != receipt["sourceCommit"] or info.get("CFBundleVersion") != "27":
+        if (info.get("YueduExperienceSourceCommit") != receipt["sourceCommit"]
+                or info.get("CFBundleVersion") != config.DIAGNOSTIC_BUILD_VERSION):
             raise ValueError("Diagnostic embedded bundle source/build differs")
     proof = json.loads((BUILD / "native-reuse.json").read_bytes())
     if (proof != json.loads((WORK / "native-restore.json").read_bytes())
@@ -522,9 +534,15 @@ def run_original_preview_completion():
         unverified={"physicalDeviceSourceSwitchVerified": False})
 
 
+def run_first_pairing_configuration():
+    run_controlled_groups({"first-pairing-configuration": FIRST_PAIRING_CONFIGURATION_CASES},
+        regression_scope="Focused four-case first-pairing configuration regression with owned PKCS12 fixtures; never a real device pairing, actual installation or automatic renewal acceptance",
+        unverified={"actualDeviceRenewalValidated": False})
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("phase", choices=("validate-tag", "restore", "prepare-device", "export-unsigned", "prepare-simulator", "run-enrollment", "run-source-change", "run-current-app-preparation", "run-original-source-admission", "run-original-preview-completion"))
+    parser.add_argument("phase", choices=("validate-tag", "restore", "prepare-device", "export-unsigned", "prepare-simulator", "run-enrollment", "run-source-change", "run-current-app-preparation", "run-original-source-admission", "run-original-preview-completion", "run-first-pairing-configuration"))
     phase = parser.parse_args().phase
     if phase == "validate-tag":
         print(json.dumps({"sourceCommit": source(), "diagnosticOnly": True, "releaseAcceptance": False, "S3Acceptance": "not_run"}))
@@ -544,6 +562,8 @@ def main():
         run_original_source_admission()
     elif phase == "run-original-preview-completion":
         run_original_preview_completion()
+    elif phase == "run-first-pairing-configuration":
+        run_first_pairing_configuration()
     else:
         export_unsigned()
 

@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """Small portable admission/settings/budget checks; no Apple build or runtime claim."""
 import copy
-from contextlib import nullcontext
+from contextlib import contextmanager, nullcontext
 import fnmatch
 import importlib.util
 import json
 import os
 from pathlib import Path
+import plistlib
+import re
 import tempfile
 from types import SimpleNamespace
 import unittest
@@ -28,11 +30,144 @@ class DiagnosticGates(unittest.TestCase):
             "PLATFORM_NAME": "iphoneos", "FULL_PRODUCT_NAME": product, "PRODUCT_BUNDLE_IDENTIFIER": identifier,
             "ARCHS": "arm64", "CODE_SIGNING_ALLOWED": "NO", "CODE_SIGNING_REQUIRED": "NO", "ENABLE_DEBUG_DYLIB": "NO",
             "CODE_SIGN_ENTITLEMENTS": "", "GATEWAY_BASE_URL": "", "YUEDU_LOCAL_EXPERIENCE": "YES",
-            "TARGET_BUILD_DIR": str(root), "MARKETING_VERSION": "3.0", "CURRENT_PROJECT_VERSION": "28",
+            "TARGET_BUILD_DIR": str(root), "MARKETING_VERSION": "3.0", "CURRENT_PROJECT_VERSION": "29",
             "SWIFT_OPTIMIZATION_LEVEL": "-Onone", "SWIFT_COMPILATION_MODE": "singlefile",
             "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "", "GCC_PREPROCESSOR_DEFINITIONS": "NDEBUG=1",
             "OTHER_SWIFT_FLAGS": "-D YUEDU_LOCAL_EXPERIENCE"}}
             for target, (product, identifier) in config.DIAGNOSTIC_TARGETS.items()]
+
+    @contextmanager
+    def controlled_build(self):
+        """Real files/settings/bundles/ZIP; only the independent JNI audit is owned."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp).resolve(); build = root / "build"; work = root / "work"
+            payload = build / "output/Payload"; app = payload / config.MAIN_PRODUCT
+            app.mkdir(parents=True); work.mkdir(); (root / "Resources").mkdir()
+            bundles = [app]
+            for name in config.EXTENSIONS:
+                bundle = app / "PlugIns" / name; bundle.mkdir(parents=True); bundles.append(bundle)
+            for index, bundle in enumerate(bundles):
+                info = {"CFBundleIdentifier": config.MAIN_BUNDLE if index == 0 else config.EXTENSIONS[bundle.name][0],
+                    "CFBundleExecutable": "owned-executable", "CFBundleShortVersionString": "3.0", "CFBundleVersion": "29",
+                    "YueduExperienceSourceCommit": SOURCE, "GatewayBaseURL": "", **config.LOCAL_FLAGS}
+                if index:
+                    info["NSExtension"] = {"NSExtensionPointIdentifier": config.EXTENSIONS[bundle.name][1]}
+                (bundle / "Info.plist").write_bytes(plistlib.dumps(info))
+                (bundle / "owned-executable").write_bytes(b"owned-portable-fixture")
+                (bundle / "GoogleService-Info.plist").write_bytes(plistlib.dumps(config.synthetic_config()))
+            ipa = build / "output/YueduReader-experience-unsigned.ipa"
+            with zipfile.ZipFile(ipa, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+                for item in app.rglob("*"):
+                    if item.is_file(): archive.write(item, "Payload/" + str(item.relative_to(payload)).replace(os.sep, "/"))
+            raw_settings = self.settings(payload)
+            (build / "build-settings.json").write_text(json.dumps(raw_settings))
+            proof = {"sourceCommit": SOURCE, "workflowRunID": "123", "status": "restored", "nativeRuntimeRecompiled": False}
+            (build / "native-reuse.json").write_text(json.dumps(proof))
+            (work / "native-restore.json").write_text(json.dumps(proof))
+            receipt = {"sourceCommit": SOURCE, "workflowRunID": "123"}
+            # Windows does not execute JNI. Its separate payload validator is
+            # the sole controlled boundary; every package/version gate below runs.
+            with patch.object(config, "verify_jvm_payload", return_value={"ownedPortableJNIAudit": True}) as native_audit, \
+                    patch.multiple(diagnostic, REPO=root, BUILD=build, WORK=work):
+                settings = config.inspect_settings(raw_settings, with_jvm=True, diagnostic=True)
+                manifest = {"artifactKind": config.DIAGNOSTIC_KIND, "sourceCommit": SOURCE,
+                    "diagnosticOnly": True, "releaseAcceptance": False, "S3Acceptance": "not_run",
+                    "configuration": "Release", "platform": "iPhoneOS", "architecture": "arm64", "build": "29",
+                    "signed": False, "deviceCompilationPassed": True, "jvmIntegratedIntoReading": True,
+                    "deviceValidationPassed": False, "actualBuildSettings": settings,
+                    "ipaBytes": ipa.stat().st_size, "ipaSHA256": diagnostic.full.fact(ipa)["sha256"],
+                    "bundleValidation": config.bundle_summary(app, with_jvm=True),
+                    "packageBudget": config.diagnostic_package_budget(app, ipa)}
+                manifest_path = build / "output/build-manifest.json"
+                manifest_path.write_text(json.dumps(manifest))
+                yield SimpleNamespace(root=root, build=build, work=work, app=app, ipa=ipa,
+                    bundles=bundles, manifest=manifest, manifest_path=manifest_path,
+                    receipt=receipt, raw_settings=raw_settings, proof=proof, native_audit=native_audit)
+
+    def test_validate_build_accepts_new_three_bundle_version_and_rejects_older_versions(self):
+        self.assertEqual(config.DIAGNOSTIC_BUILD_VERSION, "29")
+        shell = (HERE / "build.sh").read_text(encoding="utf-8")
+        self.assertEqual(re.findall(r"(?m)^  CURRENT_PROJECT_VERSION=([0-9]+)$", shell), ["29"])
+        with self.controlled_build() as fixture:
+            validated = diagnostic.validate_build(fixture.receipt)
+            self.assertEqual(validated["manifest"], fixture.manifest)
+            self.assertEqual([row["build"] for row in validated["manifest"]["bundleValidation"]["bundles"]], ["29"] * 3)
+            self.assertTrue(validated["packageBudget"]["crcVerified"])
+            for version in ("27", "28"):
+                invalid = copy.deepcopy(fixture.manifest); invalid["build"] = version
+                fixture.manifest_path.write_text(json.dumps(invalid))
+                with self.subTest(manifest_build=version), self.assertRaisesRegex(ValueError, "build29 diagnostic manifest"):
+                    diagnostic.validate_build(fixture.receipt)
+                fixture.manifest_path.write_text(json.dumps(fixture.manifest))
+                # Exercise every actual embedded bundle and its identity gate.
+                for bundle in fixture.bundles:
+                    path = bundle / "Info.plist"; original = path.read_bytes()
+                    info = plistlib.loads(original); info["CFBundleVersion"] = version
+                    path.write_bytes(plistlib.dumps(info))
+                    try:
+                        with self.subTest(bundle=bundle.name, build=version), self.assertRaises(ValueError):
+                            diagnostic.validate_build(fixture.receipt)
+                    finally: path.write_bytes(original)
+                # A coherent old App/Widget/Share set must also fail even when
+                # its real bundle summary is honestly recorded in the manifest.
+                originals = [(bundle / "Info.plist", (bundle / "Info.plist").read_bytes()) for bundle in fixture.bundles]
+                for path, raw in originals:
+                    info = plistlib.loads(raw); info["CFBundleVersion"] = version; path.write_bytes(plistlib.dumps(info))
+                invalid = copy.deepcopy(fixture.manifest); invalid["bundleValidation"] = config.bundle_summary(fixture.app, with_jvm=True)
+                fixture.manifest_path.write_text(json.dumps(invalid))
+                try:
+                    with self.subTest(all_bundles_build=version), self.assertRaisesRegex(ValueError, "embedded bundle source/build"):
+                        diagnostic.validate_build(fixture.receipt)
+                finally:
+                    for path, raw in originals: path.write_bytes(raw)
+                    fixture.manifest_path.write_text(json.dumps(fixture.manifest))
+                invalid_settings = copy.deepcopy(fixture.raw_settings)
+                for row in invalid_settings: row["buildSettings"]["CURRENT_PROJECT_VERSION"] = version
+                (fixture.build / "build-settings.json").write_text(json.dumps(invalid_settings))
+                try:
+                    with self.subTest(settings_build=version), self.assertRaises(ValueError): diagnostic.validate_build(fixture.receipt)
+                finally: (fixture.build / "build-settings.json").write_text(json.dumps(fixture.raw_settings))
+            self.assertEqual(diagnostic.validate_build(fixture.receipt)["manifest"]["build"], "29")
+
+    def test_validate_build_retains_manifest_source_runtime_settings_hash_and_budget_gates(self):
+        with self.controlled_build() as fixture:
+            for key,value in (("artifactKind", "other"), ("sourceCommit", "b" * 40), ("diagnosticOnly", False),
+                    ("releaseAcceptance", True), ("S3Acceptance", "passed"), ("configuration", "Debug"),
+                    ("platform", "iPhoneSimulator"), ("architecture", "x86_64"), ("signed", True),
+                    ("deviceCompilationPassed", False), ("jvmIntegratedIntoReading", False), ("deviceValidationPassed", True),
+                    ("actualBuildSettings", {}), ("ipaBytes", 1), ("ipaSHA256", "0" * 64),
+                    ("bundleValidation", {}), ("packageBudget", {})):
+                invalid = copy.deepcopy(fixture.manifest); invalid[key] = value
+                fixture.manifest_path.write_text(json.dumps(invalid))
+                with self.subTest(manifest_field=key), self.assertRaises(ValueError): diagnostic.validate_build(fixture.receipt)
+            fixture.manifest_path.write_text(json.dumps(fixture.manifest))
+            for bundle in fixture.bundles:
+                path=bundle / "Info.plist"; original=path.read_bytes()
+                info=plistlib.loads(original); info["YueduExperienceSourceCommit"]="b" * 40
+                path.write_bytes(plistlib.dumps(info))
+                invalid=copy.deepcopy(fixture.manifest); invalid["bundleValidation"]=config.bundle_summary(fixture.app,with_jvm=True)
+                fixture.manifest_path.write_text(json.dumps(invalid))
+                try:
+                    with self.subTest(source_bundle=bundle.name), self.assertRaisesRegex(ValueError,"embedded bundle source/build"):
+                        diagnostic.validate_build(fixture.receipt)
+                finally:
+                    path.write_bytes(original); fixture.manifest_path.write_text(json.dumps(fixture.manifest))
+            fixture.native_audit.side_effect=ValueError("owned JNI payload rejected")
+            with self.assertRaisesRegex(ValueError,"owned JNI payload rejected"): diagnostic.validate_build(fixture.receipt)
+            fixture.native_audit.side_effect=None
+            for key,value in (("sourceCommit","b"*40),("workflowRunID","456"),("status","changed"),("nativeRuntimeRecompiled",True)):
+                proof=dict(fixture.proof,**{key:value})
+                (fixture.build/"native-reuse.json").write_text(json.dumps(proof))
+                with self.subTest(restoration_field=key),self.assertRaisesRegex(ValueError,"native restoration proof changed"):
+                    diagnostic.validate_build(fixture.receipt)
+            (fixture.build/"native-reuse.json").write_text(json.dumps(fixture.proof))
+            source_pack=fixture.root/"Resources/BuiltInBookSources.json";source_pack.write_text("[]")
+            try:
+                with self.assertRaisesRegex(ValueError,"source resources|book-source resources"): diagnostic.validate_build(fixture.receipt)
+            finally: source_pack.unlink()
+            with patch.object(config,"DIAGNOSTIC_FILE_BYTES",1),self.assertRaisesRegex(ValueError,"file exceeds"):
+                diagnostic.validate_build(fixture.receipt)
+            self.assertTrue(diagnostic.validate_build(fixture.receipt)["packageBudget"]["crcVerified"])
 
     def test_three_actual_targets_require_diagnostic_settings_without_debug_or_optimization_override(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -97,7 +232,7 @@ class DiagnosticGates(unittest.TestCase):
         self.assertLess(workflow.index("name: Retain the diagnostic unsigned device package"), workflow.index("run-current-app-preparation"))
         self.assertLess(workflow.index("name: Retain the diagnostic unsigned device package"), workflow.index("run-original-source-admission"))
         phases = ("run-enrollment", "run-current-app-preparation", "run-original-source-admission",
-                  "run-original-preview-completion", "run-source-change")
+                  "run-original-preview-completion", "run-first-pairing-configuration", "run-source-change")
         self.assertEqual([workflow.index(phase) for phase in phases], sorted(workflow.index(phase) for phase in phases))
         self.assertNotIn("continue-on-error", workflow)
         self.assertNotIn("renewal-package-tools.py run", workflow)
@@ -142,7 +277,7 @@ class DiagnosticGates(unittest.TestCase):
             with patch.object(diagnostic, "REPO", root), patch.object(diagnostic, "SIMULATOR_TESTS", stage):
                 record = diagnostic.enrollment_source_stage(create=True)
                 self.assertEqual(len(diagnostic.ENROLLMENT_SOURCES), 4)
-                self.assertEqual(record["swiftSourceCount"], 17)
+                self.assertEqual(record["swiftSourceCount"], 19)
                 self.assertEqual(record, diagnostic.enrollment_source_stage())
                 self.assertEqual({row["sourcePath"] for row in record["files"]},
                     {*diagnostic.FOCUSED_SOURCES, diagnostic.SDK_RESOURCE})
@@ -151,14 +286,14 @@ class DiagnosticGates(unittest.TestCase):
                 self.assertTrue(unrelated.is_file())
                 self.assertFalse((stage / "yuedu appTests" / unrelated.name).exists())
                 for omitted in (*diagnostic.CURRENT_APP_PREPARATION_SOURCES, *diagnostic.ORIGINAL_SOURCE_ADMISSION_SOURCES,
-                                *diagnostic.ORIGINAL_PREVIEW_COMPLETION_SOURCES):
+                                *diagnostic.ORIGINAL_PREVIEW_COMPLETION_SOURCES, *diagnostic.FIRST_PAIRING_CONFIGURATION_SOURCES):
                     with self.subTest(omitted=omitted), patch.object(diagnostic, "FOCUSED_SOURCES",
                             tuple(path for path in diagnostic.FOCUSED_SOURCES if path != omitted)), self.assertRaises(ValueError):
                         diagnostic.enrollment_source_stage()
                 with self.assertRaises(ValueError):
                     diagnostic.enrollment_source_stage(create=True)
                 for relative in (diagnostic.ENROLLMENT_SOURCES[1], *diagnostic.ORIGINAL_SOURCE_ADMISSION_SOURCES,
-                                 *diagnostic.ORIGINAL_PREVIEW_COMPLETION_SOURCES):
+                                 *diagnostic.ORIGINAL_PREVIEW_COMPLETION_SOURCES, *diagnostic.FIRST_PAIRING_CONFIGURATION_SOURCES):
                     fixture = stage / Path(relative).relative_to("Tests/iOS")
                     raw = fixture.read_bytes(); fixture.write_bytes(raw + b"\n// changed\n")
                     with self.assertRaises(ValueError):
@@ -174,9 +309,9 @@ class DiagnosticGates(unittest.TestCase):
 
     def test_source_picker_case_gates_reject_missing_duplicate_wrong_failed_or_skipped_cases(self):
         self.assertEqual([len(cases) for cases in diagnostic.SOURCE_CHANGE_GROUPS.values()], [7, 7, 11, 8])
-        self.assertEqual(len(set(diagnostic.FOCUSED_SOURCES)), 17)
+        self.assertEqual(len(set(diagnostic.FOCUSED_SOURCES)), 19)
         for cases in (*diagnostic.SOURCE_CHANGE_GROUPS.values(), diagnostic.ORIGINAL_SOURCE_ADMISSION_CASES,
-                      *diagnostic.ORIGINAL_PREVIEW_COMPLETION_GROUPS.values()):
+                      *diagnostic.ORIGINAL_PREVIEW_COMPLETION_GROUPS.values(), diagnostic.FIRST_PAIRING_CONFIGURATION_CASES):
             count = len(cases)
             summary = {"totalTestCount": count, "passedTests": count, "failedTests": 0, "skippedTests": 0,
                 "expectedFailures": 0, "devicesAndConfigurations": [
@@ -249,7 +384,9 @@ class DiagnosticGates(unittest.TestCase):
                 ("current-app-preparation", diagnostic.CURRENT_APP_PREPARATION_CASES,
                  diagnostic.run_current_app_preparation, "actualDeviceRenewalValidated"),
                 ("original-source-admission", diagnostic.ORIGINAL_SOURCE_ADMISSION_CASES,
-                 diagnostic.run_original_source_admission, "physicalDeviceSourceSwitchVerified")):
+                 diagnostic.run_original_source_admission, "physicalDeviceSourceSwitchVerified"),
+                ("first-pairing-configuration", diagnostic.FIRST_PAIRING_CONFIGURATION_CASES,
+                 diagnostic.run_first_pairing_configuration, "actualDeviceRenewalValidated")):
             with self.subTest(group=label):
                 self.check_controlled_invocation(label, cases, run, unverified)
 
@@ -340,6 +477,24 @@ class DiagnosticGates(unittest.TestCase):
         # failure before the independent real-native selector is attempted. Even
         # all-Passed exports cannot excuse a failed execution or a skipped case.
         self._check_failed_group_isolation(groups)
+
+    def test_first_pairing_configuration_selects_only_four_owned_fixture_cases(self):
+        self.assertEqual(diagnostic.FIRST_PAIRING_CONFIGURATION_CASES,
+            tuple("SelfRenewalPairingIdentityImportTests/" + name for name in (
+                "firstBindingPreservesReadyCandidateNamespaceMaterialsAndAnisette",
+                "firstBindingRejectsUnknownOrRemoteFactsBeforeP12Import",
+                "firstBindingChecksActualCandidateAndCancellationBeforeP12Import",
+                "firstBindingLostAcknowledgementKeepsCandidateAndActualIdentity")))
+        self.assertEqual(set(diagnostic.FIRST_PAIRING_CONFIGURATION_SOURCES), {
+            "Tests/iOS/yuedu appTests/SelfRenewalPairingIdentityImportTests.swift",
+            "Tests/iOS/yuedu appTests/SelfRenewalPairingOwnedPKCS12Fixture.swift"})
+        self.assertTrue(set(diagnostic.FIRST_PAIRING_CONFIGURATION_SOURCES) <= set(diagnostic.FOCUSED_SOURCES) <= set(diagnostic.INPUTS))
+        for path in ("Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+                "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
+                "Modules/Services/SelfRenewal/SelfRenewalControlledRenewalCoordinator.swift",
+                "Modules/Services/SelfRenewal/SelfRenewalPairingIdentityImport.swift",
+                "Modules/Features/Settings/SelfRenewalSettingsView.swift"):
+            self.assertIn(path, diagnostic.INPUTS)
 
     def _check_failed_group_isolation(self, groups):
         first, second = groups

@@ -37,6 +37,8 @@ final class SelfRenewalAppOwner {
     private(set) var status: SelfRenewalAppSession.Status?
     private(set) var problem: Problem?
     private(set) var signingMaterialProblem: Problem?
+    /// UI admission facts only; Session rechecks real candidate/material proof.
+    private(set) var pairingIdentityImportAvailable = false
     private(set) var initializationFailure: InitializationFailureObservation?
     /// Passive status refreshes do not erase the latest explicit action failure.
     private(set) var operationFailure: OperationFailureObservation?
@@ -181,6 +183,7 @@ final class SelfRenewalAppOwner {
         }
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
+        await refreshPairingIdentityImportAvailability()
         automaticRenewal = await session.automaticRenewalObservation()
         developerServicesConfigured = await session.developerServicesAreConfigured()
         anisetteProvider = await session.configuredAnisetteProvider()
@@ -281,9 +284,11 @@ final class SelfRenewalAppOwner {
         let status = await session.status()
         let recovery = await session.recoveryIsAvailable()
         let material = await session.signingMaterialFailure()
+        let pairingAvailable = await readPairingIdentityImportAvailability()
         guard automaticOperation?.id == id else { return }
         automaticRenewal = observed; self.status = status
         recoveryAvailable = recovery; signingMaterialProblem = material == nil ? nil : .signingMaterials
+        pairingIdentityImportAvailable = pairingAvailable
         if case .failure(let error) = result {
             problem = Self.classify(error)
             recordFailure(error, operation: .automaticRenewal, context: "Renewal automatic operation unavailable", preserveAction: true)
@@ -293,6 +298,18 @@ final class SelfRenewalAppOwner {
     }
     private func scheduleAutomaticRenewal() {
         automaticSchedule?(automaticRenewal?.isEnabled == true ? automaticRenewal?.nextEligibleAt : nil)
+    }
+
+    private func refreshPairingIdentityImportAvailability() async {
+        pairingIdentityImportAvailable = await readPairingIdentityImportAvailability()
+    }
+    private func readPairingIdentityImportAvailability() async -> Bool {
+        do { return try await session.pairingIdentityImportIsAvailable() }
+        catch {
+            let failure = SelfRenewalDiagnosticFailure.capture(error)
+            AppLogger.parse("Renewal pairing import availability unavailable type=\(failure.errorType) code=\(failure.failureCode)", level: .error)
+            return false
+        }
     }
 
     /// One service call owns both file scopes and the temporary password.
@@ -333,6 +350,8 @@ final class SelfRenewalAppOwner {
         }
         let recovery = await session.recoveryIsAvailable()
         let material = await session.signingMaterialFailure()
+        let materialObservation = await session.developerMaterialObservation()
+        let pairingAvailable = await readPairingIdentityImportAvailability()
         guard pairingImportOperation?.id == id else { return }
         status = finalStatus
         switch result {
@@ -344,8 +363,9 @@ final class SelfRenewalAppOwner {
         }
         // A failed durable ACK can already have invalidated Session's epoch.
         // Re-observation obtains any account facts still usable after import.
-        developerSession = nil; developerMaterial = nil; developerChallenge = nil
+        developerSession = nil; developerMaterial = materialObservation; developerChallenge = nil
         recoveryAvailable = recovery; signingMaterialProblem = material == nil ? nil : .signingMaterials
+        pairingIdentityImportAvailable = pairingAvailable
         pairingImportOperation = nil; isWorking = false
     }
 
@@ -364,6 +384,7 @@ final class SelfRenewalAppOwner {
         }
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
+        await refreshPairingIdentityImportAvailability()
     }
 
     func initializeConfiguration(from url: URL) async {
@@ -384,6 +405,7 @@ final class SelfRenewalAppOwner {
         }
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
+        await refreshPairingIdentityImportAvailability()
     }
 
     /// Preparing an imported IPA never uploads or submits it. The session owns
@@ -400,6 +422,7 @@ final class SelfRenewalAppOwner {
         }
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
+        await refreshPairingIdentityImportAvailability()
     }
 
     /// A separate local-only action uses the same session and preparation
@@ -416,6 +439,7 @@ final class SelfRenewalAppOwner {
         }
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
+        await refreshPairingIdentityImportAvailability()
     }
 
     /// A separate user action reaches the actual Coordinator hook with this
@@ -432,6 +456,7 @@ final class SelfRenewalAppOwner {
         }
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
+        await refreshPairingIdentityImportAvailability()
     }
 
     func recoverExplicitly() async {
@@ -446,6 +471,7 @@ final class SelfRenewalAppOwner {
         }
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
+        await refreshPairingIdentityImportAvailability()
     }
 
     /// The Settings UI supplies an explicitly trusted HTTPS endpoint or nil.
@@ -657,6 +683,7 @@ final class SelfRenewalAppOwner {
         status = await session.status()
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
+        await refreshPairingIdentityImportAvailability()
     }
 
     /// Fixed codes and numeric protocol statuses only. Associated paths,
@@ -695,6 +722,7 @@ final class SelfRenewalAppOwner {
         isWorking = true; defer { isWorking = false }
         try await session.close()
         status = nil; problem = nil; signingMaterialProblem = nil; recoveryAvailable = false; bootstrapped = false
+        pairingIdentityImportAvailable = false
         initializationFailure = nil; operationFailure = nil
         developerSession = nil; developerMaterial = nil; developerChallenge = nil
         anisetteProvider = nil

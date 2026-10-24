@@ -427,19 +427,63 @@ actor SelfRenewalAppSession {
         try await openLocalOwner()
         guard initialNamespaceBinding == nil else { throw Failure.configurationInUse }
         guard let configuration, let journal else { throw Failure.notConfigured }
+        var preservedCandidate: Journal.Snapshot?
         if let snapshot = try await journal.load() {
             // Even an equal peer cannot replace identities through an active
-            // or remotely uncertain transaction. Retired metadata must prove
-            // the actual candidate is absent before it permits configuration.
-            guard snapshot.record.phase == .retired else { throw Failure.configurationInUse }
-            _ = try await journal.resumeRetirement(snapshot, at: clock())
+            // or remotely uncertain transaction. The sole first-binding case
+            // owns no peer or remote history and must prove its actual bytes.
+            if snapshot.record.phase == .retired {
+                _ = try await journal.resumeRetirement(snapshot, at: clock())
+            } else {
+                guard configuration.device == nil,
+                      Self.permitsFirstPairingBinding(snapshot.record, namespaceID: configuration.namespaceID)
+                else { throw Failure.configurationInUse }
+                let current = try await connect(configuration)
+                try await current.coordinator.revalidateCandidateForFirstPairing(snapshot)
+                preservedCandidate = snapshot
+            }
         }
         let device = try SelfRenewalPairingIdentityImport.importIdentity(pkcs12: pkcs12, password: password,
             publicConfiguration: publicConfiguration, at: clock())
         let proposed = Configuration(schema: configuration.schema, namespaceID: configuration.namespaceID,
             codeAnchors: configuration.codeAnchors, profileAnchors: configuration.profileAnchors, device: device)
         try Self.validate(proposed)
-        return try await configure(proposed, handoff: handoff)
+        if let preservedCandidate { try await requireUnchangedPairingCandidate(preservedCandidate, journal: journal) }
+        let status = try await configure(proposed, handoff: handoff)
+        if let preservedCandidate { try await requireUnchangedPairingCandidate(preservedCandidate, journal: journal) }
+        return status
+    }
+
+    /// Display admission only. Import repeats the journal and byte checks while
+    /// holding the same busy guard; this observation is not a pairing grant.
+    func pairingIdentityImportIsAvailable() async throws -> Bool {
+        guard !busy, !configurationNeedsReload, initialNamespaceBinding == nil,
+              access == .signing, let configuration, let journal else { return false }
+        guard let snapshot = try await journal.load() else { return true }
+        if snapshot.record.phase == .retired { return true }
+        return configuration.device == nil
+            && Self.permitsFirstPairingBinding(snapshot.record, namespaceID: configuration.namespaceID)
+    }
+
+    nonisolated static func permitsFirstPairingBinding(_ record: Journal.Record, namespaceID: UUID) -> Bool {
+        // A legacy nil history is unknown, never proof that upload did not run.
+        // previousRetirement is immutable, already-validated historical data.
+        guard let candidate = record.candidate,
+              (1...Journal.Limits.candidateBytes).contains(candidate.byteCount), candidate.sha256.count == 32
+        else { return false }
+        return record.materialNamespace == namespaceID && record.phase == .candidateReady
+            && record.remoteHistory == .neverStarted && record.candidate != nil
+            && record.submission == nil && record.lookupReportedSameVersion == nil
+            && record.safePreSubmissionCleanup == nil && record.reportedCompleteCleanup == nil
+            && record.retirement == nil && record.installedMaterial == nil
+            && record.userDataHandoff == nil && record.userDataRead == nil
+    }
+
+    private func requireUnchangedPairingCandidate(_ expected: Journal.Snapshot, journal: Journal) async throws {
+        try Task.checkCancellation()
+        // Journal.current requires the same owner, record AND encoded digest.
+        // Even an empty read rechecks the owned regular file and exact size.
+        _ = try await journal.readCandidate(expected, at: 0, count: 0)
     }
 
     /// The two explicit configuration entry points share one actual resolver,

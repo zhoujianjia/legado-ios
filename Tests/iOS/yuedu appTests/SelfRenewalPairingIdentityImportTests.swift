@@ -161,6 +161,303 @@ struct SelfRenewalPairingIdentityImportTests {
         }
     }
 
+    @Test("First pairing binds the actual ready candidate without changing its bytes, material generation or Anisette owner")
+    func firstBindingPreservesReadyCandidateNamespaceMaterialsAndAnisette() async throws {
+        let observation = FirstBindingFacts()
+        try await Package.fixture { f in
+            try await Self.withInputs { files in
+                let application = try await Execution.application(f)
+                let root = f.directory.appendingPathComponent("SelfRenewalApp")
+                let probe = FirstBindingRemoteProbe(namespace: f.namespace.id)
+                let services = Session.DeveloperServices(transport: probe, storage: probe,
+                    freshAnisette: { try probe.freshAnisette() })
+                let owner = await MainActor.run {
+                    SelfRenewalAppOwner(root: root, currentApplicationRoot: application,
+                        developerServices: services, clock: { f.date })
+                }
+                let owners = try await Execution.library(in: f.directory, at: f.date, handoff: owner.handoff)
+                do {
+                    let endpoint = try #require(URL(string: "https://owned-anisette.invalid"))
+                    let providerConfigured = await owner.configureAnisetteProvider(endpoint: endpoint)
+                    await owner.importConfiguration(try Execution.configuration(f, device: nil))
+                    await owner.prepareRenewal(from: f.input)
+                    // Create a real immutable predecessor commitment before
+                    // capturing the current candidate that import must retain.
+                    await owner.prepareRenewal(from: f.input)
+                    let beforeRecord = try Self.recordBytes(root)
+                    let record = try JSONDecoder().decode(Session.Journal.Record.self, from: beforeRecord)
+                    let beforeCandidate = try Data(contentsOf: Self.candidateURL(root))
+                    let beforeConfiguration = try Self.configuration(root)
+                    let beforeAnisette = try Self.anisetteBytes(root)
+                    let beforeMaterial = await owner.developerMaterial
+                    let admission = await owner.pairingIdentityImportAvailable
+                    let imported = await owner.importPairingIdentity(pkcs12: files.hostA, password: Inputs.password,
+                        publicConfiguration: files.publicA)
+                    let afterConfiguration = try Self.configuration(root)
+                    let status = await owner.status
+                    let afterMaterial = await owner.developerMaterial
+                    let afterAdmission = await owner.pairingIdentityImportAvailable
+                    let remoteLoginUnverified = await owner.developerSession == nil
+                    let afterProvider = await owner.anisetteProvider
+                    let paired = try #require(afterConfiguration.device)
+                    let recordUnchanged = try Self.recordBytes(root) == beforeRecord
+                    let candidateUnchanged = try Data(contentsOf: Self.candidateURL(root)) == beforeCandidate
+                    let pairingMatches = try Session.pairing(paired).hostCertificateDER == Inputs.hostACertificate
+                    let anisetteUnchanged = try Self.anisetteBytes(root) == beforeAnisette
+                    let checks = [
+                        "prepared": record.phase == .candidateReady && record.remoteHistory == .neverStarted
+                            && record.previousRetirement != nil,
+                        "admitted": admission && imported && !afterAdmission,
+                        "record": recordUnchanged,
+                        "candidate": candidateUnchanged
+                            && Data(SHA256.hash(data: beforeCandidate)) == record.candidate?.sha256,
+                        "configuration": beforeConfiguration.device == nil
+                            && afterConfiguration.namespaceID == beforeConfiguration.namespaceID
+                            && afterConfiguration.codeAnchors == beforeConfiguration.codeAnchors
+                            && afterConfiguration.profileAnchors == beforeConfiguration.profileAnchors,
+                        "pairing": pairingMatches,
+                        "material": beforeMaterial != nil && beforeMaterial == afterMaterial
+                            && record.materialGeneration == afterMaterial?.generation,
+                        "status": status?.phase == .candidateReady && status?.access == .signing
+                            && remoteLoginUnverified,
+                        "anisette": providerConfigured && afterProvider?.endpoint == endpoint
+                            && beforeAnisette != nil && anisetteUnchanged,
+                        "offline": probe.remoteCalls == 0 && probe.storageWrites == 0]
+                    try await owner.close()
+                    withExtendedLifetime(owners) {}
+                    await observation.store(checks)
+                } catch { do { try await owner.close() } catch { Issue.record(error) }; throw error }
+            }
+        }
+        let checks = try #require(await observation.checks)
+        #expect(checks.count == 10)
+        #expect(checks.filter { !$0.value }.isEmpty)
+    }
+
+    @Test("Unknown remote history and every non-ready phase refuse first binding before nonexistent P12 inputs")
+    func firstBindingRejectsUnknownOrRemoteFactsBeforeP12Import() async throws {
+        let observation = FirstBindingFacts()
+        try await Package.fixture { f in
+            try await Self.withInputs { files in
+                let application = try await Execution.application(f)
+                let owners = try await Execution.library(in: f.directory, at: f.date)
+                let root = f.directory.appendingPathComponent("SelfRenewalApp")
+                let session = Session(root: root, currentApplicationRoot: application, clock: { f.date })
+                do {
+                    _ = try await session.configure(from: Execution.configuration(f, device: nil), handoff: owners.handoff)
+                    _ = try await session.prepareRenewal(from: f.input)
+                    let original = try Self.recordBytes(root)
+                    let record = try JSONDecoder().decode(Session.Journal.Record.self, from: original)
+                    var rejected = 0
+                    let phases: [Session.Journal.Phase] = [.created, .signing, .uploadIntent, .upgradeIntent,
+                        .receiptObserved, .installationUnknown, .lookupObserved, .attentionRequired, .retirementPending, .retired]
+                    for phase in phases {
+                        var changed = record; changed.phase = phase
+                        if !Session.permitsFirstPairingBinding(changed, namespaceID: f.namespace.id) { rejected += 1 }
+                    }
+                    let histories: [Session.Journal.RemoteHistory?] = [nil, .started]
+                    for history in histories {
+                        var changed = record; changed.remoteHistory = history
+                        if !Session.permitsFirstPairingBinding(changed, namespaceID: f.namespace.id) { rejected += 1 }
+                    }
+                    var noCandidate = record; noCandidate.candidate = nil
+                    var hasSubmission = record
+                    hasSubmission.submission = .init(remotePackagePath: "PublicStaging/reader-renewal-00000000-0000-0000-0000-000000000000.ipa",
+                        deviceCertificateSHA256: Data(repeating: 1, count: 32))
+                    var hasLookup = record; hasLookup.lookupReportedSameVersion = false
+                    let refusedFacts = !Session.permitsFirstPairingBinding(noCandidate, namespaceID: f.namespace.id)
+                        && !Session.permitsFirstPairingBinding(hasSubmission, namespaceID: f.namespace.id)
+                        && !Session.permitsFirstPairingBinding(hasLookup, namespaceID: f.namespace.id)
+                        && !Session.permitsFirstPairingBinding(record, namespaceID: UUID())
+                    var legacy = try #require(try JSONSerialization.jsonObject(with: original) as? [String: Any])
+                    legacy.removeValue(forKey: "remoteHistory")
+                    let legacyBytes = try JSONSerialization.data(withJSONObject: legacy, options: [.sortedKeys])
+                    let recordURL = Self.recordURL(root)
+                    try legacyBytes.write(to: recordURL, options: .atomic)
+                    let candidateBefore = try Data(contentsOf: Self.candidateURL(root))
+                    let absent = files.directory.appendingPathComponent("never-created")
+                    var deniedBeforeInput = false
+                    do {
+                        _ = try await session.importPairingIdentity(pkcs12: absent, password: "",
+                            publicConfiguration: absent, handoff: owners.handoff)
+                    } catch let error as Session.Failure { deniedBeforeInput = error == .configurationInUse }
+                    let displayAvailable = try await session.pairingIdentityImportIsAvailable()
+                    let recordUnchanged = try Data(contentsOf: recordURL) == legacyBytes
+                    let candidateUnchanged = try Data(contentsOf: Self.candidateURL(root)) == candidateBefore
+                    let checks = ["phaseAndHistory": rejected == 12, "otherFacts": refusedFacts,
+                        "beforeInput": deniedBeforeInput, "display": !displayAvailable,
+                        "unchanged": recordUnchanged && candidateUnchanged]
+                    try original.write(to: recordURL, options: .atomic)
+                    try await session.close()
+                    await observation.store(checks)
+                } catch { do { try await session.close() } catch { Issue.record(error) }; throw error }
+            }
+        }
+        let checks = try #require(await observation.checks)
+        #expect(checks.count == 5)
+        #expect(checks.filter { !$0.value }.isEmpty)
+    }
+
+    @Test("First binding verifies actual candidate bytes and propagates cancellation without importing or changing configuration")
+    func firstBindingChecksActualCandidateAndCancellationBeforeP12Import() async throws {
+        let observation = FirstBindingFacts()
+        try await Package.fixture { f in
+            try await Self.withInputs { files in
+                let application = try await Execution.application(f)
+                let owners = try await Execution.library(in: f.directory, at: f.date)
+                let root = f.directory.appendingPathComponent("SelfRenewalApp")
+                let session = Session(root: root, currentApplicationRoot: application, clock: { f.date })
+                do {
+                    _ = try await session.configure(from: Execution.configuration(f, device: nil), handoff: owners.handoff)
+                    _ = try await session.prepareRenewal(from: f.input)
+                    let before = try Self.recordBytes(root)
+                    let configurationBefore = try Data(contentsOf: root.appendingPathComponent("configuration.json"))
+                    let candidate = Self.candidateURL(root)
+                    let raw = try Data(contentsOf: candidate)
+                    let absent = files.directory.appendingPathComponent("never-created")
+                    let cancelled = Task {
+                        withUnsafeCurrentTask { $0?.cancel() }
+                        return try await session.importPairingIdentity(pkcs12: absent, password: "",
+                            publicConfiguration: absent, handoff: owners.handoff)
+                    }
+                    var cancellationPreserved = false
+                    do { _ = try await cancelled.value } catch is CancellationError { cancellationPreserved = true }
+                    var broken = raw; broken[0] ^= 0xff
+                    try broken.write(to: candidate)
+                    var candidateRejectedBeforeInput = false
+                    do {
+                        _ = try await session.importPairingIdentity(pkcs12: absent, password: "",
+                            publicConfiguration: absent, handoff: owners.handoff)
+                    } catch {
+                        // P12/password validation is after the actual full IPA proof.
+                        candidateRejectedBeforeInput = error is SelfRenewalIPAArchiveValidator.Failure
+                    }
+                    try raw.write(to: candidate)
+                    var pairingRejected = false
+                    do {
+                        _ = try await session.importPairingIdentity(pkcs12: files.hostB, password: Inputs.password,
+                            publicConfiguration: files.publicA, handoff: owners.handoff)
+                    } catch let error as Import.Failure { pairingRejected = error == .hostCertificateMismatch }
+                    let recordUnchanged = try Self.recordBytes(root) == before
+                    let configurationUnchanged = try Data(contentsOf: root.appendingPathComponent("configuration.json")) == configurationBefore
+                    let noDevice = try Self.configuration(root).device == nil
+                    let checks = ["cancelled": cancellationPreserved, "actualBytes": candidateRejectedBeforeInput,
+                        "record": recordUnchanged, "configuration": configurationUnchanged, "noDevice": noDevice,
+                        "wrongHost": pairingRejected]
+                    try await session.close()
+                    await observation.store(checks)
+                } catch { do { try await session.close() } catch { Issue.record(error) }; throw error }
+            }
+        }
+        let checks = try #require(await observation.checks)
+        #expect(checks.count == 6)
+        #expect(checks.filter { !$0.value }.isEmpty)
+    }
+
+    @Test("Lost first-binding publication acknowledgement retains the actual identity and exact unsubmitted candidate")
+    func firstBindingLostAcknowledgementKeepsCandidateAndActualIdentity() async throws {
+        let observation = FirstBindingFacts()
+        try await Package.fixture { f in
+            try await Self.withInputs { files in
+                let application = try await Execution.application(f)
+                let owners = try await Execution.library(in: f.directory, at: f.date)
+                let root = f.directory.appendingPathComponent("SelfRenewalApp")
+                let initial = Session(root: root, currentApplicationRoot: application, clock: { f.date })
+                _ = try await initial.configure(from: Execution.configuration(f, device: nil), handoff: owners.handoff)
+                _ = try await initial.prepareRenewal(from: f.input)
+                let record = try Self.recordBytes(root)
+                let candidate = try Data(contentsOf: Self.candidateURL(root))
+                try await initial.close()
+                let interrupted = Session(root: root, currentApplicationRoot: application,
+                    publicationFault: .loseNextDirectorySyncAcknowledgement, clock: { f.date })
+                do {
+                    var ackUnknown = false
+                    do {
+                        _ = try await interrupted.importPairingIdentity(pkcs12: files.hostA, password: Inputs.password,
+                            publicConfiguration: files.publicA, handoff: owners.handoff)
+                    } catch let error as Session.Failure { ackUnknown = error == .commitDurabilityUnknown }
+                    let bound = try #require(Self.configuration(root).device)
+                    let sameIdentity = try Session.pairing(bound).hostCertificateDER == Inputs.hostACertificate
+                    let recordUnchanged = try Self.recordBytes(root) == record
+                    let candidateUnchanged = try Data(contentsOf: Self.candidateURL(root)) == candidate
+                    try await interrupted.close()
+                    let reopened = Session(root: root, currentApplicationRoot: application, clock: { f.date })
+                    do {
+                        let status = try await reopened.bootstrap(handoff: owners.handoff)
+                        let absent = files.directory.appendingPathComponent("never-created")
+                        var replacementRejected = false
+                        do {
+                            _ = try await reopened.importPairingIdentity(pkcs12: absent, password: "",
+                                publicConfiguration: absent, handoff: owners.handoff)
+                        } catch let error as Session.Failure { replacementRejected = error == .configurationInUse }
+                        let displayAvailable = try await reopened.pairingIdentityImportIsAvailable()
+                        let recordStillUnchanged = try Self.recordBytes(root) == record
+                        let checks = ["unknownAck": ackUnknown, "identity": sameIdentity,
+                            "candidate": recordUnchanged && candidateUnchanged && recordStillUnchanged,
+                            "reopened": status.phase == .candidateReady && status.access == .signing,
+                            "replacement": replacementRejected && !displayAvailable]
+                        try await reopened.close()
+                        await observation.store(checks)
+                    } catch { do { try await reopened.close() } catch { Issue.record(error) }; throw error }
+                } catch { do { try await interrupted.close() } catch { Issue.record(error) }; throw error }
+            }
+        }
+        let checks = try #require(await observation.checks)
+        #expect(checks.count == 5)
+        #expect(checks.filter { !$0.value }.isEmpty)
+    }
+
+    private actor FirstBindingFacts {
+        var checks: [String: Bool]?
+        func store(_ value: [String: Bool]) { checks = value }
+    }
+    /// Opaque stored bytes are preserved, never claimed as an authenticated
+    /// registration/session. Every remote/account/provider hook fails closed.
+    private final class FirstBindingRemoteProbe: SelfRenewalDeveloperAccountTransport, SelfRenewalDeveloperSessionStorage, @unchecked Sendable {
+        let namespace: UUID
+        private let lock = NSLock()
+        private var calls = 0, writes = 0
+        private let credentials = "SYNTHETIC-ACCOUNT-RECORD"
+        private let registration = "SYNTHETIC-ANIsETTE-RECORD"
+        init(namespace: UUID) { self.namespace = namespace }
+        var remoteCalls: Int { lock.withLock { calls } }
+        var storageWrites: Int { lock.withLock { writes } }
+        private func attempted() { lock.withLock { calls += 1 } }
+        func send(_ request: URLRequest) async throws -> SelfRenewalDeveloperAccountResponse {
+            attempted(); throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
+        }
+        func sendAnisette(_ request: SelfRenewalAnisetteRequest) async throws -> SelfRenewalDeveloperAccountResponse {
+            attempted(); throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
+        }
+        func openAnisetteProvisioning(_ configuration: SelfRenewalAnisetteV3Configuration) async throws -> any SelfRenewalAnisetteProvisioningSocket {
+            attempted(); throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
+        }
+        func freshAnisette() throws -> SelfRenewalDeveloperAccountClient.Anisette {
+            attempted(); throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
+        }
+        func load(namespace: UUID) throws -> String? { namespace == self.namespace ? credentials : nil }
+        func loadAnisetteRegistration(namespace: UUID) throws -> String? { namespace == self.namespace ? registration : nil }
+        func save(namespace: UUID, value: String) throws {
+            lock.withLock { writes += 1 }; throw SelfRenewalDeveloperAccountClient.Failure.storage
+        }
+        func saveAnisetteRegistration(namespace: UUID, value: String) throws {
+            lock.withLock { writes += 1 }; throw SelfRenewalAnisetteV3Provider.Failure.storage
+        }
+    }
+    nonisolated private static func recordURL(_ root: URL) -> URL {
+        root.appendingPathComponent("SelfRenewalTransactions/transaction.json")
+    }
+    nonisolated private static func recordBytes(_ root: URL) throws -> Data { try Data(contentsOf: recordURL(root)) }
+    nonisolated private static func anisetteBytes(_ root: URL) throws -> Data? {
+        let document = try #require(try JSONSerialization.jsonObject(with: Data(contentsOf:
+            root.appendingPathComponent("configuration.json"))) as? [String: Any])
+        guard let provider = document["anisetteProvider"] else { return nil }
+        return try JSONSerialization.data(withJSONObject: provider, options: [.sortedKeys])
+    }
+    nonisolated private static func candidateURL(_ root: URL) -> URL {
+        root.appendingPathComponent("SelfRenewalTransactions/candidate.ipa")
+    }
+
     private struct Files: Sendable {
         let directory: URL
         let hostA: URL, hostB: URL

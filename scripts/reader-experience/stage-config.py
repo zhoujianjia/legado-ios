@@ -33,6 +33,7 @@ EXTENSIONS = {
     "yuedu_app_ShareExtension.appex": (MAIN_BUNDLE + ".shareextension", "com.apple.share-services"),
 }
 DIAGNOSTIC_KIND = "yuedu-renewal-diagnostic-device"
+DIAGNOSTIC_BUILD_VERSION = "29"
 DIAGNOSTIC_AUTH_TEST_ROOT = ".build/renewal-diagnostic-private/simulator-tests"
 DIAGNOSTIC_TARGETS = {
     MAIN_TARGET: (MAIN_PRODUCT, MAIN_BUNDLE),
@@ -231,7 +232,7 @@ def inspect_settings(settings, with_jvm=False, diagnostic=False):
             actual = actual[0]
             expected = dict(required, FULL_PRODUCT_NAME=product, PRODUCT_BUNDLE_IDENTIFIER=identifier,
                             SWIFT_OPTIMIZATION_LEVEL="-Onone", SWIFT_COMPILATION_MODE="singlefile",
-                            CODE_SIGNING_REQUIRED="NO", ENABLE_DEBUG_DYLIB="NO", CURRENT_PROJECT_VERSION="28")
+                            CODE_SIGNING_REQUIRED="NO", ENABLE_DEBUG_DYLIB="NO", CURRENT_PROJECT_VERSION=DIAGNOSTIC_BUILD_VERSION)
             for key, value in expected.items():
                 if actual.get(key, "" if value == "" else None) != value:
                     raise ValueError("Unexpected diagnostic setting " + target + " " + key)
