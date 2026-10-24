@@ -150,11 +150,13 @@ extension BookSourceFetcher {
         page: Int = 1,
         earlyFilter: ((_ name: String, _ author: String) -> Bool)? = nil,
         onHasMore: ((Bool?) -> Void)? = nil,
-        failureMode: BookSourceSearchFailureMode = .emptyResult
+        failureMode: BookSourceSearchFailureMode = .emptyResult,
+        bypassCache: Bool = false
     ) async throws -> BookSourceSearchOutcome {
         try await searchPageOutcome(
             query: query, in: source, page: page, earlyFilter: earlyFilter,
-            evaluateHasMore: onHasMore != nil, onHasMore: onHasMore, failureMode: failureMode
+            evaluateHasMore: onHasMore != nil, onHasMore: onHasMore, failureMode: failureMode,
+            bypassCache: bypassCache
         ).outcome
     }
 
@@ -167,7 +169,8 @@ extension BookSourceFetcher {
         earlyFilter: ((_ name: String, _ author: String) -> Bool)? = nil,
         evaluateHasMore: Bool,
         onHasMore: ((Bool?) -> Void)? = nil,
-        failureMode: BookSourceSearchFailureMode = .emptyResult
+        failureMode: BookSourceSearchFailureMode = .emptyResult,
+        bypassCache: Bool = false
     ) async throws -> (outcome: BookSourceSearchOutcome, hasMore: Bool?) {
         if source.isJsSource {
             var books = try await mainJSService.search(query: query, page: page, source: source)
@@ -178,7 +181,7 @@ extension BookSourceFetcher {
         guard !source.searchUrl.isEmpty else { throw FetchError.noSearchURL }
         let cacheDays = GlobalSettings.shared.searchCacheDays
         let cacheEligible = page == 1 && earlyFilter == nil
-        if page == 1, let cached = SearchResultCache.shared.freshBooks(
+        if !bypassCache, page == 1, let cached = SearchResultCache.shared.freshBooks(
             query: query,
             source: source,
             days: cacheDays

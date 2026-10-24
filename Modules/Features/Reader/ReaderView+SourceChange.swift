@@ -217,6 +217,7 @@ extension ReaderView {
         readerViewModel.stopChangeSourceSearch()
         let switchStartedAt = ProcessInfo.processInfo.systemUptime
         readerViewModel.beginSourceSwitch(to: origin) {
+            var failurePhase = ReaderViewModel.SourceSwitchFailurePhase.prepare
             do {
                 // Resolved here rather than inside the commit so this step is the cancellable
                 // one, and so the commit never fetches the same TOC again.
@@ -226,6 +227,7 @@ extension ReaderView {
                     try await readerViewModel.prepareTOCPackage(for: origin)
                 }
                 try Task.checkCancellation()
+                failurePhase = .commit
                 try await SourcePerfTrace.spanAsync(
                     "changeSource.commit", "\(tocPackage.chapters.count)ch"
                 ) {
@@ -236,6 +238,7 @@ extension ReaderView {
                         offlineChapterStore: dependencies.offlineChapterStore
                     )
                 }
+                failurePhase = .postCommit
                 try Task.checkCancellation()
                 // It just worked; a stale flag from an earlier attempt would otherwise keep
                 // this row badged 載入失敗 in every future session.
@@ -284,6 +287,7 @@ extension ReaderView {
                     let storeKey = book?.id.uuidString ?? bookId.uuidString
                     await dependencies.readingPositionStore.save(mappedPosition, for: storeKey)
                 }
+                ReaderViewModel.recordSourceSwitchCompleted()
                 // Leave the pending state before dismissing: the sheet's dismiss handler
                 // cancels a pending switch, and at this point that switch is this one.
                 readerViewModel.finishSourceSwitch()
@@ -294,9 +298,11 @@ extension ReaderView {
                 SourcePerfTrace.record(
                     "changeSource.total", origin.sourceName, since: switchStartedAt)
             } catch is CancellationError {
+                ReaderViewModel.recordSourceSwitchFailure(CancellationError(), phase: failurePhase)
                 // The user cancelled the wait. Nothing was committed and the source is not
                 // known to be bad, so it must not be flagged as a failed origin.
             } catch {
+                ReaderViewModel.recordSourceSwitchFailure(error, phase: failurePhase)
                 readerViewModel.markOriginFailed(
                     bookId: bookId, sourceId: origin.sourceId, bookUrl: origin.bookUrl)
                 readerViewModel.reportChangeSourceError(error.localizedDescription)

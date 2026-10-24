@@ -1,4 +1,6 @@
+import CryptoKit
 import Foundation
+import LegadoRuntime
 import Testing
 @testable import yuedu_app
 
@@ -162,7 +164,7 @@ struct NetworkSettingsSearchTests {
     }
 
     @MainActor
-    @Test("complete reader cache follows reordered sources and adding a source starts a scan")
+    @Test("complete reader cache is bound to ordered configuration and adding a source starts a scan")
     func changeSourceCacheRespectsCurrentOrderAndCoverage() async throws {
         let previousConcurrency = GlobalSettings.shared.searchConcurrency
         let previousDays = GlobalSettings.shared.searchCacheDays
@@ -189,12 +191,12 @@ struct NetworkSettingsSearchTests {
         viewModel.loadOtherOrigins(book: book, currentSourceId: currentSourceId,
             enabledSources: [sources[1], sources[0]], store: BookStore())
         await viewModel.waitForChangeSourceSearchForTesting()
-        #expect(fetcher.searchCallCount == 2)
+        #expect(fetcher.searchCallCount == 4)
         #expect(viewModel.changeSourceOrigins.map(\.sourceId) == [sources[1].id, sources[0].id])
         viewModel.loadOtherOrigins(book: book, currentSourceId: currentSourceId,
             enabledSources: [sources[2], sources[1], sources[0]], store: BookStore())
         await viewModel.waitForChangeSourceSearchForTesting()
-        #expect(fetcher.searchCallCount == 5)
+        #expect(fetcher.searchCallCount == 7)
         #expect(viewModel.changeSourceOrigins.map(\.sourceId) == [sources[2].id, sources[1].id, sources[0].id])
     }
 
@@ -233,6 +235,160 @@ struct NetworkSettingsSearchTests {
     }
 
     @MainActor
+    @Test("immediate reopen displays partial origins and queries only unfinished sources without awaiting old network")
+    func changeSourceReopensPartialAndResumesRemainingOnly() async throws {
+        let previousDays = GlobalSettings.shared.searchCacheDays
+        let previousConcurrency = GlobalSettings.shared.searchConcurrency
+        let previousWarm = GlobalSettings.shared.changeSourceLoadToc
+        defer {
+            GlobalSettings.shared.searchCacheDays = previousDays
+            GlobalSettings.shared.searchConcurrency = previousConcurrency
+            GlobalSettings.shared.changeSourceLoadToc = previousWarm
+        }
+        GlobalSettings.shared.searchCacheDays = 5
+        GlobalSettings.shared.searchConcurrency = 1
+        GlobalSettings.shared.changeSourceLoadToc = false
+        let sources = (0..<3).map { makeSource(name: "Resume \($0)", url: "https://resume-\(UUID()).invalid/\($0)") }
+        let oldGate = SourceSearchGate(), resumedGate = SourceSearchGate()
+        defer { Task { await oldGate.release(); await resumedGate.release() } }
+        let fetcher = CountingBookSourceFetcher(gate: oldGate, heldSourceId: sources[1].id, resumedGate: resumedGate)
+        let viewModel = ReaderViewModel(chapterFetcher: NoopChapterFetcher(),
+            bookCoordinator: NoopOnlineBookCoordinator(), bookSourceFetcher: fetcher)
+        let book = ReadingBook(title: "Owned resume", author: "Author", contentFilename: "")
+        let current = UUID()
+        defer { ChangeSourceCache.shared.clear(for: book.id) }
+        viewModel.loadOtherOrigins(book: book, currentSourceId: current, enabledSources: sources, store: BookStore())
+        let oldTask = try #require(viewModel.changeSourceSearchTaskForTesting())
+        await oldGate.waitUntilHeld()
+        #expect(viewModel.changeSourceOrigins.map(\.sourceId) == [sources[0].id])
+        viewModel.stopChangeSourceSearch()
+        viewModel.loadOtherOrigins(book: book, currentSourceId: current, enabledSources: sources, store: BookStore())
+        await resumedGate.waitUntilHeld()
+        #expect(viewModel.changeSourceOrigins.map(\.sourceId) == [sources[0].id])
+        #expect(viewModel.changeSourceLoading, "partial display must not finish the resumed search")
+        let partial = try #require(ChangeSourceCache.shared.entry(for: book.id))
+        #expect(partial.acceptedAttempts == [sources[0].id: .results])
+        #expect(partial.scanCoverage?.completedAllAttempts == false)
+        #expect(partial.completedAttemptSourceIDs == nil)
+        await resumedGate.release()
+        await viewModel.waitForChangeSourceSearchForTesting()
+        #expect(!viewModel.changeSourceLoading)
+        #expect(viewModel.changeSourceOrigins.map(\.sourceId) == sources.map(\.id))
+        #expect(fetcher.queriedSourceIDs == [sources[0].id, sources[1].id, sources[1].id, sources[2].id])
+        #expect(fetcher.cacheBypassFlags == [true, true, true, true])
+        #expect(ChangeSourceCache.shared.entry(for: book.id)?.scanCoverage?.attemptedSourceCount == 3)
+        // The old, cancellation-ignoring request is still held. Releasing it
+        // cannot publish or replace the resumed complete cache.
+        await oldGate.release()
+        await oldTask.value
+        #expect(viewModel.changeSourceOrigins.map(\.sourceId) == sources.map(\.id))
+        #expect(ChangeSourceCache.shared.entry(for: book.id)?.completedAttemptSourceIDs == Set(sources.map(\.id)))
+        viewModel.loadOtherOrigins(book: book, currentSourceId: current, enabledSources: sources,
+            store: BookStore(), forceRefresh: true)
+        await viewModel.waitForChangeSourceSearchForTesting()
+        #expect(fetcher.searchCallCount == 7, "manual refresh queries all three sources again")
+    }
+
+    @MainActor
+    @Test("manual partial refresh and disabled caching both query every source on reopen")
+    func changeSourceRefreshAndDisabledCacheDoNotResumePartial() async throws {
+        let previousDays = GlobalSettings.shared.searchCacheDays
+        let previousConcurrency = GlobalSettings.shared.searchConcurrency
+        let previousWarm = GlobalSettings.shared.changeSourceLoadToc
+        defer {
+            GlobalSettings.shared.searchCacheDays = previousDays
+            GlobalSettings.shared.searchConcurrency = previousConcurrency
+            GlobalSettings.shared.changeSourceLoadToc = previousWarm
+        }
+        GlobalSettings.shared.searchConcurrency = 1
+        GlobalSettings.shared.changeSourceLoadToc = false
+        for days in [5, 0] {
+            GlobalSettings.shared.searchCacheDays = days
+            let sources = (0..<2).map { makeSource(name: "Refresh \($0)", url: "https://refresh-\(UUID()).invalid/\($0)") }
+            let oldGate = SourceSearchGate()
+            defer { Task { await oldGate.release() } }
+            let fetcher = CountingBookSourceFetcher(gate: oldGate, heldSourceId: sources[1].id)
+            let viewModel = ReaderViewModel(chapterFetcher: NoopChapterFetcher(),
+                bookCoordinator: NoopOnlineBookCoordinator(), bookSourceFetcher: fetcher)
+            let book = ReadingBook(title: "Owned refresh", author: "Author", contentFilename: "")
+            defer { ChangeSourceCache.shared.clear(for: book.id) }
+            let current = UUID()
+            viewModel.loadOtherOrigins(book: book, currentSourceId: current, enabledSources: sources, store: BookStore())
+            let oldTask = try #require(viewModel.changeSourceSearchTaskForTesting())
+            await oldGate.waitUntilHeld()
+            viewModel.stopChangeSourceSearch()
+            viewModel.loadOtherOrigins(book: book, currentSourceId: current, enabledSources: sources,
+                store: BookStore(), forceRefresh: days > 0)
+            await viewModel.waitForChangeSourceSearchForTesting()
+            #expect(fetcher.queriedSourceIDs == [sources[0].id, sources[1].id, sources[0].id, sources[1].id])
+            #expect(viewModel.changeSourceOrigins.map(\.sourceId) == sources.map(\.id))
+            #expect(!viewModel.changeSourceLoading)
+            if days == 0 { #expect(ChangeSourceCache.shared.entry(for: book.id) == nil) }
+            await oldGate.release()
+            await oldTask.value
+        }
+    }
+
+    @MainActor
+    @Test("source-change bypass crosses the original executor and cached preview references retain their identity fence")
+    func sourceChangeBypassesGeneralCacheAndPreservesPreviewFence() async throws {
+        let previousDays = GlobalSettings.shared.searchCacheDays
+        GlobalSettings.shared.searchCacheDays = 5
+        defer { GlobalSettings.shared.searchCacheDays = previousDays }
+        let query = "owned-bypass-\(UUID())"
+        var source = makeSource(name: "Owned bypass", url: "https://bypass-\(UUID()).invalid")
+        source.lastUpdateTime = 1
+        let directory = try makeTemporaryDirectory()
+        let executor = SourceChangeCacheOwnedExecutor(query: query)
+        let service = LegadoMainJSSourceService(contextDirectory: directory, originalExecutor: executor)
+        let live = LiveBookSourceFetcher(bookSourceFetcher: BookSourceFetcher(mainJSService: service))
+        defer {
+            SearchResultCache.shared.clear(query: query, source: source)
+            do { try FileManager.default.removeItem(at: directory) } catch { Issue.record(error) }
+        }
+        let first = try #require(try await live.searchOutcome(query: query, in: source,
+            earlyFilter: nil, bypassCache: true).books.first)
+        let originalVariables = try #require(first.runtimeVariables)
+        SearchResultCache.shared.store(books: [first], query: query, source: source, days: 5)
+        SearchResultCache.shared.waitForPendingWritesForTesting()
+        var changed = source
+        changed.ruleToc.chapterList = ".changed-owned-toc"
+        // The general cache key does not include this TOC rule. Demonstrate the
+        // real cache hit before asserting that source-change bypass avoids it.
+        let general = try await live.searchOutcome(query: query, in: changed, earlyFilter: nil)
+        #expect(general.books.first?.runtimeVariables == originalVariables)
+        #expect(await executor.callCount() == 1)
+        let fresh = try #require(try await live.searchOutcome(query: query, in: changed,
+            earlyFilter: { _, _ in true }, bypassCache: true).books.first)
+        #expect(await executor.callCount() == 2)
+        #expect(fresh.runtimeVariables != originalVariables)
+        let cache = ChangeSourceCache(directory: directory.appendingPathComponent("reader-cache"))
+        let context = try await Task.detached {
+            try ChangeSourceCache.SearchContext.make(title: query, author: "Author", sources: [source],
+                excludingOriginKey: "current")
+        }.value
+        let cachedOrigin = BookOrigin(sourceId: source.id, sourceName: source.bookSourceName,
+            bookUrl: first.bookUrl, tocUrl: first.tocUrl, coverUrl: "", intro: "", lastChapter: "", wordCount: "", kind: "",
+            runtimeVariables: originalVariables)
+        let bookId = UUID(), timestamp = Date()
+        await cache.storePartial(origins: [cachedOrigin], for: bookId, sourceIDs: [source.id],
+            excludingOriginKey: "current", context: context, acceptedAttempts: [source.id: .results], timestamp: timestamp)
+        let snapshot = await cache.readForSearch(for: bookId, days: 5, sourceIDs: [source.id],
+            excludingOriginKey: "current", allowCached: true, context: context, now: timestamp)
+        let restored = try #require(snapshot.displayOrigins.first)
+        #expect(restored.runtimeVariables == originalVariables)
+        #expect(!snapshot.canEndSearch)
+        do {
+            _ = try await service.originalDetails(url: restored.bookUrl, source: changed,
+                runtimeVariables: restored.runtimeVariables, knownBook: first)
+            Issue.record("A cached reference must not cross the changed source signature")
+        } catch let error as LegadoRuntimeError {
+            #expect(error.code == "CONTEXT_MISMATCH")
+        }
+        #expect(await executor.callCount() == 2, "identity failure cannot call another executor route")
+    }
+
+    @MainActor
     @Test("stopping source search also cancels background TOC warm-up")
     func stoppingSearchCancelsTOCWarmup() async throws {
         let previousLoadTOC = GlobalSettings.shared.changeSourceLoadToc
@@ -265,9 +421,15 @@ struct NetworkSettingsSearchTests {
             runtimeVariables: nil
         )
         let currentSourceId = UUID()
+        let excluded = ChangeSourceCache.originKey(sourceId: currentSourceId, bookUrl: book.bookInfoURL)
+        let context = try await Task.detached {
+            try ChangeSourceCache.SearchContext.make(title: "Warm", author: "Author", sources: [source],
+                excludingOriginKey: excluded)
+        }.value
         await ChangeSourceCache.shared.storeCompleted(origins: [origin], for: bookId,
-            sourceIDs: [source.id], excludingOriginKey: ChangeSourceCache.originKey(sourceId: currentSourceId, bookUrl: book.bookInfoURL),
-            coverage: BookOriginSearchCoverage(sourceCount: 1, completedAllAttempts: true, attemptedSourceCount: 1, resultSourceCount: 1))
+            sourceIDs: [source.id], excludingOriginKey: excluded,
+            coverage: BookOriginSearchCoverage(sourceCount: 1, completedAllAttempts: true, attemptedSourceCount: 1, resultSourceCount: 1),
+            context: context, acceptedAttempts: [source.id: .results])
 
         let fetcher = CancellableTOCFetcher()
         let viewModel = ReaderViewModel(
@@ -429,12 +591,23 @@ private final class CountingBookSourceFetcher: BookSourceFetching, @unchecked Se
     private var queried: [UUID] = []
     private let gate: SourceSearchGate?
     private let heldSourceId: UUID?
+    private let resumedGate: SourceSearchGate?
+    private var callsBySource: [UUID: Int] = [:]
+    private var bypassFlags: [Bool] = []
 
-    init(gate: SourceSearchGate? = nil, heldSourceId: UUID? = nil) {
+    init(gate: SourceSearchGate? = nil, heldSourceId: UUID? = nil, resumedGate: SourceSearchGate? = nil) {
         self.gate = gate; self.heldSourceId = heldSourceId
+        self.resumedGate = resumedGate
     }
 
     var queriedSourceIDs: [UUID] { lock.withLock { queried } }
+    var cacheBypassFlags: [Bool] { lock.withLock { bypassFlags } }
+
+    func searchOutcome(query: String, in source: BookSource,
+        earlyFilter: ((_ name: String, _ author: String) -> Bool)?, bypassCache: Bool) async throws -> BookSourceSearchOutcome {
+        lock.withLock { bypassFlags.append(bypassCache) }
+        return BookSourceSearchOutcome(books: try await search(query: query, in: source, earlyFilter: earlyFilter))
+    }
 
     var searchCallCount: Int {
         lock.lock()
@@ -474,8 +647,15 @@ private final class CountingBookSourceFetcher: BookSourceFetching, @unchecked Se
     func clearAllChapterCache(bookId: UUID) {}
 
     func search(query: String, in source: BookSource) async throws -> [OnlineBook] {
-        lock.withLock { calls += 1; queried.append(source.id) }
-        if source.id == heldSourceId { await gate?.hold() }
+        let occurrence = lock.withLock {
+            calls += 1; queried.append(source.id)
+            callsBySource[source.id, default: 0] += 1
+            return callsBySource[source.id]!
+        }
+        if source.id == heldSourceId {
+            if occurrence == 1 { await gate?.hold() }
+            else { await resumedGate?.hold() }
+        }
         return [
             OnlineBook(
                 name: query,
@@ -535,6 +715,33 @@ private actor SourceSearchGate {
         let continuation = answer; answer = nil
         continuation?.resume()
     }
+}
+
+/// Only the native invocation is replaced; the real original-search record and
+/// preview identity path still produce and validate the cached reference.
+private actor SourceChangeCacheOwnedExecutor: LegadoOriginalPreviewExecuting {
+    private let query: String
+    private var calls = 0
+    init(query: String) { self.query = query }
+    func execute(sourceJSON: String, sourceURL: String, sourceRevision: String,
+        grant: OriginalRuntimePreviewGrant?, operation: LegadoOriginalPreviewOperation,
+        deadline: Date) async throws -> LegadoOriginalPreviewResult {
+        try Task.checkCancellation()
+        let source = try JSONDecoder().decode(BookSource.self, from: Data(sourceJSON.utf8))
+        var stable = source
+        stable.id = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
+        stable.lastUpdateTime = 0; stable.respondTime = 180000
+        let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
+        let expected = SHA256.hash(data: try encoder.encode(stable)).map { String(format: "%02x", $0) }.joined()
+        guard grant == nil, !source.isJsSource, source.bookSourceType == 0, source.bookSourceUrl == sourceURL,
+              expected == sourceRevision, case .search(let key, let page) = operation, key == query, page == 1,
+              deadline.timeIntervalSinceNow > 0 else {
+            throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "Unexpected owned cache-bypass invocation")
+        }
+        calls += 1
+        return .search([LegadoOriginalBook(bookURL: sourceURL + "/book", origin: sourceURL, name: query, author: "Author")])
+    }
+    func callCount() -> Int { calls }
 }
 
 private struct NoopChapterFetcher: ChapterFetching {

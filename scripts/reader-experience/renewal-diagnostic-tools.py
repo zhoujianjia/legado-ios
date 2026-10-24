@@ -59,7 +59,9 @@ SOURCE_CHANGE_GROUPS = {
         "searchTabKeepsArrivalOrder", "sceneGateStillOwnsPublication")),
     "reader-source-change": tuple("NetworkSettingsSearchTests/" + name for name in (
         "changeSourceDoesNotAutoPause", "changeSourceCacheRespectsCurrentOrderAndCoverage",
-        "changeSourceRestartRejectsLateOldResult", "stoppingSearchCancelsTOCWarmup")),
+        "changeSourceRestartRejectsLateOldResult", "stoppingSearchCancelsTOCWarmup",
+        "changeSourceReopensPartialAndResumesRemainingOnly", "changeSourceRefreshAndDisabledCacheDoNotResumePartial",
+        "sourceChangeBypassesGeneralCacheAndPreservesPreviewFence")),
     "origin-stream": tuple("BookOriginSearchServiceTests/" + name for name in (
         "keepsOnlyTheSameBook", "keepsFoldedTitles", "earlyFilterRunsOffTheMainThread",
         "deduplicatesAndExcludes", "sourceFilterSkipsSources", "shouldStopEndsTheFanOut",
@@ -67,7 +69,9 @@ SOURCE_CHANGE_GROUPS = {
         "slowSourceTimesOut", "scanCoveragePreservesFailureAndTimeoutFacts")),
     "source-cache": tuple("ChangeSourceCacheCoverageTests/" + name for name in (
         "legacyAndPartialEntriesDoNotEndSearch", "completeAttemptCoverageIsBoundToSourceSet", "completeEntryExpires",
-        "cancelledQueuedCompletedStoreDoesNotWrite", "incompatibleCompletedEntryDoesNotEndSearch")),
+        "cancelledQueuedCompletedStoreDoesNotWrite", "incompatibleCompletedEntryDoesNotEndSearch",
+        "partialSnapshotPreservesProgressAndExpiresWithoutSlidingTime", "contextBindsConfigurationAndScopeWithoutOperationalChurn",
+        "rejectsInconsistentProgressAndPreservesNewerCompleteRecord")),
 }
 SDK_RESOURCE = "Tests/iOS/yuedu appTests/owned-sdk-package.json"
 SDK_TOOLS = ("generate-sdk-owned-package.py", "ImportOwnedIdentity.swift", "OwnedIdentitySearch.h",
@@ -90,7 +94,9 @@ INPUTS = (".github/workflows/yuedu-renewal-diagnostic.yml", "scripts/reader-expe
           "Modules/Services/Online/LegadoPersistentStateHost.swift",
           "Modules/Services/Online/ChangeSourceCache.swift",
           "Modules/Services/Online/SearchAggregator.swift",
+          "Modules/Core/BookSource/BookSourceFetcher+Search.swift",
           "Modules/Features/Reader/ReaderViewModel.swift",
+          "Modules/Features/Reader/ReaderView+SourceChange.swift",
           "Modules/Features/Reader/ReaderView+Logic.swift",
           "Targets/Yuedu/SharedApp/AppDependencies.swift",
           "docs/legado-ios/evidence/renewal-opaque-adsid-step/generate-owned-vectors.py",
@@ -185,10 +191,10 @@ def validate_build(receipt):
             or manifest.get("diagnosticOnly") is not True or manifest.get("releaseAcceptance") is not False
             or manifest.get("S3Acceptance") != "not_run" or manifest.get("configuration") != "Release"
             or manifest.get("platform") != "iPhoneOS" or manifest.get("architecture") != "arm64"
-            or manifest.get("build") != "26" or manifest.get("signed") is not False
+            or manifest.get("build") != "27" or manifest.get("signed") is not False
             or manifest.get("deviceCompilationPassed") is not True or manifest.get("jvmIntegratedIntoReading") is not True
             or manifest.get("deviceValidationPassed") is not False):
-        raise ValueError("Expected this source's complete, unsigned build26 diagnostic manifest")
+        raise ValueError("Expected this source's complete, unsigned build27 diagnostic manifest")
     settings = config.inspect_settings(json.loads((BUILD / "build-settings.json").read_bytes()), with_jvm=True, diagnostic=True)
     if settings != manifest.get("actualBuildSettings"):
         raise ValueError("Diagnostic settings changed after compilation")
@@ -201,7 +207,7 @@ def validate_build(receipt):
         raise ValueError("Complete diagnostic runtime/bundle material changed")
     for bundle in [app, *config.extension_bundles(app).values()]:
         info = plistlib.loads((bundle / "Info.plist").read_bytes())
-        if info.get("YueduExperienceSourceCommit") != receipt["sourceCommit"] or info.get("CFBundleVersion") != "26":
+        if info.get("YueduExperienceSourceCommit") != receipt["sourceCommit"] or info.get("CFBundleVersion") != "27":
             raise ValueError("Diagnostic embedded bundle source/build differs")
     proof = json.loads((BUILD / "native-reuse.json").read_bytes())
     if (proof != json.loads((WORK / "native-restore.json").read_bytes())

@@ -65,6 +65,11 @@ protocol BookSourceFetching {
         earlyFilter: ((_ name: String, _ author: String) -> Bool)?
     ) async throws -> BookSourceSearchOutcome
 
+    /// Source-change resume has its own configuration-bound cache. New attempts
+    /// bypass the general search cache without changing its parser or ownership.
+    func searchOutcome(query: String, in source: BookSource,
+        earlyFilter: ((_ name: String, _ author: String) -> Bool)?, bypassCache: Bool) async throws -> BookSourceSearchOutcome
+
     func loadChapterPackageSync(
         bookId: UUID,
         chapterIndex: Int,
@@ -86,6 +91,11 @@ extension BookSourceFetching {
     func searchOutcome(query: String, in source: BookSource,
         earlyFilter: ((_ name: String, _ author: String) -> Bool)?) async throws -> BookSourceSearchOutcome {
         BookSourceSearchOutcome(books: try await search(query: query, in: source, earlyFilter: earlyFilter))
+    }
+
+    func searchOutcome(query: String, in source: BookSource,
+        earlyFilter: ((_ name: String, _ author: String) -> Bool)?, bypassCache: Bool) async throws -> BookSourceSearchOutcome {
+        try await searchOutcome(query: query, in: source, earlyFilter: earlyFilter)
     }
 
     /// Cache lookup is an optional acceleration capability. Test doubles and
@@ -219,6 +229,12 @@ struct LiveBookSourceFetcher: BookSourceFetching {
     func searchOutcome(query: String, in source: BookSource,
         earlyFilter: ((_ name: String, _ author: String) -> Bool)?) async throws -> BookSourceSearchOutcome {
         try await bookSourceFetcher.searchOutcome(query: query, in: source, earlyFilter: earlyFilter)
+    }
+
+    func searchOutcome(query: String, in source: BookSource,
+        earlyFilter: ((_ name: String, _ author: String) -> Bool)?, bypassCache: Bool) async throws -> BookSourceSearchOutcome {
+        try await bookSourceFetcher.searchOutcome(query: query, in: source,
+            earlyFilter: earlyFilter, bypassCache: bypassCache)
     }
 
     @MainActor func noteOriginalExploreAppPause() {

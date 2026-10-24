@@ -12,6 +12,15 @@ struct BookOriginSearchCoverage: Codable, Sendable {
     var cancelledSourceCount = 0
 }
 
+/// A source is resumably finished only after its whole matched batch and outcome
+/// have been accepted together. Cancellation leaves the source for a later scan.
+struct BookOriginSearchAttempt: Sendable {
+    enum Outcome: String, Codable, Sendable { case results, empty, failed, timedOut }
+    let sourceID: UUID
+    let outcome: Outcome
+    let origins: [BookOrigin]
+}
+
 /// The single cross-source "find this exact book in every enabled source" fan-out.
 ///
 /// 換源 and 封面搜索 ask the same question of the same sources — Legado runs both
@@ -52,8 +61,10 @@ enum BookOriginSearchService {
         sourceFilter: ((BookSource) -> Bool)? = nil,
         requiresAuthor: Bool = false,
         sourceTimeout: UInt64 = 20,
+        bypassSearchCache: Bool = false,
         shouldStop: ((Int) -> Bool)? = nil,
         onSourceAnswered: () -> Void = {},
+        onAttemptFinished: (@MainActor (BookOriginSearchAttempt) async -> Void)? = nil,
         onBatch: @MainActor ([BookOrigin]) async -> Void
     ) async -> BookOriginSearchCoverage {
         let queried = sourceFilter.map { filter in sources.filter(filter) } ?? sources
@@ -65,7 +76,7 @@ enum BookOriginSearchService {
         let matcher = OriginMatcher(title: title, author: author, requiresAuthor: requiresAuthor,
             excludingOriginKey: excludingOriginKey)
 
-        return await withTaskGroup(of: SourceAnswer.self) { group in
+        return await withTaskGroup(of: IdentifiedAnswer.self) { group in
             var nextSourceIndex = 0
             var coverage = BookOriginSearchCoverage(sourceCount: queried.count)
             let started = SourcePerfTrace.now
@@ -79,15 +90,19 @@ enum BookOriginSearchService {
                 let source = queried[nextSourceIndex]
                 nextSourceIndex += 1
                 group.addTask {
-                    guard !Task.isCancelled else { return SourceAnswer(books: nil, outcome: .cancelled) }
-                    return await searchSourceAnswer(
+                    guard !Task.isCancelled else {
+                        return IdentifiedAnswer(sourceID: source.id, answer: SourceAnswer(books: nil, outcome: .cancelled))
+                    }
+                    let answer = await searchSourceAnswer(
                         query: title,
                         bookTitle: title,
                         bookAuthor: author,
                         source: source,
                         bookSourceFetcher: fetcher,
-                        seconds: sourceTimeout
+                        seconds: sourceTimeout,
+                        bypassSearchCache: bypassSearchCache
                     )
+                    return IdentifiedAnswer(sourceID: source.id, answer: answer)
                 }
             }
 
@@ -95,8 +110,9 @@ enum BookOriginSearchService {
                 enqueueNextSource()
             }
 
-            while let answer = await group.next() {
+            while let identified = await group.next() {
                 guard !Task.isCancelled else { group.cancelAll(); return coverage }
+                let answer = identified.answer
                 coverage.attemptedSourceCount += 1
                 switch answer.outcome {
                 case .results: coverage.resultSourceCount += 1
@@ -106,6 +122,11 @@ enum BookOriginSearchService {
                 case .cancelled: coverage.cancelledSourceCount += 1
                 }
                 guard let list = answer.books else {
+                    if let outcome = answer.outcome.finishedOutcome {
+                        await onAttemptFinished?(BookOriginSearchAttempt(sourceID: identified.sourceID,
+                            outcome: outcome, origins: []))
+                        guard !Task.isCancelled else { group.cancelAll(); return coverage }
+                    }
                     // Timed out or failed: its slot goes to the next source.
                     enqueueNextSource()
                     continue
@@ -133,6 +154,11 @@ enum BookOriginSearchService {
                     // the matches carry (the metadata filler stops at a description) knows
                     // only now.
                     if shouldStop?(emittedCount) == true { shouldPause = true }
+                }
+                if !shouldPause, let outcome = answer.outcome.finishedOutcome {
+                    await onAttemptFinished?(BookOriginSearchAttempt(sourceID: identified.sourceID,
+                        outcome: outcome, origins: batchOrigins))
+                    guard !Task.isCancelled else { group.cancelAll(); return coverage }
                 }
                 if shouldPause {
                     group.cancelAll()
@@ -192,7 +218,22 @@ enum BookOriginSearchService {
             source: source, bookSourceFetcher: bookSourceFetcher, seconds: seconds).books
     }
 
-    private enum SourceOutcome: Sendable { case results, empty, reportedFailure, failed, timedOut, cancelled }
+    private enum SourceOutcome: Sendable {
+        case results, empty, reportedFailure, failed, timedOut, cancelled
+        var finishedOutcome: BookOriginSearchAttempt.Outcome? {
+            switch self {
+            case .results: return .results
+            case .empty: return .empty
+            case .reportedFailure, .failed: return .failed
+            case .timedOut: return .timedOut
+            case .cancelled: return nil
+            }
+        }
+    }
+    private struct IdentifiedAnswer: Sendable {
+        let sourceID: UUID
+        let answer: SourceAnswer
+    }
     private struct SourceAnswer: Sendable {
         let books: [OnlineBook]?
         let outcome: SourceOutcome
@@ -200,7 +241,7 @@ enum BookOriginSearchService {
 
     private nonisolated static func searchSourceAnswer(
         query: String, bookTitle: String, bookAuthor: String, source: BookSource,
-        bookSourceFetcher: BookSourceFetching, seconds: UInt64 = 20
+        bookSourceFetcher: BookSourceFetching, seconds: UInt64 = 20, bypassSearchCache: Bool = false
     ) async -> SourceAnswer {
         let startedAt = ProcessInfo.processInfo.systemUptime
         // Folded once per source, off the main actor; the filter runs per parsed item.
@@ -215,7 +256,7 @@ enum BookOriginSearchService {
                     let outcome = try await bookSourceFetcher.searchOutcome(query: query, in: source,
                         earlyFilter: { name, author in
                             SearchBook.isLikelySameBook(target, SearchWorkKeys(name: name, author: author))
-                        })
+                        }, bypassCache: bypassSearchCache)
                     switch outcome {
                     case .results(let books): return SourceAnswer(books: books, outcome: .results)
                     case .empty: return SourceAnswer(books: [], outcome: .empty)

@@ -28,7 +28,7 @@ class DiagnosticGates(unittest.TestCase):
             "PLATFORM_NAME": "iphoneos", "FULL_PRODUCT_NAME": product, "PRODUCT_BUNDLE_IDENTIFIER": identifier,
             "ARCHS": "arm64", "CODE_SIGNING_ALLOWED": "NO", "CODE_SIGNING_REQUIRED": "NO", "ENABLE_DEBUG_DYLIB": "NO",
             "CODE_SIGN_ENTITLEMENTS": "", "GATEWAY_BASE_URL": "", "YUEDU_LOCAL_EXPERIENCE": "YES",
-            "TARGET_BUILD_DIR": str(root), "MARKETING_VERSION": "3.0", "CURRENT_PROJECT_VERSION": "26",
+            "TARGET_BUILD_DIR": str(root), "MARKETING_VERSION": "3.0", "CURRENT_PROJECT_VERSION": "27",
             "SWIFT_OPTIMIZATION_LEVEL": "-Onone", "SWIFT_COMPILATION_MODE": "singlefile",
             "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "", "GCC_PREPROCESSOR_DEFINITIONS": "NDEBUG=1",
             "OTHER_SWIFT_FLAGS": "-D YUEDU_LOCAL_EXPERIENCE"}}
@@ -170,7 +170,7 @@ class DiagnosticGates(unittest.TestCase):
                     fixture.write_bytes(raw)
 
     def test_source_picker_case_gates_reject_missing_duplicate_wrong_failed_or_skipped_cases(self):
-        self.assertEqual([len(cases) for cases in diagnostic.SOURCE_CHANGE_GROUPS.values()], [7, 4, 11, 5])
+        self.assertEqual([len(cases) for cases in diagnostic.SOURCE_CHANGE_GROUPS.values()], [7, 7, 11, 8])
         self.assertEqual(len(set(diagnostic.FOCUSED_SOURCES)), 14)
         for cases in (*diagnostic.SOURCE_CHANGE_GROUPS.values(), diagnostic.ORIGINAL_SOURCE_ADMISSION_CASES):
             count = len(cases)

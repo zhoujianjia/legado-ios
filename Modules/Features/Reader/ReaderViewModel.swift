@@ -54,6 +54,9 @@ final class ReaderViewModel: ObservableObject {
     private var changeSourceSearchTask: Task<Void, Never>?
     private var changeSourceGeneration = UUID()
     private var changeSourceWork: ReaderSourceChangeWork?
+    /// Only the closing work's actor snapshot/cache write, never the old network
+    /// task. Immediate reopens await it before reading the same cache record.
+    private var changeSourceCheckpointTask: Task<Void, Never>?
     /// The switch the user just tapped, while its TOC is being prepared. Drives the sheet's
     /// cancellable loading state (Legado's `WaitDialog`), and holding the task is what makes
     /// cancelling possible at all.
@@ -307,7 +310,7 @@ final class ReaderViewModel: ObservableObject {
         store: BookStore,
         forceRefresh: Bool = false
     ) {
-        changeSourceSearchTask?.cancel()
+        checkpointAndCancelChangeSourceSearch()
         tocWarmTask?.cancel()
         let generation = UUID()
         changeSourceGeneration = generation
@@ -325,13 +328,17 @@ final class ReaderViewModel: ObservableObject {
         let currentOriginKey = ChangeSourceCache.originKey(
             sourceId: currentSourceId, bookUrl: book.bookInfoURL)
         let fetcher = bookSourceFetcher
+        let checkpoint = changeSourceCheckpointTask
         changeSourceSearchTask = Task { [weak self] in
+            await checkpoint?.value
+            guard !Task.isCancelled else { return }
             let prepared = await work.prepare(sources: enabledSources, bookId: bookId,
-                cacheDays: cacheDays, excludingOriginKey: currentOriginKey, forceRefresh: forceRefresh)
+                title: bookTitle, author: bookAuthor, cacheDays: cacheDays,
+                excludingOriginKey: currentOriginKey, forceRefresh: forceRefresh)
             guard let self, !Task.isCancelled, self.changeSourceGeneration == generation else { return }
             self.changeSourceFailedKeys = prepared.failedKeys
-            if let cached = prepared.cachedOrigins {
-                self.changeSourceOrigins = cached
+            self.changeSourceOrigins = prepared.displayOrigins
+            if prepared.canEndSearch {
                 self.changeSourceLoading = false
                 self.warmSearchTOCCacheIfEnabled()
                 return
@@ -346,15 +353,17 @@ final class ReaderViewModel: ObservableObject {
                 concurrency: concurrency,
                 fetcher: fetcher,
                 excludingOriginKey: currentOriginKey,
-                onBatch: { [weak self] batchOrigins in
+                bypassSearchCache: true,
+                onAttemptFinished: { [weak self] attempt in
                     guard let self, !Task.isCancelled, self.changeSourceGeneration == generation else { return }
-                    let origins = await work.append(batchOrigins)
+                    let origins = await work.accept(attempt)
                     guard !Task.isCancelled, self.changeSourceGeneration == generation else { return }
-                    self.changeSourceOrigins = origins
-                }
+                    if let origins { self.changeSourceOrigins = origins }
+                },
+                onBatch: { _ in }
             )
             guard coverage.completedAllAttempts, !Task.isCancelled, self.changeSourceGeneration == generation else { return }
-            await work.storeCompleted(bookId: bookId, excludingOriginKey: currentOriginKey, coverage: coverage)
+            await work.storeCompleted(coverage: coverage)
             guard !Task.isCancelled, self.changeSourceGeneration == generation else { return }
             self.changeSourceLoading = false
             self.warmSearchTOCCacheIfEnabled()
@@ -382,6 +391,7 @@ final class ReaderViewModel: ObservableObject {
     func prepareTOCPackage(for origin: BookOrigin) async throws -> TOCPackage {
         let key = ChangeSourceCache.originKey(sourceId: origin.sourceId, bookUrl: origin.bookUrl)
         if let cached = searchTOCCache[key] {
+            Self.recordPreparedTOC(chapters: cached.chapters.count, cacheHit: true)
             return cached
         }
         guard let source = BookSourceStore.shared.source(id: origin.sourceId)
@@ -467,7 +477,27 @@ final class ReaderViewModel: ObservableObject {
             throw error
         }
         cacheSearchTOC(package, forKey: key)
+        Self.recordPreparedTOC(chapters: package.chapters.count, cacheHit: false)
         return package
+    }
+
+    private static func recordPreparedTOC(chapters: Int, cacheHit: Bool) {
+        AppLogger.parse("ChangeSource TOC prepared cacheHit=\(cacheHit) chapters=\(chapters) taskCancelled=\(Task.isCancelled)", level: .info)
+    }
+
+    enum SourceSwitchFailurePhase: String { case prepare, commit, postCommit }
+
+    /// The outer boundary includes cancellation and commit errors that the TOC
+    /// probe deliberately omits. Fixed facts only, including sub-millisecond exits.
+    static func recordSourceSwitchFailure(_ error: Error, phase: SourceSwitchFailurePhase) {
+        let fields = sourceChangeFailureFields(error)
+        var line = "ChangeSource switch unavailable phase=\(phase.rawValue) kind=\(fields.kind) code=\(fields.code) taskCancelled=\(Task.isCancelled) httpStatusKnown=\(fields.httpStatus != nil)"
+        if let status = fields.httpStatus { line += " httpStatus=\(status)" }
+        AppLogger.parse(line, level: .error)
+    }
+
+    static func recordSourceSwitchCompleted() {
+        AppLogger.parse("ChangeSource switch finished outcome=completed taskCancelled=\(Task.isCancelled)", level: .info)
     }
 
     /// Call-site phases only: neither this label nor a runtime HTTP_ERROR proves
@@ -490,56 +520,65 @@ final class ReaderViewModel: ObservableObject {
         let cause = SourceFailure.loggable(error)
         guard !Task.isCancelled, !(error is CancellationError), !(cause is CancellationError),
               (cause as? URLError)?.code != .cancelled else { return }
-        var kind = "other", code = "other"
-        var httpStatus: Int? = nil
+        var fields = sourceChangeFailureFields(error)
         switch phase {
         case .sourceLookup:
-            kind = "reader"; code = "missingSource"
+            fields = ("reader", "missingSource", nil)
         case .empty:
-            kind = "reader"; code = "emptyTOC"
-        case .detail, .toc:
-            if let value = cause as? LegadoRuntimeError {
-                kind = "runtime"
-                // The runtime's code is an arbitrary String, not an enum. Emit
-                // our matched literal, never its free message or unknown code.
-                if value.code.utf8.prefix(41).count <= 40,
-                   let known = sourceTOCRuntimeCodes.first(where: { $0 == value.code }) {
-                    code = known
-                }
-            } else if let value = cause as? FetchError {
-                kind = "fetch"
-                switch value {
-                case .noSearchURL: code = "noSearchURL"
-                case .invalidURL: code = "invalidURL"
-                case .httpError(let status):
-                    code = "httpError"
-                    if (100...599).contains(status) { httpStatus = status }
-                case .cloudflareChallengeRequired: code = "cloudflareChallengeRequired"
-                case .encodingError: code = "encodingError"
-                case .emptyContent: code = "emptyContent"
-                case .sourceAPIError: code = "sourceAPIError"
-                case .volumeSeparator: code = "volumeSeparator"
-                }
-            } else if let value = cause as? URLError {
-                kind = "url"
-                switch value.code {
-                case .timedOut: code = "timedOut"
-                case .badURL: code = "badURL"
-                case .unsupportedURL: code = "unsupportedURL"
-                case .cannotFindHost: code = "cannotFindHost"
-                case .cannotConnectToHost: code = "cannotConnectToHost"
-                case .dnsLookupFailed: code = "dnsLookupFailed"
-                case .notConnectedToInternet: code = "notConnectedToInternet"
-                case .networkConnectionLost: code = "networkConnectionLost"
-                case .secureConnectionFailed: code = "secureConnectionFailed"
-                case .badServerResponse: code = "badServerResponse"
-                default: break
-                }
+            fields = ("reader", "emptyTOC", nil)
+        case .detail, .toc: break
+        }
+        var line = "ChangeSource TOC unavailable phase=\(phase.rawValue) kind=\(fields.kind) code=\(fields.code) httpStatusKnown=\(fields.httpStatus != nil)"
+        if let status = fields.httpStatus { line += " httpStatus=\(status)" }
+        AppLogger.parse(line, level: .error)
+    }
+
+    private static func sourceChangeFailureFields(_ error: Error) -> (kind: String, code: String, httpStatus: Int?) {
+        let cause = SourceFailure.loggable(error)
+        var kind = "other", code = "other"
+        var httpStatus: Int? = nil
+        if error is CancellationError || cause is CancellationError {
+            kind = "task"; code = "cancelled"
+        } else if let value = cause as? LegadoRuntimeError {
+            kind = "runtime"
+            // The runtime's code is an arbitrary String, not an enum. Emit
+            // our matched literal, never its free message or unknown code.
+            if value.code.utf8.prefix(41).count <= 40,
+               let known = sourceTOCRuntimeCodes.first(where: { $0 == value.code }) {
+                code = known
+            }
+        } else if let value = cause as? FetchError {
+            kind = "fetch"
+            switch value {
+            case .noSearchURL: code = "noSearchURL"
+            case .invalidURL: code = "invalidURL"
+            case .httpError(let status):
+                code = "httpError"
+                if (100...599).contains(status) { httpStatus = status }
+            case .cloudflareChallengeRequired: code = "cloudflareChallengeRequired"
+            case .encodingError: code = "encodingError"
+            case .emptyContent: code = "emptyContent"
+            case .sourceAPIError: code = "sourceAPIError"
+            case .volumeSeparator: code = "volumeSeparator"
+            }
+        } else if let value = cause as? URLError {
+            kind = "url"
+            switch value.code {
+            case .cancelled: code = "cancelled"
+            case .timedOut: code = "timedOut"
+            case .badURL: code = "badURL"
+            case .unsupportedURL: code = "unsupportedURL"
+            case .cannotFindHost: code = "cannotFindHost"
+            case .cannotConnectToHost: code = "cannotConnectToHost"
+            case .dnsLookupFailed: code = "dnsLookupFailed"
+            case .notConnectedToInternet: code = "notConnectedToInternet"
+            case .networkConnectionLost: code = "networkConnectionLost"
+            case .secureConnectionFailed: code = "secureConnectionFailed"
+            case .badServerResponse: code = "badServerResponse"
+            default: break
             }
         }
-        var line = "ChangeSource TOC unavailable phase=\(phase.rawValue) kind=\(kind) code=\(code) httpStatusKnown=\(httpStatus != nil)"
-        if let httpStatus { line += " httpStatus=\(httpStatus)" }
-        AppLogger.parse(line, level: .error)
+        return (kind, code, httpStatus)
     }
 
     /// Runs a tapped source switch as a cancellable unit, publishing the pending origin so the
@@ -572,13 +611,25 @@ final class ReaderViewModel: ObservableObject {
     /// the connection pool and the JS bridge, and from that point it is competing with the one
     /// fetch the user is actually waiting on (Legado's `getToc` opens with `stopSearch()`).
     func stopChangeSourceSearch() {
-        changeSourceGeneration = UUID()
-        changeSourceSearchTask?.cancel()
-        changeSourceSearchTask = nil
-        changeSourceWork = nil
+        checkpointAndCancelChangeSourceSearch()
         tocWarmTask?.cancel()
         tocWarmTask = nil
         changeSourceLoading = false
+    }
+
+    private func checkpointAndCancelChangeSourceSearch() {
+        changeSourceGeneration = UUID()
+        changeSourceSearchTask?.cancel()
+        changeSourceSearchTask = nil
+        let oldWork = changeSourceWork
+        changeSourceWork = nil
+        if let oldWork {
+            let previous = changeSourceCheckpointTask
+            changeSourceCheckpointTask = Task.detached(priority: .utility) {
+                await previous?.value
+                await oldWork.checkpoint()
+            }
+        }
     }
 
     private func cacheSearchTOC(_ package: TOCPackage, forKey key: String) {
@@ -882,42 +933,94 @@ final class ReaderViewModel: ObservableObject {
 private actor ReaderSourceChangeWork {
     struct Prepared {
         let sources: [BookSource]
-        let cachedOrigins: [BookOrigin]?
+        let displayOrigins: [BookOrigin]
+        let canEndSearch: Bool
         let failedKeys: Set<String>
     }
 
     private var order: BookSourceSearchOrder?
     private var origins: [BookOrigin] = []
+    private var seenOriginKeys: Set<String> = []
+    private var acceptedAttempts: [UUID: BookOriginSearchAttempt.Outcome] = [:]
+    private var context: ChangeSourceCache.SearchContext?
+    private var bookID: UUID?
+    private var excludedOriginKey = ""
+    private var cacheDays = 0
+    private var timestamp = Date()
+    private var hasNewAttempts = false
+    private var completed = false
 
-    func prepare(sources snapshot: [BookSource], bookId: UUID, cacheDays: Int,
+    func prepare(sources snapshot: [BookSource], bookId: UUID, title: String, author: String, cacheDays: Int,
         excludingOriginKey: String, forceRefresh: Bool) async -> Prepared {
         let started = SourcePerfTrace.now
         defer { SourcePerfTrace.record("changeSource.prepare", "sources=\(snapshot.count) main=\(Thread.isMainThread)", since: started) }
         let sources = snapshot.filter(\.enabled)
         let order = BookSourceSearchOrder(sources: sources)
         self.order = order
-        let cached = await ChangeSourceCache.shared.readForSearch(for: bookId, days: cacheDays,
-            sourceIDs: order.sourceIDs, excludingOriginKey: excludingOriginKey, allowCached: !forceRefresh)
-        if let previous = cached.origins {
-            origins = order.ordered(previous.filter { order.includes($0.sourceId) })
-            return Prepared(sources: sources, cachedOrigins: origins, failedKeys: cached.failedKeys)
+        self.bookID = bookId
+        self.excludedOriginKey = excludingOriginKey
+        self.cacheDays = cacheDays
+        if cacheDays > 0, order.sourceIDs.count == sources.count {
+            do {
+                context = try ChangeSourceCache.SearchContext.make(title: title, author: author,
+                    sources: sources, excludingOriginKey: excludingOriginKey)
+            } catch is CancellationError {
+                return Prepared(sources: sources, displayOrigins: [], canEndSearch: false, failedKeys: [])
+            } catch {
+                // An unencodable configuration cannot authorize reuse. The same
+                // normal search still runs, with the general search cache bypassed.
+                AppLogger.cache("ChangeSource context unavailable type=\(String(reflecting: type(of: error)))")
+            }
         }
-        return Prepared(sources: sources, cachedOrigins: nil, failedKeys: cached.failedKeys)
+        let cached = await ChangeSourceCache.shared.readForSearch(for: bookId, days: cacheDays,
+            sourceIDs: order.sourceIDs, excludingOriginKey: excludingOriginKey,
+            allowCached: !forceRefresh && context != nil, context: context)
+        origins = order.ordered(cached.displayOrigins)
+        seenOriginKeys = Set(origins.map { ChangeSourceCache.originKey(sourceId: $0.sourceId, bookUrl: $0.bookUrl) })
+        acceptedAttempts = cached.acceptedAttempts
+        timestamp = cached.timestamp ?? Date()
+        completed = cached.canEndSearch
+        return Prepared(sources: sources.filter { acceptedAttempts[$0.id] == nil },
+            displayOrigins: origins, canEndSearch: cached.canEndSearch, failedKeys: cached.failedKeys)
     }
 
-    func append(_ batch: [BookOrigin]) -> [BookOrigin] {
+    func accept(_ attempt: BookOriginSearchAttempt) -> [BookOrigin]? {
         let started = SourcePerfTrace.now
-        defer { SourcePerfTrace.record("changeSource.order", "origins=\(origins.count) batch=\(batch.count) main=\(Thread.isMainThread)", since: started) }
-        guard let order else { return [] }
-        origins.append(contentsOf: batch)
+        defer { SourcePerfTrace.record("changeSource.order", "origins=\(origins.count) batch=\(attempt.origins.count) main=\(Thread.isMainThread)", since: started) }
+        guard !Task.isCancelled, let order, order.includes(attempt.sourceID), acceptedAttempts[attempt.sourceID] == nil,
+              attempt.origins.allSatisfy({ $0.sourceId == attempt.sourceID }) else { return nil }
+        // No await between adding this source's results and its finished fact.
+        // A checkpoint sees both or neither; preview references stay verbatim.
+        let added = attempt.origins.filter {
+            seenOriginKeys.insert(ChangeSourceCache.originKey(sourceId: $0.sourceId, bookUrl: $0.bookUrl)).inserted
+        }
+        origins.append(contentsOf: added)
+        acceptedAttempts[attempt.sourceID] = attempt.outcome
+        // Only actual new search progress advances freshness. Merely reopening
+        // or closing the same partial snapshot never extends its five minutes.
+        timestamp = Date()
+        hasNewAttempts = true
+        guard !added.isEmpty else { return nil }
         origins = order.ordered(origins)
         return origins
     }
 
-    func storeCompleted(bookId: UUID, excludingOriginKey: String, coverage: BookOriginSearchCoverage) async {
-        guard !Task.isCancelled, let order else { return }
+    func storeCompleted(coverage: BookOriginSearchCoverage) async {
+        guard !Task.isCancelled, coverage.completedAllAttempts, let order, let bookId = bookID,
+              Set(acceptedAttempts.keys) == order.sourceIDs else { return }
+        guard cacheDays > 0, let context else { completed = true; return }
+        let combined = ChangeSourceCache.coverage(sourceIDs: order.sourceIDs, attempts: acceptedAttempts, completed: true)
         await ChangeSourceCache.shared.storeCompleted(origins: origins, for: bookId,
-            sourceIDs: order.sourceIDs, excludingOriginKey: excludingOriginKey, coverage: coverage)
+            sourceIDs: order.sourceIDs, excludingOriginKey: excludedOriginKey, coverage: combined,
+            context: context, acceptedAttempts: acceptedAttempts)
+        if !Task.isCancelled { completed = true }
+    }
+
+    func checkpoint() async {
+        guard cacheDays > 0, !completed, hasNewAttempts, let order, let context, let bookId = bookID else { return }
+        await ChangeSourceCache.shared.storePartial(origins: origins, for: bookId,
+            sourceIDs: order.sourceIDs, excludingOriginKey: excludedOriginKey, context: context,
+            acceptedAttempts: acceptedAttempts, timestamp: timestamp)
     }
 
     func warmJobs(sources: [BookSource], failedKeys: Set<String>, cached: [String: TOCPackage]) -> [(String, BookOrigin, BookSource)] {

@@ -159,17 +159,21 @@ struct BookOriginSearchServiceTests {
             answering.bookSourceUrl: .success([book("三體", "劉慈欣", in: answering)]),
         ])
         var answered = 0
+        var attempts: [UUID: BookOriginSearchAttempt] = [:]
         var origins: [BookOrigin] = []
 
         await BookOriginSearchService.stream(
             title: "三體", author: "劉慈欣", sources: [failing, answering], concurrency: 1, fetcher: fetcher,
             onSourceAnswered: { answered += 1 },
+            onAttemptFinished: { attempts[$0.sourceID] = $0 },
             onBatch: { origins.append(contentsOf: $0) }
         )
 
         #expect(fetcher.queriedSourceURLs == [failing.bookSourceUrl, answering.bookSourceUrl])
         #expect(origins.map(\.sourceId) == [answering.id])
         #expect(answered == 1)
+        #expect(attempts[failing.id]?.outcome == .failed)
+        #expect(attempts[answering.id]?.origins.map(\.bookUrl) == origins.map(\.bookUrl))
     }
 
     @Test("a source that throws answers nil, the same as one that times out")
@@ -219,9 +223,11 @@ struct BookOriginSearchServiceTests {
         ], waitsUntilCancelled: [slow.bookSourceUrl], reportedFailures: [reported.bookSourceUrl])
         var origins: [BookOrigin] = []
         var answered = 0
+        var attempts: [UUID: BookOriginSearchAttempt] = [:]
         let coverage = await BookOriginSearchService.stream(title: "三體", author: "劉慈欣",
             sources: sources, concurrency: 2, fetcher: fetcher, sourceTimeout: 1,
             onSourceAnswered: { answered += 1 },
+            onAttemptFinished: { attempts[$0.sourceID] = $0 },
             onBatch: { origins += $0 })
         #expect(coverage.completedAllAttempts)
         #expect(coverage.sourceCount == 5)
@@ -236,6 +242,14 @@ struct BookOriginSearchServiceTests {
         #expect(health.responseSortKey(reported.id) == Double.greatestFiniteMagnitude)
         #expect(origins.map(\.sourceId) == [result.id])
         #expect(Set(fetcher.queriedSourceURLs) == Set(sources.map(\.bookSourceUrl)))
+        #expect(Set(attempts.keys) == Set(sources.map(\.id)))
+        #expect(attempts[result.id]?.outcome == .results)
+        #expect(attempts[result.id]?.origins.map(\.bookUrl) == origins.map(\.bookUrl))
+        #expect(attempts[empty.id]?.outcome == .empty)
+        #expect(attempts[reported.id]?.outcome == .failed)
+        #expect(attempts[thrown.id]?.outcome == .failed)
+        #expect(attempts[slow.id]?.outcome == .timedOut)
+        #expect(attempts.values.filter { $0.sourceID != result.id }.allSatisfy { $0.origins.isEmpty })
     }
 
     // MARK: - Helpers

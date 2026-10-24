@@ -92,7 +92,7 @@ struct ChangeSourceCacheCoverageTests {
         let key = ChangeSourceCache.originKey(sourceId: sourceId, bookUrl: origin.bookUrl)
         let coverage = BookOriginSearchCoverage(sourceCount: 2, completedAllAttempts: true,
             attemptedSourceCount: 2, resultSourceCount: 1, failedSourceCount: 1)
-        let incompatibleVersions: [Int?] = [nil, 0, ChangeSourceCache.searchCompatibilityVersion + 1]
+        let incompatibleVersions: [Int?] = [nil, 0, 1, ChangeSourceCache.searchCompatibilityVersion + 1]
         for version in incompatibleVersions {
             let entry = ChangeSourceCache.Entry(origins: [origin], failedKeys: [key], timestamp: Date(),
                 completedAttemptSourceIDs: [sourceId, failedId], excludedOriginKey: "current", scanCoverage: coverage,
@@ -140,6 +140,159 @@ struct ChangeSourceCacheCoverageTests {
         await cache.storeCompleted(origins: [makeOrigin(newSourceId)], for: bookId, sourceIDs: [newSourceId],
             excludingOriginKey: "current", coverage: coverage)
         #expect(cache.entry(for: bookId)?.completedAttemptSourceIDs == [newSourceId])
+
+        let partialEnqueued = CacheStoreEnqueuedSignal()
+        let partialCache = ChangeSourceCache(directory: directory,
+            partialStoreEnqueuedForTesting: { Task { await partialEnqueued.signal() } })
+        let partialRelease = DispatchSemaphore(value: 0)
+        defer { partialRelease.signal() }
+        partialCache.enqueueWorkForTesting { partialRelease.wait() }
+        let partial = Task {
+            await partialCache.storePartial(origins: [makeOrigin(oldSourceId)], for: bookId,
+                sourceIDs: [oldSourceId, newSourceId], excludingOriginKey: "current",
+                context: ChangeSourceCache.SearchContext(digest: "owned-cancelled-partial"),
+                acceptedAttempts: [oldSourceId: .results], timestamp: Date())
+        }
+        await partialEnqueued.wait()
+        partial.cancel()
+        partialRelease.signal()
+        await partial.value
+        #expect(partialCache.entry(for: bookId)?.completedAttemptSourceIDs == [newSourceId])
+    }
+
+    @Test("partial scans display unchanged origins and real terminal progress for at most five minutes")
+    func partialSnapshotPreservesProgressAndExpiresWithoutSlidingTime() async throws {
+        let directory = temporaryDirectory()
+        defer { remove(directory) }
+        let cache = ChangeSourceCache(directory: directory)
+        let bookId = UUID(), ids = (0..<5).map { _ in UUID() }
+        let context = ChangeSourceCache.SearchContext(digest: "owned-partial-context")
+        let origin = BookOrigin(sourceId: ids[0], sourceName: "owned", bookUrl: "https://owned.invalid/book",
+            tocUrl: "https://owned.invalid/toc", coverUrl: "", intro: "", lastChapter: "", wordCount: "", kind: "",
+            runtimeVariables: ["owned-immutable-reference": "unchanged synthetic bytes"])
+        let attempts: [UUID: BookOriginSearchAttempt.Outcome] = [ids[0]: .results, ids[1]: .empty,
+            ids[2]: .failed, ids[3]: .timedOut]
+        let sourceIDs = Set(ids), timestamp = Date(timeIntervalSince1970: 1_800_000_000)
+        await cache.storePartial(origins: [origin], for: bookId, sourceIDs: sourceIDs,
+            excludingOriginKey: "current", context: context, acceptedAttempts: attempts, timestamp: timestamp)
+        let recent = await cache.readForSearch(for: bookId, days: 5, sourceIDs: sourceIDs,
+            excludingOriginKey: "current", allowCached: true, context: context, now: timestamp.addingTimeInterval(299))
+        #expect(recent.origins == nil)
+        #expect(!recent.canEndSearch)
+        #expect(recent.displayOrigins.map(\.bookUrl) == [origin.bookUrl])
+        #expect(recent.displayOrigins.first?.runtimeVariables == origin.runtimeVariables)
+        #expect(recent.acceptedAttempts == attempts)
+        #expect(recent.timestamp == timestamp)
+        #expect(cache.entry(for: bookId)?.completedAttemptSourceIDs == nil)
+        let changed = await cache.readForSearch(for: bookId, days: 5, sourceIDs: sourceIDs,
+            excludingOriginKey: "current", allowCached: true,
+            context: ChangeSourceCache.SearchContext(digest: "different-configuration"), now: timestamp)
+        #expect(changed.displayOrigins.isEmpty)
+        #expect(changed.acceptedAttempts.isEmpty)
+        // Saving another close keeps the actual scan time; it cannot extend TTL.
+        await cache.storePartial(origins: recent.displayOrigins, for: bookId, sourceIDs: sourceIDs,
+            excludingOriginKey: "current", context: context, acceptedAttempts: recent.acceptedAttempts,
+            timestamp: try #require(recent.timestamp))
+        for (days, allowed, now) in [(5, true, timestamp.addingTimeInterval(300)),
+                                     (0, true, timestamp.addingTimeInterval(1)),
+                                     (5, false, timestamp.addingTimeInterval(1)),
+                                     (5, true, timestamp.addingTimeInterval(-1))] {
+            let rejected = await cache.readForSearch(for: bookId, days: days, sourceIDs: sourceIDs,
+                excludingOriginKey: "current", allowCached: allowed, context: context, now: now)
+            #expect(rejected.displayOrigins.isEmpty)
+            #expect(rejected.acceptedAttempts.isEmpty)
+            #expect(!rejected.canEndSearch)
+        }
+        #expect(cache.entry(for: bookId)?.timestamp == timestamp)
+    }
+
+    @Test("source-change identity binds rules, order, UUID, query and search scope but ignores operational clocks")
+    func contextBindsConfigurationAndScopeWithoutOperationalChurn() async throws {
+        var first = BookSource(bookSourceUrl: "https://context-first-\(UUID()).invalid", bookSourceName: "owned")
+        first.searchUrl = "/search?key={{key}}"
+        let second = BookSource(bookSourceUrl: "https://context-second-\(UUID()).invalid", bookSourceName: "owned")
+        let original = try await context([first, second])
+        var observed = first
+        observed.respondTime = 9
+        observed.lastUpdateTime = 99
+        #expect(try await context([observed, second]) == original)
+        var changed = first
+        changed.ruleToc.chapterList = ".changed-toc"
+        #expect(try await context([changed, second]) != original)
+        changed = first; changed.header = "{\"X-Owned\":\"changed\"}"
+        #expect(try await context([changed, second]) != original)
+        changed = first; changed.id = UUID()
+        #expect(try await context([changed, second]) != original)
+        #expect(try await context([second, first]) != original)
+        #expect(try await context([first, second], title: "other") != original)
+        #expect(try await context([first, second], author: "other") != original)
+        #expect(try await context([first, second], excluded: "other") != original)
+        let state = BookSourceRuntimeStateStore.shared
+        defer { state.setSourceVariableJSON(nil, for: first.bookSourceUrl) }
+        state.setSourceVariableJSON("{\"更多设置\":{\"搜索模式\":\"owned-new-scope\"}}", for: first.bookSourceUrl)
+        #expect(try await context([first, second]) != original)
+    }
+
+    @Test("malformed progress cannot authorize reuse and an older close cannot downgrade a newer complete record")
+    func rejectsInconsistentProgressAndPreservesNewerCompleteRecord() async throws {
+        let directory = temporaryDirectory()
+        defer { remove(directory) }
+        let cache = ChangeSourceCache(directory: directory)
+        let bookId = UUID(), first = UUID(), second = UUID()
+        let sourceIDs: Set<UUID> = [first, second]
+        let context = ChangeSourceCache.SearchContext(digest: "owned-consistency-context")
+        let origin = makeOrigin(first)
+        let attempts: [UUID: BookOriginSearchAttempt.Outcome] = [first: .results, second: .failed]
+        let coverage = ChangeSourceCache.coverage(sourceIDs: sourceIDs, attempts: attempts, completed: true)
+        await cache.storeCompleted(origins: [origin], for: bookId, sourceIDs: sourceIDs,
+            excludingOriginKey: "current", coverage: coverage, context: context, acceptedAttempts: attempts)
+        let completeTime = try #require(cache.entry(for: bookId)?.timestamp)
+        await cache.storePartial(origins: [origin], for: bookId, sourceIDs: sourceIDs,
+            excludingOriginKey: "current", context: context, acceptedAttempts: [first: .results],
+            timestamp: completeTime.addingTimeInterval(-1))
+        let complete = await cache.readForSearch(for: bookId, days: 5, sourceIDs: sourceIDs,
+            excludingOriginKey: "current", allowCached: true, context: context, now: completeTime)
+        #expect(complete.canEndSearch)
+        #expect(complete.acceptedAttempts == attempts)
+        #expect(cache.entry(for: bookId)?.timestamp == completeTime)
+        var malformed = try #require(cache.entry(for: bookId))
+        malformed.scanCoverage?.completedAllAttempts = false
+        malformed.acceptedAttempts = [first: .empty, second: .failed]
+        try JSONEncoder().encode(malformed).write(to: directory.appendingPathComponent("\(bookId.uuidString).json"))
+        let rejected = await cache.readForSearch(for: bookId, days: 5, sourceIDs: sourceIDs,
+            excludingOriginKey: "current", allowCached: true, context: context, now: completeTime)
+        #expect(rejected.displayOrigins.isEmpty)
+        #expect(rejected.acceptedAttempts.isEmpty)
+        #expect(!rejected.canEndSearch)
+
+        // A late closing work can come from another reader instance, outside
+        // this view model's checkpoint chain. Both partial and different-context
+        // complete records must survive an older queued snapshot.
+        let latestContext = ChangeSourceCache.SearchContext(digest: "owned-newer-context")
+        let latestTime = Date().addingTimeInterval(-1)
+        await cache.storePartial(origins: [origin], for: bookId, sourceIDs: sourceIDs,
+            excludingOriginKey: "current", context: latestContext,
+            acceptedAttempts: attempts, timestamp: latestTime)
+        await cache.storePartial(origins: [origin], for: bookId, sourceIDs: sourceIDs,
+            excludingOriginKey: "current", context: context,
+            acceptedAttempts: [first: .results], timestamp: latestTime.addingTimeInterval(-1))
+        #expect(cache.entry(for: bookId)?.context == latestContext)
+        #expect(cache.entry(for: bookId)?.acceptedAttempts == attempts)
+        await cache.storeCompleted(origins: [origin], for: bookId, sourceIDs: sourceIDs,
+            excludingOriginKey: "current", coverage: coverage, context: latestContext, acceptedAttempts: attempts)
+        await cache.storePartial(origins: [origin], for: bookId, sourceIDs: sourceIDs,
+            excludingOriginKey: "current", context: context,
+            acceptedAttempts: [first: .results], timestamp: latestTime)
+        #expect(cache.entry(for: bookId)?.context == latestContext)
+        #expect(cache.entry(for: bookId)?.scanCoverage?.completedAllAttempts == true)
+    }
+
+    private func context(_ sources: [BookSource], title: String = "owned", author: String = "author",
+        excluded: String = "current") async throws -> ChangeSourceCache.SearchContext {
+        try await Task.detached {
+            try ChangeSourceCache.SearchContext.make(title: title, author: author,
+                sources: sources, excludingOriginKey: excluded)
+        }.value
     }
 
     private func temporaryDirectory() -> URL {
