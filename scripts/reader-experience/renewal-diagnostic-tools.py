@@ -136,10 +136,10 @@ def validate_build(receipt):
             or manifest.get("diagnosticOnly") is not True or manifest.get("releaseAcceptance") is not False
             or manifest.get("S3Acceptance") != "not_run" or manifest.get("configuration") != "Release"
             or manifest.get("platform") != "iPhoneOS" or manifest.get("architecture") != "arm64"
-            or manifest.get("build") != "21" or manifest.get("signed") is not False
+            or manifest.get("build") != "22" or manifest.get("signed") is not False
             or manifest.get("deviceCompilationPassed") is not True or manifest.get("jvmIntegratedIntoReading") is not True
             or manifest.get("deviceValidationPassed") is not False):
-        raise ValueError("Expected this source's complete, unsigned build21 diagnostic manifest")
+        raise ValueError("Expected this source's complete, unsigned build22 diagnostic manifest")
     settings = config.inspect_settings(json.loads((BUILD / "build-settings.json").read_bytes()), with_jvm=True, diagnostic=True)
     if settings != manifest.get("actualBuildSettings"):
         raise ValueError("Diagnostic settings changed after compilation")
@@ -152,7 +152,7 @@ def validate_build(receipt):
         raise ValueError("Complete diagnostic runtime/bundle material changed")
     for bundle in [app, *config.extension_bundles(app).values()]:
         info = plistlib.loads((bundle / "Info.plist").read_bytes())
-        if info.get("YueduExperienceSourceCommit") != receipt["sourceCommit"] or info.get("CFBundleVersion") != "21":
+        if info.get("YueduExperienceSourceCommit") != receipt["sourceCommit"] or info.get("CFBundleVersion") != "22":
             raise ValueError("Diagnostic embedded bundle source/build differs")
     proof = json.loads((BUILD / "native-reuse.json").read_bytes())
     if (proof != json.loads((WORK / "native-restore.json").read_bytes())

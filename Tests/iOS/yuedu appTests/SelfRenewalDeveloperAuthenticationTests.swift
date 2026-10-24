@@ -83,6 +83,7 @@ struct SelfRenewalDeveloperAuthenticationTests {
         let worker = Task.detached { () async throws -> LoginBoundaryFacts in
             let modes: [Mode] = [.normal, .missingM2, .missingNP, .missingSPD, .malformedSC, .badM2, .badNP]
             var positive: [Bool] = [], rejected: [[Bool]] = []
+            var requesterPosts: [[Bool]] = [], providerSecondary: [Bool] = []
             for mode in modes {
                 let f = try await Fixture.make()
                 do {
@@ -105,6 +106,8 @@ struct SelfRenewalDeveloperAuthenticationTests {
                             || (mode == .badNP && failure == .negotiation)
                     }
                     let paths = await f.peer.paths()
+                    let requester = await f.peer.requesterIdentityFacts()
+                    requesterPosts += requester.posts; providerSecondary += requester.secondary
                     let stored = try f.storage.load(namespace: f.namespace.id)
                     if mode == .normal {
                         positive = [returnedOutcome && personalTeamMatched, authorityRemainsUnproved,
@@ -125,7 +128,10 @@ struct SelfRenewalDeveloperAuthenticationTests {
                 }
             }
             let identifiers = try await Self.accountIdentifierBoundaryFacts()
-            return LoginBoundaryFacts(positive: positive, rejected: rejected, identifiers: identifiers)
+            requesterPosts += identifiers.requester.posts; providerSecondary += identifiers.requester.secondary
+            let metadataRejected = try await Self.malformedGSARequesterFacts()
+            return LoginBoundaryFacts(positive: positive, rejected: rejected, identifiers: identifiers,
+                requester: RequesterIdentityFacts(posts: requesterPosts, secondary: providerSecondary), metadataRejected: metadataRejected)
         }
         let facts = try await withTaskCancellationHandler { try await worker.value } onCancel: { worker.cancel() }
         #expect(facts.positive.count == 6)
@@ -138,6 +144,12 @@ struct SelfRenewalDeveloperAuthenticationTests {
         #expect(facts.identifiers.rejected.allSatisfy { $0.count == 7 && $0.allSatisfy { $0 } })
         #expect(facts.identifiers.controls.count == 34)
         #expect(facts.identifiers.controls.allSatisfy { $0 })
+        #expect(facts.requester.posts.count == 51)
+        #expect(facts.requester.posts.allSatisfy { $0.count == 10 && $0.allSatisfy { $0 } })
+        #expect(facts.requester.secondary.count == 8)
+        #expect(facts.requester.secondary.allSatisfy { $0 })
+        #expect(facts.metadataRejected.count == 6)
+        #expect(facts.metadataRejected.allSatisfy { $0.count == 5 && $0.allSatisfy { $0 } })
     }
     @Test("a valid GSA candidate cannot bypass the sealed personal team pin")
     func rejectsWrongTeamAfterValidGSACryptoWithoutPersistingCredentials() async throws {
@@ -375,17 +387,30 @@ struct SelfRenewalDeveloperAuthenticationTests {
         let positive: [Bool]
         let rejected: [[Bool]]
         let identifiers: IdentifierBoundaryFacts
+        let requester: RequesterIdentityFacts
+        let metadataRejected: [[Bool]]
+    }
+    private enum GSAClientFixture {
+        static let providerClientInfo = "<OwnedModel1,1> <Owned OS;1;A> <OwnedProvider/1>"
+        static let requesterClientInfo = "<OwnedModel1,1> <macOS;26.6;25G72> <com.apple.AuthKit/1 (com.apple.dt.Xcode/26.0)>"
+        static let requesterUserAgent = "AuthKit/1 (Macintosh; OS X 26.6) (com.apple.dt.Xcode/26.0)"
+    }
+    private struct RequesterIdentityFacts: Sendable {
+        let posts: [[Bool]]
+        let secondary: [Bool]
     }
     private struct IdentifierBoundaryFacts: Sendable {
         let positive: [[Bool]]
         let rejected: [[Bool]]
         let controls: [Bool]
+        let requester: RequesterIdentityFacts
     }
     /// All new opaque-ID checks return plain facts to the parent @Test. Crypto,
     /// fixture I/O and URLProtocol callbacks never own new Testing assertions.
     nonisolated private static func accountIdentifierBoundaryFacts() async throws -> IdentifierBoundaryFacts {
         let vectors = try Vectors.all()
         var positive: [[Bool]] = [], rejected: [[Bool]] = [], controls: [Bool] = []
+        var requesterPosts: [[Bool]] = [], providerSecondary: [Bool] = []
         for sample in try IdentifierVectors.all() {
             guard let vector = vectors.first(where: { $0.protocol == sample.protocol }) else { throw FixtureFailure.invalid }
             let f = try await Fixture.make(vector: vector)
@@ -429,6 +454,8 @@ struct SelfRenewalDeveloperAuthenticationTests {
                         requests.count == 7 && requests.allSatisfy { $0 },
                         try f.storage.load(namespace: f.namespace.id) == nil, f.storage.successfulSaves() == 0])
                 }
+                let requester = await f.peer.requesterIdentityFacts()
+                requesterPosts += requester.posts; providerSecondary += requester.secondary
                 try await f.cleanup()
             } catch {
                 try await f.cleanup()
@@ -443,7 +470,31 @@ struct SelfRenewalDeveloperAuthenticationTests {
             catch let failure as SRP.Failure { refused = failure == .invalidInput }
             controls.append(refused)
         }
-        return IdentifierBoundaryFacts(positive: positive, rejected: rejected, controls: controls)
+        return IdentifierBoundaryFacts(positive: positive, rejected: rejected, controls: controls,
+            requester: RequesterIdentityFacts(posts: requesterPosts, secondary: providerSecondary))
+    }
+    nonisolated private static func malformedGSARequesterFacts() async throws -> [[Bool]] {
+        let invalid = ["Owned model without brackets", "<OwnedModel1,1", "<> <Owned OS> <OwnedProvider>",
+            "<" + String(repeating: "M", count: 65) + "> <Owned OS> <OwnedProvider>",
+            "<Owned Model> <Owned OS> <OwnedProvider>", "<Owned/Model> <Owned OS> <OwnedProvider>"]
+        let f = try await Fixture.make()
+        do {
+            var rejected: [[Bool]] = []
+            for providerClientInfo in invalid {
+                let auth = try await f.authentication(clientInfo: providerClientInfo)
+                var expectedFailure = false, returnedOutcome = false
+                do { _ = try await auth.signIn(appleID: f.vector.username, password: f.vector.password); returnedOutcome = true }
+                catch let failure as Auth.Failure { expectedFailure = failure == .missingDeviceMetadata }
+                let paths = await f.peer.paths()
+                rejected.append([expectedFailure, !returnedOutcome, paths.isEmpty,
+                    try f.storage.load(namespace: f.namespace.id) == nil, f.storage.successfulSaves() == 0])
+            }
+            try await f.cleanup()
+            return rejected
+        } catch {
+            try await f.cleanup()
+            throw error
+        }
     }
     private enum Mode: Sendable { case normal, wrongTeam, secondary, holdInit, badM2, badNP, badTag, missingSerial, storageFailure, missingM2, missingNP, missingSPD, malformedSC }
     private enum SignedScenario: String, CaseIterable, Sendable {
@@ -482,6 +533,8 @@ struct SelfRenewalDeveloperAuthenticationTests {
         private var signedVector: SignedVector?
         private var identifierVector: IdentifierVector?
         private var identifierChecks: [Bool] = []
+        private var requesterPosts: [[Bool]] = []
+        private var providerSecondary: [Bool] = []
         private var history: [String] = []
         enum Event: Sendable, Equatable { case initArrived, finished }
         private var event: Event?; private var waiters: [CheckedContinuation<Event, Never>] = []
@@ -493,6 +546,7 @@ struct SelfRenewalDeveloperAuthenticationTests {
         }
         func configureIdentifier(_ value: IdentifierVector) { identifierVector = value }
         func identifierRequestChecks() -> [Bool] { identifierChecks }
+        func requesterIdentityFacts() -> RequesterIdentityFacts { RequesterIdentityFacts(posts: requesterPosts, secondary: providerSecondary) }
         func paths() -> [String] { history }
         func firstEvent() async -> Event { if let event { return event }; return await withCheckedContinuation { waiters.append($0) } }
         func finished() { observe(.finished) }
@@ -501,6 +555,10 @@ struct SelfRenewalDeveloperAuthenticationTests {
             let values = waiters; waiters.removeAll(); values.forEach { $0.resume(returning: value) }
         }
         func handle(_ request: URLRequest) async throws -> Data {
+            if request.url?.host == "gsa.apple.com",
+               ["/auth/verify/trusteddevice", "/grandslam/GsService2/validate"].contains(request.url?.path ?? "") {
+                providerSecondary.append(request.value(forHTTPHeaderField: "X-MMe-Client-Info") == GSAClientFixture.providerClientInfo)
+            }
             if let identifierVector { return try handleIdentifier(request, sample: identifierVector) }
             guard let url = request.url else { throw FixtureFailure.invalid }
             if url.host == "developerservices2.apple.com" {
@@ -522,6 +580,7 @@ struct SelfRenewalDeveloperAuthenticationTests {
             let inner = try #require(body["Request"] as? [String: Any]); let operation = try #require(inner["o"] as? String)
             history.append(operation)
             let cpd = try #require(inner["cpd"] as? [String: Any]); #expect(cpd["X-Apple-I-SRL-NO"] as? String == "owned-public-serial")
+            recordRequesterIdentity(request, cpd: cpd)
             switch operation {
             case "init":
                 #expect(inner["A2k"] as? Data == (try vector.bytes(vector.A)))
@@ -587,6 +646,7 @@ struct SelfRenewalDeveloperAuthenticationTests {
             guard let inner = body["Request"] as? [String: Any], let operation = inner["o"] as? String,
                   let cpd = inner["cpd"] as? [String: Any] else { throw FixtureFailure.invalid }
             history.append(operation)
+            recordRequesterIdentity(request, cpd: cpd)
             identifierChecks += [request.httpMethod == "POST", cpd["X-Apple-I-SRL-NO"] as? String == "owned-public-serial"]
             switch operation {
             case "init":
@@ -607,6 +667,22 @@ struct SelfRenewalDeveloperAuthenticationTests {
                 return try Self.envelope(["et": vector.bytes(vector.encryptedToken)])
             default: throw FixtureFailure.invalid
             }
+        }
+        private func recordRequesterIdentity(_ request: URLRequest, cpd: [String: Any]) {
+            // Facts only: assertions belong to the selected parent @Test. The
+            // unchanged provider identity is also checked on the 2FA requests.
+            requesterPosts.append([
+                request.value(forHTTPHeaderField: "User-Agent") == GSAClientFixture.requesterUserAgent,
+                request.value(forHTTPHeaderField: "X-MMe-Client-Info") == GSAClientFixture.requesterClientInfo,
+                request.value(forHTTPHeaderField: "X-MMe-Client-Info") != GSAClientFixture.providerClientInfo,
+                request.value(forHTTPHeaderField: "X-Xcode-Version") == nil,
+                cpd["X-Apple-I-MD"] as? String == "owned-fresh-otp",
+                cpd["X-Apple-I-MD-M"] as? String == "owned-machine",
+                cpd["X-Apple-I-MD-LU"] as? String == "owned-user",
+                cpd["X-Apple-I-MD-RINFO"] as? UInt64 == 1,
+                cpd["X-Mme-Device-Id"] as? String == "owned-device",
+                cpd["X-Apple-I-SRL-NO"] as? String == "owned-public-serial"
+            ])
         }
         private static func envelope(_ value: [String: Any]) throws -> Data { var value = value; value["Status"] = ["ec": 0]; return try plist(["Response": value]) }
         private static func plist(_ value: [String: Any]) throws -> Data { try PropertyListSerialization.data(fromPropertyList: value, format: .xml, options: 0) }
@@ -662,16 +738,16 @@ struct SelfRenewalDeveloperAuthenticationTests {
             self.directory = directory; self.material = material; self.vault = vault; self.namespace = namespace; self.vector = vector; self.anchors = anchors
             peer = Peer(vector: vector, team: material.bundles[0].slices[0].teamIdentifier)
         }
-        private func anisette(serial: Bool = true) -> @Sendable () async throws -> Client.Anisette {
+        private func anisette(serial: Bool = true, clientInfo: String = GSAClientFixture.providerClientInfo) -> @Sendable () async throws -> Client.Anisette {
             let date = date
             return {
                 var value = Client.Anisette(machineID: "owned-machine", oneTimePassword: "owned-fresh-otp", localUserID: "owned-user", routingInfo: 1,
-                    deviceID: "owned-device", clientInfo: "Owned controlled peer", issuedAt: date, locale: "en_US", timeZone: "UTC")
+                    deviceID: "owned-device", clientInfo: clientInfo, issuedAt: date, locale: "en_US", timeZone: "UTC")
                 if serial { value.deviceSerialNumber = "owned-public-serial" }; return value
             }
         }
-        func authentication(serial: Bool = true) async throws -> Auth {
-            let date = date, anisette = anisette(serial: serial)
+        func authentication(serial: Bool = true, clientInfo: String = GSAClientFixture.providerClientInfo) async throws -> Auth {
+            let date = date, anisette = anisette(serial: serial, clientInfo: clientInfo)
             let client = try await Client.open(vault: vault, namespace: namespace, identity: material, issuerChainDER: [], transport: transport,
                 storage: storage, freshAnisette: anisette, clock: { date })
             let vector = vector
