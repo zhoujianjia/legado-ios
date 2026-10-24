@@ -73,11 +73,43 @@ struct ChangeSourceCacheCoverageTests {
         let entry = ChangeSourceCache.Entry(origins: [makeOrigin(sourceId)], failedKeys: [],
             timestamp: Date().addingTimeInterval(-6 * 86_400), completedAttemptSourceIDs: [sourceId],
             excludedOriginKey: "current", scanCoverage: BookOriginSearchCoverage(sourceCount: 1,
-                completedAllAttempts: true, attemptedSourceCount: 1, resultSourceCount: 1))
+                completedAllAttempts: true, attemptedSourceCount: 1, resultSourceCount: 1),
+            searchCompatibilityVersion: ChangeSourceCache.searchCompatibilityVersion)
         try JSONEncoder().encode(entry).write(to: directory.appendingPathComponent("\(bookId.uuidString).json"))
         let expired = await cache.readForSearch(for: bookId, days: 5, sourceIDs: [sourceId],
             excludingOriginKey: "current", allowCached: true)
         #expect(expired.origins == nil)
+    }
+
+    @Test("a complete result from an incompatible admission policy is rescanned without losing failure markers")
+    func incompatibleCompletedEntryDoesNotEndSearch() async throws {
+        let directory = temporaryDirectory()
+        defer { remove(directory) }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let cache = ChangeSourceCache(directory: directory)
+        let bookId = UUID(), sourceId = UUID(), failedId = UUID()
+        let origin = makeOrigin(sourceId)
+        let key = ChangeSourceCache.originKey(sourceId: sourceId, bookUrl: origin.bookUrl)
+        let coverage = BookOriginSearchCoverage(sourceCount: 2, completedAllAttempts: true,
+            attemptedSourceCount: 2, resultSourceCount: 1, failedSourceCount: 1)
+        let incompatibleVersions: [Int?] = [nil, 0, ChangeSourceCache.searchCompatibilityVersion + 1]
+        for version in incompatibleVersions {
+            let entry = ChangeSourceCache.Entry(origins: [origin], failedKeys: [key], timestamp: Date(),
+                completedAttemptSourceIDs: [sourceId, failedId], excludedOriginKey: "current", scanCoverage: coverage,
+                searchCompatibilityVersion: version)
+            try JSONEncoder().encode(entry).write(to: directory.appendingPathComponent("\(bookId.uuidString).json"))
+            let snapshot = await cache.readForSearch(for: bookId, days: 5, sourceIDs: [sourceId, failedId],
+                excludingOriginKey: "current", allowCached: true)
+            #expect(snapshot.origins == nil)
+            #expect(snapshot.failedKeys == [key])
+        }
+        await cache.storeCompleted(origins: [origin], for: bookId, sourceIDs: [sourceId, failedId],
+            excludingOriginKey: "current", coverage: coverage)
+        let current = await cache.readForSearch(for: bookId, days: 5, sourceIDs: [sourceId, failedId],
+            excludingOriginKey: "current", allowCached: true)
+        #expect(current.origins?.map(\.sourceId) == [sourceId])
+        #expect(current.failedKeys == [key])
+        #expect(cache.entry(for: bookId)?.searchCompatibilityVersion == ChangeSourceCache.searchCompatibilityVersion)
     }
 
     @Test("cancelling a completed scan while its cache write is queued drops the stale write")

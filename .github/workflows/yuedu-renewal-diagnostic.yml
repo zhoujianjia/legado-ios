@@ -64,7 +64,7 @@ jobs:
           include-hidden-files: true
           retention-days: 1
           compression-level: 0
-      - name: Prepare only authentication and source-picker suites after IPA delivery
+      - name: Prepare focused authentication source-picker current-App and source-admission suites after IPA delivery
         run: |
           test "$(uname -m)" = arm64
           export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
@@ -78,6 +78,10 @@ jobs:
         run: python -B scripts/reader-experience/renewal-diagnostic-tools.py run-enrollment
       - name: Run the independent controlled source-picker regressions with exact case gates
         run: python -B scripts/reader-experience/renewal-diagnostic-tools.py run-source-change
+      - name: Run the independent controlled current-App preparation regressions with exact case gates
+        run: python -B scripts/reader-experience/renewal-diagnostic-tools.py run-current-app-preparation
+      - name: Run the independent controlled original-source admission regressions with exact case gates
+        run: python -B scripts/reader-experience/renewal-diagnostic-tools.py run-original-source-admission
       - name: Retain bounded diagnostic build evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -95,6 +99,6 @@ jobs:
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
           This isolated diagnostic builds the complete iPhoneOS JVM reader, main App, Widget and Share extension with the Release configuration and Swift -Onone/singlefile, retaining non-DEBUG production conditional branches. It reuses the audited native runtime and compiles this exact source's ordinary JAR.
-          This is not optimized Release/S3 acceptance or a performance build. After the unsigned IPA is retained, the diagnostic Simulator test group compiles only the authentication suite, its three actual source fixtures and the four focused source-picker suites, preserving the complete App and extension source groups. Authentication retains its independent strict 1/1 result gate for SelfRenewalDeveloperAuthenticationTests/connectsOnlyThroughActualMaterialAccountValidation. Separate source-picker invocations verify their exact case sets with synthetic sources, never the user's private source file or live websites. This is not S3, full SDK/Native acceptance, actual Apple login, physical installation, physical source switching or automatic renewal. The unchanged complete workflows retain their original gates and meanings. Sign the unsigned package with the original installation tool/account before device diagnostics.
+          This is not optimized Release/S3 acceptance or a performance build. After the unsigned IPA is retained, the diagnostic Simulator test group compiles only the authentication suite, its three actual source fixtures, the four focused source-picker suites, the current-App execution suite with its five additional existing source dependencies and the self-contained original-source admission suite, preserving the complete App and extension source groups. Authentication retains its independent strict 1/1 result gate for SelfRenewalDeveloperAuthenticationTests/connectsOnlyThroughActualMaterialAccountValidation. Separate source-picker invocations verify their exact case sets with synthetic sources, never the user's private source file or live websites. The independent current-App preparation invocation requires its exact four owned-fixture cases, including cold bootstrap, with zero failures or skips. Original-source admission separately requires its exact four cases through an owned executor and real Host binding, preserving revision high-water and count/UTF-8 budgets; it does not execute JVM source rules or contact sites. This is not S3, full SDK/Native acceptance, actual Apple login, physical installation, physical source switching or automatic renewal. The unchanged complete workflows retain their original gates and meanings. Sign the unsigned package with the original installation tool/account before device diagnostics.
           Only the three unsigned build outputs, delivery binding and exact Git source.zip are exported under the current bounded temporary distribution policy, with one-day artifact retention. No private producer directory, P12, signing key, user account data or private book-source pack is uploaded. License clearance is not established.
           TEXT

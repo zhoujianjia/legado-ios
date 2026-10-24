@@ -210,10 +210,25 @@ struct NativeLegadoMainJSExecutor: LegadoMainJSExecuting {
 /// duplicating potentially large infoHtml/tocHtml in every persisted chapter.
 actor LegadoMainJSSourceService {
     static let contextKey = "__legado.jvm.mainJs.context.v1"
+    /// A lifetime revision fence is lightweight library metadata, not an active
+    /// runtime grant. Keep its history instead of evicting a source's high-water
+    /// clock. The byte limit counts URL + SHA-256 UTF-8 payload, not actual RAM.
+    struct OriginalSourceRevisionBudget: Sendable {
+        static let standard = Self(maximumSourceCount: 65_536, maximumPayloadBytes: 32 * 1_024 * 1_024)
+        let maximumSourceCount: Int
+        let maximumPayloadBytes: Int
+
+        fileprivate var isValid: Bool {
+            (1...Self.standard.maximumSourceCount).contains(maximumSourceCount)
+                && (1...Self.standard.maximumPayloadBytes).contains(maximumPayloadBytes)
+        }
+    }
     private let executor: any LegadoMainJSExecuting
     private let contentBatchExecutor: any LegadoOriginalContentBatchExecuting
     private let originalExecutor: any LegadoOriginalPreviewExecuting
+    private let originalSourceRevisionBudget: OriginalSourceRevisionBudget
     private var originalSourceRevisions: [String: (signature: String, clock: Int64)] = [:]
+    private var originalSourceRevisionPayloadBytes = 0
     /// Only immutable source identities for contexts actually opened here. The Java
     /// InfoMap remains solely in OriginalExploreContexts' process LRU(99).
     private struct OpenOriginalExploreSource {
@@ -258,10 +273,12 @@ actor LegadoMainJSSourceService {
     init(executor: any LegadoMainJSExecuting = NativeLegadoMainJSExecutor(), contextDirectory: URL? = nil,
          operationTimeout: TimeInterval = 60,
          originalExecutor: any LegadoOriginalPreviewExecuting = NativeLegadoOriginalPreviewExecutor(),
-         contentBatchExecutor: any LegadoOriginalContentBatchExecuting = NativeLegadoOriginalContentBatchExecutor()) {
+         contentBatchExecutor: any LegadoOriginalContentBatchExecuting = NativeLegadoOriginalContentBatchExecutor(),
+         originalSourceRevisionBudget: OriginalSourceRevisionBudget = .standard) {
         self.executor = executor
         self.originalExecutor = originalExecutor
         self.contentBatchExecutor = contentBatchExecutor
+        self.originalSourceRevisionBudget = originalSourceRevisionBudget
         self.configuredDirectory = contextDirectory
         self.operationTimeout = operationTimeout
     }
@@ -1372,12 +1389,29 @@ extension LegadoMainJSSourceService {
         return digest(try encoded(stable))
     }
     private func acceptOriginalRevision(_ source: BookSource, signature: String) throws {
-        if let current = originalSourceRevisions[source.bookSourceUrl] {
-            guard current.signature == signature || source.lastUpdateTime >= current.clock else {
-                throw failure("SOURCE_CHANGED", "A newer original source revision is already active")
+        try SourcePerfTrace.span("legado.original.revision.admit",
+            "main=\(Thread.isMainThread) sources=\(originalSourceRevisions.count) payloadBytes=\(originalSourceRevisionPayloadBytes)") {
+            guard originalSourceRevisionBudget.isValid else {
+                throw failure("STATE_LIMIT", "Original source revision budget is invalid")
             }
-        } else if originalSourceRevisions.count >= 256 { throw failure("STATE_LIMIT", "Too many original source grants") }
-        originalSourceRevisions[source.bookSourceUrl] = (signature, max(source.lastUpdateTime, originalSourceRevisions[source.bookSourceUrl]?.clock ?? 0))
+            if let current = originalSourceRevisions[source.bookSourceUrl] {
+                guard current.signature == signature || source.lastUpdateTime >= current.clock else {
+                    throw failure("SOURCE_CHANGED", "A newer original source revision is already active")
+                }
+                // originalSignature always produces a fixed-width SHA-256 hex
+                // string. Replacing its value retains the existing URL key and
+                // the same payload size, including canonically equal URL keys.
+                originalSourceRevisions[source.bookSourceUrl] = (signature, max(source.lastUpdateTime, current.clock))
+                return
+            }
+            let payloadBytes = source.bookSourceUrl.utf8.count + signature.utf8.count
+            guard originalSourceRevisions.count < originalSourceRevisionBudget.maximumSourceCount,
+                  payloadBytes <= originalSourceRevisionBudget.maximumPayloadBytes - originalSourceRevisionPayloadBytes else {
+                throw failure("STATE_LIMIT", "Original source revision metadata exceeds its budget")
+            }
+            originalSourceRevisions[source.bookSourceUrl] = (signature, max(source.lastUpdateTime, 0))
+            originalSourceRevisionPayloadBytes += payloadBytes
+        }
     }
     private func validateOriginalBook(_ book: LegadoOriginalBook, sourceURL: String) throws {
         guard LegadoPreviewIdentity.same(book.origin, sourceURL), !book.bookURL.isEmpty, book.bookURL.utf8.count <= 8_192,

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Small portable admission/settings/budget checks; no Apple build or runtime claim."""
 import copy
+from contextlib import nullcontext
 import fnmatch
 import importlib.util
 import json
@@ -27,7 +28,7 @@ class DiagnosticGates(unittest.TestCase):
             "PLATFORM_NAME": "iphoneos", "FULL_PRODUCT_NAME": product, "PRODUCT_BUNDLE_IDENTIFIER": identifier,
             "ARCHS": "arm64", "CODE_SIGNING_ALLOWED": "NO", "CODE_SIGNING_REQUIRED": "NO", "ENABLE_DEBUG_DYLIB": "NO",
             "CODE_SIGN_ENTITLEMENTS": "", "GATEWAY_BASE_URL": "", "YUEDU_LOCAL_EXPERIENCE": "YES",
-            "TARGET_BUILD_DIR": str(root), "MARKETING_VERSION": "3.0", "CURRENT_PROJECT_VERSION": "24",
+            "TARGET_BUILD_DIR": str(root), "MARKETING_VERSION": "3.0", "CURRENT_PROJECT_VERSION": "25",
             "SWIFT_OPTIMIZATION_LEVEL": "-Onone", "SWIFT_COMPILATION_MODE": "singlefile",
             "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "", "GCC_PREPROCESSOR_DEFINITIONS": "NDEBUG=1",
             "OTHER_SWIFT_FLAGS": "-D YUEDU_LOCAL_EXPERIENCE"}}
@@ -92,6 +93,9 @@ class DiagnosticGates(unittest.TestCase):
         workflow = (HERE.parents[1] / ".github/workflows/yuedu-renewal-diagnostic.yml").read_text()
         self.assertLess(workflow.index("name: Retain the diagnostic unsigned device package"), workflow.index("prepare-simulator"))
         self.assertLess(workflow.index("prepare-simulator"), workflow.index("run-enrollment"))
+        self.assertLess(workflow.index("name: Retain the diagnostic unsigned device package"), workflow.index("run-source-change"))
+        self.assertLess(workflow.index("name: Retain the diagnostic unsigned device package"), workflow.index("run-current-app-preparation"))
+        self.assertLess(workflow.index("name: Retain the diagnostic unsigned device package"), workflow.index("run-original-source-admission"))
         self.assertNotIn("renewal-package-tools.py run", workflow)
         self.assertNotIn("full-application-signing-tools.py", workflow)
 
@@ -134,7 +138,7 @@ class DiagnosticGates(unittest.TestCase):
             with patch.object(diagnostic, "REPO", root), patch.object(diagnostic, "SIMULATOR_TESTS", stage):
                 record = diagnostic.enrollment_source_stage(create=True)
                 self.assertEqual(len(diagnostic.ENROLLMENT_SOURCES), 4)
-                self.assertEqual(record["swiftSourceCount"], 8)
+                self.assertEqual(record["swiftSourceCount"], 14)
                 self.assertEqual(record, diagnostic.enrollment_source_stage())
                 self.assertEqual({row["sourcePath"] for row in record["files"]},
                     {*diagnostic.FOCUSED_SOURCES, diagnostic.SDK_RESOURCE})
@@ -142,24 +146,30 @@ class DiagnosticGates(unittest.TestCase):
                     {Path(relative).name for relative in diagnostic.FOCUSED_SOURCES})
                 self.assertTrue(unrelated.is_file())
                 self.assertFalse((stage / "yuedu appTests" / unrelated.name).exists())
+                for omitted in (*diagnostic.CURRENT_APP_PREPARATION_SOURCES, *diagnostic.ORIGINAL_SOURCE_ADMISSION_SOURCES):
+                    with self.subTest(omitted=omitted), patch.object(diagnostic, "FOCUSED_SOURCES",
+                            tuple(path for path in diagnostic.FOCUSED_SOURCES if path != omitted)), self.assertRaises(ValueError):
+                        diagnostic.enrollment_source_stage()
                 with self.assertRaises(ValueError):
                     diagnostic.enrollment_source_stage(create=True)
-                fixture = stage / record["files"][1]["stagedPath"]
-                raw = fixture.read_bytes(); fixture.write_bytes(raw + b"\n// changed\n")
-                with self.assertRaises(ValueError):
-                    diagnostic.enrollment_source_stage()
-                fixture.write_bytes(raw)
-                extra = fixture.with_name("Unexpected.swift"); extra.write_text("// unexpected source")
-                with self.assertRaises(ValueError):
-                    diagnostic.enrollment_source_stage()
-                extra.unlink(); fixture.unlink()
-                with self.assertRaises(FileNotFoundError):
-                    diagnostic.enrollment_source_stage()
+                for relative in (diagnostic.ENROLLMENT_SOURCES[1], *diagnostic.ORIGINAL_SOURCE_ADMISSION_SOURCES):
+                    fixture = stage / Path(relative).relative_to("Tests/iOS")
+                    raw = fixture.read_bytes(); fixture.write_bytes(raw + b"\n// changed\n")
+                    with self.assertRaises(ValueError):
+                        diagnostic.enrollment_source_stage()
+                    fixture.write_bytes(raw)
+                    extra = fixture.with_name("Unexpected.swift"); extra.write_text("// unexpected source")
+                    with self.assertRaises(ValueError):
+                        diagnostic.enrollment_source_stage()
+                    extra.unlink(); fixture.unlink()
+                    with self.assertRaises(FileNotFoundError):
+                        diagnostic.enrollment_source_stage()
+                    fixture.write_bytes(raw)
 
     def test_source_picker_case_gates_reject_missing_duplicate_wrong_failed_or_skipped_cases(self):
-        self.assertEqual([len(cases) for cases in diagnostic.SOURCE_CHANGE_GROUPS.values()], [7, 4, 11, 4])
-        self.assertEqual(len(set(diagnostic.FOCUSED_SOURCES)), 8)
-        for cases in diagnostic.SOURCE_CHANGE_GROUPS.values():
+        self.assertEqual([len(cases) for cases in diagnostic.SOURCE_CHANGE_GROUPS.values()], [7, 4, 11, 5])
+        self.assertEqual(len(set(diagnostic.FOCUSED_SOURCES)), 14)
+        for cases in (*diagnostic.SOURCE_CHANGE_GROUPS.values(), diagnostic.ORIGINAL_SOURCE_ADMISSION_CASES):
             count = len(cases)
             summary = {"totalTestCount": count, "passedTests": count, "failedTests": 0, "skippedTests": 0,
                 "expectedFailures": 0, "devicesAndConfigurations": [
@@ -181,6 +191,115 @@ class DiagnosticGates(unittest.TestCase):
             diagnostic.verify_cases({}, {}, ())
         with self.assertRaises(ValueError):
             diagnostic.verify_cases({}, {}, (diagnostic.ENROLLMENT_CASE, diagnostic.ENROLLMENT_CASE))
+
+    def test_current_app_group_requires_all_four_exact_cases_and_existing_transitive_sources(self):
+        self.assertEqual(diagnostic.CURRENT_APP_PREPARATION_CASES, tuple("SelfRenewalAppExecutionTests/" + name for name in (
+            "preparesCurrentApplicationWithoutDeviceOrRemoteWork",
+            "appOwnerPreparesAndSubmitsActualCandidateWithoutAutomaticRetry",
+            "appSessionCancellationDrainsActualTransportAndKeepsCandidate",
+            "restoresValidatedMaterialObservationAfterColdBootstrap")))
+        self.assertEqual({Path(path).name for path in diagnostic.CURRENT_APP_PREPARATION_SOURCES}, {
+            "SelfRenewalAppExecutionTests.swift", "SelfRenewalControlledPackageSignerTests.swift",
+            "SelfRenewalControlledPackageFixture.swift", "SelfRenewalSDKOwnedPackageFixture.swift",
+            "SelfRenewalAuthenticatedInstallationFixture.swift", "SelfRenewalSigningOwnedPKIFixture.swift"})
+        self.assertTrue(set(diagnostic.CURRENT_APP_PREPARATION_SOURCES) <= set(diagnostic.FOCUSED_SOURCES) <= set(diagnostic.INPUTS))
+        self.assertEqual(sum(Path(path).name == "SelfRenewalSigningOwnedPKIFixture.swift" for path in diagnostic.FOCUSED_SOURCES), 1)
+        for name in ("SelfRenewalAppOwner.swift", "SelfRenewalAppSession.swift"):
+            self.assertIn("Modules/Services/SelfRenewal/" + name, diagnostic.INPUTS)
+        cases = diagnostic.CURRENT_APP_PREPARATION_CASES
+        summary = {"totalTestCount": 4, "passedTests": 4, "failedTests": 0, "skippedTests": 0,
+            "expectedFailures": 0, "devicesAndConfigurations": [
+                {"passedTests": 4, "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}]}
+        nodes = [{"nodeType": "Test Case", "nodeIdentifier": "yuedu appTests/" + case + "()", "result": "Passed"}
+                 for case in cases]
+        self.assertEqual(diagnostic.verify_cases(summary, {"testNodes": nodes}, cases)["cases"], list(cases))
+        for invalid in (nodes[:-1], nodes + [nodes[0]], nodes[:-1] + [nodes[0]],
+                [dict(nodes[0], result="Failed"), *nodes[1:]],
+                [*nodes[:-1], dict(nodes[-1], nodeIdentifier=diagnostic.ENROLLMENT_CASE + "()")]):
+            with self.subTest(tree=invalid), self.assertRaises(ValueError):
+                diagnostic.verify_cases(summary, {"testNodes": invalid}, cases)
+        for invalid in (dict(summary, totalTestCount=3, passedTests=3),
+                dict(summary, passedTests=3, failedTests=1), dict(summary, passedTests=3, skippedTests=1),
+                dict(summary, expectedFailures=1), dict(summary, devicesAndConfigurations=[])):
+            with self.subTest(summary=invalid), self.assertRaises(ValueError):
+                diagnostic.verify_cases(invalid, {"testNodes": nodes}, cases)
+
+    def test_original_admission_roster_binds_actual_service_and_its_exact_budget_cases(self):
+        self.assertEqual(diagnostic.ORIGINAL_SOURCE_ADMISSION_SOURCES,
+            ("Tests/iOS/yuedu appTests/LegadoOriginalSourceRevisionBudgetTests.swift",))
+        self.assertEqual(diagnostic.ORIGINAL_SOURCE_ADMISSION_CASES,
+            tuple("LegadoOriginalSourceRevisionBudgetTests/" + name for name in (
+                "scans1310OriginalSourcesThroughOwnedExecutor", "retainsRevisionHighWaterAfterLargeScan",
+                "rejectsCountBudgetWithoutDamagingAdmittedSources",
+                "enforcesUTF8PayloadBudgetWithoutConsumingRejectedAdmission")))
+        self.assertTrue(set(diagnostic.ORIGINAL_SOURCE_ADMISSION_SOURCES) <= set(diagnostic.FOCUSED_SOURCES) <= set(diagnostic.INPUTS))
+        for name in ("LegadoMainJSSourceService.swift", "LegadoPersistentStateHost.swift"):
+            self.assertIn("Modules/Services/Online/" + name, diagnostic.INPUTS)
+
+    def test_additional_invocations_keep_independent_budgets_and_reject_execution_failure(self):
+        for label, cases, run, unverified in (
+                ("current-app-preparation", diagnostic.CURRENT_APP_PREPARATION_CASES,
+                 diagnostic.run_current_app_preparation, "actualDeviceRenewalValidated"),
+                ("original-source-admission", diagnostic.ORIGINAL_SOURCE_ADMISSION_CASES,
+                 diagnostic.run_original_source_admission, "physicalDeviceSourceSwitchVerified")):
+            with self.subTest(group=label):
+                self.check_controlled_invocation(label, cases, run, unverified)
+
+    def check_controlled_invocation(self, label, cases, run, unverified):
+        count = len(cases)
+        prefix = "renewal-diagnostic-" + label
+        summary = {"totalTestCount": count, "passedTests": count, "failedTests": 0, "skippedTests": 0,
+            "expectedFailures": 0, "devicesAndConfigurations": [
+                {"passedTests": count, "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}]}
+        tree = {"testNodes": [{"nodeType": "Test Case", "nodeIdentifier": "yuedu appTests/" + case + "()", "result": "Passed"}
+                              for case in cases]}
+        for execution_failed in (False, True):
+            with self.subTest(execution_failed=execution_failed), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp).resolve()
+                work = root / "work"; work.mkdir()
+                logs = root / "logs"; logs.mkdir()
+                simulator = root / "simulator"; simulator.mkdir()
+                produced = root / "produced"; produced.mkdir()
+                resource = root / diagnostic.SDK_RESOURCE; resource.parent.mkdir(parents=True)
+                resource.write_text("{}")
+                manifest = produced / "sdk-produced-fixture-manifest.json"; manifest.write_text("{}")
+                (simulator / "overlays.json").write_text("{}")
+                receipt = {"sourceCommit": SOURCE}
+                staged = {"test-only-stage": True}
+                diagnostic.full.write_new(work / "enrollment-prepared.json", dict(receipt,
+                    requiredCase=diagnostic.ENROLLMENT_CASE, testSourceStage=staged,
+                    fixture=diagnostic.full.fact(resource), producerManifest=diagnostic.full.fact(manifest)))
+                calls = []
+                def command(directory, name, argv, seconds):
+                    calls.append((name, [str(value) for value in argv], seconds))
+                    if name.endswith("-test"):
+                        if execution_failed:
+                            raise RuntimeError("test execution failed or timed out")
+                    else:
+                        diagnostic.full.write_new(directory / (name + ".log"), summary if name.endswith("-summary") else tree)
+                with patch.multiple(diagnostic, REPO=root, WORK=work, LOGS=logs, SIMULATOR=simulator, PRODUCED=produced), \
+                        patch.object(diagnostic, "check_binding", return_value=receipt), \
+                        patch.object(diagnostic, "enrollment_source_stage", return_value=staged), \
+                        patch.object(diagnostic, "enrollment_project_overlay", side_effect=nullcontext), \
+                        patch.object(diagnostic.native.smoke, "review_overlays"), \
+                        patch.object(diagnostic.full, "command", side_effect=command):
+                    if execution_failed:
+                        with self.assertRaises(RuntimeError):
+                            run()
+                    else:
+                        run()
+                self.assertEqual([name for name, _, _ in calls], [prefix + "-" + kind
+                    for kind in ("test", "summary", "tests")])
+                argv = calls[0][1]
+                self.assertEqual(calls[0][2], 660)
+                self.assertEqual(argv[argv.index("-t") + 1], "600")
+                self.assertEqual(argv[argv.index("-resultBundlePath") + 1], str(root / (".build/" + prefix + ".xcresult")))
+                self.assertEqual([arg for arg in argv if arg.startswith("-only-testing:")],
+                    ["-only-testing:yuedu appTests/" + case + "()" for case in cases])
+                result = json.loads((logs / (prefix + "-result.json")).read_bytes())
+                self.assertEqual(result["status"], "failed" if execution_failed else "passed")
+                self.assertEqual(result["requiredCases"], list(cases))
+                self.assertFalse(result[unverified])
 
     def test_real_file_and_zip_budget_gates_and_old_s3_kind_rejection(self):
         with tempfile.TemporaryDirectory() as tmp:

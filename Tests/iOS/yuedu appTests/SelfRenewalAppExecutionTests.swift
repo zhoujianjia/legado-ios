@@ -14,8 +14,162 @@ struct SelfRenewalAppExecutionTests {
     typealias Coordinator = SelfRenewalControlledRenewalCoordinator
     typealias Peer = SelfRenewalAuthenticatedInstallationFixture
 
+    @Test("explicit current-App preparation signs without a device or remote work and cancellation preserves the candidate")
+    func preparesCurrentApplicationWithoutDeviceOrRemoteWork() async throws {
+        let observations = CurrentPreparationObservations()
+        try await Package.fixture { f in
+            let application = try await Self.application(f)
+            let root = f.directory.appendingPathComponent("SelfRenewalApp")
+            let probe = PreparationRemoteProbe()
+            let services = Session.DeveloperServices(transport: probe, storage: probe,
+                freshAnisette: { try probe.freshAnisette() })
+            let owner = await MainActor.run {
+                SelfRenewalAppOwner(root: root, currentApplicationRoot: application,
+                    developerServices: services, clock: { f.date })
+            }
+            let owners = try await Self.library(in: f.directory, at: f.date, handoff: owner.handoff)
+            do {
+                await owner.start(books: owners.books, sources: owners.sources, positions: owners.positions, automatically: false)
+                let configuration = try Self.configuration(f, device: nil)
+                let input = try Session.decodeConfiguration(Data(contentsOf: configuration))
+                await owner.importConfiguration(configuration)
+                // The new route must use the actual installation, not a saved
+                // imported IPA or a previous signed candidate.
+                try FileManager.default.removeItem(at: f.input)
+                await owner.prepareCurrentApplicationRenewal()
+                let ready = await MainActor.run {
+                    (owner.status, owner.problem == nil && owner.operationFailure == nil && !owner.isWorking)
+                }
+                let record = try Self.record(root)
+                let candidate = try Self.candidate(root, record: record)
+                let independent = f.directory.appendingPathComponent("current-app-independent.ipa")
+                try candidate.write(to: independent, options: .withoutOverwriting)
+                let verified = try await SelfRenewalIPAUnpacker.verify(ipa: independent,
+                    codeAnchors: f.issuer.certificateChainDER, profileAnchors: f.issuer.certificateChainDER, at: f.date)
+                let journalURL = root.appendingPathComponent("SelfRenewalTransactions/transaction.json")
+                let journalBytes = try Data(contentsOf: journalURL)
+                let cancelled = Task {
+                    withUnsafeCurrentTask { $0?.cancel() }
+                    await owner.prepareCurrentApplicationRenewal()
+                }
+                await cancelled.value
+                let refused = await MainActor.run {
+                    (owner.status?.phase == .candidateReady && owner.status?.problem == .cancelled,
+                     owner.problem == .cancelled && owner.operationFailure?.operation == .packagePreparation && !owner.isWorking)
+                }
+                let cancelledJournalBytes = try Data(contentsOf: journalURL)
+                let cancelledCandidate = try Self.candidate(root, record: Self.record(root))
+                let info = application.appendingPathComponent("Info.plist")
+                guard var properties = try PropertyListSerialization.propertyList(from: Data(contentsOf: info), format: nil) as? [String: Any] else {
+                    throw CocoaError(.coderInvalidValue)
+                }
+                properties["CFBundleIdentifier"] = "owned.changed.current.preparation"
+                try PropertyListSerialization.data(fromPropertyList: properties, format: .xml, options: 0).write(to: info, options: .atomic)
+                await owner.prepareCurrentApplicationRenewal()
+                let changedRefused = await MainActor.run {
+                    owner.status?.access == nil && owner.status?.state == .unavailable
+                        && owner.status?.phase == .candidateReady && owner.status?.problem == .signingMaterials
+                        && owner.problem == .signingMaterials && owner.operationFailure?.operation == .packagePreparation
+                        && !owner.isWorking
+                }
+                let changedJournalBytes = try Data(contentsOf: journalURL)
+                let changedCandidate = try Self.candidate(root, record: Self.record(root))
+                await observations.store(CurrentPreparationFacts(
+                    status: ready.0, ownerReady: ready.1, noDevice: input.device == nil,
+                    recapturedCurrentApplication: record.originalArchiveSHA256 != Data(SHA256.hash(data: f.originalBytes)),
+                    candidateDigestMatched: verified.archiveSHA256 == record.candidate?.sha256
+                        && verified.archiveBytes == record.candidate?.byteCount,
+                    bundleCount: verified.application.bundles.count,
+                    profileCount: verified.application.profiles.profiles.count,
+                    signaturesVerified: verified.application.resources.resourceEnvelopesVerified
+                        && verified.application.profileAndCodeIdentityConsistencyVerified,
+                    neverSubmitted: record.remoteHistory == .neverStarted && record.submission == nil && record.userDataHandoff == nil,
+                    remoteCalls: probe.calls, cancellationObserved: refused.0 && refused.1,
+                    cancelledCandidateUnchanged: cancelledJournalBytes == journalBytes && cancelledCandidate == candidate,
+                    changedCurrentApplicationRejected: changedRefused && changedJournalBytes == journalBytes && changedCandidate == candidate))
+                try await owner.close()
+            } catch {
+                do { try await owner.close() } catch { Issue.record(error) }
+                throw error
+            }
+        }
+        // Package.fixture owns a detached archive/PKI worker. Keep every new
+        // verdict in this parent @Test after its actual facts have returned.
+        let facts = try #require(await observations.facts)
+        #expect(facts.status?.state == .candidateReady && facts.status?.phase == .candidateReady)
+        #expect(facts.ownerReady && facts.noDevice)
+        #expect(facts.recapturedCurrentApplication && facts.candidateDigestMatched)
+        #expect(facts.bundleCount == 3 && facts.profileCount == 3 && facts.signaturesVerified)
+        #expect(facts.neverSubmitted && facts.remoteCalls == 0)
+        #expect(facts.cancellationObserved && facts.cancelledCandidateUnchanged)
+        #expect(facts.changedCurrentApplicationRejected)
+    }
+
+    @Test("cold bootstrap restores only the already validated material lease and clears it when that proof expires")
+    func restoresValidatedMaterialObservationAfterColdBootstrap() async throws {
+        let observations = ColdMaterialObservations()
+        try await Package.fixture { f in
+            let application = try await Self.application(f)
+            let root = f.directory.appendingPathComponent("SelfRenewalApp")
+            let clock = Clock(f.date)
+            let probe = PreparationRemoteProbe()
+            let services = Session.DeveloperServices(transport: probe, storage: probe,
+                freshAnisette: { try probe.freshAnisette() })
+            let first = await MainActor.run {
+                SelfRenewalAppOwner(root: root, currentApplicationRoot: application,
+                    developerServices: services, clock: { clock.value })
+            }
+            let owners = try await Self.library(in: f.directory, at: f.date, handoff: first.handoff)
+            do {
+                await first.start(books: owners.books, sources: owners.sources, positions: owners.positions, automatically: false)
+                await first.importConfiguration(try Self.configuration(f, device: nil))
+                let before = await MainActor.run { (first.developerMaterial, first.developerSession == nil) }
+                try await first.close()
+                let reopened = await MainActor.run {
+                    SelfRenewalAppOwner(root: root, currentApplicationRoot: application,
+                        developerServices: services, clock: { clock.value })
+                }
+                do {
+                    await reopened.start(books: owners.books, sources: owners.sources, positions: owners.positions, automatically: false)
+                    let restored = await MainActor.run {
+                        (reopened.developerMaterial, reopened.developerSession == nil,
+                         reopened.status?.access == .signing && reopened.problem == nil)
+                    }
+                    clock.set(f.date.addingTimeInterval(366 * 86_400))
+                    await reopened.bootstrap()
+                    let failed = await MainActor.run {
+                        reopened.developerMaterial == nil && reopened.developerSession == nil
+                            && reopened.status?.access == nil && reopened.status?.state == .unavailable
+                            && reopened.problem == .signingMaterials && !reopened.isWorking
+                    }
+                    await observations.store(ColdMaterialFacts(before: before.0, restored: restored.0,
+                        expectedGeneration: f.lease.generation,
+                        expectedExpiry: f.lease.profiles.map(\.summary.expiresAt).min(),
+                        signingAccessRestored: restored.2, remoteLoginStillUnverified: before.1 && restored.1,
+                        staleObservationCleared: failed, remoteCalls: probe.calls,
+                        noTransactionCreated: !FileManager.default.fileExists(atPath: root.appendingPathComponent("SelfRenewalTransactions/transaction.json").path)))
+                    try await reopened.close()
+                } catch {
+                    do { try await reopened.close() } catch { Issue.record(error) }
+                    throw error
+                }
+            } catch {
+                do { try await first.close() } catch { Issue.record(error) }
+                throw error
+            }
+        }
+        let facts = try #require(await observations.facts)
+        #expect(facts.before != nil && facts.before == facts.restored)
+        #expect(facts.restored?.generation == facts.expectedGeneration)
+        #expect(facts.restored?.profileExpiresAt == facts.expectedExpiry && facts.expectedExpiry != nil)
+        #expect(facts.signingAccessRestored && facts.staleObservationCleared)
+        #expect(facts.remoteLoginStillUnverified && facts.remoteCalls == 0 && facts.noTransactionCreated)
+        #expect(facts.restored?.appleAuthorizationEstablished == false && facts.restored?.installedApplicationRenewed == false)
+    }
+
     @Test("App owner prepares actual imported bytes then explicitly submits with real owner acknowledgements")
     func appOwnerPreparesAndSubmitsActualCandidateWithoutAutomaticRetry() async throws {
+        let currentEntryRefusal = PreparationRefusalObservation()
         try await Package.fixture { f in
             let application = try await Self.application(f)
             let root = f.directory.appendingPathComponent("SelfRenewalApp")
@@ -58,10 +212,16 @@ struct SelfRenewalAppExecutionTests {
                     let before = try Data(contentsOf: root.appendingPathComponent("SelfRenewalTransactions/transaction.json"))
                     await owner.submitPreparedRenewal()
                     await owner.prepareRenewal(from: f.input)
+                    await owner.prepareCurrentApplicationRenewal()
                     #expect(peer.observed.snapshot.upgradeRequests == 1)
                     #expect(try Data(contentsOf: root.appendingPathComponent("SelfRenewalTransactions/transaction.json")) == before)
                     let refused = await MainActor.run { (owner.problem, owner.recoveryAvailable, owner.status?.phase) }
                     #expect(refused.0 != nil && refused.1 && refused.2 == .receiptObserved)
+                    let operation = await MainActor.run { owner.operationFailure?.operation }
+                    let afterCurrentEntry = try Data(contentsOf: root.appendingPathComponent("SelfRenewalTransactions/transaction.json"))
+                    await currentEntryRefusal.store(operation == .packagePreparation && refused.2 == .receiptObserved
+                        && peer.observed.snapshot.upgradeRequests == 1
+                        && afterCurrentEntry == before)
                 }
                 try await owner.close()
             } catch {
@@ -69,6 +229,7 @@ struct SelfRenewalAppExecutionTests {
                 throw error
             }
         }
+        #expect(await currentEntryRefusal.refused == true)
     }
 
     @Test("actual source persistence failure prevents Upgrade through the App owner entry")
@@ -120,6 +281,7 @@ struct SelfRenewalAppExecutionTests {
 
     @Test("Session cancellation awaits actual TLS drain and durable status before releasing busy")
     func appSessionCancellationDrainsActualTransportAndKeepsCandidate() async throws {
+        let currentEntryRefusal = PreparationRefusalObservation()
         try await Package.fixture { f in
             let application = try await Self.application(f)
             let root = f.directory.appendingPathComponent("SelfRenewalApp")
@@ -144,6 +306,10 @@ struct SelfRenewalAppExecutionTests {
                     catch let error as Session.Failure { #expect(error == .busy) }
                     do { _ = try await session.prepareRenewal(from: f.input); Issue.record("Busy session admitted another preparation") }
                     catch let error as Session.Failure { #expect(error == .busy) }
+                    var currentEntryWasBusy = false
+                    do { _ = try await session.prepareCurrentApplicationRenewal() }
+                    catch let error as Session.Failure { currentEntryWasBusy = error == .busy }
+                    await currentEntryRefusal.store(currentEntryWasBusy)
                     operation.cancel()
                     do { _ = try await operation.value; Issue.record("Cancelled TLS returned a submission success") }
                     catch let error as Session.RenewalExecutionFailure {
@@ -168,6 +334,7 @@ struct SelfRenewalAppExecutionTests {
                 throw error
             }
         }
+        #expect(await currentEntryRefusal.refused == true)
     }
 
     @Test("expired or actually changed current Bundle revokes cached signing access and retains candidate bytes")
@@ -232,6 +399,69 @@ struct SelfRenewalAppExecutionTests {
         init(_ date: Date) { self.date = date }
         var value: Date { lock.lock(); defer { lock.unlock() }; return date }
         func set(_ date: Date) { lock.lock(); defer { lock.unlock() }; self.date = date }
+    }
+
+    private struct CurrentPreparationFacts: Sendable {
+        let status: Session.Status?
+        let ownerReady: Bool
+        let noDevice: Bool
+        let recapturedCurrentApplication: Bool
+        let candidateDigestMatched: Bool
+        let bundleCount: Int
+        let profileCount: Int
+        let signaturesVerified: Bool
+        let neverSubmitted: Bool
+        let remoteCalls: Int
+        let cancellationObserved: Bool
+        let cancelledCandidateUnchanged: Bool
+        let changedCurrentApplicationRejected: Bool
+    }
+    private actor CurrentPreparationObservations {
+        private(set) var facts: CurrentPreparationFacts?
+        func store(_ value: CurrentPreparationFacts) { facts = value }
+    }
+    private struct ColdMaterialFacts: Sendable {
+        let before: Session.DeveloperMaterialObservation?
+        let restored: Session.DeveloperMaterialObservation?
+        let expectedGeneration: UInt64
+        let expectedExpiry: Date?
+        let signingAccessRestored: Bool
+        let remoteLoginStillUnverified: Bool
+        let staleObservationCleared: Bool
+        let remoteCalls: Int
+        let noTransactionCreated: Bool
+    }
+    private actor ColdMaterialObservations {
+        private(set) var facts: ColdMaterialFacts?
+        func store(_ value: ColdMaterialFacts) { facts = value }
+    }
+    private actor PreparationRefusalObservation {
+        private(set) var refused: Bool?
+        func store(_ value: Bool) { refused = value }
+    }
+    /// Every configured account/provider hook fails closed if preparation tries
+    /// to use it. There is no URLSession or real Apple endpoint in this fixture.
+    private final class PreparationRemoteProbe: SelfRenewalDeveloperAccountTransport, SelfRenewalDeveloperSessionStorage, @unchecked Sendable {
+        private let lock = NSLock()
+        private var count = 0
+        var calls: Int { lock.withLock { count } }
+        private func attempted() { lock.withLock { count += 1 } }
+        func send(_ request: URLRequest) async throws -> SelfRenewalDeveloperAccountResponse {
+            attempted(); throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
+        }
+        func sendAnisette(_ request: SelfRenewalAnisetteRequest) async throws -> SelfRenewalDeveloperAccountResponse {
+            attempted(); throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
+        }
+        func openAnisetteProvisioning(_ configuration: SelfRenewalAnisetteV3Configuration) async throws -> any SelfRenewalAnisetteProvisioningSocket {
+            attempted(); throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
+        }
+        func freshAnisette() throws -> SelfRenewalDeveloperAccountClient.Anisette {
+            attempted(); throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
+        }
+        func load(namespace: UUID) throws -> String? { attempted(); return nil }
+        func save(namespace: UUID, value: String) throws { attempted(); throw SelfRenewalDeveloperAccountClient.Failure.storage }
+        func loadAnisetteRegistration(namespace: UUID) throws -> String? { attempted(); return nil }
+        func saveAnisetteRegistration(namespace: UUID, value: String) throws { attempted(); throw SelfRenewalDeveloperAccountClient.Failure.storage }
     }
 
     /// Re-create only the fixture's checked public files for the DEBUG current

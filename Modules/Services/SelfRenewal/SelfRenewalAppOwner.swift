@@ -165,12 +165,14 @@ final class SelfRenewalAppOwner {
         problem = nil
         do {
             status = try await session.bootstrap(handoff: handoff)
+            developerMaterial = await session.developerMaterialObservation()
             #if DEBUG
             await bootstrapObservation?()
             #endif
             bootstrapped = true
         } catch {
             status = await session.status()
+            developerMaterial = nil
             problem = Self.classify(error)
             bootstrapped = false
             recordFailure(error, operation: .bootstrap, context: "Renewal App bootstrap unavailable", preserveAction: true)
@@ -351,6 +353,7 @@ final class SelfRenewalAppOwner {
         problem = nil; operationFailure = nil
         do {
             status = try await session.configure(from: url, handoff: handoff)
+            developerMaterial = await session.developerMaterialObservation()
             bootstrapped = true
         } catch {
             status = await session.status()
@@ -367,6 +370,7 @@ final class SelfRenewalAppOwner {
         problem = nil; initializationFailure = nil; operationFailure = nil
         do {
             status = try await session.initializeSigningNamespace(from: url)
+            developerMaterial = await session.developerMaterialObservation()
             bootstrapped = true
         } catch {
             status = await session.status()
@@ -391,6 +395,22 @@ final class SelfRenewalAppOwner {
             status = await session.status()
             problem = Self.classify(error)
             recordFailure(error, operation: .packagePreparation, context: "Renewal preparation unavailable")
+        }
+        recoveryAvailable = await session.recoveryIsAvailable()
+        signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials
+    }
+
+    /// A separate local-only action uses the same session and preparation
+    /// failure observation as an explicitly imported IPA.
+    func prepareCurrentApplicationRenewal() async {
+        guard !isWorking else { return }
+        isWorking = true; defer { isWorking = false }
+        problem = nil; operationFailure = nil
+        do { status = try await session.prepareCurrentApplicationRenewal() }
+        catch {
+            status = await session.status()
+            problem = Self.classify(error)
+            recordFailure(error, operation: .packagePreparation, context: "Renewal current application preparation unavailable")
         }
         recoveryAvailable = await session.recoveryIsAvailable()
         signingMaterialProblem = await session.signingMaterialFailure() == nil ? nil : .signingMaterials

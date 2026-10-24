@@ -34,7 +34,24 @@ ENROLLMENT_SOURCES = tuple("Tests/iOS/yuedu appTests/" + name for name in (
 SOURCE_CHANGE_SOURCES = tuple("Tests/iOS/yuedu appTests/" + name for name in (
     "BookSourceSearchOrderTests.swift", "NetworkSettingsSearchTests.swift", "BookOriginSearchServiceTests.swift",
     "ChangeSourceCacheCoverageTests.swift"))
-FOCUSED_SOURCES = (*ENROLLMENT_SOURCES, *SOURCE_CHANGE_SOURCES)
+CURRENT_APP_PREPARATION_SOURCES = tuple("Tests/iOS/yuedu appTests/" + name for name in (
+    "SelfRenewalAppExecutionTests.swift", "SelfRenewalControlledPackageSignerTests.swift",
+    "SelfRenewalControlledPackageFixture.swift", "SelfRenewalSDKOwnedPackageFixture.swift",
+    "SelfRenewalAuthenticatedInstallationFixture.swift", "SelfRenewalSigningOwnedPKIFixture.swift"))
+ORIGINAL_SOURCE_ADMISSION_SOURCES = ("Tests/iOS/yuedu appTests/LegadoOriginalSourceRevisionBudgetTests.swift",)
+# The existing signing fixture is shared by the two suites, never copied twice.
+FOCUSED_SOURCES = tuple(dict.fromkeys((*ENROLLMENT_SOURCES, *SOURCE_CHANGE_SOURCES,
+    *CURRENT_APP_PREPARATION_SOURCES, *ORIGINAL_SOURCE_ADMISSION_SOURCES)))
+CURRENT_APP_PREPARATION_CASES = tuple("SelfRenewalAppExecutionTests/" + name for name in (
+    "preparesCurrentApplicationWithoutDeviceOrRemoteWork",
+    "appOwnerPreparesAndSubmitsActualCandidateWithoutAutomaticRetry",
+    "appSessionCancellationDrainsActualTransportAndKeepsCandidate",
+    "restoresValidatedMaterialObservationAfterColdBootstrap"))
+ORIGINAL_SOURCE_ADMISSION_CASES = tuple("LegadoOriginalSourceRevisionBudgetTests/" + name for name in (
+    "scans1310OriginalSourcesThroughOwnedExecutor",
+    "retainsRevisionHighWaterAfterLargeScan",
+    "rejectsCountBudgetWithoutDamagingAdmittedSources",
+    "enforcesUTF8PayloadBudgetWithoutConsumingRejectedAdmission"))
 SOURCE_CHANGE_GROUPS = {
     "source-order": tuple("BookSourceSearchOrderTests/" + name for name in (
         "stableSourceOrder", "largeOrderSnapshot", "largePackDoesNotSilentlyStopAtTen",
@@ -50,7 +67,7 @@ SOURCE_CHANGE_GROUPS = {
         "slowSourceTimesOut", "scanCoveragePreservesFailureAndTimeoutFacts")),
     "source-cache": tuple("ChangeSourceCacheCoverageTests/" + name for name in (
         "legacyAndPartialEntriesDoNotEndSearch", "completeAttemptCoverageIsBoundToSourceSet", "completeEntryExpires",
-        "cancelledQueuedCompletedStoreDoesNotWrite")),
+        "cancelledQueuedCompletedStoreDoesNotWrite", "incompatibleCompletedEntryDoesNotEndSearch")),
 }
 SDK_RESOURCE = "Tests/iOS/yuedu appTests/owned-sdk-package.json"
 SDK_TOOLS = ("generate-sdk-owned-package.py", "ImportOwnedIdentity.swift", "OwnedIdentitySearch.h",
@@ -64,9 +81,13 @@ INPUTS = (".github/workflows/yuedu-renewal-diagnostic.yml", "scripts/reader-expe
           "Modules/Services/SelfRenewal/SelfRenewalAnisetteV3Provider.swift",
           "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
           "Modules/Services/SelfRenewal/SelfRenewalGSASRP.swift",
+          "Modules/Services/SelfRenewal/SelfRenewalAppSession.swift",
+          "Modules/Services/SelfRenewal/SelfRenewalAppOwner.swift",
           *FOCUSED_SOURCES,
           "Modules/Services/Online/BookSourceSearchOrder.swift",
           "Modules/Services/Online/BookOriginSearchService.swift",
+          "Modules/Services/Online/LegadoMainJSSourceService.swift",
+          "Modules/Services/Online/LegadoPersistentStateHost.swift",
           "Modules/Services/Online/ChangeSourceCache.swift",
           "Modules/Services/Online/SearchAggregator.swift",
           "Modules/Features/Reader/ReaderViewModel.swift",
@@ -164,10 +185,10 @@ def validate_build(receipt):
             or manifest.get("diagnosticOnly") is not True or manifest.get("releaseAcceptance") is not False
             or manifest.get("S3Acceptance") != "not_run" or manifest.get("configuration") != "Release"
             or manifest.get("platform") != "iPhoneOS" or manifest.get("architecture") != "arm64"
-            or manifest.get("build") != "24" or manifest.get("signed") is not False
+            or manifest.get("build") != "25" or manifest.get("signed") is not False
             or manifest.get("deviceCompilationPassed") is not True or manifest.get("jvmIntegratedIntoReading") is not True
             or manifest.get("deviceValidationPassed") is not False):
-        raise ValueError("Expected this source's complete, unsigned build24 diagnostic manifest")
+        raise ValueError("Expected this source's complete, unsigned build25 diagnostic manifest")
     settings = config.inspect_settings(json.loads((BUILD / "build-settings.json").read_bytes()), with_jvm=True, diagnostic=True)
     if settings != manifest.get("actualBuildSettings"):
         raise ValueError("Diagnostic settings changed after compilation")
@@ -180,7 +201,7 @@ def validate_build(receipt):
         raise ValueError("Complete diagnostic runtime/bundle material changed")
     for bundle in [app, *config.extension_bundles(app).values()]:
         info = plistlib.loads((bundle / "Info.plist").read_bytes())
-        if info.get("YueduExperienceSourceCommit") != receipt["sourceCommit"] or info.get("CFBundleVersion") != "24":
+        if info.get("YueduExperienceSourceCommit") != receipt["sourceCommit"] or info.get("CFBundleVersion") != "25":
             raise ValueError("Diagnostic embedded bundle source/build differs")
     proof = json.loads((BUILD / "native-reuse.json").read_bytes())
     if (proof != json.loads((WORK / "native-restore.json").read_bytes())
@@ -382,8 +403,8 @@ def run_enrollment():
         regressionScope="Independent one-case Simulator regression; never S3 or actual renewal acceptance"))
 
 
-def run_source_change():
-    """Run the relevant source-picker suites separately, preserving shared-state isolation."""
+def run_controlled_groups(groups, *, regression_scope, unverified):
+    """Give each controlled group its own invocation, result bundle and exact-case gate."""
     receipt = check_binding()
     prepared = json.loads((WORK / "enrollment-prepared.json").read_bytes())
     if (any(prepared.get(key) != value for key, value in receipt.items())
@@ -394,7 +415,7 @@ def run_source_change():
         raise ValueError("Controlled regression source or fixture preparation changed")
     with enrollment_project_overlay():
         native.smoke.review_overlays(json.loads((SIMULATOR / "overlays.json").read_bytes()))
-    for label, cases in SOURCE_CHANGE_GROUPS.items():
+    for label, cases in groups.items():
         prefix = "renewal-diagnostic-" + label
         result_bundle = REPO / (".build/" + prefix + ".xcresult")
         observed = None
@@ -426,18 +447,35 @@ def run_source_change():
         except Exception:
             full.write_new(LOGS / (prefix + "-result.json"), dict(receipt,
                 status="failed", requiredCases=list(cases), observed=observed,
-                physicalDeviceSourceSwitchVerified=False,
-                regressionScope="Controlled synthetic source-picker regression; not user-source network or physical-device acceptance"))
+                regressionScope=regression_scope, **unverified))
             raise
         full.write_new(LOGS / (prefix + "-result.json"), dict(receipt,
             status="passed", requiredCases=list(cases), **observed,
-            physicalDeviceSourceSwitchVerified=False,
-            regressionScope="Controlled synthetic source-picker regression; not user-source network or physical-device acceptance"))
+            regressionScope=regression_scope, **unverified))
+
+
+def run_source_change():
+    """Run the relevant source-picker suites separately, preserving shared-state isolation."""
+    run_controlled_groups(SOURCE_CHANGE_GROUPS,
+        regression_scope="Controlled synthetic source-picker regression; not user-source network or physical-device acceptance",
+        unverified={"physicalDeviceSourceSwitchVerified": False})
+
+
+def run_current_app_preparation():
+    run_controlled_groups({"current-app-preparation": CURRENT_APP_PREPARATION_CASES},
+        regression_scope="Controlled owned-fixture current-App preparation and cold bootstrap; never actual Apple login, physical replacement or automatic renewal acceptance",
+        unverified={"actualDeviceRenewalValidated": False})
+
+
+def run_original_source_admission():
+    run_controlled_groups({"original-source-admission": ORIGINAL_SOURCE_ADMISSION_CASES},
+        regression_scope="Controlled original-source revision admission through an owned executor and real Host binding; never user-source network, physical source switching or full native runtime acceptance",
+        unverified={"physicalDeviceSourceSwitchVerified": False})
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("phase", choices=("validate-tag", "restore", "prepare-device", "export-unsigned", "prepare-simulator", "run-enrollment", "run-source-change"))
+    parser.add_argument("phase", choices=("validate-tag", "restore", "prepare-device", "export-unsigned", "prepare-simulator", "run-enrollment", "run-source-change", "run-current-app-preparation", "run-original-source-admission"))
     phase = parser.parse_args().phase
     if phase == "validate-tag":
         print(json.dumps({"sourceCommit": source(), "diagnosticOnly": True, "releaseAcceptance": False, "S3Acceptance": "not_run"}))
@@ -451,6 +489,10 @@ def main():
         run_enrollment()
     elif phase == "run-source-change":
         run_source_change()
+    elif phase == "run-current-app-preparation":
+        run_current_app_preparation()
+    elif phase == "run-original-source-admission":
+        run_original_source_admission()
     else:
         export_unsigned()
 

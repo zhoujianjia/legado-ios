@@ -9,6 +9,10 @@ import Foundation
 /// can flag them — failure flags survive a re-search of the same book.
 final class ChangeSourceCache: @unchecked Sendable {
     static let shared = ChangeSourceCache()
+    // A complete attempt from the former 256-source admission policy cannot
+    // answer a search after that policy changes. This versions the existing
+    // result record, independently of application build numbers.
+    static let searchCompatibilityVersion = 1
 
     struct Entry: Codable, Sendable {
         var origins: [BookOrigin]
@@ -18,6 +22,7 @@ final class ChangeSourceCache: @unchecked Sendable {
         var completedAttemptSourceIDs: Set<UUID>? = nil
         var excludedOriginKey: String? = nil
         var scanCoverage: BookOriginSearchCoverage? = nil
+        var searchCompatibilityVersion: Int? = nil
     }
 
     private let queue = DispatchQueue(label: "com.yuedu.changeSourceCache")
@@ -75,6 +80,7 @@ final class ChangeSourceCache: @unchecked Sendable {
             queue.async {
                 let entry = self.readEntry(for: bookId)
                 let usable = allowCached && days > 0 && entry?.completedAttemptSourceIDs == sourceIDs
+                    && entry?.searchCompatibilityVersion == Self.searchCompatibilityVersion
                     && entry?.scanCoverage?.completedAllAttempts == true
                     && entry?.scanCoverage?.sourceCount == sourceIDs.count
                     && entry?.scanCoverage?.attemptedSourceCount == sourceIDs.count
@@ -178,7 +184,8 @@ final class ChangeSourceCache: @unchecked Sendable {
             [Self.originKey(sourceId: origin.sourceId, bookUrl: origin.bookUrl), Self.urlKey(origin.bookUrl)]
         })
         let entry = Entry(origins: origins, failedKeys: previousFailed.filter { validKeys.contains($0) },
-            timestamp: Date(), completedAttemptSourceIDs: sourceIDs, excludedOriginKey: excludingOriginKey, scanCoverage: coverage)
+            timestamp: Date(), completedAttemptSourceIDs: sourceIDs, excludedOriginKey: excludingOriginKey, scanCoverage: coverage,
+            searchCompatibilityVersion: coverage == nil ? nil : Self.searchCompatibilityVersion)
         writeEntry(entry, for: bookId)
     }
 

@@ -27,7 +27,7 @@ struct SelfRenewalSettingsView: View {
     private enum FilePurpose: Equatable { case initialize, configure, prepare, pairingPKCS12, pairingPublicConfiguration }
     private enum InputProblem: Equatable { case serviceURL, pairingFiles, pairingPassword, busy }
     private enum Operation {
-        case initialize(URL), configure(URL), prepare(URL), submit
+        case initialize(URL), configure(URL), prepare(URL), prepareCurrentApplication, submit
         case setAutomatic(Bool), checkAutomatic, cancelAutomatic
         case signIn(String, String), verify(String, UUID), cancelAuthentication
         case observeAccount, signOut, refresh(String), reconcile, finalizePublication, recover
@@ -109,6 +109,7 @@ struct SelfRenewalSettingsView: View {
             case .initialize(let url): await owner.initializeConfiguration(from: url)
             case .configure(let url): await owner.importConfiguration(url)
             case .prepare(let url): await owner.prepareRenewal(from: url)
+            case .prepareCurrentApplication: await owner.prepareCurrentApplicationRenewal()
             case .submit: await owner.submitPreparedRenewal()
             case .setAutomatic(let enabled): await owner.setAutomaticRenewalEnabled(enabled)
             case .checkAutomatic: await owner.runAutomaticRenewalNow()
@@ -442,6 +443,13 @@ struct SelfRenewalSettingsView: View {
             } else if owner.developerSession == nil {
                 Text(localized("需要登入 Apple ID"))
                     .dsSectionFooter()
+            } else if !owner.isWorking,
+                      let operation = owner.operationFailure?.operation,
+                      operation == .materialRefresh || operation == .materialReconciliation || operation == .publicationFinalization,
+                      let problem = owner.problem {
+                Text(localized(problemKey(problem)))
+                    .dsSectionFooter(color: DSColor.destructive)
+                    .accessibilityIdentifier("self_renewal_material_problem")
             } else if machineName.isEmpty {
                 Text(localized("請填寫裝置名稱。"))
                     .dsSectionFooter()
@@ -452,6 +460,11 @@ struct SelfRenewalSettingsView: View {
 
     private func installationSection(_ owner: SelfRenewalAppOwner) -> some View {
         Section {
+            Button { begin(.prepareCurrentApplication) } label: {
+                SettingsRowLabel(localized("使用目前應用準備續簽包"), systemImage: "signature", role: .action)
+            }
+            .disabled(owner.isWorking || owner.status?.access != .signing)
+            .accessibilityIdentifier("self_renewal_prepare_current_application")
             Button { chooseFile(.prepare) } label: {
                 SettingsRowLabel(localized("選擇 IPA 並準備續簽包"), systemImage: "shippingbox", role: .action)
             }
@@ -469,8 +482,17 @@ struct SelfRenewalSettingsView: View {
                 .disabled(owner.isWorking)
             }
         } footer: {
-            Text(localized("準備完成後需另行確認安裝；已提交但結果未明時，請先恢復事務檢查。"))
-                .dsSectionFooter()
+            if !owner.isWorking,
+               let operation = owner.operationFailure?.operation,
+               operation == .packagePreparation || operation == .installationSubmission || operation == .recovery,
+               let problem = owner.problem {
+                Text(localized(problemKey(problem)))
+                    .dsSectionFooter(color: DSColor.destructive)
+                    .accessibilityIdentifier("self_renewal_package_problem")
+            } else {
+                Text(localized("準備完成後需另行確認安裝；已提交但結果未明時，請先恢復事務檢查。"))
+                    .dsSectionFooter()
+            }
         }
         .interfaceSectionSurface()
     }

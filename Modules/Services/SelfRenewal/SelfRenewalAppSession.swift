@@ -112,6 +112,7 @@ actor SelfRenewalAppSession {
         let access: Access
         let materialFailure: SigningMaterialUnavailable?
         let profileValidity: ConnectedProfileValidity?
+        let developerMaterial: DeveloperMaterialObservation?
     }
     /// Two bounds derived only from the signed profiles of the actual verified
     /// connect input. This is not another file/material cache or a remote
@@ -723,6 +724,47 @@ actor SelfRenewalAppSession {
     func prepareRenewal(from ipa: URL) async throws -> Status {
         guard !busy else { throw Failure.busy }
         busy = true; defer { busy = false }
+        return try await prepareRenewalOwned(from: ipa)
+    }
+
+    /// Explicit local preparation from this verified installation. No device
+    /// route, account request, upload or Upgrade is part of this action.
+    func prepareCurrentApplicationRenewal() async throws -> Status {
+        guard !busy else { throw Failure.busy }
+        busy = true; defer { busy = false }
+        let started = SourcePerfTrace.now
+        defer { SourcePerfTrace.record("renewal.app.prepare-current",
+            "inputLimit=\(SelfRenewalIPAArchiveValidator.Limits.archiveBytes) main=\(Thread.isMainThread)",
+            since: started, thresholdMs: 0) }
+        do {
+            try Task.checkCancellation()
+            guard let journal else { throw Failure.notConfigured }
+            if let phase = try await journal.load()?.record.phase,
+               [.uploadIntent, .upgradeIntent, .installationUnknown, .receiptObserved, .lookupObserved, .attentionRequired].contains(phase) {
+                throw Journal.Failure.activeTransaction
+            }
+            let context = try await renewalSigningContext()
+            let expectedConfiguration = context.configuration
+            guard configuration == expectedConfiguration else { throw Failure.configurationInUse }
+            let application = ownedApplicationRoot ?? Bundle.main.bundleURL
+            return try await SelfRenewalIPAUnpacker.withCurrentApplicationArchive(application: application,
+                codeAnchors: expectedConfiguration.codeAnchors,
+                profileAnchors: expectedConfiguration.profileAnchors, at: clock()) { [self] ipa in
+                try await prepareCapturedCurrentApplication(from: ipa, configuration: expectedConfiguration)
+            }
+        } catch let failure as RenewalExecutionFailure {
+            // The ordinary prepare path already wrote its terminal status.
+            throw failure
+        } catch {
+            return try await finishRenewalExecution(failure: error)
+        }
+    }
+
+    private func prepareCapturedCurrentApplication(from ipa: URL, configuration expected: Configuration) async throws -> Status {
+        try Task.checkCancellation()
+        guard busy, !configurationNeedsReload, configuration == expected else { throw Failure.configurationInUse }
+        // Re-enter the sole input/lease/identity/generation and journal path;
+        // the archive snapshot itself never grants signing authority.
         return try await prepareRenewalOwned(from: ipa)
     }
 
@@ -1493,7 +1535,7 @@ actor SelfRenewalAppSession {
         }
     }
 
-    private func connect(_ configuration: Configuration) async throws -> (vault: Vault, namespace: Vault.Namespace, coordinator: Coordinator, profileValidity: ConnectedProfileValidity) {
+    private func connect(_ configuration: Configuration) async throws -> (vault: Vault, namespace: Vault.Namespace, coordinator: Coordinator, profileValidity: ConnectedProfileValidity, developerMaterial: DeveloperMaterialObservation) {
         guard let journal else { throw Failure.notConfigured }
         let material = try await SelfRenewalApplicationMaterialVerifier.read(unpackedApplication: ownedApplicationRoot ?? Bundle.main.bundleURL,
             codeAnchors: configuration.codeAnchors, profileAnchors: configuration.profileAnchors, at: clock())
@@ -1521,12 +1563,14 @@ actor SelfRenewalAppSession {
                 guard submission.deviceCertificateSHA256 == Data(SHA256.hash(data: device.deviceCertificateDER)) else { throw Coordinator.Failure.wrongPeer }
             }
         }
-        return (vault, namespace, Coordinator(journal: journal, vault: vault, namespace: namespace, clock: clock), try ConnectedProfileValidity(material))
+        return (vault, namespace, Coordinator(journal: journal, vault: vault, namespace: namespace, clock: clock),
+            try ConnectedProfileValidity(material), DeveloperMaterialObservation(lease))
     }
 
     private func activate(_ connection: Connection) {
         vault = connection.vault; namespace = connection.namespace; coordinator = connection.coordinator
-        liveDeveloperServices = nil; liveAnisetteProvider = nil; developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil; developerMaterial = nil
+        liveDeveloperServices = nil; liveAnisetteProvider = nil; developerAccount = nil; developerEnrollmentIdentity = nil; developerAuthentication = nil
+        developerMaterial = connection.developerMaterial
         developerAuthenticationEpoch = UUID(); developerAuthenticationResult = nil
         access = connection.access; materialFailure = connection.materialFailure
         profileValidity = connection.profileValidity
@@ -1536,7 +1580,7 @@ actor SelfRenewalAppSession {
         do {
             let full = try await connect(configuration)
             return Connection(vault: full.vault, namespace: full.namespace, coordinator: full.coordinator, access: .signing, materialFailure: nil,
-                profileValidity: full.profileValidity)
+                profileValidity: full.profileValidity, developerMaterial: full.developerMaterial)
         } catch is CancellationError { throw CancellationError() }
         catch {
             let materialError = error
@@ -1565,7 +1609,8 @@ actor SelfRenewalAppSession {
         do {
             let recovery = try await Coordinator.recoveryOnly(journal: journal, clock: clock)
             return Connection(vault: nil, namespace: nil, coordinator: recovery, access: .recoveryOnly,
-                materialFailure: SigningMaterialUnavailable(underlying: materialError, recoveryContextError: nil), profileValidity: nil)
+                materialFailure: SigningMaterialUnavailable(underlying: materialError, recoveryContextError: nil),
+                profileValidity: nil, developerMaterial: nil)
         } catch is CancellationError { throw CancellationError() }
         catch {
             throw SigningMaterialUnavailable(underlying: materialError, recoveryContextError: error)
