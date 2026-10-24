@@ -40,7 +40,7 @@ xcodebuild -version > "$WORK_DIR/xcode-version.log"
 xcodebuild -showsdks > "$WORK_DIR/apple-sdks.log"
 COMMON_SETTINGS=(
   -onlyUsePackageVersionsFromResolvedFile
-  CURRENT_PROJECT_VERSION=23
+  CURRENT_PROJECT_VERSION=24
   IPHONEOS_DEPLOYMENT_TARGET="$MIN_IOS"
   ARCHS=arm64 CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= CODE_SIGN_ENTITLEMENTS=
   GATEWAY_BASE_URL=
@@ -110,7 +110,7 @@ cat > "$OUTPUT/README.txt" <<'TEXT'
 Yuedu renewal diagnostic device package (unsigned)
 This complete JVM reader uses the Release configuration with Swift -Onone and
 singlefile compilation. DEBUG production conditional branches remain disabled.
-It is for diagnosing renewal initialization and account-stage failures only.
+It is for diagnosing renewal initialization, account-stage failures and source-picker ordering.
 It is not optimized Release acceptance, S3 acceptance or a performance build.
 No Simulator, controlled signing, Apple login, installation or renewal is proved.
 Sign with the original installation tool/account before installing; preserve the

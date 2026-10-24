@@ -31,6 +31,27 @@ ENROLLMENT_CASE = "SelfRenewalDeveloperAuthenticationTests/connectsOnlyThroughAc
 ENROLLMENT_SOURCES = tuple("Tests/iOS/yuedu appTests/" + name for name in (
     "SelfRenewalDeveloperAuthenticationTests.swift", "SelfRenewalSigningOwnedPKIFixture.swift",
     "SelfRenewalCMSFixture.swift", "SelfRenewalApplicationMaterialFixture.swift"))
+SOURCE_CHANGE_SOURCES = tuple("Tests/iOS/yuedu appTests/" + name for name in (
+    "BookSourceSearchOrderTests.swift", "NetworkSettingsSearchTests.swift", "BookOriginSearchServiceTests.swift",
+    "ChangeSourceCacheCoverageTests.swift"))
+FOCUSED_SOURCES = (*ENROLLMENT_SOURCES, *SOURCE_CHANGE_SOURCES)
+SOURCE_CHANGE_GROUPS = {
+    "source-order": tuple("BookSourceSearchOrderTests/" + name for name in (
+        "stableSourceOrder", "largeOrderSnapshot", "largePackDoesNotSilentlyStopAtTen",
+        "latePrioritySourceIsNotCancelledOrOvertaken", "searchTabRetainsItsPolicy",
+        "searchTabKeepsArrivalOrder", "sceneGateStillOwnsPublication")),
+    "reader-source-change": tuple("NetworkSettingsSearchTests/" + name for name in (
+        "changeSourceDoesNotAutoPause", "changeSourceCacheRespectsCurrentOrderAndCoverage",
+        "changeSourceRestartRejectsLateOldResult", "stoppingSearchCancelsTOCWarmup")),
+    "origin-stream": tuple("BookOriginSearchServiceTests/" + name for name in (
+        "keepsOnlyTheSameBook", "keepsFoldedTitles", "earlyFilterRunsOffTheMainThread",
+        "deduplicatesAndExcludes", "sourceFilterSkipsSources", "shouldStopEndsTheFanOut",
+        "oneBatchPerSource", "failedSourceKeepsTheFanOutGoing", "thrownErrorLooksLikeATimeout",
+        "slowSourceTimesOut", "scanCoveragePreservesFailureAndTimeoutFacts")),
+    "source-cache": tuple("ChangeSourceCacheCoverageTests/" + name for name in (
+        "legacyAndPartialEntriesDoNotEndSearch", "completeAttemptCoverageIsBoundToSourceSet", "completeEntryExpires",
+        "cancelledQueuedCompletedStoreDoesNotWrite")),
+}
 SDK_RESOURCE = "Tests/iOS/yuedu appTests/owned-sdk-package.json"
 SDK_TOOLS = ("generate-sdk-owned-package.py", "ImportOwnedIdentity.swift", "OwnedIdentitySearch.h",
              "OwnedIdentitySearch.c", "main.c", "extension.c", "framework.c")
@@ -43,7 +64,14 @@ INPUTS = (".github/workflows/yuedu-renewal-diagnostic.yml", "scripts/reader-expe
           "Modules/Services/SelfRenewal/SelfRenewalAnisetteV3Provider.swift",
           "Modules/Services/SelfRenewal/SelfRenewalDeveloperAccountTransport.swift",
           "Modules/Services/SelfRenewal/SelfRenewalGSASRP.swift",
-          *ENROLLMENT_SOURCES,
+          *FOCUSED_SOURCES,
+          "Modules/Services/Online/BookSourceSearchOrder.swift",
+          "Modules/Services/Online/BookOriginSearchService.swift",
+          "Modules/Services/Online/ChangeSourceCache.swift",
+          "Modules/Services/Online/SearchAggregator.swift",
+          "Modules/Features/Reader/ReaderViewModel.swift",
+          "Modules/Features/Reader/ReaderView+Logic.swift",
+          "Targets/Yuedu/SharedApp/AppDependencies.swift",
           "docs/legado-ios/evidence/renewal-opaque-adsid-step/generate-owned-vectors.py",
           "docs/legado-ios/evidence/renewal-opaque-adsid-step/owned-vectors.json",
           *("scripts/reader-experience/owned-package-fixture/" + name for name in SDK_TOOLS), *package.INPUTS)
@@ -136,10 +164,10 @@ def validate_build(receipt):
             or manifest.get("diagnosticOnly") is not True or manifest.get("releaseAcceptance") is not False
             or manifest.get("S3Acceptance") != "not_run" or manifest.get("configuration") != "Release"
             or manifest.get("platform") != "iPhoneOS" or manifest.get("architecture") != "arm64"
-            or manifest.get("build") != "23" or manifest.get("signed") is not False
+            or manifest.get("build") != "24" or manifest.get("signed") is not False
             or manifest.get("deviceCompilationPassed") is not True or manifest.get("jvmIntegratedIntoReading") is not True
             or manifest.get("deviceValidationPassed") is not False):
-        raise ValueError("Expected this source's complete, unsigned build23 diagnostic manifest")
+        raise ValueError("Expected this source's complete, unsigned build24 diagnostic manifest")
     settings = config.inspect_settings(json.loads((BUILD / "build-settings.json").read_bytes()), with_jvm=True, diagnostic=True)
     if settings != manifest.get("actualBuildSettings"):
         raise ValueError("Diagnostic settings changed after compilation")
@@ -152,7 +180,7 @@ def validate_build(receipt):
         raise ValueError("Complete diagnostic runtime/bundle material changed")
     for bundle in [app, *config.extension_bundles(app).values()]:
         info = plistlib.loads((bundle / "Info.plist").read_bytes())
-        if info.get("YueduExperienceSourceCommit") != receipt["sourceCommit"] or info.get("CFBundleVersion") != "23":
+        if info.get("YueduExperienceSourceCommit") != receipt["sourceCommit"] or info.get("CFBundleVersion") != "24":
             raise ValueError("Diagnostic embedded bundle source/build differs")
     proof = json.loads((BUILD / "native-reuse.json").read_bytes())
     if (proof != json.loads((WORK / "native-restore.json").read_bytes())
@@ -215,7 +243,7 @@ def enrollment_project_overlay():
 def enrollment_source_stage(*, create=False):
     """Require exact source copies, including fixtures needed to compile the suite."""
     stage = full.checked(SIMULATOR_TESTS)
-    paths = (*ENROLLMENT_SOURCES, SDK_RESOURCE)
+    paths = (*FOCUSED_SOURCES, SDK_RESOURCE)
     if create:
         if stage.exists():
             raise ValueError("Enrollment source staging requires a fresh directory")
@@ -241,7 +269,7 @@ def enrollment_source_stage(*, create=False):
     if actual != {row["stagedPath"] for row in records}:
         raise ValueError("Unexpected file in focused enrollment test source group")
     return {"root": config.DIAGNOSTIC_AUTH_TEST_ROOT, "files": records,
-        "swiftSourceCount": len(ENROLLMENT_SOURCES), "completeAppAndExtensionsUnchanged": True}
+        "swiftSourceCount": len(FOCUSED_SOURCES), "completeAppAndExtensionsUnchanged": True}
 
 
 def prepare_simulator():
@@ -278,8 +306,10 @@ def prepare_simulator():
         regressionScope="Independent one-case owned-fixture Simulator regression after unsigned IPA export"))
 
 
-def verify_enrollment(summary, tree):
-    counts = native.smoke.verify_summary(summary, 1, 1)
+def verify_cases(summary, tree, required_cases):
+    if not required_cases or len(set(required_cases)) != len(required_cases):
+        raise ValueError("Controlled regression requires distinct nonempty case identities")
+    counts = native.smoke.verify_summary(summary, len(required_cases), len(required_cases))
     if not isinstance(tree, dict) or not isinstance(tree.get("testNodes"), list):
         raise ValueError("Enrollment regression requires an actual xcresult tests tree")
     cases = []
@@ -288,16 +318,21 @@ def verify_enrollment(summary, tree):
             raise ValueError("Invalid enrollment regression test node")
         if node.get("nodeType") == "Test Case":
             identifier = "/".join(node.get("nodeIdentifier", "").removesuffix("()").split("/")[-2:])
-            if identifier != ENROLLMENT_CASE or node.get("result") != "Passed":
+            if identifier not in required_cases or node.get("result") != "Passed":
                 raise ValueError("Unexpected or failing enrollment regression case")
             cases.append(identifier)
         for child in node.get("children", []):
             visit(child, depth + 1)
     for node in tree["testNodes"]:
         visit(node)
-    if cases != [ENROLLMENT_CASE]:
-        raise ValueError("Enrollment regression must execute its exact case once")
+    if sorted(cases) != sorted(required_cases):
+        raise ValueError("Controlled regression must execute each exact case once")
     return {"summary": counts, "cases": cases}
+
+
+def verify_enrollment(summary, tree):
+    # The authentication gate retains its original exact one-case requirement.
+    return verify_cases(summary, tree, (ENROLLMENT_CASE,))
 
 
 def run_enrollment():
@@ -347,9 +382,62 @@ def run_enrollment():
         regressionScope="Independent one-case Simulator regression; never S3 or actual renewal acceptance"))
 
 
+def run_source_change():
+    """Run the relevant source-picker suites separately, preserving shared-state isolation."""
+    receipt = check_binding()
+    prepared = json.loads((WORK / "enrollment-prepared.json").read_bytes())
+    if (any(prepared.get(key) != value for key, value in receipt.items())
+            or prepared.get("requiredCase") != ENROLLMENT_CASE
+            or prepared.get("testSourceStage") != enrollment_source_stage()
+            or prepared.get("fixture") != full.fact(full.checked(REPO / SDK_RESOURCE))
+            or prepared.get("producerManifest") != full.fact(PRODUCED / "sdk-produced-fixture-manifest.json")):
+        raise ValueError("Controlled regression source or fixture preparation changed")
+    with enrollment_project_overlay():
+        native.smoke.review_overlays(json.loads((SIMULATOR / "overlays.json").read_bytes()))
+    for label, cases in SOURCE_CHANGE_GROUPS.items():
+        prefix = "renewal-diagnostic-" + label
+        result_bundle = REPO / (".build/" + prefix + ".xcresult")
+        observed = None
+        try:
+            failure = None
+            try:
+                full.command(LOGS, prefix + "-test", ["bash", REPO / "scripts/xctest.sh",
+                    "-l", LOGS / (prefix + "-build.log"), "-t", "600", "--",
+                    "-configuration", "Debug", "-onlyUsePackageVersionsFromResolvedFile",
+                    "CODE_SIGNING_ALLOWED=YES", "CODE_SIGNING_REQUIRED=YES", "CODE_SIGN_IDENTITY=-",
+                    "CODE_SIGN_STYLE=Manual", "DEVELOPMENT_TEAM=", "CODE_SIGN_ENTITLEMENTS=",
+                    "GATEWAY_BASE_URL=", "YUEDU_LOCAL_EXPERIENCE=YES", "IPHONEOS_DEPLOYMENT_TARGET=18.0",
+                    "ENABLE_DEBUG_DYLIB=NO", "SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) DEBUG LEGADO_REQUIRE_NATIVE_MAINJS",
+                    "-resultBundlePath", result_bundle,
+                    *("-only-testing:yuedu appTests/" + case + "()" for case in cases)], 660)
+            except Exception as error:
+                failure = error
+            exports = {}
+            for kind in ("summary", "tests"):
+                full.command(LOGS, prefix + "-" + kind, ["xcrun", "xcresulttool", "get",
+                    "test-results", kind, "--path", result_bundle], 60)
+                path = full.checked(LOGS / (prefix + "-" + kind + ".log"))
+                if path.stat().st_size > 4_194_304:
+                    raise ValueError("Controlled xcresult export exceeds its fixed budget")
+                exports[kind] = json.loads(path.read_bytes())
+            observed = verify_cases(exports["summary"], exports["tests"], cases)
+            if failure is not None:
+                raise failure
+        except Exception:
+            full.write_new(LOGS / (prefix + "-result.json"), dict(receipt,
+                status="failed", requiredCases=list(cases), observed=observed,
+                physicalDeviceSourceSwitchVerified=False,
+                regressionScope="Controlled synthetic source-picker regression; not user-source network or physical-device acceptance"))
+            raise
+        full.write_new(LOGS / (prefix + "-result.json"), dict(receipt,
+            status="passed", requiredCases=list(cases), **observed,
+            physicalDeviceSourceSwitchVerified=False,
+            regressionScope="Controlled synthetic source-picker regression; not user-source network or physical-device acceptance"))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("phase", choices=("validate-tag", "restore", "prepare-device", "export-unsigned", "prepare-simulator", "run-enrollment"))
+    parser.add_argument("phase", choices=("validate-tag", "restore", "prepare-device", "export-unsigned", "prepare-simulator", "run-enrollment", "run-source-change"))
     phase = parser.parse_args().phase
     if phase == "validate-tag":
         print(json.dumps({"sourceCommit": source(), "diagnosticOnly": True, "releaseAcceptance": False, "S3Acceptance": "not_run"}))
@@ -361,6 +449,8 @@ def main():
         prepare_simulator()
     elif phase == "run-enrollment":
         run_enrollment()
+    elif phase == "run-source-change":
+        run_source_change()
     else:
         export_unsigned()
 

@@ -27,7 +27,7 @@ class DiagnosticGates(unittest.TestCase):
             "PLATFORM_NAME": "iphoneos", "FULL_PRODUCT_NAME": product, "PRODUCT_BUNDLE_IDENTIFIER": identifier,
             "ARCHS": "arm64", "CODE_SIGNING_ALLOWED": "NO", "CODE_SIGNING_REQUIRED": "NO", "ENABLE_DEBUG_DYLIB": "NO",
             "CODE_SIGN_ENTITLEMENTS": "", "GATEWAY_BASE_URL": "", "YUEDU_LOCAL_EXPERIENCE": "YES",
-            "TARGET_BUILD_DIR": str(root), "MARKETING_VERSION": "3.0", "CURRENT_PROJECT_VERSION": "23",
+            "TARGET_BUILD_DIR": str(root), "MARKETING_VERSION": "3.0", "CURRENT_PROJECT_VERSION": "24",
             "SWIFT_OPTIMIZATION_LEVEL": "-Onone", "SWIFT_COMPILATION_MODE": "singlefile",
             "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "", "GCC_PREPROCESSOR_DEFINITIONS": "NDEBUG=1",
             "OTHER_SWIFT_FLAGS": "-D YUEDU_LOCAL_EXPERIENCE"}}
@@ -120,11 +120,11 @@ class DiagnosticGates(unittest.TestCase):
             with self.assertRaises(ValueError):
                 config.project_overlay(changed, diagnostic_auth_tests=True)
 
-    def test_focused_authentication_source_closure_rejects_extra_changed_or_missing_inputs(self):
+    def test_focused_source_closure_rejects_extra_changed_or_missing_inputs(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp).resolve()
             stage = root / config.DIAGNOSTIC_AUTH_TEST_ROOT
-            for relative in diagnostic.ENROLLMENT_SOURCES:
+            for relative in diagnostic.FOCUSED_SOURCES:
                 target = root / relative; target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes((diagnostic.REPO / relative).read_bytes())
             resource = root / diagnostic.SDK_RESOURCE
@@ -133,12 +133,13 @@ class DiagnosticGates(unittest.TestCase):
             unrelated.write_text("import Testing\n@Test func unrelated() {}\n")
             with patch.object(diagnostic, "REPO", root), patch.object(diagnostic, "SIMULATOR_TESTS", stage):
                 record = diagnostic.enrollment_source_stage(create=True)
-                self.assertEqual(record["swiftSourceCount"], 4)
+                self.assertEqual(len(diagnostic.ENROLLMENT_SOURCES), 4)
+                self.assertEqual(record["swiftSourceCount"], 8)
                 self.assertEqual(record, diagnostic.enrollment_source_stage())
                 self.assertEqual({row["sourcePath"] for row in record["files"]},
-                    {*diagnostic.ENROLLMENT_SOURCES, diagnostic.SDK_RESOURCE})
+                    {*diagnostic.FOCUSED_SOURCES, diagnostic.SDK_RESOURCE})
                 self.assertEqual({path.name for path in stage.rglob("*.swift")},
-                    {Path(relative).name for relative in diagnostic.ENROLLMENT_SOURCES})
+                    {Path(relative).name for relative in diagnostic.FOCUSED_SOURCES})
                 self.assertTrue(unrelated.is_file())
                 self.assertFalse((stage / "yuedu appTests" / unrelated.name).exists())
                 with self.assertRaises(ValueError):
@@ -154,6 +155,32 @@ class DiagnosticGates(unittest.TestCase):
                 extra.unlink(); fixture.unlink()
                 with self.assertRaises(FileNotFoundError):
                     diagnostic.enrollment_source_stage()
+
+    def test_source_picker_case_gates_reject_missing_duplicate_wrong_failed_or_skipped_cases(self):
+        self.assertEqual([len(cases) for cases in diagnostic.SOURCE_CHANGE_GROUPS.values()], [7, 4, 11, 4])
+        self.assertEqual(len(set(diagnostic.FOCUSED_SOURCES)), 8)
+        for cases in diagnostic.SOURCE_CHANGE_GROUPS.values():
+            count = len(cases)
+            summary = {"totalTestCount": count, "passedTests": count, "failedTests": 0, "skippedTests": 0,
+                "expectedFailures": 0, "devicesAndConfigurations": [
+                    {"passedTests": count, "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}]}
+            nodes = [{"nodeType": "Test Case", "nodeIdentifier": "yuedu appTests/" + case + "()", "result": "Passed"}
+                     for case in cases]
+            tree = {"testNodes": [{"nodeType": "Test Suite", "children": list(reversed(nodes))}]}
+            self.assertEqual(set(diagnostic.verify_cases(summary, tree, cases)["cases"]), set(cases))
+            for invalid in (nodes[:-1], nodes + [nodes[0]], nodes[:-1] + [nodes[0]],
+                    [dict(nodes[0], result="Failed"), *nodes[1:]],
+                    [dict(nodes[0], nodeIdentifier="OtherTests/anotherCase()"), *nodes[1:]]):
+                with self.subTest(cases=cases, tree=invalid), self.assertRaises(ValueError):
+                    diagnostic.verify_cases(summary, {"testNodes": invalid}, cases)
+            for invalid in (dict(summary, passedTests=count - 1, skippedTests=1),
+                    dict(summary, expectedFailures=1), dict(summary, devicesAndConfigurations=[])):
+                with self.subTest(cases=cases, summary=invalid), self.assertRaises(ValueError):
+                    diagnostic.verify_cases(invalid, tree, cases)
+        with self.assertRaises(ValueError):
+            diagnostic.verify_cases({}, {}, ())
+        with self.assertRaises(ValueError):
+            diagnostic.verify_cases({}, {}, (diagnostic.ENROLLMENT_CASE, diagnostic.ENROLLMENT_CASE))
 
     def test_real_file_and_zip_budget_gates_and_old_s3_kind_rejection(self):
         with tempfile.TemporaryDirectory() as tmp:

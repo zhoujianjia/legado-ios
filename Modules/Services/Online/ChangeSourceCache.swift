@@ -7,23 +7,38 @@ import Foundation
 ///
 /// Also remembers which origins failed to switch (TOC fetch threw) so the list
 /// can flag them — failure flags survive a re-search of the same book.
-final class ChangeSourceCache {
+final class ChangeSourceCache: @unchecked Sendable {
     static let shared = ChangeSourceCache()
 
-    struct Entry: Codable {
+    struct Entry: Codable, Sendable {
         var origins: [BookOrigin]
         var failedKeys: [String]
         var timestamp: Date
+        // Missing in older entries, which may contain an automatically paused scan.
+        var completedAttemptSourceIDs: Set<UUID>? = nil
+        var excludedOriginKey: String? = nil
+        var scanCoverage: BookOriginSearchCoverage? = nil
     }
 
     private let queue = DispatchQueue(label: "com.yuedu.changeSourceCache")
+    private let directory: URL
+#if DEBUG
+    private var completedStoreEnqueuedForTesting: (@Sendable () -> Void)?
 
-    private lazy var directory: URL = {
-        let base = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+    convenience init(directory: URL, completedStoreEnqueuedForTesting: @escaping @Sendable () -> Void) {
+        self.init(directory: directory)
+        self.completedStoreEnqueuedForTesting = completedStoreEnqueuedForTesting
+    }
+
+    func enqueueWorkForTesting(_ work: @escaping @Sendable () -> Void) {
+        queue.async(execute: work)
+    }
+#endif
+
+    init(directory: URL? = nil) {
+        self.directory = directory ?? FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("ChangeSourceCache", isDirectory: true)
-        try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
-        return base
-    }()
+    }
 
     private func fileURL(for bookId: UUID) -> URL {
         directory.appendingPathComponent("\(bookId.uuidString).json")
@@ -31,10 +46,7 @@ final class ChangeSourceCache {
 
     /// Raw cached entry (results + failure flags), regardless of freshness.
     func entry(for bookId: UUID) -> Entry? {
-        queue.sync {
-            guard let data = try? Data(contentsOf: fileURL(for: bookId)) else { return nil }
-            return try? JSONDecoder().decode(Entry.self, from: data)
-        }
+        queue.sync { readEntry(for: bookId) }
     }
 
     /// Cached entry only if it exists and is within `days` (days <= 0 = disabled).
@@ -47,53 +59,137 @@ final class ChangeSourceCache {
 
     /// Replace the cached origin list, preserving any still-relevant failure flags.
     func store(origins: [BookOrigin], for bookId: UUID) {
-        let previousFailed = entry(for: bookId)?.failedKeys ?? []
-        // Keep the legacy URL-only key readable so caches written before source
-        // identity was added do not silently lose their failure markers.
-        let validKeys = Set(origins.flatMap { origin in
-            [Self.originKey(sourceId: origin.sourceId, bookUrl: origin.bookUrl),
-             Self.urlKey(origin.bookUrl)]
-        })
-        let entry = Entry(
-            origins: origins,
-            failedKeys: previousFailed.filter { validKeys.contains($0) },
-            timestamp: Date()
-        )
-        write(entry, for: bookId)
+        queue.sync { storeEntry(origins: origins, for: bookId, sourceIDs: nil, excludingOriginKey: nil, coverage: nil) }
+    }
+
+    struct SearchSnapshot: Sendable {
+        let origins: [BookOrigin]?
+        let failedKeys: Set<String>
+    }
+
+    /// Reader searches perform disk/decode/coverage work on the cache queue. A
+    /// legacy or partial entry can supply failure markers but cannot end a scan.
+    func readForSearch(for bookId: UUID, days: Int, sourceIDs: Set<UUID>,
+        excludingOriginKey: String, allowCached: Bool) async -> SearchSnapshot {
+        await withCheckedContinuation { continuation in
+            queue.async {
+                let entry = self.readEntry(for: bookId)
+                let usable = allowCached && days > 0 && entry?.completedAttemptSourceIDs == sourceIDs
+                    && entry?.scanCoverage?.completedAllAttempts == true
+                    && entry?.scanCoverage?.sourceCount == sourceIDs.count
+                    && entry?.scanCoverage?.attemptedSourceCount == sourceIDs.count
+                    && entry?.excludedOriginKey == excludingOriginKey
+                    && !(entry?.origins.isEmpty ?? true)
+                    && entry.map { Date().timeIntervalSince($0.timestamp) < TimeInterval(days) * 86_400 } == true
+                continuation.resume(returning: SearchSnapshot(origins: usable ? entry?.origins : nil,
+                    failedKeys: Set(entry?.failedKeys ?? [])))
+            }
+        }
+    }
+
+    /// Called only after every enabled source was attempted in this generation.
+    func storeCompleted(origins: [BookOrigin], for bookId: UUID, sourceIDs: Set<UUID>,
+        excludingOriginKey: String, coverage: BookOriginSearchCoverage) async {
+        guard !Task.isCancelled, coverage.completedAllAttempts, coverage.sourceCount == sourceIDs.count,
+              coverage.attemptedSourceCount == sourceIDs.count else { return }
+        let cancellation = PendingStoreCancellation()
+        await withTaskCancellationHandler(operation: {
+            await withCheckedContinuation { continuation in
+                queue.async {
+                    // After this check the serial queue owns the write. Any new
+                    // generation's queued write necessarily follows this one.
+                    if !cancellation.isCancelled {
+                        self.storeEntry(origins: origins, for: bookId, sourceIDs: sourceIDs,
+                            excludingOriginKey: excludingOriginKey, coverage: coverage)
+                    }
+                    continuation.resume()
+                }
+#if DEBUG
+                self.completedStoreEnqueuedForTesting?()
+#endif
+            }
+        }, onCancel: { cancellation.cancel() })
+    }
+
+    private final class PendingStoreCancellation: @unchecked Sendable {
+        private let lock = NSLock()
+        private var cancelled = false
+        var isCancelled: Bool {
+            lock.lock(); defer { lock.unlock() }
+            return cancelled
+        }
+        func cancel() {
+            lock.lock(); defer { lock.unlock() }
+            cancelled = true
+        }
     }
 
     /// Flag a source-qualified origin key as having failed to switch.
     func markFailed(originKey: String, for bookId: UUID) {
         guard !originKey.isEmpty else { return }
-        var entry = self.entry(for: bookId)
-            ?? Entry(origins: [], failedKeys: [], timestamp: Date())
-        if !entry.failedKeys.contains(originKey) {
+        queue.async {
+            var entry = self.readEntry(for: bookId)
+                ?? Entry(origins: [], failedKeys: [], timestamp: Date())
+            guard !entry.failedKeys.contains(originKey) else { return }
             entry.failedKeys.append(originKey)
+            self.writeEntry(entry, for: bookId)
         }
-        write(entry, for: bookId)
     }
 
     /// Clear a failure flag after that origin switched successfully. Without this a source
     /// that failed once stayed badged 載入失敗 forever, including in every later session,
     /// because `markFailed` only ever appended.
     func clearFailure(originKeys: [String], for bookId: UUID) {
-        let keys = Set(originKeys.filter { !$0.isEmpty })
-        guard !keys.isEmpty, var entry = self.entry(for: bookId) else { return }
-        let remaining = entry.failedKeys.filter { !keys.contains($0) }
-        guard remaining.count != entry.failedKeys.count else { return }
-        entry.failedKeys = remaining
-        write(entry, for: bookId)
+        queue.async {
+            let keys = Set(originKeys.filter { !$0.isEmpty })
+            guard !keys.isEmpty, var entry = self.readEntry(for: bookId) else { return }
+            let remaining = entry.failedKeys.filter { !keys.contains($0) }
+            guard remaining.count != entry.failedKeys.count else { return }
+            entry.failedKeys = remaining
+            self.writeEntry(entry, for: bookId)
+        }
     }
 
     func clear(for bookId: UUID) {
-        queue.sync { try? FileManager.default.removeItem(at: fileURL(for: bookId)) }
+        queue.sync {
+            do { try FileManager.default.removeItem(at: fileURL(for: bookId)) }
+            catch let error as CocoaError where error.code == .fileNoSuchFile { }
+            catch { AppLogger.parse("ChangeSource cache clear failed type=\(String(reflecting: type(of: error)))") }
+        }
     }
 
-    private func write(_ entry: Entry, for bookId: UUID) {
-        queue.sync {
-            guard let data = try? JSONEncoder().encode(entry) else { return }
-            try? data.write(to: fileURL(for: bookId), options: .atomic)
+    private func readEntry(for bookId: UUID) -> Entry? {
+        let started = SourcePerfTrace.now
+        var bytes = 0
+        defer { SourcePerfTrace.record("changeSource.cache.read", "bytes=\(bytes) main=\(Thread.isMainThread)", since: started) }
+        do {
+            let data = try Data(contentsOf: fileURL(for: bookId)); bytes = data.count
+            return try JSONDecoder().decode(Entry.self, from: data)
+        } catch let error as CocoaError where error.code == .fileReadNoSuchFile { return nil }
+        catch {
+            AppLogger.parse("ChangeSource cache read failed type=\(String(reflecting: type(of: error)))")
+            return nil
         }
+    }
+
+    private func storeEntry(origins: [BookOrigin], for bookId: UUID, sourceIDs: Set<UUID>?, excludingOriginKey: String?, coverage: BookOriginSearchCoverage?) {
+        let previousFailed = readEntry(for: bookId)?.failedKeys ?? []
+        let validKeys = Set(origins.flatMap { origin in
+            [Self.originKey(sourceId: origin.sourceId, bookUrl: origin.bookUrl), Self.urlKey(origin.bookUrl)]
+        })
+        let entry = Entry(origins: origins, failedKeys: previousFailed.filter { validKeys.contains($0) },
+            timestamp: Date(), completedAttemptSourceIDs: sourceIDs, excludedOriginKey: excludingOriginKey, scanCoverage: coverage)
+        writeEntry(entry, for: bookId)
+    }
+
+    private func writeEntry(_ entry: Entry, for bookId: UUID) {
+        let started = SourcePerfTrace.now
+        defer { SourcePerfTrace.record("changeSource.cache.write", "origins=\(entry.origins.count) main=\(Thread.isMainThread)", since: started) }
+        do {
+            let data = try JSONEncoder().encode(entry)
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            try data.write(to: fileURL(for: bookId), options: .atomic)
+        } catch { AppLogger.parse("ChangeSource cache write failed type=\(String(reflecting: type(of: error)))") }
     }
 
     /// Normalized book-URL key for matching origins (drops fragment, lowercased).

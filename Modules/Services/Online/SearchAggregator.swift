@@ -63,7 +63,7 @@ final class SearchBook: Identifiable {
     private var originPresentations: [SearchOriginPresentation]
     private var rowPresentation: RowPresentation
 
-    private struct RowPresentation {
+    fileprivate struct RowPresentation: Sendable {
         let displayName: String
         let displayIntro: String
         let contentKind: OnlineBookContentKind
@@ -284,6 +284,47 @@ final class SearchBook: Identifiable {
         )
     }
 
+    /// COW array snapshots only: source-order sorting and presentation alignment happen
+    /// in the publication worker, never by inserting into growing arrays on MainActor.
+    fileprivate struct SourceOrderSnapshot: Sendable {
+        let id: UUID
+        let name: String
+        let author: String
+        let normalizedName: String
+        let workKeys: SearchWorkKeys?
+        let origins: [BookOrigin]
+        let presentations: [SearchOriginPresentation]
+        let row: RowPresentation
+
+        func ordered(using order: BookSourceSearchOrder) -> Self {
+            let indices = order.orderedIndices(for: origins)
+            let prepared = indices.map {
+                PreparedSearchOrigin(origin: origins[$0], presentation: presentations[$0])
+            }
+            return Self(id: id, name: name, author: author, normalizedName: normalizedName,
+                        workKeys: workKeys, origins: prepared.map(\.origin),
+                        presentations: prepared.map(\.presentation),
+                        row: SearchBook.resolveRowPresentation(name: name, preparedOrigins: prepared))
+        }
+    }
+
+    fileprivate func sourceOrderSnapshot() -> SourceOrderSnapshot {
+        SourceOrderSnapshot(id: id, name: name, author: author, normalizedName: normalizedName,
+                            workKeys: workKeys, origins: origins,
+                            presentations: originPresentations, row: rowPresentation)
+    }
+
+    fileprivate init(sourceOrderSnapshot snapshot: SourceOrderSnapshot) {
+        id = snapshot.id
+        name = snapshot.name
+        author = snapshot.author
+        normalizedName = snapshot.normalizedName
+        workKeys = snapshot.workKeys
+        origins = snapshot.origins
+        originPresentations = snapshot.presentations
+        rowPresentation = snapshot.row
+    }
+
     private init(
         id: UUID,
         name: String,
@@ -467,6 +508,8 @@ class SearchAggregator: ObservableObject {
     /// provides one cancellable trailing update; the pure gate owns cadence and
     /// scene-activity policy.
     private var resultsPublicationTask: Task<Void, Never>?
+    private var sourceOrderPublicationTask: Task<Void, Never>?
+    private var sourceOrderPublicationSerial = 0
     private var publicationGate = SearchResultPublicationGate(minimumInterval: 0.5)
     private var publicationMetrics = ResultPublicationMetrics()
 
@@ -492,6 +535,7 @@ class SearchAggregator: ObservableObject {
     /// The current search's rule: 搜索's work rule, or 換源's (set per search).
     private var mergeRule = SearchMergeRule.work
     private var autoPausePolicy = SearchAutoPausePolicy(count: 0)
+    private var sourceOrder: BookSourceSearchOrder?
 
     /// Sources declaring `coverDecodeJs`, keyed by id — merged results register
     /// their cover URLs so the cover loader can decrypt them after download.
@@ -548,12 +592,12 @@ class SearchAggregator: ObservableObject {
         // Cancel previous search
         searchTask?.cancel()
 
-        // Skip sources cooling down from repeated timeouts — but only when
-        // searching across many sources. An explicitly chosen single source is
-        // always attempted (respect the user's pick).
+        // The search tab skips sources cooling down from repeated timeouts. A source
+        // picker asks every source in the user's range, including a previously slow pin.
+        // An explicitly chosen single source is always attempted.
         let activeSources: [BookSource]
         let skippedCount: Int
-        if sources.count > 1 {
+        if origin == .searchTab, sources.count > 1 {
             let split = SourceHealthStore.shared.partition(sources)
             activeSources = split.active
             skippedCount = split.skipped.count
@@ -565,6 +609,10 @@ class SearchAggregator: ObservableObject {
         // Reset state for a brand-new query.
         resultsPublicationTask?.cancel()
         resultsPublicationTask = nil
+        sourceOrderPublicationTask?.cancel()
+        sourceOrderPublicationTask = nil
+        sourceOrderPublicationSerial &+= 1
+        sourceOrder = nil
         let presentationIsActive = publicationGate.isActive
         publicationGate = SearchResultPublicationGate(
             minimumInterval: 0.5,
@@ -596,7 +644,9 @@ class SearchAggregator: ObservableObject {
                 .map { ($0.id, $0) }
         )
 
-        let autoPauseCount = NetworkSearchSettings.effectiveAutoPauseCount(
+        // Ask every enabled source once, even when a large pack or a fast ordinary
+        // source reaches the search-tab threshold (the picker sheet cannot resume).
+        let autoPauseCount = origin == .changeSource ? 0 : NetworkSearchSettings.effectiveAutoPauseCount(
             configured: GlobalSettings.shared.searchAutoPauseCount,
             sourceCount: activeSources.count
         )
@@ -642,8 +692,26 @@ class SearchAggregator: ObservableObject {
         let generation = searchGeneration
         let policy = applyAutoPause ? autoPausePolicy : SearchAutoPausePolicy(count: 0)
         let fanOut = fanOut(concurrency: maxConcurrency)
+        let needsSourceOrder: Bool
+        if case .changeSource = mergeRule {
+            needsSourceOrder = sourceOrder == nil
+        } else {
+            needsSourceOrder = false
+        }
 
         searchTask = Task { [weak self] in
+            if needsSourceOrder {
+                let worker = Task.detached(priority: .userInitiated) {
+                    BookSourceSearchOrder(sources: sources)
+                }
+                let order = await withTaskCancellationHandler {
+                    await worker.value
+                } onCancel: {
+                    worker.cancel()
+                }
+                guard !Task.isCancelled, let self, self.searchGeneration == generation else { return }
+                self.sourceOrder = order
+            }
             if applyAutoPause, let trace = self?.firstResultTrace, trace.generation == generation {
                 SourcePerfTrace.record("search.dispatch", trace.detail, since: trace.start, thresholdMs: 0)
             }
@@ -731,6 +799,8 @@ class SearchAggregator: ObservableObject {
         await runLaterPages(query: q, device: device, aggregator: aggregator)
         guard !Task.isCancelled, let finished = aggregator() else { return }
         finished.requestResultsPublication(force: true, reason: "complete")
+        await finished.sourceOrderPublicationTask?.value
+        guard !Task.isCancelled else { return }
         finished.isSearching = false
         SourceHealthStore.shared.flush()
         finished.logPublicationSummary(reason: "complete")
@@ -848,6 +918,9 @@ class SearchAggregator: ObservableObject {
         firstResultTrace = nil
         resultsPublicationTask?.cancel()
         resultsPublicationTask = nil
+        sourceOrderPublicationTask?.cancel()
+        sourceOrderPublicationTask = nil
+        sourceOrderPublicationSerial &+= 1
 
         internalResults = []
         resultsNeedSort = false
@@ -857,6 +930,7 @@ class SearchAggregator: ObservableObject {
         completedSourceIds = []
         currentQuery = ""
         autoPausePolicy = SearchAutoPausePolicy(count: 0)
+        sourceOrder = nil
         coverDecodeSourcesById = [:]
         searchPage = 1
         pagedSourceIds = []
@@ -876,12 +950,22 @@ class SearchAggregator: ObservableObject {
     /// inactive states. Network work may continue in the background, but an
     /// inactive scene never receives a result-list assignment.
     func setResultPresentationActive(_ active: Bool) {
+        let cancelledPendingOrder = !active && sourceOrderPublicationTask != nil
         if !active {
             resultsPublicationTask?.cancel()
             resultsPublicationTask = nil
+            sourceOrderPublicationTask?.cancel()
+            sourceOrderPublicationTask = nil
+            sourceOrderPublicationSerial &+= 1
         }
 
-        guard publicationGate.setActive(active) == .publishNow else { return }
+        let decision = publicationGate.setActive(active)
+        if cancelledPendingOrder {
+            // Reserving a publication's cadence is not delivery. A scene change can
+            // cancel its worker, so retain that snapshot as pending for reactivation.
+            _ = publicationGate.request(now: ProcessInfo.processInfo.systemUptime)
+        }
+        guard decision == .publishNow else { return }
         publishResultsNow(reason: "resume")
     }
 
@@ -938,15 +1022,64 @@ class SearchAggregator: ObservableObject {
             resultsNeedSort = false
             sortResults(query: currentQuery)
         }
+        if case .changeSource = mergeRule, let sourceOrder, !internalResults.isEmpty {
+            publishSourceOrderedResults(using: sourceOrder, reason: reason)
+            return
+        }
         let publishedResults = internalResults.map { $0.publicationSnapshot() }
+        publish(publishedResults, progress: internalProgress, reason: reason, startedAt: now)
+    }
+
+    private func publishSourceOrderedResults(using order: BookSourceSearchOrder, reason: String) {
+        sourceOrderPublicationTask?.cancel()
+        sourceOrderPublicationSerial &+= 1
+        let serial = sourceOrderPublicationSerial
+        let generation = searchGeneration
+        let snapshots = internalResults.map { $0.sourceOrderSnapshot() }
+        let progressSnapshot = internalProgress
+        let startedAt = SourcePerfTrace.now
+        // Record the request now so intermediate batches still obey the existing cadence.
+        // The worker publishes only while the same search, scene and request are current.
+        publicationGate.didPublish(at: startedAt)
+        sourceOrderPublicationTask = Task { [weak self] in
+            let worker = Task.detached(priority: .userInitiated) { () -> [SearchBook.SourceOrderSnapshot]? in
+                SourcePerfTrace.span(
+                    "search.sourceOrder.publication",
+                    "rows=\(snapshots.count) main=\(Thread.isMainThread)"
+                ) {
+                    var ordered: [SearchBook.SourceOrderSnapshot] = []
+                    ordered.reserveCapacity(snapshots.count)
+                    for snapshot in snapshots {
+                        guard !Task.isCancelled else { return nil }
+                        ordered.append(snapshot.ordered(using: order))
+                    }
+                    return Task.isCancelled ? nil : ordered
+                }
+            }
+            let ordered = await withTaskCancellationHandler {
+                await worker.value
+            } onCancel: {
+                worker.cancel()
+            }
+            guard !Task.isCancelled, let ordered, let self,
+                  self.searchGeneration == generation,
+                  self.sourceOrderPublicationSerial == serial,
+                  self.publicationGate.isActive else { return }
+            self.sourceOrderPublicationTask = nil
+            self.publish(ordered.map { SearchBook(sourceOrderSnapshot: $0) },
+                         progress: progressSnapshot, reason: reason, startedAt: startedAt)
+        }
+    }
+
+    private func publish(_ publishedResults: [SearchBook], progress progressSnapshot: SearchProgress,
+                         reason: String, startedAt now: TimeInterval) {
         objectWillChange.send()
         results = publishedResults
         publicationRevision &+= 1
-        progress = internalProgress
-        publicationGate.didPublish(at: now)
+        progress = progressSnapshot
+        publicationGate.didPublish(at: ProcessInfo.processInfo.systemUptime)
         publicationMetrics.publications += 1
-        // The sort and the snapshots run on the main actor: timed, since 搜索's later pages
-        // multiply the rows (search 9e).
+        // Includes source-picker worker time; search-tab sorting keeps its existing path.
         SourcePerfTrace.record(
             "search.listPublish",
             "rows=\(results.count) reason=\(reason) publications=\(publicationMetrics.publications)",

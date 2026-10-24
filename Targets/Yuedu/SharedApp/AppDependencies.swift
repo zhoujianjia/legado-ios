@@ -57,6 +57,14 @@ protocol BookSourceFetching {
         earlyFilter: ((_ name: String, _ author: String) -> Bool)?
     ) async throws -> [OnlineBook]
 
+    /// Preserve a reported failure rather than relabeling it as a valid empty
+    /// page when a cross-source scan records its attempt coverage.
+    func searchOutcome(
+        query: String,
+        in source: BookSource,
+        earlyFilter: ((_ name: String, _ author: String) -> Bool)?
+    ) async throws -> BookSourceSearchOutcome
+
     func loadChapterPackageSync(
         bookId: UUID,
         chapterIndex: Int,
@@ -74,6 +82,11 @@ protocol BookSourceFetching {
 
 extension BookSourceFetching {
     @MainActor func noteOriginalExploreAppPause() {}
+
+    func searchOutcome(query: String, in source: BookSource,
+        earlyFilter: ((_ name: String, _ author: String) -> Bool)?) async throws -> BookSourceSearchOutcome {
+        BookSourceSearchOutcome(books: try await search(query: query, in: source, earlyFilter: earlyFilter))
+    }
 
     /// Cache lookup is an optional acceleration capability. Test doubles and
     /// alternate implementations without persistent TOC storage skip it and
@@ -202,6 +215,11 @@ struct LiveWebContentFetcher: WebContentFetching {
 
 struct LiveBookSourceFetcher: BookSourceFetching {
     let bookSourceFetcher: BookSourceFetcher
+
+    func searchOutcome(query: String, in source: BookSource,
+        earlyFilter: ((_ name: String, _ author: String) -> Bool)?) async throws -> BookSourceSearchOutcome {
+        try await bookSourceFetcher.searchOutcome(query: query, in: source, earlyFilter: earlyFilter)
+    }
 
     @MainActor func noteOriginalExploreAppPause() {
         bookSourceFetcher.noteOriginalExploreAppPause()

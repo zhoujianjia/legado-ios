@@ -650,7 +650,7 @@ extension ReaderView {
         readerViewModel.loadOtherOrigins(
             book: b,
             currentSourceId: currentSourceId,
-            enabledSources: BookSourceStore.shared.enabledSources,
+            enabledSources: BookSourceStore.shared.sources,
             store: store,
             forceRefresh: forceRefresh
         )

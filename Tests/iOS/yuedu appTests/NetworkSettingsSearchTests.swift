@@ -113,43 +113,123 @@ struct NetworkSettingsSearchTests {
     }
 
     @MainActor
-    @Test("change source search auto pauses after configured exact result count")
-    func changeSourceAutoPauses() async throws {
+    @Test("reader source change attempts all enabled sources despite search auto pause")
+    func changeSourceDoesNotAutoPause() async throws {
         let previousConcurrency = GlobalSettings.shared.searchConcurrency
         let previousAutoPauseCount = GlobalSettings.shared.searchAutoPauseCount
+        let previousWarm = GlobalSettings.shared.changeSourceLoadToc
+        let previousDays = GlobalSettings.shared.searchCacheDays
         defer {
             GlobalSettings.shared.searchConcurrency = previousConcurrency
             GlobalSettings.shared.searchAutoPauseCount = previousAutoPauseCount
+            GlobalSettings.shared.changeSourceLoadToc = previousWarm
+            GlobalSettings.shared.searchCacheDays = previousDays
         }
         GlobalSettings.shared.searchConcurrency = 1
-        GlobalSettings.shared.searchAutoPauseCount = 1
-
-        let sourceA = makeSource(name: "A", url: "https://example.com/a")
-        let sourceB = makeSource(name: "B", url: "https://example.com/b")
-        let fetcher = CountingBookSourceFetcher()
-        let viewModel = ReaderViewModel(
-            chapterFetcher: NoopChapterFetcher(),
-            bookCoordinator: NoopOnlineBookCoordinator(),
-            bookSourceFetcher: fetcher
-        )
-        var book = ReadingBook(title: "Issue32", author: "Author", contentFilename: "")
-        book.isOnline = true
-        book.bookInfoURL = "https://example.com/current"
-
-        viewModel.loadOtherOrigins(
-            book: book,
-            currentSourceId: sourceA.id,
-            enabledSources: [sourceA, sourceB],
-            store: BookStore(),
-            forceRefresh: true
-        )
-
-        try await waitUntil {
-            !viewModel.changeSourceLoading
+        GlobalSettings.shared.changeSourceLoadToc = false
+        GlobalSettings.shared.searchCacheDays = 5
+        for pauseCount in [0, 1] {
+            GlobalSettings.shared.searchAutoPauseCount = pauseCount
+            let sources = (0..<301).map { makeSource(name: "Ordered \($0)", url: "https://example.com/source-\($0)") }
+            var disabled = makeSource(name: "Disabled", url: "https://example.com/disabled")
+            disabled.enabled = false
+            let fetcher = CountingBookSourceFetcher()
+            let viewModel = ReaderViewModel(chapterFetcher: NoopChapterFetcher(),
+                bookCoordinator: NoopOnlineBookCoordinator(), bookSourceFetcher: fetcher)
+            var book = ReadingBook(title: "Issue32", author: "Author", contentFilename: "")
+            book.isOnline = true
+            book.bookInfoURL = "https://example.com/current"
+            defer { ChangeSourceCache.shared.clear(for: book.id) }
+            if pauseCount == 0 {
+                let legacy = sources.prefix(10).map { source in
+                    BookOrigin(sourceId: source.id, sourceName: source.bookSourceName,
+                        bookUrl: "\(source.bookSourceUrl)/book", tocUrl: "\(source.bookSourceUrl)/toc",
+                        coverUrl: "", intro: "", lastChapter: "", wordCount: "", kind: "", runtimeVariables: nil)
+                }
+                ChangeSourceCache.shared.store(origins: legacy, for: book.id)
+            }
+            viewModel.loadOtherOrigins(book: book, currentSourceId: sources[0].id,
+                enabledSources: sources + [disabled], store: BookStore(), forceRefresh: pauseCount != 0)
+            await viewModel.waitForChangeSourceSearchForTesting()
+            #expect(!viewModel.changeSourceLoading)
+            #expect(viewModel.changeSourceOrigins.map(\.sourceId) == sources.map(\.id))
+            #expect(fetcher.queriedSourceIDs == sources.map(\.id))
+            let cached = try #require(ChangeSourceCache.shared.entry(for: book.id))
+            #expect(cached.completedAttemptSourceIDs == Set(sources.map(\.id)))
+            #expect(cached.scanCoverage?.completedAllAttempts == true)
+            #expect(cached.scanCoverage?.attemptedSourceCount == 301)
         }
+    }
 
-        #expect(viewModel.changeSourceOrigins.count == 1)
-        #expect(fetcher.searchCallCount == 1)
+    @MainActor
+    @Test("complete reader cache follows reordered sources and adding a source starts a scan")
+    func changeSourceCacheRespectsCurrentOrderAndCoverage() async throws {
+        let previousConcurrency = GlobalSettings.shared.searchConcurrency
+        let previousDays = GlobalSettings.shared.searchCacheDays
+        let previousWarm = GlobalSettings.shared.changeSourceLoadToc
+        defer {
+            GlobalSettings.shared.searchConcurrency = previousConcurrency
+            GlobalSettings.shared.searchCacheDays = previousDays
+            GlobalSettings.shared.changeSourceLoadToc = previousWarm
+        }
+        GlobalSettings.shared.searchConcurrency = 2
+        GlobalSettings.shared.searchCacheDays = 5
+        GlobalSettings.shared.changeSourceLoadToc = false
+        let sources = (0..<3).map { makeSource(name: "Order \($0)", url: "https://example.com/order-\($0)") }
+        let fetcher = CountingBookSourceFetcher()
+        let viewModel = ReaderViewModel(chapterFetcher: NoopChapterFetcher(),
+            bookCoordinator: NoopOnlineBookCoordinator(), bookSourceFetcher: fetcher)
+        let book = ReadingBook(title: "Cached", author: "Author", contentFilename: "")
+        let currentSourceId = UUID()
+        defer { ChangeSourceCache.shared.clear(for: book.id) }
+        viewModel.loadOtherOrigins(book: book, currentSourceId: currentSourceId,
+            enabledSources: Array(sources.prefix(2)), store: BookStore(), forceRefresh: true)
+        await viewModel.waitForChangeSourceSearchForTesting()
+        #expect(fetcher.searchCallCount == 2)
+        viewModel.loadOtherOrigins(book: book, currentSourceId: currentSourceId,
+            enabledSources: [sources[1], sources[0]], store: BookStore())
+        await viewModel.waitForChangeSourceSearchForTesting()
+        #expect(fetcher.searchCallCount == 2)
+        #expect(viewModel.changeSourceOrigins.map(\.sourceId) == [sources[1].id, sources[0].id])
+        viewModel.loadOtherOrigins(book: book, currentSourceId: currentSourceId,
+            enabledSources: [sources[2], sources[1], sources[0]], store: BookStore())
+        await viewModel.waitForChangeSourceSearchForTesting()
+        #expect(fetcher.searchCallCount == 5)
+        #expect(viewModel.changeSourceOrigins.map(\.sourceId) == [sources[2].id, sources[1].id, sources[0].id])
+    }
+
+    @MainActor
+    @Test("a cancelled old source scan cannot replace the restarted scan or its complete cache")
+    func changeSourceRestartRejectsLateOldResult() async throws {
+        let previousDays = GlobalSettings.shared.searchCacheDays
+        let previousWarm = GlobalSettings.shared.changeSourceLoadToc
+        defer {
+            GlobalSettings.shared.searchCacheDays = previousDays
+            GlobalSettings.shared.changeSourceLoadToc = previousWarm
+        }
+        GlobalSettings.shared.searchCacheDays = 5
+        GlobalSettings.shared.changeSourceLoadToc = false
+        let oldSource = makeSource(name: "Old", url: "https://example.com/old")
+        let newSource = makeSource(name: "New", url: "https://example.com/new")
+        let gate = SourceSearchGate()
+        let fetcher = CountingBookSourceFetcher(gate: gate, heldSourceId: oldSource.id)
+        let viewModel = ReaderViewModel(chapterFetcher: NoopChapterFetcher(),
+            bookCoordinator: NoopOnlineBookCoordinator(), bookSourceFetcher: fetcher)
+        let book = ReadingBook(title: "Restart", author: "Author", contentFilename: "")
+        defer { ChangeSourceCache.shared.clear(for: book.id) }
+        let current = UUID()
+        viewModel.loadOtherOrigins(book: book, currentSourceId: current,
+            enabledSources: [oldSource], store: BookStore(), forceRefresh: true)
+        guard let oldTask = viewModel.changeSourceSearchTaskForTesting() else { Issue.record("Missing old search task"); return }
+        await gate.waitUntilHeld()
+        viewModel.loadOtherOrigins(book: book, currentSourceId: current,
+            enabledSources: [newSource], store: BookStore(), forceRefresh: true)
+        await viewModel.waitForChangeSourceSearchForTesting()
+        #expect(viewModel.changeSourceOrigins.map(\.sourceId) == [newSource.id])
+        await gate.release()
+        await oldTask.value
+        #expect(viewModel.changeSourceOrigins.map(\.sourceId) == [newSource.id])
+        #expect(ChangeSourceCache.shared.entry(for: book.id)?.completedAttemptSourceIDs == [newSource.id])
     }
 
     @MainActor
@@ -184,7 +264,10 @@ struct NetworkSettingsSearchTests {
             kind: "",
             runtimeVariables: nil
         )
-        ChangeSourceCache.shared.store(origins: [origin], for: bookId)
+        let currentSourceId = UUID()
+        await ChangeSourceCache.shared.storeCompleted(origins: [origin], for: bookId,
+            sourceIDs: [source.id], excludingOriginKey: ChangeSourceCache.originKey(sourceId: currentSourceId, bookUrl: book.bookInfoURL),
+            coverage: BookOriginSearchCoverage(sourceCount: 1, completedAllAttempts: true, attemptedSourceCount: 1, resultSourceCount: 1))
 
         let fetcher = CancellableTOCFetcher()
         let viewModel = ReaderViewModel(
@@ -194,7 +277,7 @@ struct NetworkSettingsSearchTests {
         )
         viewModel.loadOtherOrigins(
             book: book,
-            currentSourceId: UUID(),
+            currentSourceId: currentSourceId,
             enabledSources: [source],
             store: BookStore()
         )
@@ -340,9 +423,18 @@ private actor CancellableTOCFetcher: BookSourceFetching {
     }
 }
 
-private final class CountingBookSourceFetcher: BookSourceFetching {
+private final class CountingBookSourceFetcher: BookSourceFetching, @unchecked Sendable {
     private let lock = NSLock()
     private var calls = 0
+    private var queried: [UUID] = []
+    private let gate: SourceSearchGate?
+    private let heldSourceId: UUID?
+
+    init(gate: SourceSearchGate? = nil, heldSourceId: UUID? = nil) {
+        self.gate = gate; self.heldSourceId = heldSourceId
+    }
+
+    var queriedSourceIDs: [UUID] { lock.withLock { queried } }
 
     var searchCallCount: Int {
         lock.lock()
@@ -382,7 +474,8 @@ private final class CountingBookSourceFetcher: BookSourceFetching {
     func clearAllChapterCache(bookId: UUID) {}
 
     func search(query: String, in source: BookSource) async throws -> [OnlineBook] {
-        lock.withLock { calls += 1 }
+        lock.withLock { calls += 1; queried.append(source.id) }
+        if source.id == heldSourceId { await gate?.hold() }
         return [
             OnlineBook(
                 name: query,
@@ -416,6 +509,31 @@ private final class CountingBookSourceFetcher: BookSourceFetching {
         expectedTOCTitle: String?
     ) -> String? {
         nil
+    }
+}
+
+/// A controlled late reply, intentionally independent of cancellation so the
+/// reader's generation barrier is exercised without sleeping for publication.
+private actor SourceSearchGate {
+    private var held = false
+    private var released = false
+    private var answer: CheckedContinuation<Void, Never>?
+    private var started: [CheckedContinuation<Void, Never>] = []
+    func hold() async {
+        held = true
+        let waiters = started; started.removeAll()
+        waiters.forEach { $0.resume() }
+        guard !released else { return }
+        await withCheckedContinuation { answer = $0 }
+    }
+    func waitUntilHeld() async {
+        guard !held else { return }
+        await withCheckedContinuation { started.append($0) }
+    }
+    func release() {
+        released = true
+        let continuation = answer; answer = nil
+        continuation?.resume()
     }
 }
 

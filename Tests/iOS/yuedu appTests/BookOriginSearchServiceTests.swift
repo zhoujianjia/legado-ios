@@ -113,7 +113,7 @@ struct BookOriginSearchServiceTests {
         var batches: [[BookOrigin]] = []
 
         // One source at a time, so the order of answers is the order of sources.
-        await BookOriginSearchService.stream(
+        let coverage = await BookOriginSearchService.stream(
             title: "三體", author: "劉慈欣", sources: sources, concurrency: 1, fetcher: fetcher,
             shouldStop: { $0 >= 2 },
             onBatch: { batches.append($0) }
@@ -121,6 +121,8 @@ struct BookOriginSearchServiceTests {
 
         #expect(batches.map(\.count) == [1, 1])
         #expect(fetcher.queriedSourceURLs == sources.prefix(2).map(\.bookSourceUrl))
+        #expect(!coverage.completedAllAttempts)
+        #expect(coverage.attemptedSourceCount == 2)
     }
 
     @Test("each source with matches is delivered as one batch")
@@ -172,8 +174,8 @@ struct BookOriginSearchServiceTests {
 
     @Test("a source that throws answers nil, the same as one that times out")
     func thrownErrorLooksLikeATimeout() async {
-        // Current behavior: `searchSourceWithTimeout` discards the error with `try?`, so
-        // 換源 cannot tell a failed source from a slow one (Phase 0 plan, follow-up 1).
+        // The compatibility helper still returns nil for both; the complete
+        // scan's coverage now records failure and timeout separately.
         let source = makeSource("throws")
         let fetcher = ScriptedOriginFetcher([
             source.bookSourceUrl: .failure(URLError(.badServerResponse)),
@@ -198,6 +200,42 @@ struct BookOriginSearchServiceTests {
         )
 
         #expect(books == nil)
+    }
+
+    @Test("complete attempt coverage distinguishes empty results, reported failures, throws and timeouts")
+    func scanCoveragePreservesFailureAndTimeoutFacts() async {
+        let result = makeSource("coverage-result"), empty = makeSource("coverage-empty")
+        let reported = makeSource("coverage-reported"), thrown = makeSource("coverage-thrown")
+        let slow = makeSource("coverage-slow")
+        let sources = [result, empty, reported, thrown, slow]
+        let health = SourceHealthStore.shared
+        for _ in 0..<3 { health.recordFailure(reported.id) }
+        defer { health.recordSuccess(reported.id) }
+        #expect(health.isInCooldown(reported.id))
+        let fetcher = ScriptedOriginFetcher([
+            result.bookSourceUrl: .success([book("三體", "劉慈欣", in: result)]),
+            empty.bookSourceUrl: .success([]),
+            thrown.bookSourceUrl: .failure(URLError(.badServerResponse))
+        ], waitsUntilCancelled: [slow.bookSourceUrl], reportedFailures: [reported.bookSourceUrl])
+        var origins: [BookOrigin] = []
+        var answered = 0
+        let coverage = await BookOriginSearchService.stream(title: "三體", author: "劉慈欣",
+            sources: sources, concurrency: 2, fetcher: fetcher, sourceTimeout: 1,
+            onSourceAnswered: { answered += 1 },
+            onBatch: { origins += $0 })
+        #expect(coverage.completedAllAttempts)
+        #expect(coverage.sourceCount == 5)
+        #expect(coverage.attemptedSourceCount == 5)
+        #expect(coverage.resultSourceCount == 1)
+        #expect(coverage.emptySourceCount == 1)
+        #expect(coverage.failedSourceCount == 2)
+        #expect(coverage.timedOutSourceCount == 1)
+        #expect(coverage.cancelledSourceCount == 0)
+        #expect(answered == 2, "only the result and legitimate empty page answered")
+        #expect(health.isInCooldown(reported.id), "a reported failure cannot clear health strikes")
+        #expect(health.responseSortKey(reported.id) == Double.greatestFiniteMagnitude)
+        #expect(origins.map(\.sourceId) == [result.id])
+        #expect(Set(fetcher.queriedSourceURLs) == Set(sources.map(\.bookSourceUrl)))
     }
 
     // MARK: - Helpers
@@ -250,12 +288,23 @@ struct BookOriginSearchServiceTests {
 private final class ScriptedOriginFetcher: BookSourceFetching, @unchecked Sendable {
     private let script: [String: Result<[OnlineBook], Error>]
     private let waitsUntilCancelled: Set<String>
+    private let reportedFailures: Set<String>
     private let lock = NSLock()
     private var queried: [String] = []
 
-    init(_ script: [String: Result<[OnlineBook], Error>], waitsUntilCancelled: Set<String> = []) {
+    init(_ script: [String: Result<[OnlineBook], Error>], waitsUntilCancelled: Set<String> = [], reportedFailures: Set<String> = []) {
         self.script = script
         self.waitsUntilCancelled = waitsUntilCancelled
+        self.reportedFailures = reportedFailures
+    }
+
+    func searchOutcome(query: String, in source: BookSource,
+        earlyFilter: ((_ name: String, _ author: String) -> Bool)?) async throws -> BookSourceSearchOutcome {
+        if reportedFailures.contains(source.bookSourceUrl) {
+            lock.withLock { queried.append(source.bookSourceUrl) }
+            return .failed(.http(503))
+        }
+        return BookSourceSearchOutcome(books: try await search(query: query, in: source, earlyFilter: earlyFilter))
     }
 
     var queriedSourceURLs: [String] {

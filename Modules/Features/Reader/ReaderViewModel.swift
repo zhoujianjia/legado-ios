@@ -51,6 +51,8 @@ final class ReaderViewModel: ObservableObject {
     private var paragraphReviewInspectionAttempted: Set<CachedChapterInspectionKey> = []
     /// The current 換源 (source switch) search, so a re-open cancels the previous run.
     private var changeSourceSearchTask: Task<Void, Never>?
+    private var changeSourceGeneration = UUID()
+    private var changeSourceWork: ReaderSourceChangeWork?
     /// The switch the user just tapped, while its TOC is being prepared. Drives the sheet's
     /// cancellable loading state (Legado's `WaitDialog`), and holding the task is what makes
     /// cancelling possible at all.
@@ -304,103 +306,67 @@ final class ReaderViewModel: ObservableObject {
         store: BookStore,
         forceRefresh: Bool = false
     ) {
+        changeSourceSearchTask?.cancel()
+        tocWarmTask?.cancel()
+        let generation = UUID()
+        changeSourceGeneration = generation
+        let work = ReaderSourceChangeWork()
+        changeSourceWork = work
         let bookId = book.id
-
-        // Cache hit: reuse recent results so reopening the sheet is instant.
-        if !forceRefresh,
-           let cached = ChangeSourceCache.shared.freshEntry(
-               for: bookId, days: GlobalSettings.shared.searchCacheDays) {
-            changeSourceSearchTask?.cancel()
-            changeSourceOrigins = cached.origins
-            changeSourceFailedKeys = Set(cached.failedKeys)
-            changeSourceLoading = false
-            changeSourceError = nil
-            sortChangeSourceOriginsByHealth()
-            warmSearchTOCCacheIfEnabled()
-            return
-        }
-
+        let cacheDays = GlobalSettings.shared.searchCacheDays
+        let concurrency = NetworkSearchSettings.clampedConcurrency(GlobalSettings.shared.searchConcurrency)
         changeSourceLoading = true
         changeSourceError = nil
         changeSourceOrigins = []
-        // Keep prior failure flags across a re-search so a known-bad source stays marked.
-        changeSourceFailedKeys = Set(ChangeSourceCache.shared.entry(for: bookId)?.failedKeys ?? [])
+        changeSourceFailedKeys = []
         let bookTitle = book.title
         let bookAuthor = book.author
         let currentOriginKey = ChangeSourceCache.originKey(
             sourceId: currentSourceId, bookUrl: book.bookInfoURL)
-        // Search ALL enabled sources, including the current one. Aggregation sources
-        // expose several "channels" for the same book under a single sourceId, and a
-        // user may have only that one source installed — filtering by sourceId would
-        // then yield zero results. We dedup by source-qualified origin, so sibling
-        // sources that share one site URL remain independently switchable.
-        let sources = enabledSources
-        let concurrency = NetworkSearchSettings.clampedConcurrency(GlobalSettings.shared.searchConcurrency)
-        let autoPauseCount = NetworkSearchSettings.effectiveAutoPauseCount(
-            configured: GlobalSettings.shared.searchAutoPauseCount,
-            sourceCount: sources.count
-        )
-        let autoPausePolicy = SearchAutoPausePolicy(count: autoPauseCount)
-
-        changeSourceSearchTask?.cancel()
-        tocWarmTask?.cancel()
+        let fetcher = bookSourceFetcher
         changeSourceSearchTask = Task { [weak self] in
-            guard let self else { return }
-            let bookSourceFetcher = self.bookSourceFetcher
-
-            // Fan out with a bounded active window (shared with 封面搜索). Results
-            // are consumed on the MainActor as they stream in, so the list fills
-            // progressively and auto-pause can stop enqueueing untouched sources.
-            await BookOriginSearchService.stream(
+            let prepared = await work.prepare(sources: enabledSources, bookId: bookId,
+                cacheDays: cacheDays, excludingOriginKey: currentOriginKey, forceRefresh: forceRefresh)
+            guard let self, !Task.isCancelled, self.changeSourceGeneration == generation else { return }
+            self.changeSourceFailedKeys = prepared.failedKeys
+            if let cached = prepared.cachedOrigins {
+                self.changeSourceOrigins = cached
+                self.changeSourceLoading = false
+                self.warmSearchTOCCacheIfEnabled()
+                return
+            }
+            // Try every enabled source in user order, including the current
+            // source's other channels. The search-page pause setting does not
+            // truncate a reader's list of switchable origins.
+            let coverage = await BookOriginSearchService.stream(
                 title: bookTitle,
                 author: bookAuthor,
-                sources: sources,
+                sources: prepared.sources,
                 concurrency: concurrency,
-                fetcher: bookSourceFetcher,
+                fetcher: fetcher,
                 excludingOriginKey: currentOriginKey,
-                shouldStop: { matchCount in
-                    autoPausePolicy.shouldPause(exactCount: matchCount, fuzzyCount: 0)
-                },
-                onBatch: { batchOrigins in
-                    self.changeSourceOrigins.append(contentsOf: batchOrigins)
+                onBatch: { [weak self] batchOrigins in
+                    guard let self, !Task.isCancelled, self.changeSourceGeneration == generation else { return }
+                    let origins = await work.append(batchOrigins)
+                    guard !Task.isCancelled, self.changeSourceGeneration == generation else { return }
+                    self.changeSourceOrigins = origins
                 }
             )
-
-            if Task.isCancelled { return }
+            guard coverage.completedAllAttempts, !Task.isCancelled, self.changeSourceGeneration == generation else { return }
+            await work.storeCompleted(bookId: bookId, excludingOriginKey: currentOriginKey, coverage: coverage)
+            guard !Task.isCancelled, self.changeSourceGeneration == generation else { return }
             self.changeSourceLoading = false
-            // Fastest sources first (respondTime EMA), then persist that order so
-            // the cached list reopens pre-sorted and TOC warm-up hits the best ones.
-            self.sortChangeSourceOriginsByHealth()
-            // Persist results so reopening the sheet is instant (honors 快取天數).
-            ChangeSourceCache.shared.store(origins: self.changeSourceOrigins, for: bookId)
-            // Only when 搜索時載入目錄 is on; otherwise a tap fetches its own TOC.
             self.warmSearchTOCCacheIfEnabled()
         }
     }
 
-    /// Orders 換源 candidates: origins that previously failed to switch sink to
-    /// the bottom; the rest sort by their source's measured response time
-    /// (unmeasured sources keep arrival order after measured ones).
-    private func sortChangeSourceOriginsByHealth() {
-        guard changeSourceOrigins.count > 1 else { return }
-        let failed = changeSourceFailedKeys
-        let health = SourceHealthStore.shared
-        let decorated = changeSourceOrigins.enumerated().map { offset, origin in
-            (
-                offset: offset,
-                origin: origin,
-                isFailed: failed.contains(ChangeSourceCache.originKey(
-                    sourceId: origin.sourceId, bookUrl: origin.bookUrl))
-                    || failed.contains(ChangeSourceCache.urlKey(origin.bookUrl)),
-                speed: health.responseSortKey(origin.sourceId)
-            )
-        }
-        changeSourceOrigins = decorated.sorted { a, b in
-            if a.isFailed != b.isFailed { return !a.isFailed }
-            if a.speed != b.speed { return a.speed < b.speed }
-            return a.offset < b.offset
-        }.map(\.origin)
+    #if DEBUG
+    /// Tests await the actual search task instead of sleeping for publication.
+    func waitForChangeSourceSearchForTesting() async {
+        await changeSourceSearchTask?.value
     }
+    func changeSourceSearchTaskForTesting() -> Task<Void, Never>? { changeSourceSearchTask }
+    #endif
 
     /// Background-fetches the TOC of the first few switchable origins into
     /// `BookSourceFetcher`'s cache-first TOC store (Legado's tocMap idea), so the
@@ -524,8 +490,10 @@ final class ReaderViewModel: ObservableObject {
     /// the connection pool and the JS bridge, and from that point it is competing with the one
     /// fetch the user is actually waiting on (Legado's `getToc` opens with `stopSearch()`).
     func stopChangeSourceSearch() {
+        changeSourceGeneration = UUID()
         changeSourceSearchTask?.cancel()
         changeSourceSearchTask = nil
+        changeSourceWork = nil
         tocWarmTask?.cancel()
         tocWarmTask = nil
         changeSourceLoading = false
@@ -549,23 +517,16 @@ final class ReaderViewModel: ObservableObject {
     /// list fast and still has most TOCs ready by the time a source is picked; a tap that
     /// lands first simply fetches normally through `prepareTOCPackage`.
     private func warmSearchTOCCacheIfEnabled() {
-        guard GlobalSettings.shared.changeSourceLoadToc else { return }
+        guard GlobalSettings.shared.changeSourceLoadToc, let work = changeSourceWork else { return }
         tocWarmTask?.cancel()
+        let generation = changeSourceGeneration
         let failedKeys = changeSourceFailedKeys
         let sources = BookSourceStore.shared.sources
-        let jobs: [(String, BookOrigin, BookSource)] = changeSourceOrigins.compactMap { origin in
-            let key = ChangeSourceCache.originKey(sourceId: origin.sourceId, bookUrl: origin.bookUrl)
-            guard !key.isEmpty,
-                  searchTOCCache[key] == nil,
-                  !failedKeys.contains(key),
-                  !failedKeys.contains(ChangeSourceCache.urlKey(origin.bookUrl)),
-                  let source = sources.first(where: { $0.id == origin.sourceId })
-            else { return nil }
-            return (key, origin, source)
-        }
-        guard !jobs.isEmpty else { return }
+        let cached = searchTOCCache
         let fetcher = bookSourceFetcher
         tocWarmTask = Task { @MainActor [weak self] in
+            let jobs = await work.warmJobs(sources: sources, failedKeys: failedKeys, cached: cached)
+            guard let self, !Task.isCancelled, self.changeSourceGeneration == generation, !jobs.isEmpty else { return }
             await withTaskGroup(of: (String, TOCPackage)?.self) { group in
                 var next = 0
                 // Bounded window: the warm-up must stay in the background of whatever the
@@ -578,20 +539,24 @@ final class ReaderViewModel: ObservableObject {
                     next += 1
                     group.addTask {
                         guard !Task.isCancelled else { return nil }
-                        guard let package = try? await fetcher.fetchTOCPackage(
-                            tocUrl: origin.tocUrl,
-                            source: source,
-                            runtimeVariables: origin.runtimeVariables
-                        ) else { return nil }
-                        return (key, package)
+                        do {
+                            let package = try await fetcher.fetchTOCPackage(tocUrl: origin.tocUrl,
+                                source: source, runtimeVariables: origin.runtimeVariables)
+                            return (key, package)
+                        } catch is CancellationError { return nil }
+                        catch let error as URLError where error.code == .cancelled { return nil }
+                        catch {
+                            AppLogger.parse("ChangeSource TOC warm failed type=\(String(reflecting: type(of: error)))")
+                            return nil
+                        }
                     }
                 }
 
                 for _ in 0..<active { enqueue() }
                 while let result = await group.next() {
-                    if Task.isCancelled { break }
+                    if Task.isCancelled || self.changeSourceGeneration != generation { group.cancelAll(); break }
                     if let (key, package) = result {
-                        self?.cacheSearchTOC(package, forKey: key)
+                        self.cacheSearchTOC(package, forKey: key)
                     }
                     enqueue()
                 }
@@ -826,6 +791,64 @@ final class ReaderViewModel: ObservableObject {
             // chapter sat on the loading surface forever. `.cancelled` says a re-request is
             // owed; `handleChapterStateChanges` issues it.
             setChapterState(.cancelled, for: chapterIndex, contentAvailable: false)
+        }
+    }
+}
+
+/// Ephemeral work for one reader search. Only immutable snapshots cross back
+/// to MainActor; the source-sized index, sorting and cache work stay here.
+private actor ReaderSourceChangeWork {
+    struct Prepared {
+        let sources: [BookSource]
+        let cachedOrigins: [BookOrigin]?
+        let failedKeys: Set<String>
+    }
+
+    private var order: BookSourceSearchOrder?
+    private var origins: [BookOrigin] = []
+
+    func prepare(sources snapshot: [BookSource], bookId: UUID, cacheDays: Int,
+        excludingOriginKey: String, forceRefresh: Bool) async -> Prepared {
+        let started = SourcePerfTrace.now
+        defer { SourcePerfTrace.record("changeSource.prepare", "sources=\(snapshot.count) main=\(Thread.isMainThread)", since: started) }
+        let sources = snapshot.filter(\.enabled)
+        let order = BookSourceSearchOrder(sources: sources)
+        self.order = order
+        let cached = await ChangeSourceCache.shared.readForSearch(for: bookId, days: cacheDays,
+            sourceIDs: order.sourceIDs, excludingOriginKey: excludingOriginKey, allowCached: !forceRefresh)
+        if let previous = cached.origins {
+            origins = order.ordered(previous.filter { order.includes($0.sourceId) })
+            return Prepared(sources: sources, cachedOrigins: origins, failedKeys: cached.failedKeys)
+        }
+        return Prepared(sources: sources, cachedOrigins: nil, failedKeys: cached.failedKeys)
+    }
+
+    func append(_ batch: [BookOrigin]) -> [BookOrigin] {
+        let started = SourcePerfTrace.now
+        defer { SourcePerfTrace.record("changeSource.order", "origins=\(origins.count) batch=\(batch.count) main=\(Thread.isMainThread)", since: started) }
+        guard let order else { return [] }
+        origins.append(contentsOf: batch)
+        origins = order.ordered(origins)
+        return origins
+    }
+
+    func storeCompleted(bookId: UUID, excludingOriginKey: String, coverage: BookOriginSearchCoverage) async {
+        guard !Task.isCancelled, let order else { return }
+        await ChangeSourceCache.shared.storeCompleted(origins: origins, for: bookId,
+            sourceIDs: order.sourceIDs, excludingOriginKey: excludingOriginKey, coverage: coverage)
+    }
+
+    func warmJobs(sources: [BookSource], failedKeys: Set<String>, cached: [String: TOCPackage]) -> [(String, BookOrigin, BookSource)] {
+        SourcePerfTrace.span("changeSource.toc.prepare", "sources=\(sources.count) origins=\(origins.count) main=\(Thread.isMainThread)") {
+            var byID: [UUID: BookSource] = [:]
+            for source in sources where byID[source.id] == nil { byID[source.id] = source }
+            return origins.compactMap { origin in
+                let key = ChangeSourceCache.originKey(sourceId: origin.sourceId, bookUrl: origin.bookUrl)
+                guard cached[key] == nil, !failedKeys.contains(key),
+                      !failedKeys.contains(ChangeSourceCache.urlKey(origin.bookUrl)),
+                      let source = byID[origin.sourceId] else { return nil }
+                return (key, origin, source)
+            }
         }
     }
 }
