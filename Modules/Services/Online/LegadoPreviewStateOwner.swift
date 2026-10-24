@@ -478,10 +478,14 @@ struct NativeLegadoOriginalPreviewExecutor: LegadoOriginalPreviewExecuting {
                 }
                 throw executionError
             }
-            try await process.finishOriginalInvocation(owner: owner, taskID: taskID,
-                cancelPages: Task.isCancelled || deadline.timeIntervalSinceNow <= 0)
+            if let grant {
+                try await process.finishOriginalPreviewInvocation(owner: owner, taskID: taskID,
+                    grant: grant, deadline: deadline)
+            } else {
+                try await process.finishOriginalInvocation(owner: owner, taskID: taskID,
+                    cancelPages: Task.isCancelled || deadline.timeIntervalSinceNow <= 0)
+            }
             try check(deadline)
-            try grant?.sealExecution(deadline: deadline)
             grant?.revoke()
             return result
         } catch {

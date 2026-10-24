@@ -297,10 +297,10 @@ extension ReaderView {
                 // the user actually waited through.
                 SourcePerfTrace.record(
                     "changeSource.total", origin.sourceName, since: switchStartedAt)
-            } catch is CancellationError {
+            } catch is CancellationError where Task.isCancelled {
                 ReaderViewModel.recordSourceSwitchFailure(CancellationError(), phase: failurePhase)
-                // The user cancelled the wait. Nothing was committed and the source is not
-                // known to be bad, so it must not be flagged as a failed origin.
+                // Only the tapped task's cancellation is silent. An internal
+                // cancellation while it is still active uses the error state.
             } catch {
                 ReaderViewModel.recordSourceSwitchFailure(error, phase: failurePhase)
                 readerViewModel.markOriginFailed(

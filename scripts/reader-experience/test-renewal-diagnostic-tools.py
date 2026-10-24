@@ -28,7 +28,7 @@ class DiagnosticGates(unittest.TestCase):
             "PLATFORM_NAME": "iphoneos", "FULL_PRODUCT_NAME": product, "PRODUCT_BUNDLE_IDENTIFIER": identifier,
             "ARCHS": "arm64", "CODE_SIGNING_ALLOWED": "NO", "CODE_SIGNING_REQUIRED": "NO", "ENABLE_DEBUG_DYLIB": "NO",
             "CODE_SIGN_ENTITLEMENTS": "", "GATEWAY_BASE_URL": "", "YUEDU_LOCAL_EXPERIENCE": "YES",
-            "TARGET_BUILD_DIR": str(root), "MARKETING_VERSION": "3.0", "CURRENT_PROJECT_VERSION": "27",
+            "TARGET_BUILD_DIR": str(root), "MARKETING_VERSION": "3.0", "CURRENT_PROJECT_VERSION": "28",
             "SWIFT_OPTIMIZATION_LEVEL": "-Onone", "SWIFT_COMPILATION_MODE": "singlefile",
             "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "", "GCC_PREPROCESSOR_DEFINITIONS": "NDEBUG=1",
             "OTHER_SWIFT_FLAGS": "-D YUEDU_LOCAL_EXPERIENCE"}}
@@ -96,7 +96,8 @@ class DiagnosticGates(unittest.TestCase):
         self.assertLess(workflow.index("name: Retain the diagnostic unsigned device package"), workflow.index("run-source-change"))
         self.assertLess(workflow.index("name: Retain the diagnostic unsigned device package"), workflow.index("run-current-app-preparation"))
         self.assertLess(workflow.index("name: Retain the diagnostic unsigned device package"), workflow.index("run-original-source-admission"))
-        phases = ("run-enrollment", "run-current-app-preparation", "run-original-source-admission", "run-source-change")
+        phases = ("run-enrollment", "run-current-app-preparation", "run-original-source-admission",
+                  "run-original-preview-completion", "run-source-change")
         self.assertEqual([workflow.index(phase) for phase in phases], sorted(workflow.index(phase) for phase in phases))
         self.assertNotIn("continue-on-error", workflow)
         self.assertNotIn("renewal-package-tools.py run", workflow)
@@ -141,7 +142,7 @@ class DiagnosticGates(unittest.TestCase):
             with patch.object(diagnostic, "REPO", root), patch.object(diagnostic, "SIMULATOR_TESTS", stage):
                 record = diagnostic.enrollment_source_stage(create=True)
                 self.assertEqual(len(diagnostic.ENROLLMENT_SOURCES), 4)
-                self.assertEqual(record["swiftSourceCount"], 14)
+                self.assertEqual(record["swiftSourceCount"], 17)
                 self.assertEqual(record, diagnostic.enrollment_source_stage())
                 self.assertEqual({row["sourcePath"] for row in record["files"]},
                     {*diagnostic.FOCUSED_SOURCES, diagnostic.SDK_RESOURCE})
@@ -149,13 +150,15 @@ class DiagnosticGates(unittest.TestCase):
                     {Path(relative).name for relative in diagnostic.FOCUSED_SOURCES})
                 self.assertTrue(unrelated.is_file())
                 self.assertFalse((stage / "yuedu appTests" / unrelated.name).exists())
-                for omitted in (*diagnostic.CURRENT_APP_PREPARATION_SOURCES, *diagnostic.ORIGINAL_SOURCE_ADMISSION_SOURCES):
+                for omitted in (*diagnostic.CURRENT_APP_PREPARATION_SOURCES, *diagnostic.ORIGINAL_SOURCE_ADMISSION_SOURCES,
+                                *diagnostic.ORIGINAL_PREVIEW_COMPLETION_SOURCES):
                     with self.subTest(omitted=omitted), patch.object(diagnostic, "FOCUSED_SOURCES",
                             tuple(path for path in diagnostic.FOCUSED_SOURCES if path != omitted)), self.assertRaises(ValueError):
                         diagnostic.enrollment_source_stage()
                 with self.assertRaises(ValueError):
                     diagnostic.enrollment_source_stage(create=True)
-                for relative in (diagnostic.ENROLLMENT_SOURCES[1], *diagnostic.ORIGINAL_SOURCE_ADMISSION_SOURCES):
+                for relative in (diagnostic.ENROLLMENT_SOURCES[1], *diagnostic.ORIGINAL_SOURCE_ADMISSION_SOURCES,
+                                 *diagnostic.ORIGINAL_PREVIEW_COMPLETION_SOURCES):
                     fixture = stage / Path(relative).relative_to("Tests/iOS")
                     raw = fixture.read_bytes(); fixture.write_bytes(raw + b"\n// changed\n")
                     with self.assertRaises(ValueError):
@@ -171,8 +174,9 @@ class DiagnosticGates(unittest.TestCase):
 
     def test_source_picker_case_gates_reject_missing_duplicate_wrong_failed_or_skipped_cases(self):
         self.assertEqual([len(cases) for cases in diagnostic.SOURCE_CHANGE_GROUPS.values()], [7, 7, 11, 8])
-        self.assertEqual(len(set(diagnostic.FOCUSED_SOURCES)), 14)
-        for cases in (*diagnostic.SOURCE_CHANGE_GROUPS.values(), diagnostic.ORIGINAL_SOURCE_ADMISSION_CASES):
+        self.assertEqual(len(set(diagnostic.FOCUSED_SOURCES)), 17)
+        for cases in (*diagnostic.SOURCE_CHANGE_GROUPS.values(), diagnostic.ORIGINAL_SOURCE_ADMISSION_CASES,
+                      *diagnostic.ORIGINAL_PREVIEW_COMPLETION_GROUPS.values()):
             count = len(cases)
             summary = {"totalTestCount": count, "passedTests": count, "failedTests": 0, "skippedTests": 0,
                 "expectedFailures": 0, "devicesAndConfigurations": [
@@ -181,7 +185,8 @@ class DiagnosticGates(unittest.TestCase):
                      for case in cases]
             tree = {"testNodes": [{"nodeType": "Test Suite", "children": list(reversed(nodes))}]}
             self.assertEqual(set(diagnostic.verify_cases(summary, tree, cases)["cases"]), set(cases))
-            for invalid in (nodes[:-1], nodes + [nodes[0]], nodes[:-1] + [nodes[0]],
+            for invalid in (nodes[:-1], nodes + [nodes[0]],
+                    *((nodes[:-1] + [nodes[0]],) if count > 1 else ()),
                     [dict(nodes[0], result="Failed"), *nodes[1:]],
                     [dict(nodes[0], nodeIdentifier="OtherTests/anotherCase()"), *nodes[1:]]):
                 with self.subTest(cases=cases, tree=invalid), self.assertRaises(ValueError):
@@ -248,13 +253,13 @@ class DiagnosticGates(unittest.TestCase):
             with self.subTest(group=label):
                 self.check_controlled_invocation(label, cases, run, unverified)
 
-    def check_controlled_invocation(self, label, cases, run, unverified):
+    def check_controlled_invocation(self, label, cases, run, unverified, suffix="()"):
         count = len(cases)
         prefix = "renewal-diagnostic-" + label
         summary = {"totalTestCount": count, "passedTests": count, "failedTests": 0, "skippedTests": 0,
             "expectedFailures": 0, "devicesAndConfigurations": [
                 {"passedTests": count, "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}]}
-        tree = {"testNodes": [{"nodeType": "Test Case", "nodeIdentifier": "yuedu appTests/" + case + "()", "result": "Passed"}
+        tree = {"testNodes": [{"nodeType": "Test Case", "nodeIdentifier": "yuedu appTests/" + case + suffix, "result": "Passed"}
                               for case in cases]}
         for execution_failed in (False, True):
             with self.subTest(execution_failed=execution_failed), tempfile.TemporaryDirectory() as tmp:
@@ -300,14 +305,43 @@ class DiagnosticGates(unittest.TestCase):
                 self.assertEqual(argv[argv.index("-t") + 1], "600")
                 self.assertEqual(argv[argv.index("-resultBundlePath") + 1], str(root / (".build/" + prefix + ".xcresult")))
                 self.assertEqual([arg for arg in argv if arg.startswith("-only-testing:")],
-                    ["-only-testing:yuedu appTests/" + case + "()" for case in cases])
+                    ["-only-testing:yuedu appTests/" + case + suffix for case in cases])
+                self.assertIn("SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) DEBUG LEGADO_REQUIRE_NATIVE_MAINJS", argv)
                 result = json.loads((logs / (prefix + "-result.json")).read_bytes())
                 self.assertEqual(result["status"], "failed" if execution_failed else "passed")
                 self.assertEqual(result["requiredCases"], list(cases))
                 self.assertFalse(result[unverified])
 
     def test_failed_group_is_persisted_before_later_independent_group_and_overall_failure(self):
-        groups = dict(list(diagnostic.SOURCE_CHANGE_GROUPS.items())[:2])
+        self._check_failed_group_isolation(dict(list(diagnostic.SOURCE_CHANGE_GROUPS.items())[:2]))
+
+    def test_original_preview_completion_keeps_real_native_case_and_isolates_lifecycle_failures(self):
+        groups = diagnostic.ORIGINAL_PREVIEW_COMPLETION_GROUPS
+        self.assertEqual(list(groups), ["original-preview-lifecycle", "original-preview-native"])
+        self.assertEqual([len(cases) for cases in groups.values()], [7, 1])
+        self.assertEqual(groups["original-preview-native"],
+            ("LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",))
+        self.assertEqual(set(diagnostic.ORIGINAL_PREVIEW_COMPLETION_SOURCES), {
+            "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+            "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+            "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift"})
+        self.assertTrue(set(diagnostic.ORIGINAL_PREVIEW_COMPLETION_SOURCES) <= set(diagnostic.FOCUSED_SOURCES) <= set(diagnostic.INPUTS))
+        for path in ("Modules/Services/Online/LegadoMainJSSourceService.swift",
+                "Modules/Services/Online/LegadoPersistentStateHost.swift",
+                "Modules/Services/Online/LegadoPreviewStateOwner.swift",
+                "Modules/Services/LibraryStore/OriginalRuntimeCommitCancellation.swift"):
+            self.assertIn(path, diagnostic.INPUTS)
+        for label, cases in groups.items():
+            run = lambda: diagnostic.run_controlled_groups({label: cases}, regression_scope="owned-test",
+                unverified={"physicalDeviceSourceSwitchVerified": False})
+            self.check_controlled_invocation(label, cases, run, "physicalDeviceSourceSwitchVerified",
+                suffix="" if label == "original-preview-native" else "()")
+        # Actual controlled runner: a failed lifecycle invocation must persist its
+        # failure before the independent real-native selector is attempted. Even
+        # all-Passed exports cannot excuse a failed execution or a skipped case.
+        self._check_failed_group_isolation(groups)
+
+    def _check_failed_group_isolation(self, groups):
         first, second = groups
         for mode in ("execution", "summary", "tree", "skipped", "export", "evidence-write"):
             with self.subTest(failure=mode), tempfile.TemporaryDirectory() as tmp:
@@ -345,7 +379,8 @@ class DiagnosticGates(unittest.TestCase):
                         self.assertEqual(seconds, 660)
                         self.assertEqual(argv[argv.index("-t") + 1], "600")
                         self.assertEqual([arg for arg in argv if arg.startswith("-only-testing:")],
-                            ["-only-testing:yuedu appTests/" + case + "()" for case in cases])
+                            ["-only-testing:yuedu appTests/" + case +
+                             ("" if label == "original-preview-native" else "()") for case in cases])
                         if label == second:
                             prior_failure_observed.append(json.loads(first_result.read_bytes())["status"])
                         if label == first and mode in ("execution", "evidence-write"):
@@ -361,7 +396,8 @@ class DiagnosticGates(unittest.TestCase):
                             counts["failedTests" if mode == "summary" else "skippedTests"] = 1
                         value = {"totalTestCount": count, **counts, "devicesAndConfigurations": [dict(counts)]}
                     else:
-                        nodes = [{"nodeType": "Test Case", "nodeIdentifier": "yuedu appTests/" + case + "()",
+                        nodes = [{"nodeType": "Test Case", "nodeIdentifier": "yuedu appTests/" + case +
+                                  ("" if label == "original-preview-native" else "()"),
                                   "result": "Passed"} for case in cases]
                         if label == first and mode == "tree":
                             nodes[0]["result"] = "Failed"

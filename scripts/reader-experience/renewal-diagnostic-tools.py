@@ -39,9 +39,15 @@ CURRENT_APP_PREPARATION_SOURCES = tuple("Tests/iOS/yuedu appTests/" + name for n
     "SelfRenewalControlledPackageFixture.swift", "SelfRenewalSDKOwnedPackageFixture.swift",
     "SelfRenewalAuthenticatedInstallationFixture.swift", "SelfRenewalSigningOwnedPKIFixture.swift"))
 ORIGINAL_SOURCE_ADMISSION_SOURCES = ("Tests/iOS/yuedu appTests/LegadoOriginalSourceRevisionBudgetTests.swift",)
+ORIGINAL_PREVIEW_COMPLETION_SOURCES = (
+    "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift",
+    "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
+    # The native file's unselected cold-process methods also need this existing
+    # type to compile; its package/peer fixtures are already in the focused set.
+    "Tests/iOS/yuedu appTests/SelfRenewalUserDataHandoffTests.swift")
 # The existing signing fixture is shared by the two suites, never copied twice.
 FOCUSED_SOURCES = tuple(dict.fromkeys((*ENROLLMENT_SOURCES, *SOURCE_CHANGE_SOURCES,
-    *CURRENT_APP_PREPARATION_SOURCES, *ORIGINAL_SOURCE_ADMISSION_SOURCES)))
+    *CURRENT_APP_PREPARATION_SOURCES, *ORIGINAL_SOURCE_ADMISSION_SOURCES, *ORIGINAL_PREVIEW_COMPLETION_SOURCES)))
 CURRENT_APP_PREPARATION_CASES = tuple("SelfRenewalAppExecutionTests/" + name for name in (
     "preparesCurrentApplicationWithoutDeviceOrRemoteWork",
     "appOwnerPreparesAndSubmitsActualCandidateWithoutAutomaticRetry",
@@ -52,6 +58,18 @@ ORIGINAL_SOURCE_ADMISSION_CASES = tuple("LegadoOriginalSourceRevisionBudgetTests
     "retainsRevisionHighWaterAfterLargeScan",
     "rejectsCountBudgetWithoutDamagingAdmittedSources",
     "enforcesUTF8PayloadBudgetWithoutConsumingRejectedAdmission"))
+ORIGINAL_PREVIEW_COMPLETION_GROUPS = {
+    "original-preview-lifecycle": tuple("LegadoPreviewStateOwnerTests/" + name for name in (
+        "hostCleanupCompletesDetailAndTOCBeforeRevocation",
+        "hostCleanupBusinessFailureDoesNotCompletePreview",
+        "hostCleanupCancellationDoesNotCompletePreview",
+        "hostCleanupCloseFailureDoesNotCompletePreview",
+        "hostCleanupExpiredDeadlineDoesNotCompletePreview",
+        "hostCleanupRevokedOrInvalidatedGrantDoesNotCompletePreview",
+        "hostCleanupConcurrentFinishWaitsForWholeFinalization")),
+    "original-preview-native": (
+        "LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen",),
+}
 SOURCE_CHANGE_GROUPS = {
     "source-order": tuple("BookSourceSearchOrderTests/" + name for name in (
         "stableSourceOrder", "largeOrderSnapshot", "largePackDoesNotSilentlyStopAtTen",
@@ -92,6 +110,8 @@ INPUTS = (".github/workflows/yuedu-renewal-diagnostic.yml", "scripts/reader-expe
           "Modules/Services/Online/BookOriginSearchService.swift",
           "Modules/Services/Online/LegadoMainJSSourceService.swift",
           "Modules/Services/Online/LegadoPersistentStateHost.swift",
+          "Modules/Services/Online/LegadoPreviewStateOwner.swift",
+          "Modules/Services/LibraryStore/OriginalRuntimeCommitCancellation.swift",
           "Modules/Services/Online/ChangeSourceCache.swift",
           "Modules/Services/Online/SearchAggregator.swift",
           "Modules/Core/BookSource/BookSourceFetcher+Search.swift",
@@ -409,6 +429,14 @@ def run_enrollment():
         regressionScope="Independent one-case Simulator regression; never S3 or actual renewal acceptance"))
 
 
+def controlled_test_selector(case):
+    # Preserve the existing Native XCTest selector; Swift Testing functions
+    # use their zero-argument () identifier (as in renewal-probe-tools.py).
+    if case in ORIGINAL_PREVIEW_COMPLETION_GROUPS["original-preview-native"]:
+        return case
+    return case + "()"
+
+
 def run_controlled_groups(groups, *, regression_scope, unverified):
     """Attempt each independent group, then fail if any exact-case gate failed."""
     receipt = check_binding()
@@ -437,7 +465,7 @@ def run_controlled_groups(groups, *, regression_scope, unverified):
                     "GATEWAY_BASE_URL=", "YUEDU_LOCAL_EXPERIENCE=YES", "IPHONEOS_DEPLOYMENT_TARGET=18.0",
                     "ENABLE_DEBUG_DYLIB=NO", "SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) DEBUG LEGADO_REQUIRE_NATIVE_MAINJS",
                     "-resultBundlePath", result_bundle,
-                    *("-only-testing:yuedu appTests/" + case + "()" for case in cases)], 660)
+                    *("-only-testing:yuedu appTests/" + controlled_test_selector(case) for case in cases)], 660)
             except Exception as error:
                 failure = error
             exports = {}
@@ -485,9 +513,18 @@ def run_original_source_admission():
         unverified={"physicalDeviceSourceSwitchVerified": False})
 
 
+def run_original_preview_completion():
+    # The real native case has no injected executor or close hook. Its existing
+    # LEGADO_REQUIRE_NATIVE_MAINJS flag makes an unavailable JNI payload fail;
+    # the shared exact-case gate separately rejects any skip or failed launch.
+    run_controlled_groups(ORIGINAL_PREVIEW_COMPLETION_GROUPS,
+        regression_scope="Focused original-preview completion: real Host lifecycle boundary cases and one default Native/JNI/loopback preview-transfer-reopen case; never full Native/SDK/S3 or physical-device acceptance",
+        unverified={"physicalDeviceSourceSwitchVerified": False})
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("phase", choices=("validate-tag", "restore", "prepare-device", "export-unsigned", "prepare-simulator", "run-enrollment", "run-source-change", "run-current-app-preparation", "run-original-source-admission"))
+    parser.add_argument("phase", choices=("validate-tag", "restore", "prepare-device", "export-unsigned", "prepare-simulator", "run-enrollment", "run-source-change", "run-current-app-preparation", "run-original-source-admission", "run-original-preview-completion"))
     phase = parser.parse_args().phase
     if phase == "validate-tag":
         print(json.dumps({"sourceCommit": source(), "diagnosticOnly": True, "releaseAcceptance": False, "S3Acceptance": "not_run"}))
@@ -505,6 +542,8 @@ def main():
         run_current_app_preparation()
     elif phase == "run-original-source-admission":
         run_original_source_admission()
+    elif phase == "run-original-preview-completion":
+        run_original_preview_completion()
     else:
         export_unsigned()
 

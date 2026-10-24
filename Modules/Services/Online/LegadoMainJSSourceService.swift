@@ -34,6 +34,12 @@ actor LegadoRuntimeProcess {
         try await persistentHost().finishOriginalInvocation(owner: owner, taskID: taskID, cancelPages: cancelPages)
     }
 
+    func finishOriginalPreviewInvocation(owner: String, taskID: String,
+                                         grant: OriginalRuntimePreviewGrant, deadline: Date) async throws {
+        try await persistentHost().finishOriginalPreviewInvocation(owner: owner, taskID: taskID,
+            grant: grant, deadline: deadline)
+    }
+
     func revokePersistentSource(owner: String) async {
         await persistentHost().revoke(owner: owner)
     }
@@ -141,9 +147,14 @@ final class OriginalRuntimePreviewGrant: @unchecked Sendable {
     /// Called by the trusted executor after the actual business call and session close,
     /// before its normal Host revocation. A revoked/cancelled execution cannot seal this.
     func sealExecution(deadline: Date) throws {
-        try Task.checkCancellation(); try check(deadline: deadline)
-        lock.lock(); defer { lock.unlock() }
-        completed = true
+        try Task.checkCancellation()
+        try lifetime.claim(deadline: min(deadline, expiresAt)) {
+            lock.lock(); defer { lock.unlock() }
+            guard !completed else {
+                throw LegadoRuntimeError(code: "INVALID_STATE_OWNER", message: "Preview execution was already sealed")
+            }
+            completed = true
+        }
     }
     fileprivate func completion() throws -> (revision: UInt64, sha256: String) {
         lock.lock(); defer { lock.unlock() }

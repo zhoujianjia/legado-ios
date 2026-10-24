@@ -14,4 +14,14 @@ final class OriginalRuntimeCommitCancellation: @unchecked Sendable {
             throw LegadoRuntimeError(code: "STATE_TIMEOUT", message: "The App state owner deadline expired before its write")
         }
     }
+    /// The synchronous completion claim and cancellation have one ordering.
+    /// The operation must not await or call back into this lifetime.
+    func claim(deadline: Date, _ operation: () throws -> Void) throws {
+        lock.lock(); defer { lock.unlock() }
+        if cancelled { throw CancellationError() }
+        guard deadline.timeIntervalSinceNow > 0 else {
+            throw LegadoRuntimeError(code: "STATE_TIMEOUT", message: "The App state owner deadline expired before its write")
+        }
+        try operation()
+    }
 }

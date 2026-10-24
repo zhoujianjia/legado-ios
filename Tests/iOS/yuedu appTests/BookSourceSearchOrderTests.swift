@@ -119,8 +119,8 @@ struct BookSourceSearchOrderTests {
         try #require(origins.count == 2)
         #expect(result?.contentKind(for: origins[0]) == .text)
         #expect(result?.contentKind(for: origins[1]) == .text)
-        #expect(result?.detailIntro(for: origins[0]) == "pinned intro")
-        #expect(result?.detailIntro(for: origins[1]) == "ordinary intro")
+        #expect(result?.detailIntro(for: origins[0]) == "　　pinned intro")
+        #expect(result?.detailIntro(for: origins[1]) == "　　ordinary intro")
 
         // Native traditional execution admits text sources only. Exercise the
         // original audio presentation/alignment assertion through its legitimate
@@ -149,8 +149,8 @@ struct BookSourceSearchOrderTests {
         try #require(presentedOrigins.count == 2)
         #expect(presented.contentKind(for: presentedOrigins[0]) == .text)
         #expect(presented.contentKind(for: presentedOrigins[1]) == .audio)
-        #expect(presented.detailIntro(for: presentedOrigins[0]) == "pinned intro")
-        #expect(presented.detailIntro(for: presentedOrigins[1]) == "ordinary intro")
+        #expect(presented.detailIntro(for: presentedOrigins[0]) == "　　pinned intro")
+        #expect(presented.detailIntro(for: presentedOrigins[1]) == "　　ordinary intro")
         #expect(site.requestCounts == [first.id: 1, second.id: 1], "cached audio presentation adds no native execution")
     }
 

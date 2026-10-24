@@ -13,6 +13,42 @@ private struct PreviewFixtureNoSourceState: LegadoOwnedStateBacking {
     }
 }
 
+/// Replaces only the unavailable native close boundary. Binding, state CAS,
+/// completion validation, sealing and revocation still belong to the real Host.
+private actor PreviewFixtureCloseBoundary {
+    let entered: AsyncStream<String>
+    private let event: AsyncStream<String>.Continuation
+    private var gate: CheckedContinuation<Void, Never>?
+    private var held = false
+    private var fails = false
+    private var events: [String] = []
+
+    init() {
+        let pair = AsyncStream<String>.makeStream()
+        entered = pair.stream; event = pair.continuation
+    }
+    func configure(held: Bool = false, fails: Bool = false) {
+        self.held = held; self.fails = fails
+    }
+    func close(_ session: LegadoSourceSession) async throws {
+        events.append("close-entered")
+        if held {
+            await withCheckedContinuation { continuation in
+                gate = continuation
+                event.yield(session.id)
+            }
+        } else { event.yield(session.id) }
+        if fails {
+            events.append("close-failed")
+            throw LegadoRuntimeError(code: "SESSION_CLOSE_FAILED", message: "Synthetic native close failure")
+        }
+        events.append("close-returned")
+    }
+    func open() { held = false; gate?.resume(); gate = nil }
+    func record(_ value: String) { events.append(value) }
+    func snapshot() -> [String] { events }
+}
+
 /// The executor replaces the unavailable native engine, not the state owner. Every
 /// entity read/commit below dispatches the production Host into actual owned files.
 private actor PreviewFixtureExecutor: LegadoOriginalPreviewExecuting {
@@ -35,6 +71,11 @@ private actor PreviewFixtureExecutor: LegadoOriginalPreviewExecuting {
     private var rawSmallCommit = "{}"
     private var unicodeNames = ("\u{00e9}", "e\u{0301}")
     private var chapterLiteral: String?
+    private var usesHostCompletion = false
+    private var completionIsExpired = false
+    private var finishesOrdinarily = false
+    private var activeCompletion: (owner: String, grant: OriginalRuntimePreviewGrant, deadline: Date)?
+    let closeBoundary = PreviewFixtureCloseBoundary()
     private(set) var staleWasRejected = false
     private(set) var scopeWasRejected = false
     private(set) var refreshRejections: [String] = []
@@ -55,6 +96,45 @@ private actor PreviewFixtureExecutor: LegadoOriginalPreviewExecuting {
         unicodeNames = (first, second); mode = crossCompartment ? .unicodeCrossCompartment : .unicodeLargeAccess
     }
     func setChapterLiteral(_ value: String?) { chapterLiteral = value }
+    func useHostCompletion(held: Bool = false, fails: Bool = false, expired: Bool = false,
+                           ordinary: Bool = false) async {
+        usesHostCompletion = true; completionIsExpired = expired
+        finishesOrdinarily = ordinary
+        await closeBoundary.configure(held: held, fails: fails)
+        let boundary = closeBoundary
+        await host.setOriginalSessionCloseForTesting { session in try await boundary.close(session) }
+    }
+    func revokeActiveCompletion() throws {
+        try #require(activeCompletion).grant.revoke()
+    }
+    func cancelActiveCompletionInHost() async throws {
+        let active = try #require(activeCompletion)
+        await host.cancel(taskID: active.grant.taskID)
+    }
+    func finishActiveOrdinaryInvocation() async throws {
+        let active = try #require(activeCompletion)
+        try await host.finishOriginalInvocation(owner: active.owner, taskID: active.grant.taskID, cancelPages: false)
+        await closeBoundary.record("ordinary-finish-returned")
+    }
+    func completionIdentityChecksRejectForeignTask() async throws {
+        let active = try #require(activeCompletion)
+        do {
+            try await host.finishOriginalPreviewInvocation(owner: active.owner, taskID: "foreign-preview-task",
+                grant: active.grant, deadline: active.deadline)
+            Issue.record("A foreign task completed a preview session")
+        } catch let error as LegadoRuntimeError { #expect(error.code == "INVALID_STATE_OWNER") }
+    }
+    func completionCannotAcquireEndedOrMissingOwner() async throws {
+        let active = try #require(activeCompletion)
+        do {
+            try await host.finishOriginalPreviewInvocation(owner: active.owner, taskID: active.grant.taskID,
+                grant: active.grant, deadline: active.deadline)
+            Issue.record("An ordinary-ended or missing owner acquired a preview completion proof")
+        } catch let error as LegadoRuntimeError { #expect(error.code == "INVALID_STATE_OWNER") }
+    }
+    func ownerCounts() async -> (bindings: Int, sourceRevisions: Int, leases: Int) {
+        await host.ownershipCounts()
+    }
     func operations() -> [String] { calls }
     func openGate() { gate?.resume(); gate = nil }
     func oldGrantIsRejected() async throws -> Bool {
@@ -180,6 +260,14 @@ private actor PreviewFixtureExecutor: LegadoOriginalPreviewExecuting {
         let owner = try await host.bindPreview(grant: grant)
         activeTaskID = grant.taskID
         lastOwner = owner
+        if usesHostCompletion {
+            let runtime = LegadoRuntime(configuration: .init(javaHome: directory.appendingPathComponent("unused-java-home"),
+                classPath: []), host: host)
+            let session = LegadoSourceSession(id: "owned-close-" + grant.taskID, sourceMode: .originalTraditional)
+            try await host.attachOriginalInvocation(owner: owner, runtime: runtime, session: session,
+                taskID: grant.taskID, sourceID: grant.sourceID)
+            activeCompletion = (owner, grant, completionIsExpired ? .distantPast : deadline)
+        }
         do {
             if mode == .refreshDenied { try await assertRefreshDenied(owner: owner, grant: grant, deadline: deadline) }
             let result: LegadoOriginalPreviewResult
@@ -306,7 +394,16 @@ private actor PreviewFixtureExecutor: LegadoOriginalPreviewExecuting {
                 book.variable = try map(await read(owner: owner, keys: [bookKey]), key: bookKey).map { try json($0) }
                 result = .content(book, chapter, "Owned preview body\nSecond line")
             }
-            try grant.sealExecution(deadline: deadline)
+            if usesHostCompletion {
+                let active = try #require(activeCompletion)
+                if finishesOrdinarily {
+                    try await host.finishOriginalInvocation(owner: owner, taskID: grant.taskID, cancelPages: false)
+                } else {
+                    try await host.finishOriginalPreviewInvocation(owner: owner, taskID: grant.taskID,
+                        grant: grant, deadline: active.deadline)
+                }
+                await closeBoundary.record("first-finish-returned")
+            } else { try grant.sealExecution(deadline: deadline) }
             if mode == .changeAfterSeal {
                 let path = directory.appendingPathComponent(grant.recordID + ".json")
                 var record = try #require(try JSONSerialization.jsonObject(with: Data(contentsOf: path)) as? [String: Any])
@@ -315,10 +412,13 @@ private actor PreviewFixtureExecutor: LegadoOriginalPreviewExecuting {
                 record["revision"] = (try #require(record["revision"] as? NSNumber)).uint64Value + 1
                 try data(record).write(to: path, options: .atomic)
             }
-            await host.revoke(owner: owner)
+            if !usesHostCompletion { await host.revoke(owner: owner) }
             return result
         } catch {
-            await host.revoke(owner: owner)
+            if usesHostCompletion {
+                do { try await host.finishOriginalInvocation(owner: owner, taskID: grant.taskID, cancelPages: true) }
+                catch { Issue.record("Secondary real Host cleanup failed: \(error)") }
+            } else { await host.revoke(owner: owner) }
             throw error
         }
     }
@@ -391,6 +491,160 @@ struct LegadoPreviewStateOwnerTests {
     private func contextBytes(_ f: Fixture) throws -> Data {
         let files = try FileManager.default.contentsOfDirectory(at: f.directory, includingPropertiesForKeys: nil)
         return try Data(contentsOf: #require(files.first))
+    }
+
+    private func acceptedDetailsWithoutReturnedSetter(_ f: Fixture) async throws {
+        let raw = try contextBytes(f)
+        let record = try #require(try JSONSerialization.jsonObject(with: raw) as? [String: Any])
+        let book = try #require(record["book"] as? [String: Any])
+        let variable = try #require(book["variable"] as? String)
+        let values = try JSONDecoder().decode([String: String].self, from: Data(variable.utf8))
+        #expect(values["persisted"] == "details")
+        #expect(values["direct"] == nil)
+        #expect((record["bookLargeVariables"] as? [String: String])?["large"] == String(repeating: "L", count: 10_000))
+        #expect(try await f.executor.oldGrantIsRejected())
+        try await f.executor.completionCannotAcquireEndedOrMissingOwner()
+        let counts = await f.executor.ownerCounts()
+        #expect(counts.bindings == 0 && counts.sourceRevisions == 0 && counts.leases == 0)
+    }
+
+    @Test("Real Host cleanup closes, seals and revokes a successful detail then TOC without cancelling its caller")
+    func hostCleanupCompletesDetailAndTOCBeforeRevocation() async throws {
+        let f = try fixture(); defer { cleanup(f) }
+        await f.executor.useHostCompletion()
+        let book = try await search(f)
+        let detail = try await details(f, book)
+        #expect(!Task.isCancelled)
+        #expect(detail.runtimeVariables?["persisted"] == "details")
+        #expect(detail.runtimeVariables?["direct"] == "setter")
+        #expect(try await f.executor.oldGrantIsRejected())
+        let toc = try await f.fetcher.fetchOriginalPreviewTOC(url: detail.tocUrl, source: f.source,
+            runtimeVariables: detail.runtimeVariables)
+        #expect(toc.chapters.count == 1 && toc.chapters.first?.runtimeVariables?["chapter"] == "toc")
+        #expect(toc.runtimeVariables?["direct"] == "setter")
+        #expect(!Task.isCancelled)
+        #expect(await f.executor.closeBoundary.snapshot() == ["close-entered", "close-returned", "first-finish-returned",
+            "close-entered", "close-returned", "first-finish-returned"])
+        #expect(try await f.executor.oldGrantIsRejected())
+        let counts = await f.executor.ownerCounts()
+        #expect(counts.bindings == 0 && counts.sourceRevisions == 0 && counts.leases == 0)
+    }
+
+    @Test("Failed business uses real ordinary cleanup and keeps accepted Host writes without publishing the returned setter")
+    func hostCleanupBusinessFailureDoesNotCompletePreview() async throws {
+        let f = try fixture(); defer { cleanup(f) }
+        await f.executor.useHostCompletion(); await f.executor.setMode(.failAfterCommit)
+        let book = try await search(f)
+        await expectError("RULE_ERROR") { _ = try await details(f, book) }
+        try await acceptedDetailsWithoutReturnedSetter(f)
+        #expect(await f.executor.closeBoundary.snapshot() == ["close-entered", "close-returned"])
+        #expect(!Task.isCancelled)
+
+        // An ordinary cleanup already in flight cannot be upgraded into the
+        // successful-producer authority, even with the exact original grant.
+        let ordinaryFixture = try fixture(); defer { cleanup(ordinaryFixture) }
+        await ordinaryFixture.executor.useHostCompletion(held: true, ordinary: true)
+        let ordinaryBook = try await search(ordinaryFixture)
+        let unsealed = Task { try await details(ordinaryFixture, ordinaryBook) }
+        var ordinaryClose = ordinaryFixture.executor.closeBoundary.entered.makeAsyncIterator()
+        _ = try #require(await ordinaryClose.next())
+        try await ordinaryFixture.executor.completionCannotAcquireEndedOrMissingOwner()
+        await ordinaryFixture.executor.closeBoundary.open()
+        await expectError("INVALID_STATE_OWNER") { _ = try await unsealed.value }
+        try await acceptedDetailsWithoutReturnedSetter(ordinaryFixture)
+    }
+
+    @Test("Cancelling while native close is held prevents the real Host completion from publishing a DTO")
+    func hostCleanupCancellationDoesNotCompletePreview() async throws {
+        let f = try fixture(); defer { cleanup(f) }
+        await f.executor.useHostCompletion(held: true)
+        let book = try await search(f)
+        let pending = Task { try await details(f, book) }
+        var iterator = f.executor.closeBoundary.entered.makeAsyncIterator()
+        _ = try #require(await iterator.next())
+        pending.cancel()
+        await f.executor.closeBoundary.open()
+        do { _ = try await pending.value; Issue.record("Cancelled Host completion published a DTO") }
+        catch is CancellationError { }
+        try await acceptedDetailsWithoutReturnedSetter(f)
+        #expect(await f.executor.closeBoundary.snapshot() == ["close-entered", "close-returned"])
+        #expect(!Task.isCancelled)
+    }
+
+    @Test("An actual close-boundary failure cannot seal already accepted preview state")
+    func hostCleanupCloseFailureDoesNotCompletePreview() async throws {
+        let f = try fixture(); defer { cleanup(f) }
+        await f.executor.useHostCompletion(fails: true)
+        let book = try await search(f)
+        await expectError("SESSION_CLOSE_FAILED") { _ = try await details(f, book) }
+        try await acceptedDetailsWithoutReturnedSetter(f)
+        #expect(await f.executor.closeBoundary.snapshot() == ["close-entered", "close-failed"])
+        #expect(!Task.isCancelled)
+    }
+
+    @Test("An expired completion deadline refuses the DTO while ordinary cleanup still closes and revokes its owner")
+    func hostCleanupExpiredDeadlineDoesNotCompletePreview() async throws {
+        let f = try fixture(); defer { cleanup(f) }
+        await f.executor.useHostCompletion(expired: true)
+        let book = try await search(f)
+        await expectError("STATE_TIMEOUT") { _ = try await details(f, book) }
+        try await acceptedDetailsWithoutReturnedSetter(f)
+        #expect(await f.executor.closeBoundary.snapshot() == ["close-entered", "close-returned"])
+        #expect(!Task.isCancelled)
+    }
+
+    @Test("Explicit grant revocation and Host task invalidation prevent completion even with an uncancelled outer Task")
+    func hostCleanupRevokedOrInvalidatedGrantDoesNotCompletePreview() async throws {
+        for revokeLifetime in [true, false] {
+            let f = try fixture(); defer { cleanup(f) }
+            await f.executor.useHostCompletion(held: true)
+            let book = try await search(f)
+            let pending = Task { try await details(f, book) }
+            var iterator = f.executor.closeBoundary.entered.makeAsyncIterator()
+            _ = try #require(await iterator.next())
+            if revokeLifetime { try await f.executor.revokeActiveCompletion() }
+            else { try await f.executor.cancelActiveCompletionInHost() }
+            await f.executor.closeBoundary.open()
+            do { _ = try await pending.value; Issue.record("Revoked or invalidated Host completion published a DTO") }
+            catch is CancellationError { }
+            catch let error as LegadoRuntimeError {
+                #expect(!revokeLifetime && error.code == "INVALID_STATE_OWNER")
+            }
+            try await acceptedDetailsWithoutReturnedSetter(f)
+            #expect(await f.executor.closeBoundary.snapshot() == ["close-entered", "close-returned"])
+            #expect(!pending.isCancelled && !Task.isCancelled)
+        }
+    }
+
+    @Test("Concurrent ordinary and preview finish callers await one complete Host cleanup and cannot borrow a foreign task")
+    func hostCleanupConcurrentFinishWaitsForWholeFinalization() async throws {
+        let f = try fixture(); defer { cleanup(f) }
+        await f.executor.useHostCompletion(held: true)
+        let book = try await search(f)
+        let first = Task { try await details(f, book) }
+        var iterator = f.executor.closeBoundary.entered.makeAsyncIterator()
+        _ = try #require(await iterator.next())
+        try await f.executor.completionIdentityChecksRejectForeignTask()
+        let ordinary = Task { try await f.executor.finishActiveOrdinaryInvocation() }
+        // Real Host state remains bound until close finishes. No scheduler sleeps
+        // or synthetic completion flags stand in for the production registry.
+        let during = await f.executor.ownerCounts()
+        #expect(during.bindings == 1 && during.sourceRevisions == 1)
+        await f.executor.closeBoundary.open()
+        let detail = try await first.value
+        try await ordinary.value
+        #expect(detail.runtimeVariables?["direct"] == "setter")
+        let events = await f.executor.closeBoundary.snapshot()
+        #expect(events.filter { $0 == "close-entered" }.count == 1)
+        #expect(events.filter { $0 == "close-returned" }.count == 1)
+        let closed = try #require(events.firstIndex(of: "close-returned"))
+        for returned in ["first-finish-returned", "ordinary-finish-returned"] {
+            #expect(try #require(events.firstIndex(of: returned)) > closed)
+        }
+        #expect(try await f.executor.oldGrantIsRejected())
+        let after = await f.executor.ownerCounts()
+        #expect(after.bindings == 0 && after.sourceRevisions == 0 && after.leases == 0)
+        #expect(!Task.isCancelled)
     }
 
     @Test("Explicit original four-stage preview uses real Host context files and reopens without a library record")

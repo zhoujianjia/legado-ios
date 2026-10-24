@@ -317,6 +317,10 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
     private let originalBrowserPresenter: @MainActor @Sendable (LegadoOriginalBrowserPresentation) async throws -> LegadoOriginalBrowserCompletion
     private let backing: any LegadoOwnedStateBacking
     private let fallback: any LegadoPlatformHost
+    private struct OriginalPreviewCompletion {
+        let grant: OriginalRuntimePreviewGrant
+        let deadline: Date
+    }
     // Resource participation only: these retain the already granted Binding,
     // runtime and session. They own no credentials, cache values or source state.
     private final class OriginalInvocation {
@@ -329,6 +333,7 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
         var producerEnded = false
         var invalidated = false
         var pages: [String: OriginalPage] = [:]
+        var previewCompletion: OriginalPreviewCompletion?
         var cleanup: Task<Void, Error>?
         init(runtime: LegadoRuntime, session: LegadoSourceSession, taskID: String, sourceID: UUID?, initiallyTracked: Bool) {
             self.sourceInitiallyTracked = initiallyTracked
@@ -350,6 +355,14 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
     private var originalChildInvocations: [String: (owner: String, pageID: String)] = [:]
     private var originalHeadlessOperations: [String: (taskID: String, work: Task<LegadoOriginalHeadlessResult, Error>)] = [:]
     private var originalInvalidations: [String: Task<Void, Never>] = [:]
+#if DEBUG
+    private var originalSessionCloseForTesting: (@Sendable (LegadoSourceSession) async throws -> Void)?
+
+    /// Replaces only the close boundary; all shared cleanup and proof gates run.
+    func setOriginalSessionCloseForTesting(_ operation: (@Sendable (LegadoSourceSession) async throws -> Void)?) {
+        originalSessionCloseForTesting = operation
+    }
+#endif
 
     private var bindings: [String: Binding] = [:]
     private var revisions: [String: String] = [:]
@@ -681,24 +694,104 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
         try await cleanupOriginalInvocationIfIdle(owner: owner)
     }
 
+    /// Only the successful Native preview producer may request a completion
+    /// proof. The same shared cleanup closes the session before sealing, while
+    /// the exact Host owner is still present and has not revoked its grant.
+    func finishOriginalPreviewInvocation(owner: String, taskID: String,
+                                         grant: OriginalRuntimePreviewGrant, deadline: Date) async throws {
+        guard let invocation = originalInvocations[owner], invocation.taskID == taskID,
+              taskID == grant.taskID else {
+            throw failure("INVALID_STATE_OWNER", "Preview completion has no current invocation")
+        }
+        try validateOriginalPreviewCompletion(owner: owner, invocation: invocation, grant: grant, deadline: deadline)
+        guard invocation.pages.isEmpty else {
+            // Keep accepted late pages alive under the ordinary producer-ended
+            // lifecycle, but do not turn their still-open session into a proof.
+            invocation.producerEnded = true
+            throw failure("INVALID_STATE_OWNER", "Preview completion still owns active pages")
+        }
+        if let completion = invocation.previewCompletion {
+            guard completion.grant === grant, completion.deadline == deadline else {
+                throw failure("INVALID_STATE_OWNER", "Preview completion belongs to another request")
+            }
+        } else {
+            guard !invocation.producerEnded, invocation.cleanup == nil else {
+                throw failure("INVALID_STATE_OWNER", "An ended producer cannot acquire a completion proof")
+            }
+            invocation.previewCompletion = OriginalPreviewCompletion(grant: grant, deadline: deadline)
+            invocation.producerEnded = true
+        }
+        // Capture the full cleanup task before yielding. A missing/replaced
+        // registry entry can never be mistaken for successful completion.
+        let cleanup = originalInvocationCleanup(owner: owner, invocation: invocation)
+        try await withTaskCancellationHandler {
+            try await cleanup.value
+            try Task.checkCancellation()
+        } onCancel: { grant.revoke() }
+    }
+
+    private func validateOriginalPreviewCompletion(owner: String, invocation: OriginalInvocation,
+                                                    grant: OriginalRuntimePreviewGrant, deadline: Date) throws {
+        try Task.checkCancellation()
+        guard originalInvocations[owner] === invocation, invocation.taskID == grant.taskID,
+              invocation.sourceID == grant.sourceID,
+              !invocation.invalidated, !cancelled.contains(grant.taskID),
+              let binding = bindings[owner], binding.sourceURL == grant.sourceURL,
+              binding.sourceRevision == grant.sourceRevision, revisions[binding.sourceURL] == binding.sourceRevision,
+              let backing = bookOwners[owner] as? LegadoPreviewStateOwner, backing.grant === grant else {
+            throw failure("INVALID_STATE_OWNER", "Preview completion lost its current source and owner")
+        }
+        try grant.check(deadline: deadline)
+    }
+
     private func cleanupOriginalInvocationIfIdle(owner: String) async throws {
         guard let invocation = originalInvocations[owner], invocation.producerEnded,
               invocation.pages.isEmpty else { return }
-        if let cleanup = invocation.cleanup { return try await cleanup.value }
+        try await originalInvocationCleanup(owner: owner, invocation: invocation).value
+    }
+
+    private func originalInvocationCleanup(owner: String, invocation: OriginalInvocation) -> Task<Void, Error> {
+        if let cleanup = invocation.cleanup { return cleanup }
         let runtime = invocation.runtime, session = invocation.session
-        let cleanup = Task { try await runtime.close(session: session) }
-        invocation.cleanup = cleanup
-        defer {
-            originalInvocations.removeValue(forKey: owner)
-            originalInvalidations.removeValue(forKey: owner)
-            revoke(owner: owner)
-        }
-        do { try await cleanup.value }
-        catch {
+        let completion = invocation.previewCompletion
+#if DEBUG
+        let closeForTesting = originalSessionCloseForTesting
+#endif
+        let cleanup = Task { () throws -> Void in
+            defer {
+                if originalInvocations[owner] === invocation {
+                    originalInvocations.removeValue(forKey: owner)
+                    originalInvalidations.removeValue(forKey: owner)
+                    revoke(owner: owner)
+                }
+            }
+            do {
+#if DEBUG
+                if let closeForTesting { try await closeForTesting(session) }
+                else { try await runtime.close(session: session) }
+#else
+                try await runtime.close(session: session)
+#endif
+            } catch {
+                await invocation.sourceAdmission?.end()
+                throw error
+            }
             await invocation.sourceAdmission?.end()
-            throw error
+            if let completion {
+                try validateOriginalPreviewCompletion(owner: owner, invocation: invocation,
+                    grant: completion.grant, deadline: completion.deadline)
+                guard invocation.producerEnded, invocation.pages.isEmpty,
+                      invocation.previewCompletion?.grant === completion.grant,
+                      invocation.previewCompletion?.deadline == completion.deadline else {
+                    throw failure("INVALID_STATE_OWNER", "Preview completion changed while closing its session")
+                }
+                // No await may separate the final owner check, synchronous
+                // lifetime claim, and normal Host revocation in the defer.
+                try completion.grant.sealExecution(deadline: completion.deadline)
+            }
         }
-        await invocation.sourceAdmission?.end()
+        invocation.cleanup = cleanup
+        return cleanup
     }
 
     private func invalidateOriginalInvocation(owner: String) {
