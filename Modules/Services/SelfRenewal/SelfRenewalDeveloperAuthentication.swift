@@ -46,26 +46,11 @@ actor SelfRenewalDeveloperAuthentication {
         }
     }
     private enum RequestStage: String { case anisette, metadata, encode, send, envelope, response, status }
-    /// The GSA requester identity is separate from the ADI provider's existing
-    /// provisioning identity. Keep its model token and all real anisette data;
-    /// use the coherent client profile from the merged app-token 503 fix:
-    /// https://github.com/xtool-org/xtool/pull/244
-    private struct GSARequesterIdentity {
-        static let userAgent = "AuthKit/1 (Macintosh; OS X 26.6) (com.apple.dt.Xcode/26.0)"
-        let clientInfo: String
-
-        init(providerClientInfo: String) throws {
-            guard providerClientInfo.first == "<", let end = providerClientInfo.firstIndex(of: ">") else {
-                throw Failure.missingDeviceMetadata
-            }
-            let model = providerClientInfo[providerClientInfo.index(after: providerClientInfo.startIndex)..<end]
-            guard !model.isEmpty, model.utf8.count <= 64, model.utf8.allSatisfy({
-                (48...57).contains($0) || (65...90).contains($0) || (97...122).contains($0)
-                    || [44, 45, 46, 95].contains($0)
-            }) else { throw Failure.missingDeviceMetadata }
-            clientInfo = "<\(model)> <macOS;26.6;25G72> <com.apple.AuthKit/1 (com.apple.dt.Xcode/26.0)>"
-        }
-    }
+    /// Keep the ADI provider's actual client identity. The later merged fixes
+    /// supersede PR244's Xcode projection and bind GSA to the anisette provider:
+    /// https://github.com/xtool-org/xtool/pull/337
+    /// https://github.com/xtool-org/xtool/pull/367
+    private static let gsaUserAgent = "akd/1.0 CFNetwork/808.1.4"
     private let account: Account
     private let transport: any SelfRenewalDeveloperAccountTransport
     private let freshAnisette: @Sendable () async throws -> Account.Anisette
@@ -310,13 +295,13 @@ actor SelfRenewalDeveloperAuthentication {
             stage = .metadata
             try validate(anisette)
             guard let serial = anisette.deviceSerialNumber, Self.text(serial, maximum: 128) else { throw Failure.missingDeviceMetadata }
-            let requesterIdentity = try GSARequesterIdentity(providerClientInfo: anisette.clientInfo)
             var parameters = parameters
             parameters["cpd"] = ["bootstrap": true, "icscrec": true, "loc": anisette.locale, "pbe": false,
                 "prkgen": true, "svct": "iCloud", "X-Apple-I-Client-Time": Self.timestamp(anisette.issuedAt),
                 "X-Apple-Locale": anisette.locale, "X-Apple-I-TimeZone": anisette.timeZone,
                 "X-Apple-I-MD": anisette.oneTimePassword, "X-Apple-I-MD-LU": anisette.localUserID,
-                "X-Apple-I-MD-M": anisette.machineID, "X-Apple-I-MD-RINFO": anisette.routingInfo,
+                "X-Apple-I-MD-M": anisette.machineID, "X-Apple-I-MD-RINFO": String(anisette.routingInfo),
+                "X-MMe-Client-Info": anisette.clientInfo,
                 "X-Mme-Device-Id": anisette.deviceID, "X-Apple-I-SRL-NO": serial] as [String: Any]
             let body: Data
             stage = .encode
@@ -327,8 +312,8 @@ actor SelfRenewalDeveloperAuthentication {
             request.httpMethod = "POST"; request.httpBody = body
             request.setValue("text/x-xml-plist", forHTTPHeaderField: "Content-Type")
             request.setValue("*/*", forHTTPHeaderField: "Accept")
-            request.setValue(GSARequesterIdentity.userAgent, forHTTPHeaderField: "User-Agent")
-            request.setValue(requesterIdentity.clientInfo, forHTTPHeaderField: "X-MMe-Client-Info")
+            request.setValue(Self.gsaUserAgent, forHTTPHeaderField: "User-Agent")
+            request.setValue(anisette.clientInfo, forHTTPHeaderField: "X-MMe-Client-Info")
             stage = .send
             let result = try await send(request)
             stage = .envelope

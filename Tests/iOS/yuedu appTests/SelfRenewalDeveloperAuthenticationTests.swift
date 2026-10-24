@@ -84,6 +84,7 @@ struct SelfRenewalDeveloperAuthenticationTests {
             let modes: [Mode] = [.normal, .missingM2, .missingNP, .missingSPD, .malformedSC, .badM2, .badNP]
             var positive: [Bool] = [], rejected: [[Bool]] = []
             var requesterPosts: [[Bool]] = [], providerSecondary: [Bool] = []
+            var sessionLifecycles: [[Bool]] = []
             for mode in modes {
                 let f = try await Fixture.make()
                 do {
@@ -108,6 +109,7 @@ struct SelfRenewalDeveloperAuthenticationTests {
                     let paths = await f.peer.paths()
                     let requester = await f.peer.requesterIdentityFacts()
                     requesterPosts += requester.posts; providerSecondary += requester.secondary
+                    sessionLifecycles.append(f.gsaSessions.facts(expectedRequests: requester.posts.count + requester.secondary.count))
                     let stored = try f.storage.load(namespace: f.namespace.id)
                     if mode == .normal {
                         positive = [returnedOutcome && personalTeamMatched, authorityRemainsUnproved,
@@ -129,9 +131,11 @@ struct SelfRenewalDeveloperAuthenticationTests {
             }
             let identifiers = try await Self.accountIdentifierBoundaryFacts()
             requesterPosts += identifiers.requester.posts; providerSecondary += identifiers.requester.secondary
-            let metadataRejected = try await Self.malformedGSARequesterFacts()
+            sessionLifecycles += identifiers.sessionLifecycles
+            let lifecycleFailures = try await Self.gsaSessionFailureFacts()
             return LoginBoundaryFacts(positive: positive, rejected: rejected, identifiers: identifiers,
-                requester: RequesterIdentityFacts(posts: requesterPosts, secondary: providerSecondary), metadataRejected: metadataRejected)
+                requester: RequesterIdentityFacts(posts: requesterPosts, secondary: providerSecondary),
+                sessionLifecycles: sessionLifecycles, lifecycleFailures: lifecycleFailures)
         }
         let facts = try await withTaskCancellationHandler { try await worker.value } onCancel: { worker.cancel() }
         #expect(facts.positive.count == 6)
@@ -148,8 +152,10 @@ struct SelfRenewalDeveloperAuthenticationTests {
         #expect(facts.requester.posts.allSatisfy { $0.count == 10 && $0.allSatisfy { $0 } })
         #expect(facts.requester.secondary.count == 8)
         #expect(facts.requester.secondary.allSatisfy { $0 })
-        #expect(facts.metadataRejected.count == 6)
-        #expect(facts.metadataRejected.allSatisfy { $0.count == 5 && $0.allSatisfy { $0 } })
+        #expect(facts.sessionLifecycles.count == 19)
+        #expect(facts.sessionLifecycles.allSatisfy { $0.count == 6 && $0.allSatisfy { $0 } })
+        #expect(facts.lifecycleFailures.count == 3)
+        #expect(facts.lifecycleFailures.allSatisfy { $0.count == 6 && $0.allSatisfy { $0 } })
     }
     @Test("a valid GSA candidate cannot bypass the sealed personal team pin")
     func rejectsWrongTeamAfterValidGSACryptoWithoutPersistingCredentials() async throws {
@@ -388,12 +394,12 @@ struct SelfRenewalDeveloperAuthenticationTests {
         let rejected: [[Bool]]
         let identifiers: IdentifierBoundaryFacts
         let requester: RequesterIdentityFacts
-        let metadataRejected: [[Bool]]
+        let sessionLifecycles: [[Bool]]
+        let lifecycleFailures: [[Bool]]
     }
     private enum GSAClientFixture {
         static let providerClientInfo = "<OwnedModel1,1> <Owned OS;1;A> <OwnedProvider/1>"
-        static let requesterClientInfo = "<OwnedModel1,1> <macOS;26.6;25G72> <com.apple.AuthKit/1 (com.apple.dt.Xcode/26.0)>"
-        static let requesterUserAgent = "AuthKit/1 (Macintosh; OS X 26.6) (com.apple.dt.Xcode/26.0)"
+        static let requesterUserAgent = "akd/1.0 CFNetwork/808.1.4"
     }
     private struct RequesterIdentityFacts: Sendable {
         let posts: [[Bool]]
@@ -404,6 +410,7 @@ struct SelfRenewalDeveloperAuthenticationTests {
         let rejected: [[Bool]]
         let controls: [Bool]
         let requester: RequesterIdentityFacts
+        let sessionLifecycles: [[Bool]]
     }
     /// All new opaque-ID checks return plain facts to the parent @Test. Crypto,
     /// fixture I/O and URLProtocol callbacks never own new Testing assertions.
@@ -411,6 +418,7 @@ struct SelfRenewalDeveloperAuthenticationTests {
         let vectors = try Vectors.all()
         var positive: [[Bool]] = [], rejected: [[Bool]] = [], controls: [Bool] = []
         var requesterPosts: [[Bool]] = [], providerSecondary: [Bool] = []
+        var sessionLifecycles: [[Bool]] = []
         for sample in try IdentifierVectors.all() {
             guard let vector = vectors.first(where: { $0.protocol == sample.protocol }) else { throw FixtureFailure.invalid }
             let f = try await Fixture.make(vector: vector)
@@ -456,6 +464,7 @@ struct SelfRenewalDeveloperAuthenticationTests {
                 }
                 let requester = await f.peer.requesterIdentityFacts()
                 requesterPosts += requester.posts; providerSecondary += requester.secondary
+                sessionLifecycles.append(f.gsaSessions.facts(expectedRequests: requester.posts.count + requester.secondary.count))
                 try await f.cleanup()
             } catch {
                 try await f.cleanup()
@@ -471,32 +480,48 @@ struct SelfRenewalDeveloperAuthenticationTests {
             controls.append(refused)
         }
         return IdentifierBoundaryFacts(positive: positive, rejected: rejected, controls: controls,
-            requester: RequesterIdentityFacts(posts: requesterPosts, secondary: providerSecondary))
+            requester: RequesterIdentityFacts(posts: requesterPosts, secondary: providerSecondary), sessionLifecycles: sessionLifecycles)
     }
-    nonisolated private static func malformedGSARequesterFacts() async throws -> [[Bool]] {
-        let invalid = ["Owned model without brackets", "<OwnedModel1,1", "<> <Owned OS> <OwnedProvider>",
-            "<" + String(repeating: "M", count: 65) + "> <Owned OS> <OwnedProvider>",
-            "<Owned Model> <Owned OS> <OwnedProvider>", "<Owned/Model> <Owned OS> <OwnedProvider>"]
-        let f = try await Fixture.make()
-        do {
-            var rejected: [[Bool]] = []
-            for providerClientInfo in invalid {
-                let auth = try await f.authentication(clientInfo: providerClientInfo)
+    nonisolated private static func gsaSessionFailureFacts() async throws -> [[Bool]] {
+        var rejected: [[Bool]] = []
+        for boundary in 0...2 {
+            let f = try await Fixture.make()
+            do {
                 var expectedFailure = false, returnedOutcome = false
-                do { _ = try await auth.signIn(appleID: f.vector.username, password: f.vector.password); returnedOutcome = true }
-                catch let failure as Auth.Failure { expectedFailure = failure == .missingDeviceMetadata }
+                if boundary == 2 {
+                    var request = URLRequest(url: URL(string: "https://gsa.apple.com/not-allowlisted")!)
+                    request.httpMethod = "GET"
+                    do { _ = try await f.transport.send(request); returnedOutcome = true }
+                    catch let failure as SelfRenewalDeveloperAccountTransportFailure { expectedFailure = failure == .wrongEndpoint }
+                } else {
+                    await f.peer.set(boundary == 0 ? .http503 : .holdInit)
+                    let auth = try await f.authentication()
+                    if boundary == 0 {
+                        do { _ = try await auth.signIn(appleID: f.vector.username, password: f.vector.password); returnedOutcome = true }
+                        catch let failure as Auth.Failure { expectedFailure = failure == .http(503) }
+                    } else {
+                        let operation = Task { try await auth.signIn(appleID: f.vector.username, password: f.vector.password) }
+                        _ = await f.peer.firstEvent()
+                        operation.cancel()
+                        do { _ = try await operation.value; returnedOutcome = true }
+                        catch is CancellationError { expectedFailure = true }
+                    }
+                }
                 let paths = await f.peer.paths()
-                rejected.append([expectedFailure, !returnedOutcome, paths.isEmpty,
-                    try f.storage.load(namespace: f.namespace.id) == nil, f.storage.successfulSaves() == 0])
+                let expectedRequests = boundary == 2 ? 0 : 1
+                let lifecycle = f.gsaSessions.facts(expectedRequests: expectedRequests)
+                rejected.append([expectedFailure, !returnedOutcome, paths == (boundary == 2 ? [] : ["init"]),
+                    try f.storage.load(namespace: f.namespace.id) == nil, f.storage.successfulSaves() == 0,
+                    lifecycle.count == 6 && lifecycle.allSatisfy { $0 }])
+                try await f.cleanup()
+            } catch {
+                try await f.cleanup()
+                throw error
             }
-            try await f.cleanup()
-            return rejected
-        } catch {
-            try await f.cleanup()
-            throw error
         }
+        return rejected
     }
-    private enum Mode: Sendable { case normal, wrongTeam, secondary, holdInit, badM2, badNP, badTag, missingSerial, storageFailure, missingM2, missingNP, missingSPD, malformedSC }
+    private enum Mode: Sendable { case normal, wrongTeam, secondary, holdInit, http503, badM2, badNP, badTag, missingSerial, storageFailure, missingM2, missingNP, missingSPD, malformedSC }
     private enum SignedScenario: String, CaseIterable, Sendable {
         case manual, trusted, matchedTrusted, normal, manualConflict, trustedConflict, normalConflict
         case sms, absolute, empty, typedURL, textCode, boolCode, unexpected, dangling, repeatManual, outerError
@@ -546,6 +571,7 @@ struct SelfRenewalDeveloperAuthenticationTests {
         }
         func configureIdentifier(_ value: IdentifierVector) { identifierVector = value }
         func identifierRequestChecks() -> [Bool] { identifierChecks }
+        func httpStatusCode() -> Int { mode == .http503 ? 503 : 200 }
         func requesterIdentityFacts() -> RequesterIdentityFacts { RequesterIdentityFacts(posts: requesterPosts, secondary: providerSecondary) }
         func paths() -> [String] { history }
         func firstEvent() async -> Event { if let event { return event }; return await withCheckedContinuation { waiters.append($0) } }
@@ -673,13 +699,13 @@ struct SelfRenewalDeveloperAuthenticationTests {
             // unchanged provider identity is also checked on the 2FA requests.
             requesterPosts.append([
                 request.value(forHTTPHeaderField: "User-Agent") == GSAClientFixture.requesterUserAgent,
-                request.value(forHTTPHeaderField: "X-MMe-Client-Info") == GSAClientFixture.requesterClientInfo,
-                request.value(forHTTPHeaderField: "X-MMe-Client-Info") != GSAClientFixture.providerClientInfo,
+                request.value(forHTTPHeaderField: "X-MMe-Client-Info") == GSAClientFixture.providerClientInfo,
+                cpd["X-MMe-Client-Info"] as? String == GSAClientFixture.providerClientInfo,
                 request.value(forHTTPHeaderField: "X-Xcode-Version") == nil,
                 cpd["X-Apple-I-MD"] as? String == "owned-fresh-otp",
                 cpd["X-Apple-I-MD-M"] as? String == "owned-machine",
                 cpd["X-Apple-I-MD-LU"] as? String == "owned-user",
-                cpd["X-Apple-I-MD-RINFO"] as? UInt64 == 1,
+                cpd["X-Apple-I-MD-RINFO"] as? String == "1",
                 cpd["X-Mme-Device-Id"] as? String == "owned-device",
                 cpd["X-Apple-I-SRL-NO"] as? String == "owned-public-serial"
             ])
@@ -709,7 +735,8 @@ struct SelfRenewalDeveloperAuthenticationTests {
             let started = Task {
                 do {
                     let body = try await peer.handle(request); try Task.checkCancellation()
-                    let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: ["Content-Type": "text/x-xml-plist", "Content-Length": String(body.count)])!
+                    let status = await peer.httpStatusCode()
+                    let response = HTTPURLResponse(url: request.url!, statusCode: status, httpVersion: "HTTP/1.1", headerFields: ["Content-Type": "text/x-xml-plist", "Content-Length": String(body.count)])!
                     client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed); client?.urlProtocol(self, didLoad: body); client?.urlProtocolDidFinishLoading(self)
                 } catch { client?.urlProtocol(self, didFailWithError: URLError(error is CancellationError ? .cancelled : .badServerResponse)) }
             }
@@ -729,25 +756,60 @@ struct SelfRenewalDeveloperAuthenticationTests {
         func successfulSaves() -> Int { lock.lock(); defer { lock.unlock() }; return saves }
         func cleanup(_ namespace: UUID) throws { guard KeychainHelper.delete(account: namespace.uuidString, service: "com.yuedu.selfRenewal.developerSession.v1", synchronizable: false) else { throw Client.Failure.storage } }
     }
+    /// Retain the actual sessions until facts are collected: bare object IDs
+    /// could be reused after deallocation and falsely suggest pool reuse.
+    private final class GSASessionRecorder: @unchecked Sendable {
+        private let lock = NSLock()
+        private var created: [URLSession] = []
+        private var invalidated: [ObjectIdentifier] = []
+        private var configurations: [Bool] = []
+        func observe(_ event: SelfRenewalDeveloperURLSessionTransport.GSASessionEvent, session: URLSession) {
+            lock.lock(); defer { lock.unlock() }
+            switch event {
+            case .created:
+                created.append(session)
+                let configuration = session.configuration
+                configurations.append(configuration.urlCache == nil && configuration.httpCookieStorage == nil
+                    && configuration.urlCredentialStorage == nil && !configuration.httpShouldSetCookies
+                    && configuration.httpMaximumConnectionsPerHost == 1
+                    && configuration.timeoutIntervalForRequest == 30 && configuration.timeoutIntervalForResource == 30
+                    && configuration.protocolClasses?.contains(where: { ObjectIdentifier($0) == ObjectIdentifier(PeerProtocol.self) }) == true)
+            case .invalidated: invalidated.append(ObjectIdentifier(session))
+            }
+        }
+        func facts(expectedRequests: Int) -> [Bool] {
+            lock.lock(); defer { lock.unlock() }
+            let identifiers = created.map { ObjectIdentifier($0) }
+            return [created.count == expectedRequests, invalidated.count == expectedRequests,
+                Set(identifiers).count == expectedRequests, Set(invalidated) == Set(identifiers),
+                Set(invalidated).count == invalidated.count,
+                configurations.count == expectedRequests && configurations.allSatisfy { $0 }]
+        }
+    }
     private final class Fixture: @unchecked Sendable {
         let directory: URL; let material: SelfRenewalApplicationMaterialVerifier.Materials
         let date = Date(timeIntervalSince1970: 1_792_540_800)
         let vault: Vault; let namespace: Vault.Namespace; let vector: Vector; let peer: Peer; let anchors: [Data]
-        let storage = Storage(); let transport = SelfRenewalDeveloperURLSessionTransport(protocolClasses: [PeerProtocol.self])
+        let storage = Storage(); let transport: SelfRenewalDeveloperURLSessionTransport
+        let gsaSessions: GSASessionRecorder
         init(directory: URL, material: SelfRenewalApplicationMaterialVerifier.Materials, vault: Vault, namespace: Vault.Namespace, vector: Vector, anchors: [Data]) {
             self.directory = directory; self.material = material; self.vault = vault; self.namespace = namespace; self.vector = vector; self.anchors = anchors
             peer = Peer(vector: vector, team: material.bundles[0].slices[0].teamIdentifier)
+            let recorder = GSASessionRecorder(); gsaSessions = recorder
+            transport = SelfRenewalDeveloperURLSessionTransport(protocolClasses: [PeerProtocol.self], gsaSessionObservation: { event, session in
+                recorder.observe(event, session: session)
+            })
         }
-        private func anisette(serial: Bool = true, clientInfo: String = GSAClientFixture.providerClientInfo) -> @Sendable () async throws -> Client.Anisette {
+        private func anisette(serial: Bool = true) -> @Sendable () async throws -> Client.Anisette {
             let date = date
             return {
                 var value = Client.Anisette(machineID: "owned-machine", oneTimePassword: "owned-fresh-otp", localUserID: "owned-user", routingInfo: 1,
-                    deviceID: "owned-device", clientInfo: clientInfo, issuedAt: date, locale: "en_US", timeZone: "UTC")
+                    deviceID: "owned-device", clientInfo: GSAClientFixture.providerClientInfo, issuedAt: date, locale: "en_US", timeZone: "UTC")
                 if serial { value.deviceSerialNumber = "owned-public-serial" }; return value
             }
         }
-        func authentication(serial: Bool = true, clientInfo: String = GSAClientFixture.providerClientInfo) async throws -> Auth {
-            let date = date, anisette = anisette(serial: serial, clientInfo: clientInfo)
+        func authentication(serial: Bool = true) async throws -> Auth {
+            let date = date, anisette = anisette(serial: serial)
             let client = try await Client.open(vault: vault, namespace: namespace, identity: material, issuerChainDER: [], transport: transport,
                 storage: storage, freshAnisette: anisette, clock: { date })
             let vector = vector

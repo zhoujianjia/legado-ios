@@ -23,33 +23,44 @@ extension SelfRenewalDeveloperAccountTransport {
     }
 }
 
-/// The account client's one reused ephemeral session. Book-source cookies,
-/// global credentials and caches are deliberately not account credentials.
+/// One injected transport owns account networking. ADI/developer services reuse
+/// its session; each allowlisted GSA auth request gets an isolated connection.
+/// Book-source cookies, global credentials and caches never join these sessions.
 final class SelfRenewalDeveloperURLSessionTransport: @unchecked Sendable, SelfRenewalDeveloperAccountTransport {
     private let session: URLSession
     private let delegate: Delegate
+    #if DEBUG
+    enum GSASessionEvent: Sendable { case created, invalidated }
+    private let gsaSessionObservation: (@Sendable (GSASessionEvent, URLSession) -> Void)?
+    #endif
     init() {
         let ownedDelegate = Delegate(); delegate = ownedDelegate
-        let configuration = URLSessionConfiguration.ephemeral
-        configuration.urlCache = nil; configuration.httpCookieStorage = nil
-        configuration.urlCredentialStorage = nil; configuration.httpShouldSetCookies = false
-        configuration.timeoutIntervalForRequest = 30; configuration.timeoutIntervalForResource = 30
+        let configuration = Self.sessionConfiguration()
         session = URLSession(configuration: configuration, delegate: ownedDelegate, delegateQueue: nil)
+        #if DEBUG
+        gsaSessionObservation = nil
+        #endif
     }
     #if DEBUG
     /// Same actual URLSession transport, intercepted by an owned URLProtocol.
     /// No alternate HTTP host, skipped TLS result or simulated Apple authority.
-    init(protocolClasses: [AnyClass]) {
+    init(protocolClasses: [AnyClass], gsaSessionObservation: (@Sendable (GSASessionEvent, URLSession) -> Void)? = nil) {
         let ownedDelegate = Delegate(); delegate = ownedDelegate
+        let configuration = Self.sessionConfiguration(protocolClasses: protocolClasses)
+        session = URLSession(configuration: configuration, delegate: ownedDelegate, delegateQueue: nil)
+        self.gsaSessionObservation = gsaSessionObservation
+    }
+    #endif
+    deinit { session.invalidateAndCancel() }
+
+    private static func sessionConfiguration(protocolClasses: [AnyClass]? = nil) -> URLSessionConfiguration {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.urlCache = nil; configuration.httpCookieStorage = nil
         configuration.urlCredentialStorage = nil; configuration.httpShouldSetCookies = false
         configuration.timeoutIntervalForRequest = 30; configuration.timeoutIntervalForResource = 30
         configuration.protocolClasses = protocolClasses
-        session = URLSession(configuration: configuration, delegate: ownedDelegate, delegateQueue: nil)
+        return configuration
     }
-    #endif
-    deinit { session.invalidateAndCancel() }
 
     func send(_ request: URLRequest) async throws -> SelfRenewalDeveloperAccountResponse {
         guard let url = request.url, url.scheme == "https", url.port == nil, url.user == nil, url.password == nil,
@@ -62,6 +73,11 @@ final class SelfRenewalDeveloperURLSessionTransport: @unchecked Sendable, SelfRe
                   request.value(forHTTPHeaderField: "Accept") == "application/vnd.api+json" else {
                 throw SelfRenewalDeveloperAccountTransportFailure.wrongEndpoint
             }
+        }
+        // This follows the allowlist above, so only the three existing GSA auth
+        // routes enter here. ADI provisioning uses sendAnisette's shared session.
+        if url.host == "gsa.apple.com" {
+            return try await performGSAAuthentication(request)
         }
         return try await perform(request, maximum: SelfRenewalDERPropertyList.Limits.bytes)
     }
@@ -133,6 +149,37 @@ final class SelfRenewalDeveloperURLSessionTransport: @unchecked Sendable, SelfRe
     }
 
     private func perform(_ request: URLRequest, maximum: Int) async throws -> SelfRenewalDeveloperAccountResponse {
+        try await perform(request, maximum: maximum, session: session, delegate: delegate)
+    }
+
+    private func performGSAAuthentication(_ request: URLRequest) async throws -> SelfRenewalDeveloperAccountResponse {
+        guard !Task.isCancelled else { throw SelfRenewalDeveloperAccountTransportFailure.cancelled }
+        // Apple's edge can reject later requests on a pooled GSA connection.
+        // Isolate each request, never retry it or weaken its HTTPS/security path.
+        // Remove only when the upstream connection restriction no longer holds.
+        // https://github.com/xtool-org/xtool/pull/247
+        // https://github.com/rileytestut/AltSign/pull/52
+        let configuration = Self.sessionConfiguration(protocolClasses: session.configuration.protocolClasses)
+        configuration.httpMaximumConnectionsPerHost = 1
+        #if DEBUG
+        let ownedDelegate = Delegate(gsaSessionObservation: gsaSessionObservation)
+        #else
+        let ownedDelegate = Delegate()
+        #endif
+        let ownedSession = URLSession(configuration: configuration, delegate: ownedDelegate, delegateQueue: nil)
+        #if DEBUG
+        gsaSessionObservation?(.created, ownedSession)
+        #endif
+        let result: Result<SelfRenewalDeveloperAccountResponse, Error>
+        do { result = .success(try await perform(request, maximum: SelfRenewalDERPropertyList.Limits.bytes, session: ownedSession, delegate: ownedDelegate)) }
+        catch { result = .failure(error) }
+        // Await the real invalidation callback on success, rejection or cancel;
+        // no request-scoped session remains alive until transport deinitializes.
+        await ownedDelegate.finishAndAwaitInvalidation(ownedSession)
+        return try result.get()
+    }
+
+    private func perform(_ request: URLRequest, maximum: Int, session: URLSession, delegate: Delegate) async throws -> SelfRenewalDeveloperAccountResponse {
         do {
             try Task.checkCancellation()
             let (stream, response) = try await session.bytes(for: request, delegate: delegate)
@@ -201,6 +248,44 @@ final class SelfRenewalDeveloperURLSessionTransport: @unchecked Sendable, SelfRe
         }
     }
     private final class Delegate: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
+        private let invalidationLock = NSLock()
+        private var invalidation: CheckedContinuation<Void, Never>?
+        private var invalidated = false
+        #if DEBUG
+        private let gsaSessionObservation: (@Sendable (GSASessionEvent, URLSession) -> Void)?
+        init(gsaSessionObservation: (@Sendable (GSASessionEvent, URLSession) -> Void)? = nil) {
+            self.gsaSessionObservation = gsaSessionObservation
+            super.init()
+        }
+        #endif
+
+        func finishAndAwaitInvalidation(_ session: URLSession) async {
+            await withCheckedContinuation { continuation in
+                invalidationLock.lock()
+                precondition(invalidation == nil)
+                if invalidated {
+                    invalidationLock.unlock()
+                    continuation.resume()
+                    return
+                }
+                invalidation = continuation
+                invalidationLock.unlock()
+                session.finishTasksAndInvalidate()
+            }
+        }
+
+        func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
+            #if DEBUG
+            gsaSessionObservation?(.invalidated, session)
+            #endif
+            invalidationLock.lock()
+            invalidated = true
+            let completion = invalidation
+            invalidation = nil
+            invalidationLock.unlock()
+            completion?.resume()
+        }
+
         func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
             newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
             // Never forward Apple session/anisette headers to a redirect target.
