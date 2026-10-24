@@ -1,5 +1,7 @@
 import Combine
+import CryptoKit
 import Foundation
+import LegadoRuntime
 import Testing
 @testable import yuedu_app
 
@@ -45,9 +47,9 @@ struct BookSourceSearchOrderTests {
     }
 
     @Test("a picker exhausts a 301-source cached pack with the large-pack pause setting unset")
-    func largePackDoesNotSilentlyStopAtTen() async {
+    func largePackDoesNotSilentlyStopAtTen() async throws {
         let sources = (0..<301).map { source("pack-\($0)") }
-        let site = SourceOrderStubSite(sources: sources)
+        let site = try SourceOrderStubSite(sources: sources)
         let query = site.query
         let settings = GlobalSettings.shared
         let saved = (settings.searchConcurrency, settings.searchAutoPauseCount, settings.searchCacheDays)
@@ -73,17 +75,17 @@ struct BookSourceSearchOrderTests {
             settings.searchCacheDays = saved.2
         }
         aggregator.search(query: query, sources: sources, origin: .changeSource)
-        _ = await aggregator.$isSearching.values.first { !$0 }
+        await published(aggregator) { !$0.isSearching }
         #expect(!aggregator.isPaused)
         #expect(aggregator.progress.completed == 301)
         #expect(aggregator.results.first?.origins.map(\.sourceId) == sources.map(\.id))
-        #expect(site.requestCounts.isEmpty, "the pack answers from cache; its injected protocol never leaves the test")
+        #expect(site.requestCounts.isEmpty, "the pack answers from cache; its owned executor is never called")
     }
 
     @Test("a late pinned source stays first; a picker asks cooled-down sources past the hit threshold")
-    func latePrioritySourceIsNotCancelledOrOvertaken() async {
-        let first = source("pinned"), second = source("ordinary", type: 1)
-        let site = SourceOrderStubSite(sources: [first, second], heldSource: first.id)
+    func latePrioritySourceIsNotCancelledOrOvertaken() async throws {
+        let first = source("pinned"), second = source("ordinary")
+        let site = try SourceOrderStubSite(sources: [first, second], heldSource: first.id)
         let settings = GlobalSettings.shared
         let saved = (settings.searchConcurrency, settings.searchAutoPauseCount, settings.searchCacheDays)
         settings.searchConcurrency = 2
@@ -106,25 +108,56 @@ struct BookSourceSearchOrderTests {
         #expect(!aggregator.isPaused)
         #expect(aggregator.progress.skipped == 0)
         site.releaseFirst()
-        _ = await aggregator.$isSearching.values.first { !$0 }
+        await published(aggregator) { !$0.isSearching }
 
         let result = aggregator.results.first
         #expect(result?.origins.map(\.sourceId) == [first.id, second.id])
         #expect(result?.origins.map(\.sourceName) == [first.bookSourceName, second.bookSourceName])
         #expect(aggregator.progress.completed == 2)
         #expect(site.requestCounts == [first.id: 1, second.id: 1])
-        if let origins = result?.origins, origins.count == 2 {
-            #expect(result?.contentKind(for: origins[0]) == .text)
-            #expect(result?.contentKind(for: origins[1]) == .audio)
-            #expect(result?.detailIntro(for: origins[0]) == "pinned intro")
-            #expect(result?.detailIntro(for: origins[1]) == "ordinary intro")
+        let origins = try #require(result?.origins)
+        try #require(origins.count == 2)
+        #expect(result?.contentKind(for: origins[0]) == .text)
+        #expect(result?.contentKind(for: origins[1]) == .text)
+        #expect(result?.detailIntro(for: origins[0]) == "pinned intro")
+        #expect(result?.detailIntro(for: origins[1]) == "ordinary intro")
+
+        // Native traditional execution admits text sources only. Exercise the
+        // original audio presentation/alignment assertion through its legitimate
+        // immutable cache boundary, after both uncached source calls completed.
+        var audio = second
+        audio.bookSourceType = 1
+        let cache = SearchResultCache.shared
+        settings.searchCacheDays = 1
+        for source in [first, audio] {
+            cache.store(books: [OnlineBook(name: site.query, author: "Author", intro: source.bookSourceName + " intro",
+                coverUrl: "", bookUrl: source.bookSourceUrl + "/book", tocUrl: "", wordCount: "",
+                lastChapter: "", kind: "", sourceId: source.id, sourceName: source.bookSourceName)],
+                query: site.query, source: source, days: 1)
         }
+        cache.waitForPendingWritesForTesting()
+        let cached = SearchAggregator(fetcher: site.fetcher)
+        defer {
+            cached.cancelAndClear()
+            for source in [first, audio] { cache.clear(query: site.query, source: source) }
+        }
+        cached.search(query: site.query, sources: [first, audio], origin: .changeSource)
+        await published(cached) { !$0.isSearching }
+        let presented = try #require(cached.results.first)
+        let presentedOrigins = presented.origins
+        #expect(presentedOrigins.map(\.sourceId) == [first.id, second.id])
+        try #require(presentedOrigins.count == 2)
+        #expect(presented.contentKind(for: presentedOrigins[0]) == .text)
+        #expect(presented.contentKind(for: presentedOrigins[1]) == .audio)
+        #expect(presented.detailIntro(for: presentedOrigins[0]) == "pinned intro")
+        #expect(presented.detailIntro(for: presentedOrigins[1]) == "ordinary intro")
+        #expect(site.requestCounts == [first.id: 1, second.id: 1], "cached audio presentation adds no native execution")
     }
 
     @Test("the search tab still skips cooldowns and pauses at its configured threshold")
-    func searchTabRetainsItsPolicy() async {
+    func searchTabRetainsItsPolicy() async throws {
         let cooled = source("cooled"), first = source("first"), remaining = source("remaining")
-        let site = SourceOrderStubSite(sources: [cooled, first, remaining])
+        let site = try SourceOrderStubSite(sources: [cooled, first, remaining])
         let settings = GlobalSettings.shared
         let saved = (settings.searchConcurrency, settings.searchAutoPauseCount, settings.searchCacheDays)
         settings.searchConcurrency = 1
@@ -141,7 +174,7 @@ struct BookSourceSearchOrderTests {
         }
 
         aggregator.search(query: site.query, sources: [cooled, first, remaining], origin: .searchTab)
-        _ = await aggregator.$isSearching.values.first { !$0 }
+        await published(aggregator) { !$0.isSearching }
         #expect(aggregator.isPaused)
         #expect(aggregator.progress.skipped == 1)
         #expect(aggregator.results.first?.origins.map(\.sourceId) == [first.id])
@@ -149,9 +182,9 @@ struct BookSourceSearchOrderTests {
     }
 
     @Test("the search tab keeps its original arrival order instead of the picker's rank")
-    func searchTabKeepsArrivalOrder() async {
+    func searchTabKeepsArrivalOrder() async throws {
         let first = source("first"), second = source("second")
-        let site = SourceOrderStubSite(sources: [first, second], heldSource: first.id)
+        let site = try SourceOrderStubSite(sources: [first, second], heldSource: first.id, allowsSecondPage: true)
         let settings = GlobalSettings.shared
         let saved = (settings.searchConcurrency, settings.searchAutoPauseCount, settings.searchCacheDays)
         settings.searchConcurrency = 2
@@ -168,15 +201,19 @@ struct BookSourceSearchOrderTests {
         aggregator.search(query: site.query, sources: [first, second], origin: .searchTab)
         await published(aggregator) { $0.results.first?.origins.first?.sourceId == second.id }
         site.releaseFirst()
-        _ = await aggregator.$isSearching.values.first { !$0 }
+        await published(aggregator) { !$0.isSearching }
         #expect(aggregator.results.first?.origins.map(\.sourceId) == [second.id, first.id])
-        #expect(site.requestCounts == [first.id: 1, second.id: 1])
+        // The original DTO has no hasMore verdict. Search-tab paging therefore
+        // asks page 2 once; its explicit empty answer terminates further rounds.
+        #expect(site.firstPageRequestCounts == [first.id: 1, second.id: 1])
+        #expect(site.secondPageRequestCounts == [first.id: 1, second.id: 1])
+        #expect(site.requestCounts == [first.id: 2, second.id: 2])
     }
 
     @Test("an inactive picker publishes its ordered final snapshot only after becoming active")
-    func sceneGateStillOwnsPublication() async {
+    func sceneGateStillOwnsPublication() async throws {
         let first = source("first"), second = source("second")
-        let site = SourceOrderStubSite(sources: [first, second])
+        let site = try SourceOrderStubSite(sources: [first, second])
         let settings = GlobalSettings.shared
         let savedCacheDays = settings.searchCacheDays
         settings.searchCacheDays = 0
@@ -188,7 +225,7 @@ struct BookSourceSearchOrderTests {
         }
         aggregator.setResultPresentationActive(false)
         aggregator.search(query: site.query, sources: [first, second], origin: .changeSource)
-        _ = await aggregator.$isSearching.values.first { !$0 }
+        await published(aggregator) { !$0.isSearching }
         #expect(aggregator.results.isEmpty)
         aggregator.setResultPresentationActive(true)
         await published(aggregator) { $0.results.first?.origins.count == 2 }
@@ -199,10 +236,17 @@ struct BookSourceSearchOrderTests {
 
     private func published(_ aggregator: SearchAggregator,
                            until predicate: (SearchAggregator) -> Bool) async {
+        // Subscribe before checking state. The sink owns unlimited demand and
+        // the bounded stream coalesces bursts; the main-actor consumer reads
+        // the actual state after each synchronous publication has finished.
+        let (events, continuation) = AsyncStream<Void>.makeStream(bufferingPolicy: .bufferingNewest(1))
+        let subscription = aggregator.objectWillChange.sink { _ in continuation.yield(()) }
+        defer {
+            subscription.cancel()
+            continuation.finish()
+        }
         if predicate(aggregator) { return }
-        // The observable event wakes this main-actor consumer after the synchronous
-        // assignment. No timer or network timing is used to decide when to release a source.
-        for await _ in aggregator.objectWillChange.values {
+        for await _ in events {
             if predicate(aggregator) { return }
         }
     }
@@ -229,112 +273,170 @@ struct BookSourceSearchOrderTests {
     }
 }
 
-/// Every URL is handled by the injected protocol. The pinned response is explicitly
-/// released only after the ordinary source's result has reached the picker.
+/// Replace the native invocation boundary, not the unrelated WebFetcher.
+/// Every unexpected route fails closed; the held pin needs explicit release.
 @MainActor
 private final class SourceOrderStubSite {
     let query = "order\(UUID().uuidString.prefix(8))"
     let fetcher: BookSourceFetcher
-    private let sources: [BookSource]
+    private let executor: SourceOrderOwnedExecutor
+    private let directory: URL
     private let session: URLSession
 
-    init(sources: [BookSource], heldSource: UUID? = nil) {
-        self.sources = sources
+    init(sources: [BookSource], heldSource: UUID? = nil, allowsSecondPage: Bool = false) throws {
+        directory = FileManager.default.temporaryDirectory.appendingPathComponent("source-order-\(UUID())", isDirectory: true)
+        executor = try SourceOrderOwnedExecutor(sources: sources, query: query,
+            heldSource: heldSource, allowsSecondPage: allowsSecondPage)
         let config = URLSessionConfiguration.ephemeral
-        config.protocolClasses = [SourceOrderURLProtocol.self]
+        config.protocolClasses = [SourceOrderRejectNetwork.self]
         session = URLSession(configuration: config)
-        fetcher = BookSourceFetcher(webFetcher: WebFetcher(session: session))
-        for source in sources {
-            SourceOrderURLProtocol.register(source: source, title: query, held: source.id == heldSource)
-        }
+        fetcher = BookSourceFetcher(webFetcher: WebFetcher(session: session), mainJSService:
+            LegadoMainJSSourceService(executor: SourceOrderRejectMainJS(), contextDirectory: directory,
+                originalExecutor: executor))
     }
 
-    var requestCounts: [UUID: Int] { SourceOrderURLProtocol.requestCounts(for: sources) }
-    func releaseFirst() { for source in sources { SourceOrderURLProtocol.release(source) } }
+    var requestCounts: [UUID: Int] { executor.requestCounts(page: nil) }
+    var firstPageRequestCounts: [UUID: Int] { executor.requestCounts(page: 1) }
+    var secondPageRequestCounts: [UUID: Int] { executor.requestCounts(page: 2) }
+    func releaseFirst() { executor.release() }
     func finish() {
+        executor.finish()
         session.invalidateAndCancel()
-        for source in sources { SourceOrderURLProtocol.remove(source) }
+        if FileManager.default.fileExists(atPath: directory.path) {
+            do { try FileManager.default.removeItem(at: directory) }
+            catch { Issue.record(error) }
+        }
     }
 }
 
-private final class SourceOrderURLProtocol: URLProtocol {
+private final class SourceOrderOwnedExecutor: LegadoOriginalPreviewExecuting, @unchecked Sendable {
     private struct Page {
         let sourceID: UUID
-        let title: String
-        let intro: String
+        let sourceBytes: Data
+        let signature: String
+        let book: LegadoOriginalBook
         var held: Bool
-        var requests = 0
-        var pending: SourceOrderURLProtocol?
+        var calls: [Int32: Int] = [:]
     }
-    private static let lock = NSLock()
-    nonisolated(unsafe) private static var pages: [String: Page] = [:]
-
-    static func register(source: BookSource, title: String, held: Bool) {
-        lock.withLock { pages[URL(string: source.bookSourceUrl)!.host!] = Page(
-            sourceID: source.id, title: title, intro: source.bookSourceName + " intro", held: held) }
+    private struct Pending {
+        let book: LegadoOriginalBook
+        let continuation: CheckedContinuation<LegadoOriginalPreviewResult, Error>
     }
+    private let lock = NSLock()
+    private let query: String
+    private let allowsSecondPage: Bool
+    private var pages: [String: Page] = [:]
+    private var pending: [UUID: Pending] = [:]
+    private var closed = false
 
-    static func requestCounts(for sources: [BookSource]) -> [UUID: Int] {
-        lock.withLock {
-            var result: [UUID: Int] = [:]
-            for source in sources {
-                if let page = pages[URL(string: source.bookSourceUrl)!.host!], page.requests > 0 {
-                    result[page.sourceID] = page.requests
-                }
+    init(sources: [BookSource], query: String, heldSource: UUID?, allowsSecondPage: Bool) throws {
+        self.query = query
+        self.allowsSecondPage = allowsSecondPage
+        guard Set(sources.map(\.id)).count == sources.count,
+              heldSource.map({ held in sources.contains { $0.id == held } }) ?? true else {
+            throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "Owned source-order registration lost its unique or held identity")
+        }
+        let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
+        for source in sources {
+            guard !source.isJsSource, source.bookSourceType == 0, !source.bookSourceUrl.isEmpty,
+                  pages[source.bookSourceUrl] == nil else {
+                throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "Owned source-order execution requires unique traditional text sources")
             }
-            return result
+            var stable = source
+            stable.id = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
+            stable.lastUpdateTime = 0; stable.respondTime = 180000
+            let signature = SHA256.hash(data: try encoder.encode(stable)).map { String(format: "%02x", $0) }.joined()
+            var book = LegadoOriginalBook(bookURL: source.bookSourceUrl + "/book", origin: source.bookSourceUrl,
+                name: query, author: "Author")
+            book.intro = source.bookSourceName + " intro"
+            book.originName = source.bookSourceName
+            pages[source.bookSourceUrl] = Page(sourceID: source.id, sourceBytes: try encoder.encode(source),
+                signature: signature, book: book, held: source.id == heldSource)
         }
     }
 
-    static func release(_ source: BookSource) {
-        let pending: (SourceOrderURLProtocol, Page)? = lock.withLock {
-            let host = URL(string: source.bookSourceUrl)!.host!
-            pages[host]?.held = false
-            guard let page = pages[host], let request = page.pending else { return nil }
-            pages[host]?.pending = nil
-            return (request, page)
+    func execute(sourceJSON: String, sourceURL: String, sourceRevision: String,
+                 grant: OriginalRuntimePreviewGrant?, operation: LegadoOriginalPreviewOperation,
+                 deadline: Date) async throws -> LegadoOriginalPreviewResult {
+        guard grant == nil, case .search(let key, let page) = operation, key == query,
+              let page, page == 1 || (allowsSecondPage && page == 2), deadline.timeIntervalSinceNow > 0 else {
+            throw LegadoRuntimeError(code: "INVALID_ARGUMENT", message: "Unexpected owned source-order operation")
         }
-        if let (request, page) = pending { request.respond(page) }
+        try Task.checkCancellation()
+        let ticket = UUID()
+        return try await withTaskCancellationHandler(operation: {
+            try await withCheckedThrowingContinuation { continuation in
+                let immediate: Result<LegadoOriginalPreviewResult, Error>? = lock.withLock {
+                    guard !closed, !Task.isCancelled else { return .failure(CancellationError()) }
+                    guard let admitted = pages[sourceURL], admitted.sourceBytes == Data(sourceJSON.utf8),
+                          admitted.signature == sourceRevision else {
+                        return .failure(LegadoRuntimeError(code: "INVALID_STATE_OWNER", message: "Unregistered owned source-order identity"))
+                    }
+                    pages[sourceURL]?.calls[page, default: 0] += 1
+                    if page == 2 { return .success(.search([])) }
+                    if admitted.held {
+                        pending[ticket] = Pending(book: admitted.book, continuation: continuation)
+                        return nil
+                    }
+                    return .success(.search([admitted.book]))
+                }
+                if let immediate { continuation.resume(with: immediate) }
+            }
+        }, onCancel: { self.cancel(ticket) })
     }
 
-    static func remove(_ source: BookSource) {
-        lock.withLock { _ = pages.removeValue(forKey: URL(string: source.bookSourceUrl)!.host!) }
+    func requestCounts(page: Int32?) -> [UUID: Int] {
+        lock.withLock {
+            Dictionary(uniqueKeysWithValues: pages.values.compactMap { entry in
+                let count = page.map { entry.calls[$0] ?? 0 } ?? entry.calls.values.reduce(0, +)
+                return count > 0 ? (entry.sourceID, count) : nil
+            })
+        }
     }
 
+    func release() {
+        let released = lock.withLock {
+            for key in Array(pages.keys) { pages[key]?.held = false }
+            let released = Array(pending.values)
+            pending.removeAll()
+            return released
+        }
+        for value in released { value.continuation.resume(returning: .search([value.book])) }
+    }
+
+    private func cancel(_ ticket: UUID) {
+        let value = lock.withLock { pending.removeValue(forKey: ticket) }
+        value?.continuation.resume(throwing: CancellationError())
+    }
+
+    func finish() {
+        let cancelled = lock.withLock {
+            closed = true
+            let cancelled = Array(pending.values)
+            pending.removeAll()
+            return cancelled
+        }
+        for value in cancelled { value.continuation.resume(throwing: CancellationError()) }
+    }
+}
+
+private struct SourceOrderRejectMainJS: LegadoMainJSExecuting {
+    func createSession(sourceJSON: String) async throws -> String {
+        throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY", message: "Unexpected mainJs route in original source-order fixture")
+    }
+    func execute(sessionID: String, operation: String, requestJSON: String) async throws -> String {
+        throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY", message: "Unexpected mainJs execution in original source-order fixture")
+    }
+    func closeSession(id: String) async throws {
+        throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY", message: "Unexpected mainJs session in original source-order fixture")
+    }
+}
+
+private final class SourceOrderRejectNetwork: URLProtocol {
     override class func canInit(with request: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
-
     override func startLoading() {
-        guard let host = request.url?.host else {
-            client?.urlProtocol(self, didFailWithError: URLError(.badURL))
-            return
-        }
-        let reply: (page: Page?, registered: Bool) = Self.lock.withLock {
-            guard Self.pages[host] != nil else { return (nil, false) }
-            Self.pages[host]?.requests += 1
-            if Self.pages[host]?.held == true {
-                Self.pages[host]?.pending = self
-                return (nil, true)
-            }
-            return (Self.pages[host], true)
-        }
-        if let page = reply.page { respond(page) }
-        else if !reply.registered { client?.urlProtocol(self, didFailWithError: URLError(.cannotFindHost)) }
+        client?.urlProtocol(self, didFailWithError: URLError(.unsupportedURL))
     }
-
-    override func stopLoading() {
-        guard let host = request.url?.host else { return }
-        Self.lock.withLock {
-            if Self.pages[host]?.pending === self { Self.pages[host]?.pending = nil }
-        }
-    }
-
-    private func respond(_ page: Page) {
-        let body = Data("<html><li class='book'><a href='/book'>\(page.title)</a><span class='author'>Author</span><span class='intro'>\(page.intro)</span></li></html>".utf8)
-        let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: "HTTP/1.1",
-                                       headerFields: ["Content-Type": "text/html; charset=utf-8"])!
-        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-        client?.urlProtocol(self, didLoad: body)
-        client?.urlProtocolDidFinishLoading(self)
-    }
+    override func stopLoading() {}
 }

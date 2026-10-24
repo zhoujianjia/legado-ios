@@ -96,6 +96,9 @@ class DiagnosticGates(unittest.TestCase):
         self.assertLess(workflow.index("name: Retain the diagnostic unsigned device package"), workflow.index("run-source-change"))
         self.assertLess(workflow.index("name: Retain the diagnostic unsigned device package"), workflow.index("run-current-app-preparation"))
         self.assertLess(workflow.index("name: Retain the diagnostic unsigned device package"), workflow.index("run-original-source-admission"))
+        phases = ("run-enrollment", "run-current-app-preparation", "run-original-source-admission", "run-source-change")
+        self.assertEqual([workflow.index(phase) for phase in phases], sorted(workflow.index(phase) for phase in phases))
+        self.assertNotIn("continue-on-error", workflow)
         self.assertNotIn("renewal-package-tools.py run", workflow)
         self.assertNotIn("full-application-signing-tools.py", workflow)
 
@@ -284,8 +287,10 @@ class DiagnosticGates(unittest.TestCase):
                         patch.object(diagnostic.native.smoke, "review_overlays"), \
                         patch.object(diagnostic.full, "command", side_effect=command):
                     if execution_failed:
-                        with self.assertRaises(RuntimeError):
+                        with self.assertRaisesRegex(RuntimeError, "Controlled regression groups failed: " + label) as failure:
                             run()
+                        self.assertIsInstance(failure.exception.__cause__, RuntimeError)
+                        self.assertEqual(str(failure.exception.__cause__), "test execution failed or timed out")
                     else:
                         run()
                 self.assertEqual([name for name, _, _ in calls], [prefix + "-" + kind
@@ -300,6 +305,105 @@ class DiagnosticGates(unittest.TestCase):
                 self.assertEqual(result["status"], "failed" if execution_failed else "passed")
                 self.assertEqual(result["requiredCases"], list(cases))
                 self.assertFalse(result[unverified])
+
+    def test_failed_group_is_persisted_before_later_independent_group_and_overall_failure(self):
+        groups = dict(list(diagnostic.SOURCE_CHANGE_GROUPS.items())[:2])
+        first, second = groups
+        for mode in ("execution", "summary", "tree", "skipped", "export", "evidence-write"):
+            with self.subTest(failure=mode), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp).resolve()
+                work = root / "work"; work.mkdir()
+                logs = root / "logs"; logs.mkdir()
+                simulator = root / "simulator"; simulator.mkdir()
+                produced = root / "produced"; produced.mkdir()
+                resource = root / diagnostic.SDK_RESOURCE; resource.parent.mkdir(parents=True)
+                resource.write_text("{}")
+                manifest = produced / "sdk-produced-fixture-manifest.json"; manifest.write_text("{}")
+                (simulator / "overlays.json").write_text("{}")
+                receipt = {"sourceCommit": SOURCE}
+                staged = {"test-only-stage": True}
+                write_new = diagnostic.full.write_new
+                write_new(work / "enrollment-prepared.json", dict(receipt,
+                    requiredCase=diagnostic.ENROLLMENT_CASE, testSourceStage=staged,
+                    fixture=diagnostic.full.fact(resource), producerManifest=diagnostic.full.fact(manifest)))
+                first_result = logs / ("renewal-diagnostic-" + first + "-result.json")
+                bundles, prior_failure_observed = [], []
+
+                def write_result(path, value):
+                    if mode == "evidence-write" and path == first_result:
+                        raise OSError("failed result persistence unavailable")
+                    write_new(path, value)
+
+                def command(directory, name, argv, seconds):
+                    argv = [str(value) for value in argv]
+                    label = next(label for label in groups if name.startswith("renewal-diagnostic-" + label + "-"))
+                    cases = groups[label]
+                    if name.endswith("-test"):
+                        bundle = Path(argv[argv.index("-resultBundlePath") + 1])
+                        bundle.mkdir(parents=True)
+                        bundles.append(bundle)
+                        self.assertEqual(seconds, 660)
+                        self.assertEqual(argv[argv.index("-t") + 1], "600")
+                        self.assertEqual([arg for arg in argv if arg.startswith("-only-testing:")],
+                            ["-only-testing:yuedu appTests/" + case + "()" for case in cases])
+                        if label == second:
+                            prior_failure_observed.append(json.loads(first_result.read_bytes())["status"])
+                        if label == first and mode in ("execution", "evidence-write"):
+                            raise RuntimeError("first group actual execution failed")
+                        return
+                    if label == first and mode == "export":
+                        raise RuntimeError("first group xcresult export unavailable")
+                    count = len(cases)
+                    if name.endswith("-summary"):
+                        counts = {"passedTests": count, "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}
+                        if label == first and mode in ("summary", "skipped"):
+                            counts["passedTests"] -= 1
+                            counts["failedTests" if mode == "summary" else "skippedTests"] = 1
+                        value = {"totalTestCount": count, **counts, "devicesAndConfigurations": [dict(counts)]}
+                    else:
+                        nodes = [{"nodeType": "Test Case", "nodeIdentifier": "yuedu appTests/" + case + "()",
+                                  "result": "Passed"} for case in cases]
+                        if label == first and mode == "tree":
+                            nodes[0]["result"] = "Failed"
+                        value = {"testNodes": nodes}
+                    write_new(directory / (name + ".log"), value)
+
+                with patch.multiple(diagnostic, REPO=root, WORK=work, LOGS=logs, SIMULATOR=simulator, PRODUCED=produced), \
+                        patch.object(diagnostic, "check_binding", return_value=receipt), \
+                        patch.object(diagnostic, "enrollment_source_stage", return_value=staged), \
+                        patch.object(diagnostic, "enrollment_project_overlay", side_effect=nullcontext), \
+                        patch.object(diagnostic.native.smoke, "review_overlays"), \
+                        patch.object(diagnostic.full, "command", side_effect=command), \
+                        patch.object(diagnostic.full, "write_new", side_effect=write_result):
+                    if mode == "evidence-write":
+                        with self.assertRaisesRegex(OSError, "failed result persistence unavailable"):
+                            diagnostic.run_controlled_groups(groups, regression_scope="portable owned fixture",
+                                unverified={"physicalDeviceSourceSwitchVerified": False})
+                    else:
+                        with self.assertRaisesRegex(RuntimeError, "Controlled regression groups failed: " + first) as failure:
+                            diagnostic.run_controlled_groups(groups, regression_scope="portable owned fixture",
+                                unverified={"physicalDeviceSourceSwitchVerified": False})
+                        self.assertIsNotNone(failure.exception.__cause__)
+                if mode == "evidence-write":
+                    self.assertEqual(len(bundles), 1)
+                    self.assertEqual(prior_failure_observed, [])
+                    self.assertFalse(first_result.exists())
+                    self.assertFalse((logs / ("renewal-diagnostic-" + second + "-result.json")).exists())
+                    continue
+                self.assertEqual(prior_failure_observed, ["failed"])
+                self.assertEqual(len(bundles), 2)
+                self.assertEqual(len(set(bundles)), 2)
+                self.assertTrue(all(bundle.is_dir() for bundle in bundles))
+                for label, expected_status in ((first, "failed"), (second, "passed")):
+                    result = json.loads((logs / ("renewal-diagnostic-" + label + "-result.json")).read_bytes())
+                    self.assertEqual(result["status"], expected_status)
+                    self.assertEqual(result["requiredCases"], list(groups[label]))
+                    self.assertFalse(result["physicalDeviceSourceSwitchVerified"])
+                first_failed = json.loads(first_result.read_bytes())
+                self.assertEqual(first_failed["observed"] is not None, mode == "execution")
+                second_passed = json.loads((logs / ("renewal-diagnostic-" + second + "-result.json")).read_bytes())
+                self.assertEqual(second_passed["cases"], list(groups[second]))
+                self.assertEqual(second_passed["summary"]["passedTests"], len(groups[second]))
 
     def test_real_file_and_zip_budget_gates_and_old_s3_kind_rejection(self):
         with tempfile.TemporaryDirectory() as tmp:

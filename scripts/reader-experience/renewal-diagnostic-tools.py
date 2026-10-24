@@ -404,7 +404,7 @@ def run_enrollment():
 
 
 def run_controlled_groups(groups, *, regression_scope, unverified):
-    """Give each controlled group its own invocation, result bundle and exact-case gate."""
+    """Attempt each independent group, then fail if any exact-case gate failed."""
     receipt = check_binding()
     prepared = json.loads((WORK / "enrollment-prepared.json").read_bytes())
     if (any(prepared.get(key) != value for key, value in receipt.items())
@@ -415,6 +415,7 @@ def run_controlled_groups(groups, *, regression_scope, unverified):
         raise ValueError("Controlled regression source or fixture preparation changed")
     with enrollment_project_overlay():
         native.smoke.review_overlays(json.loads((SIMULATOR / "overlays.json").read_bytes()))
+    failures = []
     for label, cases in groups.items():
         prefix = "renewal-diagnostic-" + label
         result_bundle = REPO / (".build/" + prefix + ".xcresult")
@@ -444,14 +445,19 @@ def run_controlled_groups(groups, *, regression_scope, unverified):
             observed = verify_cases(exports["summary"], exports["tests"], cases)
             if failure is not None:
                 raise failure
-        except Exception:
+        except Exception as error:
             full.write_new(LOGS / (prefix + "-result.json"), dict(receipt,
                 status="failed", requiredCases=list(cases), observed=observed,
                 regressionScope=regression_scope, **unverified))
-            raise
+            # Persist this group's failure before starting another independent
+            # invocation. Failure to write that evidence remains immediately fatal.
+            failures.append((label, error))
+            continue
         full.write_new(LOGS / (prefix + "-result.json"), dict(receipt,
             status="passed", requiredCases=list(cases), **observed,
             regressionScope=regression_scope, **unverified))
+    if failures:
+        raise RuntimeError("Controlled regression groups failed: " + ", ".join(label for label, _ in failures)) from failures[0][1]
 
 
 def run_source_change():

@@ -76,12 +76,12 @@ jobs:
           python -B scripts/reader-experience/renewal-diagnostic-tools.py prepare-simulator
       - name: Run only the controlled GSA authentication regression with a strict one-case result gate
         run: python -B scripts/reader-experience/renewal-diagnostic-tools.py run-enrollment
-      - name: Run the independent controlled source-picker regressions with exact case gates
-        run: python -B scripts/reader-experience/renewal-diagnostic-tools.py run-source-change
       - name: Run the independent controlled current-App preparation regressions with exact case gates
         run: python -B scripts/reader-experience/renewal-diagnostic-tools.py run-current-app-preparation
       - name: Run the independent controlled original-source admission regressions with exact case gates
         run: python -B scripts/reader-experience/renewal-diagnostic-tools.py run-original-source-admission
+      - name: Run the independent controlled source-picker regressions with exact case gates
+        run: python -B scripts/reader-experience/renewal-diagnostic-tools.py run-source-change
       - name: Retain bounded diagnostic build evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
