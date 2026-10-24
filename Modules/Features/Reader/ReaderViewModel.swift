@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import LegadoRuntime
 import SwiftUI
 
 @MainActor
@@ -385,9 +386,11 @@ final class ReaderViewModel: ObservableObject {
         }
         guard let source = BookSourceStore.shared.source(id: origin.sourceId)
         else {
-            throw NSError(
+            let error = NSError(
                 domain: "ReaderViewModel", code: -1,
                 userInfo: [NSLocalizedDescriptionKey: localized("找不到來源配置")])
+            Self.recordSourceTOCFailure(error, phase: .sourceLookup)
+            throw error
         }
         // A search result almost never carries a tocUrl: it belongs to the book's
         // DETAIL page, so `parseSearchResults` leaves it empty on purpose (an empty
@@ -426,38 +429,117 @@ final class ReaderViewModel: ObservableObject {
                 sourceName: origin.sourceName,
                 runtimeVariables: origin.runtimeVariables
             )
-            let info = try await bookSourceFetcher.fetchBookInfoPackage(
-                url: origin.bookUrl,
-                source: source,
-                runtimeVariables: origin.runtimeVariables,
-                knownBook: knownBook
-            )
+            let info: BookInfoPackage
+            do {
+                info = try await bookSourceFetcher.fetchBookInfoPackage(
+                    url: origin.bookUrl,
+                    source: source,
+                    runtimeVariables: origin.runtimeVariables,
+                    knownBook: knownBook
+                )
+            } catch {
+                Self.recordSourceTOCFailure(error, phase: .detail)
+                throw error
+            }
             tocUrl = info.tocUrl
             tocRuntimeVariables = info.runtimeVariables ?? tocRuntimeVariables
         }
-        let package = try await bookSourceFetcher.fetchTOCPackage(
-            tocUrl: tocUrl,
-            source: source,
-            runtimeVariables: tocRuntimeVariables
-        )
+        let package: TOCPackage
+        do {
+            package = try await bookSourceFetcher.fetchTOCPackage(
+                tocUrl: tocUrl,
+                source: source,
+                runtimeVariables: tocRuntimeVariables
+            )
+        } catch {
+            Self.recordSourceTOCFailure(error, phase: .toc)
+            throw error
+        }
         // An empty TOC means this source's rules matched nothing. Fail here, before the
         // commit: the sheet stays open, the origin gets flagged, and the book keeps the
         // source it already had. Committing an empty list instead left the book with no
         // chapters at all — see the same guard in `BookStore.updateOnlineBookSource`.
         guard !package.chapters.isEmpty else {
-            AppLogger.parse("⟐ changeSource empty TOC", context: [
-                "source": origin.sourceName,
-                // The RESOLVED url, not `origin.tocUrl` — that one is empty for most
-                // sources and would make every one of these log lines look identical.
-                "tocUrl": String(tocUrl.prefix(120)),
-                "fromDetailPage": origin.tocUrl.isEmpty,
-            ])
-            throw NSError(
+            let error = NSError(
                 domain: "ReaderViewModel", code: -2,
                 userInfo: [NSLocalizedDescriptionKey: localized("此來源配置取不到目錄")])
+            Self.recordSourceTOCFailure(error, phase: .empty)
+            throw error
         }
         cacheSearchTOC(package, forKey: key)
         return package
+    }
+
+    /// Call-site phases only: neither this label nor a runtime HTTP_ERROR proves
+    /// that a network request was sent or an HTTP response was received.
+    private enum SourceTOCFailurePhase: String {
+        case sourceLookup, detail, toc, empty
+    }
+
+    private static let sourceTOCRuntimeCodes = [
+        "HTTP_ERROR", "RULE_ERROR", "TOC_EMPTY", "SOURCE_CHANGED", "CONTEXT_MISSING",
+        "CONTEXT_MISMATCH", "INVALID_RESULT", "STATE_LIMIT", "INVALID_ARGUMENT",
+        "INVALID_STATE_OWNER", "INVALID_STATE_REQUEST", "STATE_IO", "STATE_CONFLICT",
+        "UNSUPPORTED_CAPABILITY", "CANCELLED", "TIMEOUT", "MISSING_RUNTIME", "PAYLOAD_TOO_LARGE",
+        "invalid_response", "invalid_json", "runtime_error",
+    ]
+
+    /// Fixed facts only. Never pass `error:` to AppLogger here: its funnel would
+    /// append localizedDescription, including source-controlled URLs/messages.
+    private static func recordSourceTOCFailure(_ error: Error, phase: SourceTOCFailurePhase) {
+        let cause = SourceFailure.loggable(error)
+        guard !Task.isCancelled, !(error is CancellationError), !(cause is CancellationError),
+              (cause as? URLError)?.code != .cancelled else { return }
+        var kind = "other", code = "other"
+        var httpStatus: Int? = nil
+        switch phase {
+        case .sourceLookup:
+            kind = "reader"; code = "missingSource"
+        case .empty:
+            kind = "reader"; code = "emptyTOC"
+        case .detail, .toc:
+            if let value = cause as? LegadoRuntimeError {
+                kind = "runtime"
+                // The runtime's code is an arbitrary String, not an enum. Emit
+                // our matched literal, never its free message or unknown code.
+                if value.code.utf8.prefix(41).count <= 40,
+                   let known = sourceTOCRuntimeCodes.first(where: { $0 == value.code }) {
+                    code = known
+                }
+            } else if let value = cause as? FetchError {
+                kind = "fetch"
+                switch value {
+                case .noSearchURL: code = "noSearchURL"
+                case .invalidURL: code = "invalidURL"
+                case .httpError(let status):
+                    code = "httpError"
+                    if (100...599).contains(status) { httpStatus = status }
+                case .cloudflareChallengeRequired: code = "cloudflareChallengeRequired"
+                case .encodingError: code = "encodingError"
+                case .emptyContent: code = "emptyContent"
+                case .sourceAPIError: code = "sourceAPIError"
+                case .volumeSeparator: code = "volumeSeparator"
+                }
+            } else if let value = cause as? URLError {
+                kind = "url"
+                switch value.code {
+                case .timedOut: code = "timedOut"
+                case .badURL: code = "badURL"
+                case .unsupportedURL: code = "unsupportedURL"
+                case .cannotFindHost: code = "cannotFindHost"
+                case .cannotConnectToHost: code = "cannotConnectToHost"
+                case .dnsLookupFailed: code = "dnsLookupFailed"
+                case .notConnectedToInternet: code = "notConnectedToInternet"
+                case .networkConnectionLost: code = "networkConnectionLost"
+                case .secureConnectionFailed: code = "secureConnectionFailed"
+                case .badServerResponse: code = "badServerResponse"
+                default: break
+                }
+            }
+        }
+        var line = "ChangeSource TOC unavailable phase=\(phase.rawValue) kind=\(kind) code=\(code) httpStatusKnown=\(httpStatus != nil)"
+        if let httpStatus { line += " httpStatus=\(httpStatus)" }
+        AppLogger.parse(line, level: .error)
     }
 
     /// Runs a tapped source switch as a cancellable unit, publishing the pending origin so the

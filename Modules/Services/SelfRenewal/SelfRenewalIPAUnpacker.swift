@@ -57,16 +57,45 @@ enum SelfRenewalIPAUnpacker {
             let started = SourcePerfTrace.now
             var total = 0
             defer { SourcePerfTrace.record("renewal.ipa.current-bundle", "bytes=\(total) main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
+            // Closed phase names and numeric facts only; none of these records
+            // carry a path, identity or error. Beginnings also locate a span
+            // that has not yet returned through its cancellation/cleanup path.
+            let phases = (initialMaterials: "initial-materials", currentArchive: "current-archive",
+                capturedVerification: "captured-verification", currentRecheck: "current-recheck",
+                operation: "operation", cleanup: "cleanup")
+            var phase = phases.initialMaterials
+            var phaseStarted = SourcePerfTrace.now
+            var phaseActive = true
+            var fileCount = 0
+            func recordPhase(ended: Bool, completed: Bool) {
+                SourcePerfTrace.record("renewal.ipa.current-phase",
+                    "phase=\(phase) ended=\(ended) completed=\(completed) files=\(fileCount) bytes=\(total) main=\(Thread.isMainThread)",
+                    since: phaseStarted, thresholdMs: 0)
+            }
+            func endPhase(completed: Bool) {
+                guard phaseActive else { return }
+                recordPhase(ended: true, completed: completed)
+                phaseActive = false
+            }
+            func beginPhase(_ next: String) {
+                phase = next; phaseStarted = SourcePerfTrace.now; phaseActive = true
+                recordPhase(ended: false, completed: false)
+            }
+            recordPhase(ended: false, completed: false)
+            defer { endPhase(completed: false) }
             try Task.checkCancellation()
             let original = try await SelfRenewalApplicationMaterialVerifier.read(unpackedApplication: root,
                 codeAnchors: codeAnchors, profileAnchors: profileAnchors, at: date)
             let inventory = original.resources.executableMaterials.inventory
+            fileCount = inventory.files.count
             let entries = inventory.files.count + inventory.directories.count + 2
             guard entries <= Validator.Limits.entries,
                   inventory.directories.count + 2 <= Validator.Limits.directories,
                   inventory.files.allSatisfy({ $0.byteCount <= Int64(Validator.Limits.compressedEntryBytes) }),
                   date.timeIntervalSince1970 >= 315_532_800, date.timeIntervalSince1970 < 4_354_819_200 else { throw Failure.readBudget }
             total = Int(inventory.declaredFileBytes)
+            endPhase(completed: true)
+            beginPhase(phases.currentArchive)
             let tree = try OwnedTree()
             do {
                 let name = "current-" + UUID().uuidString.lowercased() + ".ipa"
@@ -95,6 +124,8 @@ enum SelfRenewalIPAUnpacker {
                     guard hashes[fact.relativePath] == (try currentHash(root: root, fact: fact)) else { throw Failure.inputChanged }
                 }
                 try writer.finish()
+                endPhase(completed: true)
+                beginPhase(phases.capturedVerification)
                 // Compare the exact captured bytes too: a transient source edit
                 // during an archive callback cannot hide behind unchanged seals.
                 let expectedHashes = hashes
@@ -103,6 +134,8 @@ enum SelfRenewalIPAUnpacker {
                     return scope.original
                 }
                 guard captured == original else { throw Failure.inputChanged }
+                endPhase(completed: true)
+                beginPhase(phases.currentRecheck)
                 let current = try await SelfRenewalApplicationMaterialVerifier.read(unpackedApplication: root,
                     codeAnchors: codeAnchors, profileAnchors: profileAnchors, at: date)
                 guard current == original else { throw Failure.inputChanged }
@@ -110,11 +143,24 @@ enum SelfRenewalIPAUnpacker {
                     guard hashes[fact.relativePath] == (try currentHash(root: root, fact: fact)) else { throw Failure.inputChanged }
                 }
                 try Task.checkCancellation(); try tree.validateNames()
+                endPhase(completed: true)
+                beginPhase(phases.operation)
                 let result = try await operation(url)
+                endPhase(completed: true)
+                beginPhase(phases.cleanup)
                 try Task.checkCancellation(); try tree.validateNames(); try tree.cleanup()
+                endPhase(completed: true)
                 return result
             } catch {
-                do { try tree.cleanup() } catch { AppLogger.error("Current bundle IPA cleanup failed", error: error) }
+                endPhase(completed: false)
+                beginPhase(phases.cleanup)
+                do {
+                    try tree.cleanup()
+                    endPhase(completed: true)
+                } catch {
+                    endPhase(completed: false)
+                    AppLogger.error("Current bundle IPA cleanup failed", error: error)
+                }
                 throw error
             }
         }

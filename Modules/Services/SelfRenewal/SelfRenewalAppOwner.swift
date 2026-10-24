@@ -166,6 +166,8 @@ final class SelfRenewalAppOwner {
         do {
             status = try await session.bootstrap(handoff: handoff)
             developerMaterial = await session.developerMaterialObservation()
+            // Owner facts only; this does not prove that Settings rendered them.
+            AppLogger.parse("Renewal material observation point=bootstrap signingAccess=\(status?.access == .signing) materialPresent=\(developerMaterial != nil) expiryPresent=\(developerMaterial?.profileExpiresAt != nil)")
             #if DEBUG
             await bootstrapObservation?()
             #endif
