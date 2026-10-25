@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'yuedu-renewal-diagnostic-*'
+      - 'yuedu-renewal-post-build29-*'
 
 permissions:
   contents: read
@@ -19,6 +20,7 @@ defaults:
 
 jobs:
   diagnostic:
+    if: ${{ startsWith(github.ref, 'refs/tags/yuedu-renewal-diagnostic-') }}
     runs-on: macos-15
     timeout-minutes: 90
     steps:
@@ -106,4 +108,60 @@ jobs:
           This is not optimized Release/S3 acceptance or a performance build. After the unsigned IPA is retained, the diagnostic Simulator test group compiles only the authentication suite, its three actual source fixtures, the four focused source-picker suites, the current-App execution suite with its five additional existing source dependencies and the self-contained original-source admission suite and the existing preview lifecycle/real-native test dependency closure, preserving the complete App and extension source groups. Authentication retains its independent strict 1/1 result gate for SelfRenewalDeveloperAuthenticationTests/connectsOnlyThroughActualMaterialAccountValidation. Separate source-picker invocations verify their exact case sets with synthetic sources, never the user's private source file or live websites. The independent current-App preparation invocation requires its exact four owned-fixture cases, including cold bootstrap, with zero failures or skips. Original-source admission separately requires its exact four cases through an owned executor and real Host binding, preserving revision high-water and count/UTF-8 budgets; it does not execute JVM source rules or contact sites. Original-preview completion separately requires seven real Host lifecycle boundary cases and one existing default Native/JNI/loopback preview-transfer-reopen case, in isolated invocations with exact case counts and no skips; an unavailable required JNI payload fails. This focused positive case does not establish full Native/SDK acceptance or real-device source switching. This is not S3, full SDK/Native acceptance, actual Apple login, physical installation, physical source switching or automatic renewal. The unchanged complete workflows retain their original gates and meanings. Sign the unsigned package with the original installation tool/account before device diagnostics.
           First-pairing configuration separately requires exactly four selected Swift Testing cases and the existing owned synthetic PKCS12 fixture dependency. It verifies candidate/material/configuration preservation and failure boundaries without importing user credentials, contacting a real device or establishing installation or automatic renewal acceptance; it does not run the full pairing suite. All six regression phases retain their independent exact case sets and reject skips.
           Only the three unsigned build outputs, delivery binding and exact Git source.zip are exported under the current bounded temporary distribution policy, with one-day artifact retention. No private producer directory, P12, signing key, user account data or private book-source pack is uploaded. License clearance is not established.
+          TEXT
+
+  post-build29-regressions:
+    if: ${{ startsWith(github.ref, 'refs/tags/yuedu-renewal-post-build29-') }}
+    runs-on: macos-15
+    timeout-minutes: 90
+    env:
+      YUEDU_RENEWAL_POST_BUILD29_SCOPE: host7-firstpair4-source33
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Verify the real post-build29 tag and fixed source delta
+        run: |
+          mkdir -p .build/ci-logs
+          python -B scripts/reader-experience/renewal-diagnostic-tools.py validate-post-build29-tag 2>&1 | tee .build/ci-logs/renewal-diagnostic-post-build29-admission.log
+          python -B scripts/reader-experience/test-renewal-diagnostic-tools.py -v 2>&1 | tee .build/ci-logs/renewal-diagnostic-post-build29-portable.log
+      - name: Compile and audit this source's ordinary JAR without a device package
+        run: |
+          bash Packages/LegadoRuntime/jvm/gradlew -p Packages/LegadoRuntime/jvm --no-daemon runtimeJar 2>&1 | tee .build/ci-logs/renewal-diagnostic-post-build29-jar.log
+          python -B scripts/reader-experience/runtime-packaging.py inspect-jar --output .build/ci-logs/renewal-diagnostic-post-build29-jar.json
+      - name: Prepare the installed Simulator and execute only the fixed 44-case supplement
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          test "$(uname -m)" = arm64
+          export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
+          export YUEDU_DEST="$(bash scripts/sim.sh dest)"
+          xcrun simctl bootstatus "$(bash scripts/sim.sh udid)" -b > .build/ci-logs/renewal-diagnostic-post-build29-simulator-boot.log 2>&1
+          python -B scripts/reader-experience/renewal-diagnostic-tools.py run-post-build29-regressions
+      - name: Retain only bounded public post-build29 regression evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: yuedu-renewal-post-build29-evidence-${{ github.sha }}
+          path: |
+            .build/ci-logs/renewal-diagnostic-*
+            .build/renewal-diagnostic/*.json
+            .build/renewal-diagnostic/post-build29-simulator-runtime-stage.log
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 1
+      - name: State the fixed post-build29 acceptance boundary
+        if: always()
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
+          This independent push-tag supplement verifies only Host lifecycle7, first-pairing configuration4 and source-picker7/7/11/8: exactly44 selected definitions, isolated result bundles, no skips and unchanged per-group600/660-second budgets. Each group is attempted after an earlier group fails; the combined command fails if any group fails. A separate cold Simulator build-for-testing prepares the complete App and the unchanged19-file focused test closure before the groups. It restores the audited native interpreter, compiles this source's ordinary JAR and generates/verifies the real same-job owned SDK fixture.
+          This fixed source must be one child of build29 commit2518ee291f01ba38bc70fb849f8d490ba7441a7d and may modify only the Host test fixture and these two controlled CI files. Production and the real Native preview-transfer-reopen case are unchanged. The latter passed1/1 in build29 run40107707538/evidence12567081776 and is not rerun here; this is explicit source-identical evidence reuse, not another Native pass. No device App compilation, IPA export/upload/download, installation, Apple request, account login, source-rule network execution or complete automatic renewal is performed or accepted. The original diagnostic tag/job retains its separate six-phase behavior and package gates. Only bounded logs and JSON proof are retained for one day; no private producer directory, credentials, raw P12/signing keys or user source pack is uploaded.
           TEXT

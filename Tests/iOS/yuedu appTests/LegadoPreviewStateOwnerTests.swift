@@ -137,10 +137,17 @@ private actor PreviewFixtureExecutor: LegadoOriginalPreviewExecuting {
     }
     func operations() -> [String] { calls }
     func openGate() { gate?.resume(); gate = nil }
+    enum OldGrantReadRejection: Sendable, Equatable { case invalidStateOwner, cancelled }
+    func oldGrantReadRejection() async throws -> OldGrantReadRejection? {
+        guard let lastOwner, let lastWire else { return nil }
+        do { _ = try await read(owner: lastOwner, keys: [lastWire]); return nil }
+        catch is CancellationError { return .cancelled }
+        catch let error as LegadoRuntimeError { return error.code == "INVALID_STATE_OWNER" ? .invalidStateOwner : nil }
+    }
     func oldGrantIsRejected() async throws -> Bool {
-        guard let lastOwner, let lastWire else { return false }
-        do { _ = try await read(owner: lastOwner, keys: [lastWire]); return false }
-        catch let error as LegadoRuntimeError { return error.code == "INVALID_STATE_OWNER" }
+        let rejection = try await oldGrantReadRejection()
+        if rejection == .cancelled { throw CancellationError() }
+        return rejection == .invalidStateOwner
     }
     func unboundRefreshIsRejected(sourceURL: String) async throws -> Bool {
         do {
@@ -493,7 +500,8 @@ struct LegadoPreviewStateOwnerTests {
         return try Data(contentsOf: #require(files.first))
     }
 
-    private func acceptedDetailsWithoutReturnedSetter(_ f: Fixture) async throws {
+    private func acceptedDetailsWithoutReturnedSetter(_ f: Fixture,
+        expectedReadRejection: PreviewFixtureExecutor.OldGrantReadRejection = .invalidStateOwner) async throws {
         let raw = try contextBytes(f)
         let record = try #require(try JSONSerialization.jsonObject(with: raw) as? [String: Any])
         let book = try #require(record["book"] as? [String: Any])
@@ -502,7 +510,7 @@ struct LegadoPreviewStateOwnerTests {
         #expect(values["persisted"] == "details")
         #expect(values["direct"] == nil)
         #expect((record["bookLargeVariables"] as? [String: String])?["large"] == String(repeating: "L", count: 10_000))
-        #expect(try await f.executor.oldGrantIsRejected())
+        #expect(try await f.executor.oldGrantReadRejection() == expectedReadRejection)
         try await f.executor.completionCannotAcquireEndedOrMissingOwner()
         let counts = await f.executor.ownerCounts()
         #expect(counts.bindings == 0 && counts.sourceRevisions == 0 && counts.leases == 0)
@@ -610,7 +618,10 @@ struct LegadoPreviewStateOwnerTests {
             catch let error as LegadoRuntimeError {
                 #expect(!revokeLifetime && error.code == "INVALID_STATE_OWNER")
             }
-            try await acceptedDetailsWithoutReturnedSetter(f)
+            // Host cancellation is checked before owner lookup for this same task.
+            // The missing-owner finish and zero counts below still prove revocation.
+            try await acceptedDetailsWithoutReturnedSetter(f,
+                expectedReadRejection: revokeLifetime ? .invalidStateOwner : .cancelled)
             #expect(await f.executor.closeBoundary.snapshot() == ["close-entered", "close-returned"])
             #expect(!pending.isCancelled && !Task.isCancelled)
         }

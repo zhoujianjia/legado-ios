@@ -102,6 +102,17 @@ SOURCE_CHANGE_GROUPS = {
 SDK_RESOURCE = "Tests/iOS/yuedu appTests/owned-sdk-package.json"
 SDK_TOOLS = ("generate-sdk-owned-package.py", "ImportOwnedIdentity.swift", "OwnedIdentitySearch.h",
              "OwnedIdentitySearch.c", "main.c", "extension.c", "framework.c")
+POST_BUILD29_SCOPE = "host7-firstpair4-source33"
+POST_BUILD29_BASELINE = "2518ee291f01ba38bc70fb849f8d490ba7441a7d"
+POST_BUILD29_TAG_PREFIX = "yuedu-renewal-post-build29-"
+POST_BUILD29_CHANGED_PATHS = frozenset((
+    ".github/workflows/yuedu-renewal-diagnostic.yml",
+    "scripts/reader-experience/renewal-diagnostic-tools.py",
+    "Tests/iOS/yuedu appTests/LegadoPreviewStateOwnerTests.swift"))
+POST_BUILD29_GROUPS = {
+    "original-preview-lifecycle": ORIGINAL_PREVIEW_COMPLETION_GROUPS["original-preview-lifecycle"],
+    "first-pairing-configuration": FIRST_PAIRING_CONFIGURATION_CASES,
+    **SOURCE_CHANGE_GROUPS}
 INPUTS = (".github/workflows/yuedu-renewal-diagnostic.yml", "scripts/reader-experience/renewal-diagnostic-tools.py",
           "scripts/reader-experience/build.sh", "scripts/reader-experience/stage-config.py",
           "scripts/reader-experience/renewal-probe-tools.py", "scripts/xctest.sh", "scripts/sim.sh",
@@ -161,17 +172,74 @@ def check_binding():
     return receipt
 
 
-def restore():
-    receipt = binding()
+def post_build29_source():
+    """Admit only the actual, fixed-scope follow-up tag; never a package tag."""
+    value = native.smoke.source_sha()
+    tag = POST_BUILD29_TAG_PREFIX + value[:7]
+    repository = "zhoujianjia/legado-ios"
+    workflow = repository + "/.github/workflows/yuedu-renewal-diagnostic.yml@refs/tags/" + tag
+    if (sys.platform != "darwin" or re.fullmatch(r"[0-9a-f]{40}", value) is None
+            or os.environ.get("GITHUB_EVENT_NAME") != "push"
+            or os.environ.get("GITHUB_REPOSITORY") != repository
+            or os.environ.get("GITHUB_SHA") != value
+            or not re.fullmatch(r"[1-9][0-9]*", os.environ.get("GITHUB_RUN_ID", ""))
+            or not re.fullmatch(r"[1-9][0-9]*", os.environ.get("GITHUB_RUN_ATTEMPT", ""))
+            or os.environ.get("GITHUB_REF_TYPE") != "tag"
+            or os.environ.get("GITHUB_REF_NAME") != tag
+            or os.environ.get("GITHUB_REF") != "refs/tags/" + tag
+            or os.environ.get("GITHUB_WORKFLOW_REF") != workflow
+            or os.environ.get("GITHUB_WORKFLOW_SHA") != value
+            or os.environ.get("YUEDU_RENEWAL_POST_BUILD29_SCOPE") != POST_BUILD29_SCOPE):
+        raise ValueError("Expected the actual fixed-scope post-build29 push tag and workflow")
+    parents = subprocess.check_output(["git", "rev-list", "--parents", "-n", "1", value], cwd=REPO).decode().split()
+    if parents != [value, POST_BUILD29_BASELINE]:
+        raise ValueError("Post-build29 must be one reviewed child of the fixed build29 source")
+    delta = subprocess.check_output(["git", "diff-tree", "--no-commit-id", "--name-status", "-r", "-z",
+        POST_BUILD29_BASELINE, value], cwd=REPO).split(b"\0")
+    if not delta or delta[-1] != b"" or len(delta[:-1]) % 2:
+        raise ValueError("Malformed post-build29 source delta")
+    rows = list(zip(delta[:-1:2], delta[1:-1:2]))
+    if (len(rows) != len(POST_BUILD29_CHANGED_PATHS) or any(status != b"M" for status, _ in rows)
+            or {path.decode("utf-8") for _, path in rows} != POST_BUILD29_CHANGED_PATHS):
+        raise ValueError("Only the Host fixture and the two controlled CI files may change after build29")
+    return value
+
+
+def post_build29_binding():
+    return {"schemaVersion": 1, "sourceCommit": post_build29_source(),
+        "workflowRunID": os.environ["GITHUB_RUN_ID"], "workflowRunAttempt": os.environ["GITHUB_RUN_ATTEMPT"],
+        "sourceTag": os.environ["GITHUB_REF_NAME"], "eventName": os.environ["GITHUB_EVENT_NAME"],
+        "sourceRef": os.environ["GITHUB_REF"], "workflowRef": os.environ["GITHUB_WORKFLOW_REF"],
+        "workflowSHA": os.environ["GITHUB_WORKFLOW_SHA"], "fixedScope": POST_BUILD29_SCOPE,
+        "diagnosticInputs": [{"path": path, **full.fact(full.checked(REPO / path))} for path in sorted(set(INPUTS))],
+        "diagnosticOnly": True, "releaseAcceptance": False, "S3Acceptance": "not_run",
+        "fullNativeAcceptance": False, "fullSDKAcceptance": False, "nativeRuntimeRecompiled": False,
+        "deviceValidationPassed": False, "completeAutomaticRenewalVerified": False,
+        "deviceCompilationExecuted": False, "devicePackageExported": False,
+        "baselineBuild29Commit": POST_BUILD29_BASELINE, "baselineBuild29RunID": "40107707538",
+        "baselineNativeCaseEvidenceArtifactID": 12567081776,
+        "baselineNativeCase": ORIGINAL_PREVIEW_COMPLETION_GROUPS["original-preview-native"][0],
+        "baselineNativeCaseRerun": False, "baselineProductionAndNativeSourceBytesUnchanged": True}
+
+
+def post_build29_check_binding():
+    receipt = json.loads((WORK / "scope-binding.json").read_bytes())
+    if receipt != post_build29_binding():
+        raise ValueError("Post-build29 source/run/workflow/input binding changed")
+    return receipt
+
+
+def restore(*, _post_build29=False):
+    receipt = post_build29_binding() if _post_build29 else binding()
     if WORK.exists():
         raise ValueError("Diagnostic restoration requires a fresh work directory")
     original = runtime.validate_tag
     try:
-        runtime.validate_tag = source
+        runtime.validate_tag = post_build29_source if _post_build29 else source
         proof = runtime.restore()
     finally:
         runtime.validate_tag = original
-    proof["admission"] = "renewal-diagnostic"
+    proof["admission"] = "post-build29-regressions" if _post_build29 else "renewal-diagnostic"
     WORK.mkdir(parents=True)
     full.write_new(WORK / "native-restore.json", proof)
     full.write_new(WORK / "scope-binding.json", receipt)
@@ -331,8 +399,8 @@ def enrollment_source_stage(*, create=False):
         "swiftSourceCount": len(FOCUSED_SOURCES), "completeAppAndExtensionsUnchanged": True}
 
 
-def prepare_simulator():
-    receipt = check_binding()
+def prepare_simulator(*, _post_build29=False):
+    receipt = post_build29_check_binding() if _post_build29 else check_binding()
     target = full.checked(REPO / SDK_RESOURCE)
     if SIMULATOR.exists() or SIMULATOR_TESTS.exists() or PRODUCED.exists() or target.exists():
         raise ValueError("Enrollment regression requires fresh owned Simulator and fixture outputs")
@@ -352,7 +420,7 @@ def prepare_simulator():
     original = native.validate_tag
     original_inputs = native.source_inputs
     try:
-        native.validate_tag = source
+        native.validate_tag = post_build29_source if _post_build29 else source
         native.source_inputs = lambda: native_inputs
         with enrollment_project_overlay():
             native.prepare(SIMULATOR)
@@ -362,7 +430,8 @@ def prepare_simulator():
     full.write_new(WORK / "enrollment-prepared.json", dict(receipt,
         requiredCase=ENROLLMENT_CASE, fixture=resource_fact, producerManifest=verified["manifest"],
         testSourceStage=staged,
-        regressionScope="Independent one-case owned-fixture Simulator regression after unsigned IPA export"))
+        regressionScope=("Fixed post-build29 Simulator-only regression; no device compilation or IPA export"
+            if _post_build29 else "Independent one-case owned-fixture Simulator regression after unsigned IPA export")))
 
 
 def verify_cases(summary, tree, required_cases):
@@ -449,9 +518,8 @@ def controlled_test_selector(case):
     return case + "()"
 
 
-def run_controlled_groups(groups, *, regression_scope, unverified):
-    """Attempt each independent group, then fail if any exact-case gate failed."""
-    receipt = check_binding()
+def controlled_prepared_binding(*, _post_build29=False):
+    receipt = post_build29_check_binding() if _post_build29 else check_binding()
     prepared = json.loads((WORK / "enrollment-prepared.json").read_bytes())
     if (any(prepared.get(key) != value for key, value in receipt.items())
             or prepared.get("requiredCase") != ENROLLMENT_CASE
@@ -461,6 +529,12 @@ def run_controlled_groups(groups, *, regression_scope, unverified):
         raise ValueError("Controlled regression source or fixture preparation changed")
     with enrollment_project_overlay():
         native.smoke.review_overlays(json.loads((SIMULATOR / "overlays.json").read_bytes()))
+    return receipt
+
+
+def run_controlled_groups(groups, *, regression_scope, unverified, _post_build29=False):
+    """Attempt each independent group, then fail if any exact-case gate failed."""
+    receipt = controlled_prepared_binding(_post_build29=_post_build29)
     failures = []
     for label, cases in groups.items():
         prefix = "renewal-diagnostic-" + label
@@ -540,12 +614,50 @@ def run_first_pairing_configuration():
         unverified={"actualDeviceRenewalValidated": False})
 
 
+def run_post_build29_regressions():
+    # New tag admission never flows through prepare()/export_unsigned(). Their
+    # original source() binder continues to require the real diagnostic tag.
+    receipt = post_build29_binding()
+    if subprocess.check_output(["git", "status", "--porcelain", "--untracked-files=no"], cwd=REPO):
+        raise ValueError("Post-build29 requires a clean tracked checkout before preparation")
+    restore(_post_build29=True)
+    destination = os.environ.get("YUEDU_DEST", "")
+    if not destination or any(character in destination for character in "\r\n\0"):
+        raise ValueError("Post-build29 requires the actual resolved Simulator destination")
+    full.command(WORK, "post-build29-simulator-runtime-stage", [sys.executable,
+        HERE.parent / "legado-ios/stage-runtime.py", "--java-home", REPO / runtime.native.HOMES["simulator"],
+        "--jar", runtime.JAR, "--destination", REPO / "Resources/LegadoRuntime", "--replace"], 300)
+    prepare_simulator(_post_build29=True)
+    controlled_prepared_binding(_post_build29=True)
+    # Previously the 1-case authentication invocation owned the cold compile.
+    # Keep every controlled test group's unchanged 600/660-second budget by
+    # compiling the same full Simulator host once, without executing tests.
+    with enrollment_project_overlay():
+        full.command(LOGS, "renewal-diagnostic-post-build29-simulator-build", ["xcodebuild",
+            "-project", REPO / Path(config.PROJECT).parent, "-scheme", "Yuedu-Reader", "-destination", destination,
+            "-parallel-testing-enabled", "NO", *native._build_args(),
+            *("-only-testing:yuedu appTests/" + controlled_test_selector(case)
+                for cases in POST_BUILD29_GROUPS.values() for case in cases), "build-for-testing"], 1860)
+    full.write_new(WORK / "post-build29-simulator-compiled.json", dict(receipt,
+        simulatorCompilationExecuted=True, controlledTestGroups=list(POST_BUILD29_GROUPS),
+        requiredCaseCount=sum(map(len, POST_BUILD29_GROUPS.values())), baselineNativeCaseRerun=False))
+    run_controlled_groups(POST_BUILD29_GROUPS,
+        regression_scope="Fixed 44-case post-build29 Simulator supplement: Host7, first-pairing4, source7/7/11/8; no device build, IPA export, old-run rerun or additional Native acceptance",
+        unverified={"actualDeviceRenewalValidated": False, "physicalDeviceSourceSwitchVerified": False},
+        _post_build29=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("phase", choices=("validate-tag", "restore", "prepare-device", "export-unsigned", "prepare-simulator", "run-enrollment", "run-source-change", "run-current-app-preparation", "run-original-source-admission", "run-original-preview-completion", "run-first-pairing-configuration"))
+    parser.add_argument("phase", choices=("validate-tag", "restore", "prepare-device", "export-unsigned", "prepare-simulator", "run-enrollment", "run-source-change", "run-current-app-preparation", "run-original-source-admission", "run-original-preview-completion", "run-first-pairing-configuration", "validate-post-build29-tag", "run-post-build29-regressions"))
     phase = parser.parse_args().phase
     if phase == "validate-tag":
         print(json.dumps({"sourceCommit": source(), "diagnosticOnly": True, "releaseAcceptance": False, "S3Acceptance": "not_run"}))
+    elif phase == "validate-post-build29-tag":
+        print(json.dumps({"sourceCommit": post_build29_source(), "fixedScope": POST_BUILD29_SCOPE,
+            "deviceCompilationExecuted": False, "devicePackageExported": False}))
+    elif phase == "run-post-build29-regressions":
+        run_post_build29_regressions()
     elif phase == "restore":
         restore()
     elif phase == "prepare-device":
