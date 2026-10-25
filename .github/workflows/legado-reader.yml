@@ -1,4 +1,4 @@
-name: Legado MainJs Native Reader Prototype
+name: Yuedu Clean Reader Package
 
 on:
   push:
@@ -37,16 +37,19 @@ jobs:
           mkdir -p .build/ci-logs
           python -B scripts/reader-experience/runtime-packaging.py validate-tag
           python -B scripts/reader-experience/test-stage-config.py -v 2>&1 | tee .build/ci-logs/reader-package-tests.log
+          python -B scripts/reader-experience/test-clean-package-audit.py -v 2>&1 | tee .build/ci-logs/reader-clean-package-tests.log
+          python -B scripts/reader-experience/clean-package-audit.py --source-only --output .build/ci-logs/reader-source-exclusion.json
           python -B scripts/reader-experience/test-bundle-local-sources.py -v 2>&1 | tee .build/ci-logs/reader-local-source-packaging-tests.log
           python -B scripts/reader-experience/test-runtime-packaging.py -v 2>&1 | tee .build/ci-logs/reader-runtime-packaging-tests.log
           python -B scripts/reader-experience/test-runtime-notices.py -v 2>&1 | tee .build/ci-logs/reader-notice-tests.log
+          python -B scripts/reader-experience/clean-native-supply.py --self-test 2>&1 | tee .build/ci-logs/reader-native-supply-tests.log
           python -B scripts/legado-ios/test-runtime-tools.py -v 2>&1 | tee .build/ci-logs/reader-runtime-staging-tests.log
           bash Packages/LegadoRuntime/jvm/gradlew -p Packages/LegadoRuntime/jvm --no-daemon test runtimeJar runtimeSmoke runtimeSuiteSmoke runtimeWireSmoke runtimeCpuLoopSmoke 2>&1 | tee .build/ci-logs/reader-jvm-tests.log
           python -B scripts/reader-experience/runtime-packaging.py inspect-jar --output .build/ci-logs/reader-ordinary-jar.json
-      - name: Restore only the pinned source-built native VM
+      - name: Restore the exact retained pinned native VM after original artifact expiry
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python -B scripts/reader-experience/runtime-packaging.py restore --output .build/ci-logs/reader-native.json
+        run: python -B scripts/reader-experience/runtime-packaging.py restore-retained --output .build/ci-logs/reader-native.json
       - name: Resolve the installed Apple toolchain and stage the physical-device runtime
         run: |
           export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
@@ -58,9 +61,9 @@ jobs:
           LEGADO_READER_WITH_JVM: '1'
         run: |
           bash scripts/reader-experience/build.sh 2>&1 | tee .build/ci-logs/legado-reader-build.log
-          git archive --format=zip --prefix=LocalBookshelf-source/ --output=.build/reader-experience/output/LocalBookshelf-source.zip "$GITHUB_SHA"
+          git archive --format=zip --output=.build/reader-experience/output/source.zip "$GITHUB_SHA"
       # Temporary public diagnostic downloads are explicitly authorized for the current development work.
-      - name: Preserve the temporary diagnostic reader, source and exact manifest
+      - name: Preserve the temporary clean reader, source and exact manifest
         if: ${{ success() && hashFiles('.build/reader-experience/output/build-manifest.json') != '' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -69,8 +72,8 @@ jobs:
             .build/reader-experience/output/YueduReader-experience-unsigned.ipa
             .build/reader-experience/output/build-manifest.json
             .build/reader-experience/output/README.txt
-            .build/reader-experience/output/LocalBookshelf-source.zip
-            docs/legado-ios/fixtures/阅读体验样书.txt
+            .build/reader-experience/output/source.zip
+            .build/reader-experience/output/clean-package-audit.json
           if-no-files-found: error
           include-hidden-files: true
           retention-days: 1
@@ -93,6 +96,8 @@ jobs:
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
           This compiles the current main reader with a freshly assembled ordinary JVM JAR and the immutable audited Probe 12 native VM. Test fixtures and JUnit are excluded from the reader payload. Source/pin checks, ZIP bytes, module inventory, bytecode, final native exports and packaged resources are checked separately.
+          Self-signing and renewal implementations, tests, tools and workflows are reference-only archive content. Build30 uses optimized non-DEBUG Release for the app and both extensions. The actual compiler file lists and all final app files are checked to reject archived feature code/resources before the IPA can be uploaded. The exact source.zip may contain reference archives; the IPA must not.
+          The original native Actions artifact expired. This build restores the identical retained 89,898,489-byte ZIP from one fixed orphan supply commit, verifies its original SHA256, successful producer and unchanged native source inputs, then runs the unchanged extraction and native/JAR audits. The supply commit is outside this reader's history/source snapshot and contains no workflow or private data. This is exact byte reuse, not a new native compilation or renewed availability of the old artifact.
           Original traditional text consumers and the finite mainJs route use Rhino/JVM with the native CoreText reader. Book-source and host coverage remains incomplete. Reader packages contain no built-in book sources; checkout and packaged resources are checked before accepting the manifest. Users import sources in the app.
           This unsigned iOS 18+ device-target build must be signed before installation. Compilation does not establish native mainJs UI execution, physical-device reading acceptance, source-state persistence parity or full Legado compatibility.
           The owner authorized temporary public diagnostic IPA uploads for the current development work. This artifact expires after one day and includes a snapshot of this exact Git commit with its licenses and build inputs. It excludes untracked/private source packs. Dependency-source closure and the component-license combination remain under review; temporary availability or later deletion does not establish redistribution clearance. Remove temporary public download artifacts and restore the default upload restriction when this validation work is complete.

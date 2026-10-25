@@ -32,17 +32,8 @@ EXTENSIONS = {
     "yuedu_app_Widget.appex": (MAIN_BUNDLE + ".widget", "com.apple.widgetkit-extension"),
     "yuedu_app_ShareExtension.appex": (MAIN_BUNDLE + ".shareextension", "com.apple.share-services"),
 }
-DIAGNOSTIC_KIND = "yuedu-renewal-diagnostic-device"
-DIAGNOSTIC_BUILD_VERSION = "29"
-DIAGNOSTIC_AUTH_TEST_ROOT = ".build/renewal-diagnostic-private/simulator-tests"
-DIAGNOSTIC_TARGETS = {
-    MAIN_TARGET: (MAIN_PRODUCT, MAIN_BUNDLE),
-    "Yuedu-Reader Widget": ("yuedu_app_Widget.appex", MAIN_BUNDLE + ".widget"),
-    "Yuedu-Reader ShareExtension": ("yuedu_app_ShareExtension.appex", MAIN_BUNDLE + ".shareextension"),
-}
-# Same file and expanded-package ceilings as the production signing inventory.
-DIAGNOSTIC_FILE_BYTES = 268_435_456
-DIAGNOSTIC_PACKAGE_BYTES = 536_870_912
+PACKAGE_FILE_BYTES = 268_435_456
+PACKAGE_BYTES = 536_870_912
 LOCAL_FLAGS = {
     "YueduLocalExperience": True,
     "FirebaseDataCollectionDefaultEnabled": False,
@@ -110,7 +101,7 @@ def stage(destination):
             "upstreamCredentialsUsed": False}
 
 
-def project_overlay(original, *, diagnostic_auth_tests=False):
+def project_overlay(original):
     """Derive the exact permitted project bytes without touching the file."""
     text = original.decode("utf-8")
     pattern = re.compile(r"(?m)^(?P<prefix>[ \t]*PRODUCT_BUNDLE_IDENTIFIER = )"
@@ -132,32 +123,13 @@ def project_overlay(original, *, diagnostic_auth_tests=False):
         overlaid = pattern.sub(lambda item: item["prefix"] + MAIN_BUNDLE
                                + item["identifier"][len(UPSTREAM_BUNDLE):] + item["tail"], text).encode("utf-8")
         counts, before_family = upstream_counts, UPSTREAM_BUNDLE
-    if diagnostic_auth_tests:
-        # The diagnostic's -only-testing selects execution, not compilation.
-        # Redirect only this test group to audited copies of its actual source
-        # dependencies; the complete App and extension groups stay untouched.
-        group = re.compile(r'(?m)^(?P<head>[ \t]*[A-F0-9]{24} /\* Tests/iOS \*/ = \{\r?\n)'
-            r'[ \t]*isa = PBXFileSystemSynchronizedRootGroup;\r?\n'
-            r'[ \t]*explicitFolders = \(\r?\n[ \t]*"yuedu appTests/Fixtures/UMD",\r?\n[ \t]*\);\r?\n'
-            r'[ \t]*path = Tests/iOS;\r?\n[ \t]*sourceTree = "<group>";\r?\n(?P<tail>[ \t]*\};\r?)$')
-        text = overlaid.decode("utf-8")
-        if len(group.findall(text)) != 1:
-            raise ValueError("Expected the original single synchronized Tests/iOS group")
-        newline = "\r\n" if "\r\n" in text else "\n"
-        text = group.sub(lambda match: match["head"] + "\t\t\tisa = PBXFileSystemSynchronizedRootGroup;" + newline
-            + '\t\t\tpath = "' + DIAGNOSTIC_AUTH_TEST_ROOT + '";' + newline
-            + '\t\t\tsourceTree = "<group>";' + newline + match["tail"], text)
-        overlaid = text.encode("utf-8")
     record = {"schemaVersion": 1, "path": PROJECT, "replacementCount": 0 if already_independent else 10,
               "identifiersAlreadyIndependent": already_independent,
               "originalSHA256": hashlib.sha256(original).hexdigest(),
-              "overlaySHA256": hashlib.sha256(overlaid).hexdigest(), "expectedTrackedOverlay": diagnostic_auth_tests or not already_independent,
+              "overlaySHA256": hashlib.sha256(overlaid).hexdigest(), "expectedTrackedOverlay": not already_independent,
               "settings": [{"before": before_family + suffix, "after": MAIN_BUNDLE + suffix, "count": count}
                            for suffix, count in counts.items()],
               "scope": "Only PRODUCT_BUNDLE_IDENTIFIER settings; entitlements and other identifiers are unchanged in source."}
-    if diagnostic_auth_tests:
-        record.update(diagnosticAuthTestRoot=DIAGNOSTIC_AUTH_TEST_ROOT,
-            scope="Only PRODUCT_BUNDLE_IDENTIFIER settings and the diagnostic Simulator test source group; complete App and extension source groups are unchanged.")
     return overlaid, record
 
 
@@ -197,7 +169,7 @@ def validate_tag():
     return {"sourceCommit": source}
 
 
-def inspect_settings(settings, with_jvm=False, diagnostic=False):
+def inspect_settings(settings, with_jvm=False):
     matches = [item["buildSettings"] for item in settings if item.get("target") == MAIN_TARGET]
     if len(matches) != 1:
         raise ValueError("Expected exactly one main yuedu app target in build settings")
@@ -221,60 +193,34 @@ def inspect_settings(settings, with_jvm=False, diagnostic=False):
             "sdk": values.get("SDK_NAME"), "swiftStrictConcurrency": values.get("SWIFT_STRICT_CONCURRENCY"),
             "swiftDefaultActorIsolation": values.get("SWIFT_DEFAULT_ACTOR_ISOLATION"),
             "localExperience": True, "signed": False}
-    if diagnostic:
-        if not with_jvm:
-            raise ValueError("Diagnostic packages require the complete JVM")
-        targets = {}
-        for target, (product, identifier) in DIAGNOSTIC_TARGETS.items():
-            actual = [item["buildSettings"] for item in settings if item.get("target") == target]
-            if len(actual) != 1:
-                raise ValueError("Expected exactly one diagnostic target: " + target)
-            actual = actual[0]
-            expected = dict(required, FULL_PRODUCT_NAME=product, PRODUCT_BUNDLE_IDENTIFIER=identifier,
-                            SWIFT_OPTIMIZATION_LEVEL="-Onone", SWIFT_COMPILATION_MODE="singlefile",
-                            CODE_SIGNING_REQUIRED="NO", ENABLE_DEBUG_DYLIB="NO", CURRENT_PROJECT_VERSION=DIAGNOSTIC_BUILD_VERSION)
-            for key, value in expected.items():
-                if actual.get(key, "" if value == "" else None) != value:
-                    raise ValueError("Unexpected diagnostic setting " + target + " " + key)
-            conditions = actual.get("SWIFT_ACTIVE_COMPILATION_CONDITIONS", "").split()
-            defines = actual.get("GCC_PREPROCESSOR_DEFINITIONS", "").split()
-            flags = actual.get("OTHER_SWIFT_FLAGS", "").split()
-            if (any(token == "DEBUG" or token.startswith("DEBUG=") for token in conditions + defines)
-                    or any(token.startswith("-DDEBUG") for token in flags)
-                    or any(flags[i] == "-D" and flags[i + 1].startswith("DEBUG") for i in range(len(flags) - 1))
-                    or any(token in ("-O", "-Osize", "-Ounchecked", "-wmo", "-whole-module-optimization") for token in flags)):
-                raise ValueError("Diagnostic targets must retain non-DEBUG production branches")
-            targets[target] = dict(expected, SWIFT_ACTIVE_COMPILATION_CONDITIONS=conditions,
-                                   GCC_PREPROCESSOR_DEFINITIONS=defines, OTHER_SWIFT_FLAGS=flags)
-        result.update(diagnosticOnly=True, releaseAcceptance=False, S3Acceptance="not_run", diagnosticTargets=targets)
     return result
 
 
-def diagnostic_package_budget(app, ipa):
+def package_budget(app, ipa):
     app, ipa = checked_path(app), checked_path(ipa)
     total = 0
     for path in app.rglob("*"):
         checked_path(path)
         if path.is_file():
             size = path.stat().st_size
-            if size > DIAGNOSTIC_FILE_BYTES:
-                raise ValueError("Diagnostic file exceeds the production signing budget")
+            if size > PACKAGE_FILE_BYTES:
+                raise ValueError("Package file exceeds the reader budget")
             total += size
-            if total > DIAGNOSTIC_PACKAGE_BYTES:
-                raise ValueError("Diagnostic app exceeds the production expanded-package budget")
-    if not 0 < ipa.stat().st_size <= DIAGNOSTIC_PACKAGE_BYTES:
-        raise ValueError("Diagnostic IPA exceeds the production archive budget")
+            if total > PACKAGE_BYTES:
+                raise ValueError("Reader app exceeds the expanded-package budget")
+    if not 0 < ipa.stat().st_size <= PACKAGE_BYTES:
+        raise ValueError("Reader IPA exceeds the production archive budget")
     with zipfile.ZipFile(ipa) as archive:
         expanded = 0
         for item in archive.infolist():
-            if item.file_size > DIAGNOSTIC_FILE_BYTES or item.compress_size > DIAGNOSTIC_FILE_BYTES:
-                raise ValueError("Diagnostic ZIP entry exceeds the production signing budget")
+            if item.file_size > PACKAGE_FILE_BYTES or item.compress_size > PACKAGE_FILE_BYTES:
+                raise ValueError("Reader ZIP entry exceeds the reader file budget")
             expanded += item.file_size
-            if expanded > DIAGNOSTIC_PACKAGE_BYTES:
-                raise ValueError("Diagnostic ZIP exceeds the production expanded-package budget")
+            if expanded > PACKAGE_BYTES:
+                raise ValueError("Reader ZIP exceeds the production expanded-package budget")
         if archive.testzip() is not None:
-            raise ValueError("Diagnostic IPA failed CRC validation")
-    return {"fileBytesLimit": DIAGNOSTIC_FILE_BYTES, "expandedBytesLimit": DIAGNOSTIC_PACKAGE_BYTES,
+            raise ValueError("Reader IPA failed CRC validation")
+    return {"fileBytesLimit": PACKAGE_FILE_BYTES, "expandedBytesLimit": PACKAGE_BYTES,
             "appFileBytes": total, "archiveExpandedBytes": expanded, "crcVerified": True}
 
 
@@ -447,7 +393,7 @@ def bundled_sources(app, resource_root=None):
             "realSourceAvailabilityValidated": False}
 
 
-def manifest(app, ipa, settings, source, xcode, overlay, with_jvm=False, diagnostic=False):
+def manifest(app, ipa, settings, source, xcode, overlay, with_jvm=False):
     require_no_bundled_sources([REPO / "Resources", app])
     summary = bundle_summary(app, with_jvm=with_jvm)
     info = read_info(app)
@@ -484,14 +430,7 @@ def manifest(app, ipa, settings, source, xcode, overlay, with_jvm=False, diagnos
                             "Original traditional text consumers and finite mainJs use the JVM. Book-source and host coverage remains incomplete; full Legado compatibility is unverified." if with_jvm else "This package retains the CoreText reader without the JVM required by default source routes; it is not the full Legado port.",
                             "Accounts, subscription verification, CloudKit and remote backend features are not configured in local experience mode.",
                             "Compilation and packaging do not prove import/search/reading/TTS/RSS work on this device."]}
-    if diagnostic:
-        if (not with_jvm or settings.get("diagnosticOnly") is not True
-                or settings.get("releaseAcceptance") is not False or settings.get("S3Acceptance") != "not_run"):
-            raise ValueError("Diagnostic manifest requires its explicit verified settings")
-        result.update(artifactKind=DIAGNOSTIC_KIND, diagnosticOnly=True, releaseAcceptance=False,
-                      S3Acceptance="not_run", swiftOptimizationLevel="-Onone", swiftCompilationMode="singlefile",
-                      productionConditionalBranches=True, packageBudget=diagnostic_package_budget(app, ipa))
-        result["limitations"].insert(0, "Diagnostic compilation only: unoptimized Swift, no Release/S3 acceptance or performance claim.")
+    result["packageBudget"] = package_budget(app, ipa)
     return result
 
 
@@ -510,7 +449,6 @@ def main():
     inspect.add_argument("--settings", type=Path, required=True)
     inspect.add_argument("--output", type=Path, required=True)
     inspect.add_argument("--with-jvm", action="store_true")
-    inspect.add_argument("--diagnostic", action="store_true")
     final = commands.add_parser("finalize")
     final.add_argument("--app", type=Path, required=True)
     final.add_argument("--source", required=True)
@@ -524,7 +462,6 @@ def main():
     report.add_argument("--output", type=Path, required=True)
     report.add_argument("--overlay", type=Path, required=True)
     report.add_argument("--with-jvm", action="store_true")
-    report.add_argument("--diagnostic", action="store_true")
     args = parser.parse_args()
     try:
         if args.command == "validate-tag":
@@ -536,8 +473,7 @@ def main():
         elif args.command == "overlay-project":
             value = overlay_project(args.project, args.report)
         elif args.command == "inspect-settings":
-            value = inspect_settings(json.loads(args.settings.read_text(encoding="utf-8")), with_jvm=args.with_jvm,
-                                     diagnostic=args.diagnostic)
+            value = inspect_settings(json.loads(args.settings.read_text(encoding="utf-8")), with_jvm=args.with_jvm)
             write_new_json(args.output, value)
             print(value["appPath"])
             return 0
@@ -546,8 +482,7 @@ def main():
         else:
             value = manifest(args.app, args.ipa, json.loads(args.settings.read_text(encoding="utf-8")),
                              args.source, args.xcode_file.read_text(encoding="utf-8").strip(),
-                             json.loads(args.overlay.read_text(encoding="utf-8")), with_jvm=args.with_jvm,
-                             diagnostic=args.diagnostic)
+                             json.loads(args.overlay.read_text(encoding="utf-8")), with_jvm=args.with_jvm)
             write_new_json(args.output, value)
         print(json.dumps(value, indent=2, ensure_ascii=False))
         return 0

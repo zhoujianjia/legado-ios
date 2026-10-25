@@ -173,7 +173,6 @@ final class RSSNotificationManager {
 // MARK: - App Notification Delegate
 
 final class RSSAppNotificationDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
-    let renewalBackground = SelfRenewalBackgroundTaskBridge()
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
@@ -190,7 +189,6 @@ final class RSSAppNotificationDelegate: NSObject, UIApplicationDelegate, UNUserN
         CrashContext.breadcrumb("app launch (build \(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"))")
         UNUserNotificationCenter.current().delegate = self
         RSSNotificationManager.shared.start()
-        renewalBackground.register()
         RSSBackgroundRefresh.shared.register()
         RSSBackgroundRefresh.shared.schedule()
         return true

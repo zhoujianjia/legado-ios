@@ -98,13 +98,6 @@ struct BookMetadataPersistenceFailure: Error {
     }
 }
 
-/// A small, frozen proof, not another record/file cache. Its raw input is released as soon
-/// as the existing persistence queue hashes the original normal-loader Data values.
-private final class BookMetadataNormalLoadProof: @unchecked Sendable {
-    var result: Result<BookMetadataPersistenceReceipt, Error>?
-    // Accessed only on BookStore.persistQueue, including the reader of `result`.
-}
-
 class BookStore: ObservableObject, BookProvider {
     struct RuntimeBookSnapshot: Sendable, Equatable {
         let id: UUID
@@ -780,23 +773,8 @@ class BookStore: ObservableObject, BookProvider {
         // (the queue is shared by every instance). At launch it is empty; it matters for a
         // store opened on files another instance has just saved.
         Self.persistQueue.sync {}
-        // Capture exactly the Data already read by the normal loader. A missing file
-        // is captured only after a real ENOENT; corruption/migration/failure leaves the
-        // outer Optional nil and cannot later become a normal-load success receipt.
-        var initialShelf: Data??
-        var initialReading: Data??
-        let shelfLoaded = loadMeta(observed: { initialShelf = .some($0) })
-        let readingRecordsLoaded = loadReadingRecords(observed: { initialReading = .some($0) })
-        let shelfObservation = initialShelf, readingObservation = initialReading
-        let loadRevision = mutationRevision, proof = renewalNormalLoadProof
-        Self.persistQueue.async {
-            let files = Self.normalLoadFacts(shelf: shelfObservation, reading: readingObservation)
-            if shelfLoaded && readingRecordsLoaded && shelfObservation != nil && readingObservation != nil {
-                proof.result = .success(.verified(phase: .normalLoad, revision: loadRevision, files: files))
-            } else {
-                proof.result = .failure(BookMetadataPersistenceFailure(.normalLoadFailed, partialFiles: files))
-            }
-        }
+        let shelfLoaded = loadMeta()
+        let readingRecordsLoaded = loadReadingRecords()
         finishLoadingChapterLists(complete: shelfLoaded && readingRecordsLoaded)
         if let legacyReaderSettingsDefaults {
             readerSettings.migrateLegacyFixedPageReadingModes(
@@ -3504,7 +3482,6 @@ class BookStore: ObservableObject, BookProvider {
         var readingData: Data?
     }
     private let persistedFiles = PersistedFiles()
-    private let renewalNormalLoadProof = BookMetadataNormalLoadProof()
 
     private struct MetadataWriteInput {
         enum Payload {
@@ -3584,7 +3561,7 @@ class BookStore: ObservableObject, BookProvider {
         }
     }
 
-    /// One implementation for ordinary saves and checked handoff. Ordinary callers keep
+    /// One implementation for ordinary saves and checked migration. Ordinary callers keep
     /// their logged-failure wrapper; checked callers receive the actual partial IO error.
     /// `strict` observes each original file exactly once, including unchanged files, and
     /// hashes those observed/newly written bytes without a post-write readback.
@@ -3595,7 +3572,7 @@ class BookStore: ObservableObject, BookProvider {
         var shelfOperation: BookMetadataPersistenceReceipt.Operation = .unchanged
         var readingOperation: BookMetadataPersistenceReceipt.Operation = .unchanged
         func facts() -> [BookMetadataPersistenceReceipt.File] {
-            SourcePerfTrace.span("library.handoff.save.hash", "bytes=\((shelfObserved.flatMap { $0 }?.count ?? 0) + (readingObserved.flatMap { $0 }?.count ?? 0)) main=\(Thread.isMainThread)") {
+            SourcePerfTrace.span("library.checked.save.hash", "bytes=\((shelfObserved.flatMap { $0 }?.count ?? 0) + (readingObserved.flatMap { $0 }?.count ?? 0)) main=\(Thread.isMainThread)") {
                 var result: [BookMetadataPersistenceReceipt.File] = []
                 if let shelfObserved { result.append(.init(role: .shelf, operation: shelfObserved == nil ? .absent : shelfOperation, data: shelfObserved)) }
                 if let readingObserved { result.append(.init(role: .reading, operation: readingObserved == nil ? .absent : readingOperation, data: readingObserved)) }
@@ -3690,141 +3667,6 @@ class BookStore: ObservableObject, BookProvider {
             else { code = (error as? BookMetadataPersistenceFailure)?.code ?? .io }
             throw BookMetadataPersistenceFailure(code, partialFiles: facts(), underlying: error)
         }
-    }
-
-    private struct MetadataHandoffSaveResult {
-        let receipt: BookMetadataPersistenceReceipt
-        let shelfData: Data?
-        let readingData: Data?
-        let positions: [UUID: PersistedPositionSnapshot]
-        let positionSaveUptimes: [UUID: TimeInterval]
-    }
-
-    private final class MetadataHandoffCompletion: @unchecked Sendable {
-        private let lock = NSLock()
-        private var result: Result<MetadataHandoffSaveResult, Error>?
-        private var waiter: CheckedContinuation<MetadataHandoffSaveResult, Error>?
-        func value() async throws -> MetadataHandoffSaveResult {
-            try await withCheckedThrowingContinuation { continuation in
-                lock.lock()
-                if let result { lock.unlock(); continuation.resume(with: result) }
-                else { waiter = continuation; lock.unlock() }
-            }
-        }
-        func resolve(_ result: Result<MetadataHandoffSaveResult, Error>) {
-            lock.lock(); self.result = result
-            let waiter = self.waiter; self.waiter = nil
-            lock.unlock(); waiter?.resume(with: result)
-        }
-    }
-
-    /// Explicit async construction for a new owner, using the same normal initializer
-    /// and its real reads, not a second loader/cache. The App's existing synchronous
-    /// construction has not been switched to this API and retains its launch IO limit.
-    static func openForRenewalHandoff(metadataFileURL: URL, legacyMetadataDefaults: UserDefaults? = .standard) async throws -> BookStore {
-        let worker = Task.detached(priority: .utility) {
-            try Task.checkCancellation()
-            dispatchPrecondition(condition: .notOnQueue(.main))
-            let store = BookStore(metadataFileURL: metadataFileURL, legacyMetadataDefaults: legacyMetadataDefaults)
-            try Task.checkCancellation()
-            _ = try await store.normalLoadReceiptForRenewalHandoff()
-            return store
-        }
-        return try await withTaskCancellationHandler { try await worker.value } onCancel: { worker.cancel() }
-    }
-
-    /// Same two normal-load reads, not a second reopen/readback. The legacy initializer
-    /// still does synchronous IO; this receipt makes no cold-launch performance claim.
-    func normalLoadReceiptForRenewalHandoff() async throws -> BookMetadataPersistenceReceipt {
-        try Task.checkCancellation()
-        let proof = renewalNormalLoadProof
-        let receipt: BookMetadataPersistenceReceipt = try await withCheckedThrowingContinuation { continuation in
-            Self.persistQueue.async {
-                guard let result = proof.result else {
-                    continuation.resume(throwing: BookMetadataPersistenceFailure(.normalLoadFailed)); return
-                }
-                continuation.resume(with: result)
-            }
-        }
-        try Task.checkCancellation()
-        return receipt
-    }
-
-    private static func normalLoadFacts(shelf: Data??, reading: Data??) -> [BookMetadataPersistenceReceipt.File] {
-        dispatchPrecondition(condition: .notOnQueue(.main))
-        return SourcePerfTrace.span("library.handoff.normal-load.hash", "bytes=\((shelf.flatMap { $0 }?.count ?? 0) + (reading.flatMap { $0 }?.count ?? 0)) main=\(Thread.isMainThread)") {
-            var result: [BookMetadataPersistenceReceipt.File] = []
-            if let shelf { result.append(.init(role: .shelf, operation: shelf == nil ? .absent : .read, data: shelf)) }
-            if let reading { result.append(.init(role: .reading, operation: reading == nil ? .absent : .read, data: reading)) }
-            return result
-        }
-    }
-
-    @MainActor
-    func saveForRenewalHandoff() async throws -> BookMetadataPersistenceReceipt {
-        let admitted = try admitRenewalHandoffSave()
-        return try await withTaskCancellationHandler {
-            try await admitted.value
-        } onCancel: { admitted.cancel() }
-    }
-
-    /// Snapshot/admission is synchronous and O(1) on main. The already-enqueued job shares
-    /// the ordinary writer's FIFO and runtime projection, not a new queue or data owner.
-    /// The hook is an internal deterministic IO-failure test seam; it grants no receipt.
-    @MainActor
-    func admitRenewalHandoffSave(
-        beforeWrite: @escaping @Sendable (BookMetadataPersistenceReceipt.Role) throws -> Void = { _ in }
-    ) throws -> Task<BookMetadataPersistenceReceipt, Error> {
-        try Task.checkCancellation()
-        guard !validatedRestorePausesWrites else { throw BookMetadataPersistenceFailure(.restoreInProgress) }
-        guard !metadataWritesBlocked else { throw BookMetadataPersistenceFailure(.writesBlocked) }
-        guard recordsLoadedCompletely else { throw BookMetadataPersistenceFailure(.normalLoadFailed) }
-        cancelPendingMetadataSave()
-        let snapshot = recordStorage.values
-        let revision = mutationRevision
-        persistSequence &+= 1
-        let sequence = persistSequence
-        let input = MetadataWriteInput(payload: .allRecords(snapshot), writesBlocked: false, records: snapshot)
-        let cancellation = OriginalRuntimeCommitCancellation()
-        let completion = MetadataHandoffCompletion()
-        let task = Task { @MainActor in
-            try await withTaskCancellationHandler {
-                let saved = try await completion.value()
-                // A later edit/restore is not checkpointed by this older snapshot. Preserve
-                // the real partial disk facts but do not mark current UI state persisted.
-                guard self.mutationRevision == revision, !self.validatedRestorePausesWrites,
-                      sequence > self.lastAppliedPersistSequence else {
-                    throw BookMetadataPersistenceFailure(.staleSnapshot, partialFiles: saved.receipt.files)
-                }
-                self.lastAppliedPersistSequence = sequence
-                self.lastPersistedMetadataData = saved.shelfData
-                self.lastPersistedReadingData = saved.readingData
-                self.lastPersistedPositionSnapshots = saved.positions
-                self.lastPersistedPositionSaveUptimeByBook = saved.positionSaveUptimes
-                // Receipt is metadata-only: no UI/widget rescan or external account claim.
-                return saved.receipt
-            } onCancel: { cancellation.cancel() }
-        }
-        // Enqueue now, before the UI can enqueue a newer whole-record payload.
-        Self.persistQueue.async { [self] in
-            do {
-                guard case .success? = renewalNormalLoadProof.result else { throw BookMetadataPersistenceFailure(.normalLoadFailed) }
-                var written = MetadataWritten()
-                let strict = MetadataCheckedWrite(cancellation: cancellation, deadline: .distantFuture,
-                    revision: revision, beforeWrite: beforeWrite, taskCancelled: { task.isCancelled })
-                guard let receipt = try writeMetadataCore(input, written: &written, strict: strict) else {
-                    preconditionFailure("Checked writer must produce actual file facts")
-                }
-                let bookkeeping = SourcePerfTrace.span("library.handoff.bookkeeping", "books=\(snapshot.count) main=\(Thread.isMainThread)") {
-                    let now = ProcessInfo.processInfo.systemUptime
-                    return (Dictionary(uniqueKeysWithValues: snapshot.map { ($0.id, PersistedPositionSnapshot(book: $0)) }),
-                            Dictionary(uniqueKeysWithValues: snapshot.map { ($0.id, now) }))
-                }
-                completion.resolve(.success(.init(receipt: receipt, shelfData: persistedFiles.shelfData,
-                    readingData: persistedFiles.readingData, positions: bookkeeping.0, positionSaveUptimes: bookkeeping.1)))
-            } catch { completion.resolve(.failure(error)) }
-        }
-        return task
     }
 
     /// Main thread: records what the files now hold. A write that an immediate one has
@@ -3975,7 +3817,7 @@ class BookStore: ObservableObject, BookProvider {
     /// file yet. A file that exists but does not decode leaves the shelf empty, and that
     /// must not be taken to mean the user has no books.
     @discardableResult
-    private func loadMeta(observed: ((Data?) -> Void)? = nil) -> Bool {
+    private func loadMeta() -> Bool {
         let original: Data?
         do { original = try runtimeMetadataBytes(metadataFileURL) }
         catch {
@@ -3992,7 +3834,6 @@ class BookStore: ObservableObject, BookProvider {
                 }
                 records = Self.sanitizingInlineChapterURLs(decoded)
                 markMetadataPersisted(data, records: records)
-                observed?(data)
                 return true
             } catch {
                 // The shelf opens empty when this happens, and nothing on screen says why.
@@ -4074,7 +3915,6 @@ class BookStore: ObservableObject, BookProvider {
             // both files. Never claim a complete read or delete orphan chapters here.
             return false
         }
-        if !shelfFileExists { observed?(nil) }
         return !shelfFileExists
     }
 
@@ -4127,14 +3967,13 @@ class BookStore: ObservableObject, BookProvider {
 
     /// Whether every reading-only record is known: the file decoded, or there is none.
     @discardableResult
-    private func loadReadingRecords(observed: ((Data?) -> Void)? = nil) -> Bool {
+    private func loadReadingRecords() -> Bool {
         do {
-            guard let data = try runtimeMetadataBytes(readingMetadataFileURL) else { observed?(nil); return true }
+            guard let data = try runtimeMetadataBytes(readingMetadataFileURL) else { return true }
             let decoded = Self.sanitizingInlineChapterURLs(try JSONDecoder().decode([ReadingBook].self, from: data))
             let shelfIDs = Set(records.map(\.id))
             records.append(contentsOf: decoded.filter { !$0.isInBookshelf && !shelfIDs.contains($0.id) })
             notePersistedReadingData(data)
-            observed?(data)
             return true
         } catch {
             AppLogger.error("Remote reading records could not be loaded", error: error)

@@ -39,65 +39,6 @@ extension ReadingPositionStorePersistenceTests {
         }
     }
 
-    func testNavigatorHandoffAndOtherBooksKeepTheSameCrossInstanceAdmissionOrder() async throws {
-        try await withPositionScenario { scenario in
-            let legacy = scenario.makeStore()
-            let checked = scenario.makeCheckedStore(onSave: { _, _ in })
-            let other = scenario.makeCheckedStore(onSave: { _, _ in })
-            try await scenario.saveSeed(using: legacy)
-            let held = scenario.start { await legacy.save(scenario.held, for: "book") }
-            try await scenario.wait(scenario.writer.started)
-            let appearance = ReaderAppearance(theme: .sepia, fontSize: 18, lineHeightMultiple: 1.4, lineSpacing: 2,
-                paragraphSpacing: 6, letterSpacing: 0, marginH: 24, marginV: 28, footerHeight: 20, writingMode: .horizontal)
-            let navigator = ReaderNavigator(initialState: ReaderPresentationState(location: ReaderLocation(scenario.latest),
-                direction: .ltr, spreadMode: .singlePage, viewportSize: CGSize(width: 320, height: 480),
-                appearance: appearance, pagingStyle: .slide), positionStore: checked, bookId: "navigator-book")
-            let admitted = scenario.admissions.expect(.save, position: scenario.latest)
-            let result = CheckedPositionResult()
-            let handoff = scenario.start {
-                do { result.record(try await navigator.flushForRenewalHandoff()) }
-                catch { result.record(error: error) }
-            }
-            try await scenario.wait(admitted)
-            let laterPosition = CoreTextReadingPosition(spineIndex: 10, charOffset: 777, translationOffset: 91)
-            navigator.restore(to: laterPosition)
-            let unrelatedResult = CheckedPositionResult()
-            let otherAdmitted = scenario.admissions.expect(.save, position: laterPosition)
-            let unrelated = scenario.start {
-                do { unrelatedResult.record(try await other.saveChecked(laterPosition, for: "unrelated-book")) }
-                catch { unrelatedResult.record(error: error) }
-            }
-            try await scenario.wait(otherAdmitted)
-            let readResult = CheckedPositionResult()
-            let readAdmitted = scenario.admissions.expect(.load)
-            let reading = scenario.start {
-                do { readResult.record(try await other.loadChecked(for: "navigator-book")) }
-                catch { readResult.record(error: error) }
-            }
-            try await scenario.wait(readAdmitted)
-            let flushAdmitted = scenario.admissions.expect(.flush)
-            let flush = scenario.start { await legacy.flush(for: "book") }
-            try await scenario.wait(flushAdmitted)
-            XCTAssertNil(result.receipt)
-            XCTAssertNil(readResult.receipt)
-            scenario.writer.open()
-            try await scenario.wait(held.finished, handoff.finished, unrelated.finished, reading.finished, flush.finished)
-            XCTAssertNil(result.error); XCTAssertNil(unrelatedResult.error); XCTAssertNil(readResult.error)
-            let receipt = try XCTUnwrap(result.receipt)
-            XCTAssertEqual(receipt.bookId, "navigator-book")
-            XCTAssertEqual(receipt.position, scenario.latest)
-            XCTAssertEqual(navigator.currentLocation, laterPosition)
-            XCTAssertEqual(unrelatedResult.receipt?.bookId, "unrelated-book")
-            XCTAssertEqual(unrelatedResult.receipt?.position, laterPosition)
-            XCTAssertEqual(readResult.receipt?.bookId, "navigator-book")
-            XCTAssertEqual(readResult.receipt?.position, scenario.latest)
-            XCTAssertEqual(readResult.receipt?.rawSHA256, receipt.rawSHA256)
-            XCTAssertEqual(scenario.admissions.snapshots.map(\.kind), [.save, .save, .save, .save, .load, .flush])
-            XCTAssertTrue(scenario.admissions.strictlyIncreasingSequences)
-            XCTAssertFalse(scenario.writer.wasCalledOnMain)
-        }
-    }
-
     func testAdmittedSavesAndFlushKeepOrderWhenTheFirstCallerIsCancelled() async throws {
         try await withPositionScenario { scenario in
             let store = scenario.makeStore()

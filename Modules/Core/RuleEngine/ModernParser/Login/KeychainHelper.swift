@@ -69,7 +69,7 @@ enum KeychainHelper {
         precondition(!Thread.isMainThread)
         try Task.checkCancellation()
         let started = SourcePerfTrace.now
-        defer { SourcePerfTrace.record("renewal.keychain.checked-insert",
+        defer { SourcePerfTrace.record("keychain.checked-insert",
             "bytes=\(data.utf8.count) main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
         try insertCore(account: account, data: data, service: service,
             accessibility: accessibility, synchronizable: synchronizable)
@@ -132,7 +132,7 @@ enum KeychainHelper {
         try Task.checkCancellation()
         guard maximumBytes > 0 else { throw ReadFailure.valueLimit }
         let started = SourcePerfTrace.now
-        defer { SourcePerfTrace.record("renewal.keychain.checked-read",
+        defer { SourcePerfTrace.record("keychain.checked-read",
             "bytesLimit=\(maximumBytes) main=\(Thread.isMainThread)", since: started, thresholdMs: 0) }
         let value = try checkedReadCore(account: account, service: service, accessibility: accessibility,
             synchronizable: synchronizable, maximumBytes: maximumBytes)

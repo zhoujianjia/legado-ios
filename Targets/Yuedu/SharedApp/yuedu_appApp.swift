@@ -15,7 +15,6 @@ struct yuedu_appApp: App {
     )
     @StateObject private var subscriptionStore = SubscriptionStore.shared
     @StateObject private var bookSourceDeepLinkHandler = BookSourceDeepLinkHandler()
-    @State private var renewalOwner = SelfRenewalAppOwner()
     @Environment(\.scenePhase) private var scenePhase
 
     #if DEBUG
@@ -190,20 +189,7 @@ struct yuedu_appApp: App {
         )
     }
 
-    private var dependenciesWithRenewalHandoff: AppDependencies {
-        var dependencies = AppDependencies.live
-        dependencies.selfRenewalDataHandoff = renewalOwner.handoff
-        dependencies.selfRenewalOwner = renewalOwner
-        return dependencies
-    }
-
     var body: some Scene {
-        // O(1) injection of the same already-owned objects. Do not move the
-        // BookStore initializer or normal disk loader into App.init.
-        let renewalSceneGeneration = renewalOwner.noteScenePhase(scenePhase == .active ? .active
-            : scenePhase == .background ? .background : .inactive)
-        let _ = rssNotificationDelegate.renewalBackground.bind(owner: renewalOwner, books: bookStore,
-            sources: BookSourceStore.shared, positions: AppDependencies.live.readingPositionStore)
         WindowGroup {
             Group {
                 #if DEBUG
@@ -223,12 +209,7 @@ struct yuedu_appApp: App {
                 .environmentObject(bookStore)
                 .environment(bookStore.filledCovers)
                 .environmentObject(subscriptionStore)
-                .environment(\.appDependencies, dependenciesWithRenewalHandoff)
-                .task {
-                    await renewalOwner.start(books: bookStore, sources: BookSourceStore.shared,
-                        positions: AppDependencies.live.readingPositionStore,
-                        foregroundGeneration: renewalSceneGeneration)
-                }
+                .environment(\.appDependencies, AppDependencies.live)
                 #if DEBUG
                 .task {
                     await Self.runAutoImportIfNeeded(bookStore: bookStore)
@@ -324,8 +305,6 @@ struct yuedu_appApp: App {
                     }
                 }
                 .onChange(of: scenePhase) { _, newPhase in
-                    let renewalGeneration = renewalOwner.noteScenePhase(newPhase == .active ? .active
-                        : newPhase == .background ? .background : .inactive)
                     MainThreadMonitor.shared.notePhase(String(describing: newPhase))
                     WebDAVIndexCoordinator.shared.setActive(newPhase == .active)
                     bookStore.metadataFill.setActive(newPhase == .active)
@@ -334,7 +313,6 @@ struct yuedu_appApp: App {
                     // reliable moment to get buffered log lines onto disk.
                     switch newPhase {
                     case .background:
-                        Task { await renewalOwner.enteredBackground(generation: renewalGeneration) }
                         DiagnosticLog.shared.noteEnteredBackground()
                         BookSourceStore.shared.flushPendingWrites()
                         DiagnosticScale.publish(bookStore: bookStore, reason: "background")
@@ -349,7 +327,6 @@ struct yuedu_appApp: App {
                     }
                     // Pick up sources shared while the app was backgrounded.
                     if newPhase == .active {
-                        Task { await renewalOwner.becameActive(generation: renewalGeneration) }
                         Task { await subscriptionStore.refreshAllEntitlements() }
                         Task { await subscriptionStore.reloadProductsIfStorefrontChanged() }
                         Task { await SharedImportQueueDrainer.shared.drain() }

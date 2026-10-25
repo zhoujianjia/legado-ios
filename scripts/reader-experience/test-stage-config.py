@@ -7,6 +7,7 @@ from pathlib import Path
 import plistlib
 import tempfile
 import unittest
+import zipfile
 from unittest.mock import patch
 
 
@@ -313,7 +314,9 @@ class ReaderExperienceTests(unittest.TestCase):
     def test_manifest_hashes_exact_ipa_and_states_unverified_runtime(self):
         app = self.app()
         config.finalize(app, SOURCE)
-        ipa = self.write(self.root / "experience.ipa", b"packaged IPA fixture")
+        ipa = self.root / "experience.ipa"
+        with zipfile.ZipFile(ipa, "x") as archive:
+            archive.writestr("Payload/YueduReader.app/fixture", b"packaged IPA fixture")
         resolved = self.root / "Yuedu-Reader.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
         self.write(resolved, b"locked packages")
         original = self.original_project()
@@ -351,7 +354,9 @@ class ReaderExperienceTests(unittest.TestCase):
     def test_manifest_accepts_unchanged_independent_project_and_rejects_extra_tracked_edits(self):
         app = self.app()
         config.finalize(app, SOURCE)
-        ipa = self.write(self.root / "experience.ipa", b"packaged IPA fixture")
+        ipa = self.root / "experience.ipa"
+        with zipfile.ZipFile(ipa, "x") as archive:
+            archive.writestr("Payload/YueduReader.app/fixture", b"packaged IPA fixture")
         resolved = self.root / "Yuedu-Reader.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
         self.write(resolved, b"locked packages")
         original = self.independent_project()

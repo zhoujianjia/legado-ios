@@ -206,40 +206,6 @@ final class ReadingPositionStorePersistenceTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: root.appendingPathComponent("other.json").path))
     }
 
-    func testNavigatorHandoffPersistsCapturedTranslationAndRejectsLegacyOwner() async throws {
-        let root = temporaryRoot()
-        defer { removeTemporaryRoot(root) }
-        let saved = SaveRecorder()
-        let store = JSONFileReadingPositionStore(baseURL: root, onSave: { saved.record($0, for: $1) })
-        let position = CoreTextReadingPosition(spineIndex: 8, charOffset: 321, translationOffset: 27)
-        let navigator = handoffNavigator(position: .chapterStart(0), store: store)
-        navigator.scrollCommit(to: position)
-        let receipt = try await navigator.flushForRenewalHandoff()
-        XCTAssertEqual(receipt.position, position)
-        XCTAssertEqual(receipt.bookId, "navigator-book")
-        let reopened = JSONFileReadingPositionStore(baseURL: root, onSave: { _, _ in XCTFail("Load published a save") })
-        let loadedReceipt4 = try await reopened.loadChecked(for: "navigator-book")
-        let restored = try XCTUnwrap(loadedReceipt4)
-        XCTAssertEqual(restored.position, position)
-        XCTAssertEqual(restored.rawSHA256, receipt.rawSHA256)
-        XCTAssertEqual(saved.positions, [position])
-        let legacy = handoffNavigator(position: position, store: PositionHandoffLegacyStore())
-        do { _ = try await legacy.flushForRenewalHandoff(); XCTFail("Navigator accepted void legacy persistence") }
-        catch ReadingPositionPersistenceFailure.unsupported {}
-        let missing = handoffNavigator(position: position, store: nil)
-        do { _ = try await missing.flushForRenewalHandoff(); XCTFail("Navigator without a store returned success") }
-        catch ReadingPositionPersistenceFailure.unsupported {}
-    }
-
-    private func handoffNavigator(position: CoreTextReadingPosition, store: (any ReadingPositionStore)?) -> ReaderNavigator {
-        let appearance = ReaderAppearance(theme: .sepia, fontSize: 18, lineHeightMultiple: 1.4,
-            lineSpacing: 2, paragraphSpacing: 6, letterSpacing: 0, marginH: 24, marginV: 28,
-            footerHeight: 20, writingMode: .horizontal)
-        return ReaderNavigator(initialState: ReaderPresentationState(location: ReaderLocation(position), direction: .ltr,
-            spreadMode: .singlePage, viewportSize: CGSize(width: 320, height: 480), appearance: appearance, pagingStyle: .slide),
-            positionStore: store, bookId: "navigator-book")
-    }
-
     private func temporaryRoot() -> URL {
         FileManager.default.temporaryDirectory
             .appendingPathComponent("ReadingPositionStorePersistenceTests-\(UUID().uuidString)", isDirectory: true)

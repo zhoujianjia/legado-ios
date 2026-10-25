@@ -176,9 +176,42 @@ def restore():
             "scope": "Audited native reuse and this checkout's ordinary JAR; no historical device acceptance is transferred.", **result}
 
 
+def restore_retained():
+    """Use only the exact retained ZIP after its original artifact expired."""
+    source = validate_tag()
+    if native.replay.git("status", "--porcelain", "--untracked-files=no"):
+        raise ValueError("Reader native restoration requires a clean tracked checkout")
+    supply_spec = importlib.util.spec_from_file_location("reader_clean_native_supply", HERE / "clean-native-supply.py")
+    supply = importlib.util.module_from_spec(supply_spec)
+    supply_spec.loader.exec_module(supply)
+    supply.validate_context(source)
+    api = native.replay.GitHub(os.environ.get("GITHUB_REPOSITORY", ""), os.environ.get("GITHUB_TOKEN", ""))
+    native.replay.fetch_source(native.BASELINE_SHA, api.token)
+    inputs = native.source_inputs(source)
+    destinations = [(relative, native.replay.safe_path(REPO / relative)) for relative in native.ROOTS]
+    if any(destination.exists() for _, destination in destinations):
+        raise ValueError("Refusing to overwrite existing native runtime products")
+    work = native.replay.safe_path(REPO / ".build/reader-native")
+    archive, extracted = work / "native.zip", work / "extracted"
+    provenance = supply.recover(native, api, source, archive)
+    # Keep the same closed ZIP extraction, pin/module/bytecode and ordinary-JAR
+    # audit as the canonical restore; no native product is installed before it.
+    native.extract_native(archive, extracted)
+    result = audit_native(extracted, JAR)
+    for relative, destination in destinations:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(extracted / relative, destination)
+    (REPO / "Packages/LegadoRuntime/Package.swift").touch()
+    return {"schemaVersion": 1, "sourceCommit": source, "workflowRunID": os.environ.get("GITHUB_RUN_ID"),
+            "status": "restored", **provenance, "nativeInputChecks": inputs,
+            "nativeZIP": {"bytes": archive.stat().st_size, "sha256": native.sha256(archive)},
+            "nativeRuntimeRecompiled": False, "freshOrdinaryJVMRequired": True,
+            "scope": "Exact retained audited native bytes after original artifact expiry; fresh ordinary JAR and current reader are rebuilt, with no historical device acceptance transferred.", **result}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("phase", choices=("validate-tag", "restore", "audit", "inspect-jar"))
+    parser.add_argument("phase", choices=("validate-tag", "restore", "restore-retained", "audit", "inspect-jar"))
     parser.add_argument("--native-root", type=Path)
     parser.add_argument("--jar", type=Path, default=JAR)
     parser.add_argument("--output", type=Path)
@@ -187,6 +220,8 @@ def main():
         result = {"sourceCommit": validate_tag()}
     elif args.phase == "restore":
         result = restore()
+    elif args.phase == "restore-retained":
+        result = restore_retained()
     elif args.phase == "inspect-jar":
         result = inspect_jar(args.jar)
     else:
