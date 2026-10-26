@@ -4,6 +4,7 @@ import importlib.util
 import json
 from pathlib import Path
 import plistlib
+import struct
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -21,6 +22,27 @@ verify = load("verify_runtime_test", HERE / "verify-runtime.py")
 stager = load("stage_runtime_test", HERE / "stage-runtime.py")
 keeper = load("prepare_symbol_keeper_test", HERE / "prepare-symbol-keeper.py")
 app_runtime = load("prepare_app_runtime_test", HERE / "prepare-app-runtime.py")
+
+
+def module_descriptor_fixture(module):
+    """A valid major-72 module-info without its link-time ModulePackages attribute."""
+    def utf8(value):
+        raw = value.encode("ascii")
+        return b"\x01" + struct.pack(">H", len(raw)) + raw
+
+    # Class #2 is module-info; Module #5 names the descriptor's own module.
+    constants = [utf8("module-info"), b"\x07\x00\x01", utf8("Module"),
+                 utf8(module), b"\x13\x00\x04"]
+    requires = b"\x00\x00"
+    if module != "java.base":
+        constants += [utf8("java.base"), b"\x13\x00\x06"]
+        # A named non-base module requires java.base with ACC_MANDATED.
+        requires = struct.pack(">4H", 1, 7, 0x8000, 0)
+    module_attribute = struct.pack(">3H", 5, 0, 0) + requires + struct.pack(">4H", 0, 0, 0, 0)
+    return (bytes.fromhex("cafebabe00000048") + struct.pack(">H", len(constants) + 1)
+            + b"".join(constants)
+            + struct.pack(">7H", 0x8000, 2, 0, 0, 0, 0, 1)
+            + struct.pack(">HI", 3, len(module_attribute)) + module_attribute)
 
 
 class SymbolKeeperTests(unittest.TestCase):
@@ -55,7 +77,7 @@ class RuntimeToolsTests(unittest.TestCase):
         for module in modules:
             path = self.java_home / "modules" / module
             path.mkdir(parents=True)
-            (path / "module-info.class").write_bytes(b"test fixture")
+            (path / "module-info.class").write_bytes(module_descriptor_fixture(module))
         for module, name in verify.PROBES.items():
             path = self.java_home / "modules" / module / name
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -113,23 +135,53 @@ class RuntimeToolsTests(unittest.TestCase):
             stager.stage(self.java_home, self.jar, self.java_home)
 
     def test_module_image_staging_retains_bytes_and_installs_at_native_boot_path(self):
-        # The writer treats class bodies as opaque bytes. These fixtures verify
-        # package integrity; actual JVM loading is a separate native CI gate.
+        # Ordinary class bodies remain opaque. Real module-info descriptors need
+        # their link-time package table; actual JVM loading is a native CI gate.
         probes = set(stager.images.PROBES)
-        probes.update(module + "/module-info.class" for module in stager.images.MODULES)
+        # This concealed java.base package caused the actual image startup
+        # failure when copied exploded descriptors lacked ModulePackages.
+        probes.add("java.base/jdk/internal/constant/ConstantUtils.class")
         for name in probes:
             path = self.java_home / "modules" / name
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(bytes.fromhex("cafebabe00000048") + name.encode("ascii"))
+        expected_packages = {}
+        for module in stager.images.MODULES:
+            # Link-time packages include legal resource-only parents. Each
+            # module has its own package so these descriptors remain disjoint.
+            package = "fixture." + module
+            expected_packages[module] = {package}
+            resource = self.java_home / "modules" / module / package.replace(".", "/") / "data.dat"
+            resource.parent.mkdir(parents=True, exist_ok=True)
+            resource.write_bytes(("resource-only package in " + module).encode("ascii"))
+        for name in probes:
+            module, relative = name.split("/", 1)
+            expected_packages[module].add(relative.rsplit("/", 1)[0].replace("/", "."))
         extra = self.java_home / "modules/java.base/fixture/unobserved.dat"
-        extra.parent.mkdir(parents=True)
+        extra.parent.mkdir(parents=True, exist_ok=True)
         extra.write_bytes(b"unchanged resource")
+        expected_packages["java.base"].add("fixture")
+        metadata = self.java_home / "modules/java.base/META-INF/fixture/notice.txt"
+        metadata.parent.mkdir(parents=True)
+        metadata.write_bytes(b"metadata is not a legal Java package")
         original = {path.relative_to(self.java_home).as_posix(): path.read_bytes()
                     for path in self.java_home.rglob("*") if path.is_file()}
         app = self.app(staged=False)
         manifest = stager.stage(self.java_home, self.jar, app / "LegadoRuntime", module_format="jimage")
         self.assertEqual(manifest["layout"], "jimage-java-home/lib/modules")
-        self.assertTrue(manifest["moduleImageCreation"]["allResourceBytesPreserved"])
+        creation = manifest["moduleImageCreation"]
+        self.assertFalse(creation["allResourceBytesPreserved"])
+        self.assertTrue(creation["allNonDescriptorResourceBytesPreserved"])
+        self.assertTrue(creation["descriptorOnlyModulePackagesAugmentationVerified"])
+        self.assertTrue(manifest["moduleImage"]["modulePackagesVerified"])
+        transformations = creation["descriptorTransformations"]
+        self.assertEqual({row["module"] for row in transformations}, set(stager.images.MODULES))
+        self.assertEqual(len(transformations), 13)
+        for row in transformations:
+            self.assertTrue(row["changed"], row["module"])
+            self.assertTrue(row["originalConstantPoolPreserved"], row["module"])
+            self.assertTrue(row["originalAttributesPreserved"], row["module"])
+            self.assertEqual(row["packageCount"], len(expected_packages[row["module"]]))
         self.assertNotIn("resourcePaths", manifest["moduleImage"])
         self.assertFalse((app / "LegadoRuntime/java-home/modules").exists())
         self.assertEqual(original, {path.relative_to(self.java_home).as_posix(): path.read_bytes()
@@ -142,6 +194,27 @@ class RuntimeToolsTests(unittest.TestCase):
         # A structurally valid modification of a non-probe resource still must
         # fail its exact staging binding before an incremental build accepts it.
         parsed = stager.images._Image(image)
+        self.assertEqual(set(parsed.resources),
+                         {name.removeprefix("modules/") for name in original if name.startswith("modules/")})
+        changed_descriptors = set()
+        for name, original_bytes in original.items():
+            if not name.startswith("modules/"):
+                continue
+            relative = name.removeprefix("modules/")
+            packaged_bytes = parsed.content(parsed.by_name["/" + relative])
+            if relative.endswith("/module-info.class"):
+                self.assertNotEqual(packaged_bytes, original_bytes, relative)
+                changed_descriptors.add(relative)
+                module = relative.split("/", 1)[0]
+                self.assertIsNone(stager.images._module_info(original_bytes, module)["packages"], module)
+                descriptor = stager.images._module_info(packaged_bytes, module)
+                self.assertEqual(descriptor["packages"], expected_packages[module], module)
+                self.assertEqual(manifest["moduleImage"]["modulePackages"][module]["packageCount"],
+                                 len(expected_packages[module]), module)
+            else:
+                self.assertEqual(packaged_bytes, original_bytes, relative)
+        self.assertEqual(changed_descriptors,
+                         {module + "/module-info.class" for module in stager.images.MODULES})
         row = parsed.by_name["/java.base/fixture/unobserved.dat"]
         raw = bytearray(image.read_bytes())
         raw[row["begin"]] ^= 1

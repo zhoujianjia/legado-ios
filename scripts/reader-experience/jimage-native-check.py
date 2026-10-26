@@ -240,12 +240,18 @@ def verify_case(summary, tests, expected):
     return {**counts, "passedMethod": expected}
 
 
+def verify_test_verdict(text):
+    require(re.search(r"^\*\* TEST(?: EXECUTE)? SUCCEEDED \*\*[ \t]*$", text, re.MULTILINE)
+            and not re.search(r"^\*\* (?:TEST(?: EXECUTE)? FAILED|BUILD FAILED) \*\*[ \t]*$", text, re.MULTILINE),
+            "Missing actual native test success verdict or an explicit failure was recorded")
+
+
 def case(work, name):
     summary_path, tests_path = work / (name + "-summary.json"), work / (name + "-tests.json")
     result = verify_case(json.loads(summary_path.read_bytes()), json.loads(tests_path.read_bytes()), CASES[name])
     log_path = work / (name + ".log")
     text = log_path.read_text(encoding="utf-8", errors="replace")
-    require("** TEST SUCCEEDED **" in text and "** TEST FAILED **" not in text, "Missing actual native test success verdict")
+    verify_test_verdict(text)
     write(work / (name + "-result.json"), {"sourceCommit": source(), **result,
           "summarySHA256": sha(summary_path), "testsSHA256": sha(tests_path), "logSHA256": sha(log_path),
           "hostSHA256": sha(work / "host.json"), "lifecycleLogSHA256": sha(work / (name + "-lifecycle.log")),

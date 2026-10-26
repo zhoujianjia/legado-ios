@@ -51,6 +51,19 @@ class NativeJimageEvidenceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             check.verify_case(self.summary(), tree, check.CASES["mainjs"])
 
+    def test_normal_and_execute_success_verdicts_pass(self):
+        for verdict in ("** TEST SUCCEEDED **", "** TEST EXECUTE SUCCEEDED **"):
+            with self.subTest(verdict=verdict):
+                check.verify_test_verdict("Executed 1 test, with 0 failures\n" + verdict + "\n")
+
+    def test_either_failure_verdict_overrides_either_success(self):
+        for success in ("** TEST SUCCEEDED **", "** TEST EXECUTE SUCCEEDED **"):
+            for failure in ("** TEST FAILED **", "** TEST EXECUTE FAILED **", "** BUILD FAILED **"):
+                with self.subTest(success=success, failure=failure), self.assertRaises(ValueError):
+                    check.verify_test_verdict(success + "\n" + failure + "\n")
+        with self.assertRaises(ValueError):
+            check.verify_test_verdict("Test Suite 'All tests' passed\nExecuted 1 test, with 0 failures\n")
+
     def test_standard_image_header_is_recorded(self):
         with tempfile.TemporaryDirectory() as directory:
             # macOS exposes its temporary root through /var -> /private/var.

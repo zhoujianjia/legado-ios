@@ -12,14 +12,15 @@ import java.util.TreeMap;
 import jdk.tools.jlink.internal.BasicImageWriter;
 import jdk.tools.jlink.internal.ImageResourcesTree;
 
-/** Byte-preserving image construction with the pinned OpenJDK Mobile writer. */
+/** Image construction; Python supplies verified ModulePackages-only descriptor overrides. */
 public final class BuildJimage {
     public static void main(String[] args) throws Exception {
-        if (args.length != 2) {
-            throw new IllegalArgumentException("Usage: BuildJimage exploded-modules output-image");
+        if (args.length != 3) {
+            throw new IllegalArgumentException("Usage: BuildJimage exploded-modules output-image descriptor-overrides");
         }
         Path root = Path.of(args[0]);
         Path output = Path.of(args[1]);
+        Path overrides = Path.of(args[2]);
         Map<String, Path> resources = new TreeMap<>();
         try (var paths = Files.walk(root)) {
             for (Path path : paths.toList()) {
@@ -31,7 +32,11 @@ public final class BuildJimage {
                     if (!name.contains("/") || name.startsWith("/") || name.contains("../")) {
                         throw new IllegalArgumentException("Invalid module resource path");
                     }
-                    resources.put("/" + name, path);
+                    Path input = name.endsWith("/module-info.class") ? overrides.resolve(name) : path;
+                    if (!Files.isRegularFile(input) || Files.isSymbolicLink(input)) {
+                        throw new IllegalArgumentException("Verified descriptor override is missing");
+                    }
+                    resources.put("/" + name, input);
                 }
             }
         }

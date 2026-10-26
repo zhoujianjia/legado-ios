@@ -99,7 +99,7 @@ python3 "$SCRIPT_DIR/stage-config.py" manifest \
   --output "$OUTPUT/build-manifest.json" "${RUNTIME_ARGS[@]}"
 if [[ ${LEGADO_READER_WITH_JVM:-0} == 1 ]]; then
 cat > "$OUTPUT/README.txt" <<'TEXT'
-Build31: original JVM module bytes are stored in standard jimage 1.1 to avoid SideStore treating loose Java classes as FAT Mach-O files. App ID registration defaults use English; localized desktop names remain available.
+Build31: JVM implementation classes and resources retain their original bytes; the 13 module descriptors receive standard package metadata before jimage 1.1 packaging. This avoids SideStore treating loose Java classes as FAT Mach-O files. App ID registration defaults use English; localized desktop names remain available.
 Automatic renewal is removed; SideStore or another installation tool handles signing and renewal. Physical-device installation and renewal still require validation.
 阅读（unsigned，独立修改版）
 

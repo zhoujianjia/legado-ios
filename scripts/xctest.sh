@@ -124,9 +124,10 @@ BUILD_PID=$!
 # usable for this: XCTest prints "Test Suite 'All tests' passed" while Swift Testing is still
 # running, so keying on it cut a full run short and reported a partial pass — measured
 # 2026-09-13, a run killed after 14 suites when the suite has many more.
-VERDICT="\*\* TEST (SUCCEEDED|FAILED) \*\*|\*\* BUILD FAILED \*\*|The following build commands failed"
+VERDICT="\*\* TEST( EXECUTE)? (SUCCEEDED|FAILED) \*\*|\*\* BUILD FAILED \*\*|The following build commands failed"
 # There is deliberately no per-framework fallback. The documented hang happens *after*
-# "** TEST SUCCEEDED **", so that line always arrives; cutting the run when a half reports
+# "** TEST SUCCEEDED **" (or "** TEST EXECUTE SUCCEEDED **" for test-without-building).
+# Cutting the run when a half reports
 # only truncates it — the Swift Testing half runs for minutes more (BrowserLayoutABHarness
 # alone is 107s). TIMEOUT is the only other exit.
 
@@ -154,7 +155,7 @@ echo "xcodebuild status: $RAW_STATUS; wrapper verdict stop: $VERDICT_STOP"
 echo "--- errors ---"
 grep -nE "^/Users.*error:" "$LOG" | sed "s|$ROOT/||" | head -25
 echo "--- verdict ---"
-grep -E "Test run with [0-9]+ tests?|Test Suite 'All tests' (passed|failed)|✘ Suite|\*\* TEST (SUCCEEDED|FAILED) \*\*|\*\* BUILD FAILED \*\*" "$LOG" | head -20
+grep -E "Test run with [0-9]+ tests?|Test Suite 'All tests' (passed|failed)|✘ Suite|\*\* TEST( EXECUTE)? (SUCCEEDED|FAILED) \*\*|\*\* BUILD FAILED \*\*" "$LOG" | head -20
 
 # Framework/background logs can contain "failed" on a successful run. Only the test
 # runner's final verdict is authoritative; absence of a verdict is never success.
@@ -166,7 +167,7 @@ fi
 if ! grep -qE 'Test run with [1-9][0-9]* tests?|Executed [1-9][0-9]* tests?' "$LOG"; then
   exit 1
 fi
-if grep -qE "\*\* TEST SUCCEEDED \*\*" "$LOG" && ! grep -qE "✘|\*\* TEST FAILED \*\*|\*\* BUILD FAILED \*\*" "$LOG"; then
+if grep -qE "\*\* TEST( EXECUTE)? SUCCEEDED \*\*" "$LOG" && ! grep -qE "✘|\*\* TEST( EXECUTE)? FAILED \*\*|\*\* BUILD FAILED \*\*" "$LOG"; then
   exit 0
 fi
 exit 1
