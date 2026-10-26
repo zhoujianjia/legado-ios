@@ -28,6 +28,38 @@ class NativeJimageEvidenceTests(unittest.TestCase):
     def test_exact_case_passes(self):
         result = check.verify_case(self.summary(), self.tree(), check.CASES["mainjs"])
         self.assertEqual(result["passedMethod"], check.CASES["mainjs"])
+        self.assertEqual(result["runtimeWarnings"], [])
+
+    def test_actual_runtime_warning_leaf_is_recorded(self):
+        tree = self.tree(check.CASES["original-public"])
+        warning = {"nodeType": "Runtime Warning", "name":
+                   "[Internal] Thread running at User-initiated quality-of-service class waiting on a thread "
+                   "without a QoS class specified (base priority 33). Investigate ways to avoid priority inversions"}
+        tree["testNodes"][0]["children"][0]["children"] = [warning]
+        result = check.verify_case(self.summary(), tree, check.CASES["original-public"])
+        self.assertEqual(result["passedMethod"], check.CASES["original-public"])
+        self.assertEqual(result["runtimeWarnings"], [warning["name"]])
+
+    def test_runtime_warning_cannot_hide_results_identities_or_executions(self):
+        warning = {"nodeType": "Runtime Warning", "name": "QoS diagnostic"}
+        execution = {"nodeType": "Test Case", "nodeIdentifier": check.CASES["mainjs"], "result": "Passed"}
+        for invalid in (warning | {"children": [execution]},
+                        warning | {"children": [{"nodeType": "Arguments", "children": [execution]}]},
+                        warning | {"result": "Failed"},
+                        warning | {"result": "Passed"},
+                        warning | {"nodeIdentifier": check.CASES["mainjs"]},
+                        warning | {"nodeIdentifierURL": "test://hidden-execution"},
+                        warning | {"name": ""}, execution):
+            tree = self.tree()
+            tree["testNodes"][0]["children"][0]["children"] = [invalid]
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                check.verify_case(self.summary(), tree, check.CASES["mainjs"])
+
+    def test_runtime_warning_outside_test_case_is_rejected(self):
+        tree = self.tree()
+        tree["testNodes"].append({"nodeType": "Runtime Warning", "name": "Unbound annotation"})
+        with self.assertRaises(ValueError):
+            check.verify_case(self.summary(), tree, check.CASES["mainjs"])
 
     def test_wrong_or_duplicated_case_fails(self):
         for tree in (self.tree(check.CASES["original-public"]),

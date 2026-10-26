@@ -223,21 +223,33 @@ def host(work):
 def verify_case(summary, tests, expected):
     counts = smoke.verify_summary(summary, 1, 1)
     found = []
+    runtime_warnings = []
     def visit(node):
         require(isinstance(node, dict), "Malformed test tree node")
         children = node.get("children") or []
         require(isinstance(children, list), "Malformed test tree children")
         require(node.get("result") in (None, "Passed"), "Failed or skipped test tree container")
         if node.get("nodeType") == "Test Case":
-            require(node.get("result") == "Passed" and not children, "Failed/skipped or unexpected parameterized execution")
+            require(node.get("result") == "Passed", "Failed or skipped test case")
+            for child in children:
+                # xcresult attaches diagnostic annotations to an executed case.
+                # Only the observed leaf shape is metadata; execution identities,
+                # results or descendants must never hide another execution here.
+                require(isinstance(child, dict) and set(child) == {"nodeType", "name"}
+                        and child.get("nodeType") == "Runtime Warning"
+                        and isinstance(child.get("name"), str) and child["name"].strip(),
+                        "Unexpected parameterized execution or malformed runtime warning")
+                runtime_warnings.append(child["name"])
             found.append(node.get("nodeIdentifier"))
+            return
+        require(node.get("nodeType") != "Runtime Warning", "Runtime warning is not attached to a test case")
         for child in children:
             visit(child)
     require(isinstance(tests, dict) and isinstance(tests.get("testNodes"), list), "Missing actual test tree")
     for node in tests["testNodes"]:
         visit(node)
     require(found == [expected], "Actual test method differs from the fixed native selection")
-    return {**counts, "passedMethod": expected}
+    return {**counts, "passedMethod": expected, "runtimeWarnings": runtime_warnings}
 
 
 def verify_test_verdict(text):
