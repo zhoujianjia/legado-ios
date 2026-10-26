@@ -53,14 +53,16 @@ class NativeJimageEvidenceTests(unittest.TestCase):
 
     def test_standard_image_header_is_recorded(self):
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "modules"
+            # macOS exposes its temporary root through /var -> /private/var.
+            # Resolve owned fixtures; production still rejects symlinked paths.
+            path = Path(directory).resolve() / "modules"
             path.write_bytes(struct.pack("<7I", 0xCAFEDADA, 0x00010001, 0, 1, 1, 1, 1) + b"\0" * 10)
             result = check.image(path)
             self.assertEqual((result["majorVersion"], result["minorVersion"], result["indexBytes"]), (1, 1, 38))
 
     def test_nonstandard_and_truncated_images_fail(self):
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "modules"
+            path = Path(directory).resolve() / "modules"
             for raw in (b"", b"\xca\xfe\xba\xbe" * 10,
                         struct.pack("<7I", 0xCAFEDADA, 0x00010000, 0, 1, 1, 1, 1) + b"\0" * 10,
                         struct.pack("<7I", 0xCAFEDADA, 0x00010001, 0, 1, 200, 1, 1)):
@@ -70,7 +72,8 @@ class NativeJimageEvidenceTests(unittest.TestCase):
 
     def test_exact_source_only_diagnostic_methods_pass(self):
         with tempfile.TemporaryDirectory() as directory:
-            log, output = Path(directory) / "test.log", Path(directory) / "result.json"
+            root = Path(directory).resolve()
+            log, output = root / "test.log", root / "result.json"
             log.write_text("\n".join("Test Case 'LegadoRuntimeTests." + name + "' passed (0.001 seconds)."
                                      for name in sorted(check.PACKAGE_CASES))
                            + "\nExecuted 3 tests, with 0 failures (0 unexpected)\n", encoding="utf-8")
@@ -80,7 +83,8 @@ class NativeJimageEvidenceTests(unittest.TestCase):
 
     def test_missing_or_skipped_source_only_diagnostics_fail(self):
         with tempfile.TemporaryDirectory() as directory:
-            log, output = Path(directory) / "test.log", Path(directory) / "result.json"
+            root = Path(directory).resolve()
+            log, output = root / "test.log", root / "result.json"
             text = "\n".join("Test Case 'LegadoRuntimeTests." + name + "' passed (0.001 seconds)."
                               for name in sorted(check.PACKAGE_CASES))
             for invalid in (text.replace("RejectsTruncatedIndex", "Unrelated"), text.replace("passed", "skipped", 1)):
@@ -90,7 +94,7 @@ class NativeJimageEvidenceTests(unittest.TestCase):
 
     def test_explicit_test_target_settings_are_merged(self):
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
+            root = Path(directory).resolve()
             app = {"target": "yuedu app", "buildSettings": {"ENABLE_DEBUG_DYLIB": "NO"}}
             test = {"target": "yuedu appTests", "buildSettings": {"ENABLE_DEBUG_DYLIB": "NO"}}
             (root / "app-build-settings.json").write_text(json.dumps([app]), encoding="utf-8")
@@ -100,7 +104,7 @@ class NativeJimageEvidenceTests(unittest.TestCase):
 
     def test_missing_or_duplicate_test_settings_fail(self):
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
+            root = Path(directory).resolve()
             app = {"target": "yuedu app", "buildSettings": {}}
             test = {"target": "yuedu appTests", "buildSettings": {}}
             (root / "app-build-settings.json").write_text(json.dumps([app]), encoding="utf-8")
