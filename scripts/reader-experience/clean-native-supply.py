@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Recover the exact retained native ZIP for the clean build30 reader only.
+"""Recover the exact retained native ZIP for the clean reader workflow.
 
 The original Actions artifact expired. This fixed orphan Git commit supplies
-identical bytes, never a new native build or a claim that the old artifact lives.
+identical bytes first retained for build30, never a new native build or a claim
+that the old artifact lives. Later reader builds reuse that immutable supply.
 The ordinary artifact-based restore remains a separate, unchanged admission.
 """
 import hashlib

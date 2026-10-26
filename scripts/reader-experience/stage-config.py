@@ -253,7 +253,7 @@ def no_jvm_payload(app):
     if runtime.exists():
         if any(runtime.rglob("*.jar")) or (runtime / "java-home").exists() or (runtime / "runtime-manifest.json").exists():
             raise ValueError("The JSC experience must not accidentally include a staged JVM payload")
-    if (app / "lib/modules/java.base").exists():
+    if (app / "lib/modules/java.base").exists() or (app / "lib/lib/modules").exists():
         raise ValueError("Unexpected JVM bootstrap modules in the reader experience")
 
 
@@ -274,6 +274,10 @@ def verify_jvm_payload(app):
     if (app / "LegadoRuntime/java-home").exists():
         raise ValueError("The reader JVM must boot from App.app/lib")
     staging = json.loads((app / "LegadoRuntime/runtime-manifest.json").read_bytes())
+    if (not validation.get("moduleImage")
+            or validation["moduleImage"] != staging.get("moduleImage")
+            or staging.get("layout") != "jimage-java-home/lib/modules"):
+        raise ValueError("Reader requires the exact staged JDK module image")
     if staging.get("jarSHA256") != digest(jar):
         raise ValueError("Packaged JVM JAR differs from its staging manifest")
     packaging_spec = importlib.util.spec_from_file_location("reader_ordinary_jar", Path(__file__).with_name("runtime-packaging.py"))

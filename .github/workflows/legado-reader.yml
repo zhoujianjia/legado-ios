@@ -20,7 +20,7 @@ defaults:
 jobs:
   reader:
     runs-on: macos-15
-    timeout-minutes: 100
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -42,20 +42,34 @@ jobs:
           python -B scripts/reader-experience/test-bundle-local-sources.py -v 2>&1 | tee .build/ci-logs/reader-local-source-packaging-tests.log
           python -B scripts/reader-experience/test-runtime-packaging.py -v 2>&1 | tee .build/ci-logs/reader-runtime-packaging-tests.log
           python -B scripts/reader-experience/test-runtime-notices.py -v 2>&1 | tee .build/ci-logs/reader-notice-tests.log
+          python -B scripts/reader-experience/test-jimage-native-check.py -v 2>&1 | tee .build/ci-logs/jimage-native-gate-tests.log
           python -B scripts/reader-experience/clean-native-supply.py --self-test 2>&1 | tee .build/ci-logs/reader-native-supply-tests.log
           python -B scripts/legado-ios/test-runtime-tools.py -v 2>&1 | tee .build/ci-logs/reader-runtime-staging-tests.log
+          python -B scripts/legado-ios/test-jimage-tools.py -v 2>&1 | tee .build/ci-logs/reader-jimage-tools-tests.log
           bash Packages/LegadoRuntime/jvm/gradlew -p Packages/LegadoRuntime/jvm --no-daemon test runtimeJar runtimeSmoke runtimeSuiteSmoke runtimeWireSmoke runtimeCpuLoopSmoke 2>&1 | tee .build/ci-logs/reader-jvm-tests.log
           python -B scripts/reader-experience/runtime-packaging.py inspect-jar --output .build/ci-logs/reader-ordinary-jar.json
+      - name: Execute the three source-only Swift module-image diagnostics
+        env:
+          LEGADO_RUNTIME_SOURCE_ONLY: '1'
+        run: |
+          export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
+          swift test --package-path Packages/LegadoRuntime --filter 'LegadoRuntimeTests.testModuleImage' 2>&1 | tee .build/ci-logs/jimage-source-only-package-tests.log
+          python -B scripts/reader-experience/jimage-native-check.py package --log .build/ci-logs/jimage-source-only-package-tests.log --output .build/ci-logs/jimage-source-only-package-result.json
       - name: Restore the exact retained pinned native VM after original artifact expiry
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python -B scripts/reader-experience/runtime-packaging.py restore-retained --output .build/ci-logs/reader-native.json
-      - name: Resolve the installed Apple toolchain and stage the physical-device runtime
+      - name: Resolve the installed Apple toolchain
         run: |
           export DEVELOPER_DIR="$(bash scripts/sim.sh xcode)"
           echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
           xcodebuild -version 2>&1 | tee .build/ci-logs/reader-xcode-version.log
-          python -B scripts/legado-ios/stage-runtime.py --java-home .build/legado-ios/device-static/java-home --jar Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar --destination Resources/LegadoRuntime
+      - name: Require the jimage-backed JNI product routes in three fresh Simulator hosts
+        run: bash scripts/reader-experience/jimage-native-check.sh 2>&1 | tee .build/ci-logs/jimage-native-check.log
+      - name: Replace Simulator resources with the exact physical-device jimage runtime
+        run: |
+          python -B scripts/legado-ios/stage-runtime.py --java-home .build/legado-ios/device-static/java-home --jar Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar --destination Resources/LegadoRuntime --replace --module-format jimage
+          python -B scripts/reader-experience/jimage-native-check.py image --image Resources/LegadoRuntime/java-home/lib/modules --output .build/ci-logs/reader-device-jimage.json
       - name: Compile and package the actual main application with the local JVM
         env:
           LEGADO_READER_WITH_JVM: '1'
@@ -64,7 +78,7 @@ jobs:
           git archive --format=zip --output=.build/reader-experience/output/source.zip "$GITHUB_SHA"
       # Temporary public diagnostic downloads are explicitly authorized for the current development work.
       - name: Preserve the temporary clean reader, source and exact manifest
-        if: ${{ success() && hashFiles('.build/reader-experience/output/build-manifest.json') != '' }}
+        if: ${{ success() && hashFiles('.build/reader-experience/output/build-manifest.json') != '' && hashFiles('.build/jimage-native-check/result.json') != '' && hashFiles('.build/ci-logs/jimage-source-only-package-result.json') != '' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: legado-native-reader-unsigned
@@ -87,6 +101,7 @@ jobs:
             .build/reader-experience/*.json
             .build/reader-experience/*.log
             .build/reader-experience/*.xcresult/
+            .build/jimage-native-check/
             Packages/LegadoRuntime/jvm/build/test-results/
           if-no-files-found: error
           include-hidden-files: true
@@ -96,7 +111,8 @@ jobs:
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
           This compiles the current main reader with a freshly assembled ordinary JVM JAR and the immutable audited Probe 12 native VM. Test fixtures and JUnit are excluded from the reader payload. Source/pin checks, ZIP bytes, module inventory, bytecode, final native exports and packaged resources are checked separately.
-          Self-signing and renewal implementations, tests, tools and workflows are reference-only archive content. Build30 uses optimized non-DEBUG Release for the app and both extensions. The actual compiler file lists and all final app files are checked to reject archived feature code/resources before the IPA can be uploaded. The exact source.zip may contain reference archives; the IPA must not.
+          Self-signing and renewal implementations, tests, tools and workflows are reference-only archive content. Build31 uses optimized non-DEBUG Release for the app and both extensions. The actual compiler file lists and all final app files are checked to reject archived feature code/resources before the IPA can be uploaded. The exact source.zip may contain reference archives; the IPA must not.
+          Before device packaging, this same run requires three real source-only Swift jimage diagnostics and three exact JNI product test methods in independent freshly booted Simulator hosts. The native-required compilation flag prevents a missing runtime from becoming a skipped success. Tests bind the actual Simulator app, standard jimage 1.1, ordinary JAR, source stamp, local-mode configuration, build settings and selected runtime. Exact xcresult method identities, one passing execution per method and zero skips/failures are mandatory. These raw diagnostics are separate evidence, never IPA resources. Simulator source overlays are restored and device-specific resources replace Simulator staging before the Release build.
           The original native Actions artifact expired. This build restores the identical retained 89,898,489-byte ZIP from one fixed orphan supply commit, verifies its original SHA256, successful producer and unchanged native source inputs, then runs the unchanged extraction and native/JAR audits. The supply commit is outside this reader's history/source snapshot and contains no workflow or private data. This is exact byte reuse, not a new native compilation or renewed availability of the old artifact.
           Original traditional text consumers and the finite mainJs route use Rhino/JVM with the native CoreText reader. Book-source and host coverage remains incomplete. Reader packages contain no built-in book sources; checkout and packaged resources are checked before accepting the manifest. Users import sources in the app.
           This unsigned iOS 18+ device-target build must be signed before installation. Compilation does not establish native mainJs UI execution, physical-device reading acceptance, source-state persistence parity or full Legado compatibility.

@@ -182,6 +182,40 @@ private final class BlockingTransport: LegadoRuntimeTransport, @unchecked Sendab
         XCTAssertTrue(diagnostics.issues.contains { $0.contains("conf/security/java.security") })
         XCTAssertTrue(diagnostics.deviceValidationRequired)
     }
+    private func moduleImageDiagnostics(version: UInt32 = 0x0001_0001, table: UInt32 = 1) throws -> LegadoRuntimeDiagnostics {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("ModuleImage-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root.appendingPathComponent("lib"), withIntermediateDirectories: true)
+        defer {
+            do { try FileManager.default.removeItem(at: root) }
+            catch { XCTFail("Could not remove owned image fixture: \(error)") }
+        }
+        var header = Data()
+        let words: [UInt32] = [0xcafe_dada, version, 0, 1, table, 1, 23]
+        for word in words {
+            for shift in stride(from: 0, through: 24, by: 8) { header.append(UInt8(truncatingIfNeeded: word >> shift)) }
+        }
+        header.append(Data(repeating: 0, count: 64))
+        try header.write(to: root.appendingPathComponent("lib/modules"))
+        return LegadoRuntime.diagnose(configuration: .init(javaHome: root, classPath: []))
+    }
+    func testModuleImageValidHeader() throws {
+        let diagnostics = try moduleImageDiagnostics()
+        XCTAssertFalse(diagnostics.issues.contains { $0.hasPrefix("invalid_module_image:") })
+        XCTAssertFalse(diagnostics.issues.contains { $0.hasPrefix("missing_module:") || $0.hasPrefix("missing_class:") })
+        // An image header alone is never a complete usable runtime.
+        XCTAssertFalse(diagnostics.available)
+        XCTAssertTrue(diagnostics.issues.contains { $0.contains("conf/security/java.security") })
+    }
+    func testModuleImageRejectsUnsupportedVersion() throws {
+        let diagnostics = try moduleImageDiagnostics(version: 0x0001_0000)
+        XCTAssertTrue(diagnostics.issues.contains { $0.contains("image version 1.1") })
+        XCTAssertFalse(diagnostics.issues.contains { $0.hasPrefix("missing_module:") })
+    }
+    func testModuleImageRejectsTruncatedIndex() throws {
+        let diagnostics = try moduleImageDiagnostics(table: UInt32.max)
+        XCTAssertTrue(diagnostics.issues.contains { $0.contains("index exceeds file bounds") })
+        XCTAssertFalse(diagnostics.issues.contains { $0.hasPrefix("missing_module:") })
+    }
     func testJSONErrorEnvelopeIsNotAcceptedAsSuccess() {
         XCTAssertThrowsError(try LegadoRuntime.envelope("{\"ok\":false,\"error\":{\"code\":\"cancelled\",\"message\":\"Stopped\"}}")) { error in
             XCTAssertEqual((error as? LegadoRuntimeError)?.code, "cancelled")

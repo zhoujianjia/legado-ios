@@ -68,7 +68,8 @@ def read_manifest(marker: Path, jar: Path) -> dict:
     if not marker.is_file():
         raise ValueError("Runtime payload requires its runtime-manifest.json ownership marker")
     manifest = json.loads(marker.read_text(encoding="utf-8-sig"))
-    if not isinstance(manifest, dict) or manifest.get("staticValidationPassed") is not True or manifest.get("layout") != "exploded-java-home/modules":
+    if (not isinstance(manifest, dict) or manifest.get("staticValidationPassed") is not True
+            or manifest.get("layout") not in ("exploded-java-home/modules", "jimage-java-home/lib/modules")):
         raise ValueError("Invalid runtime-manifest.json ownership marker")
     if not jar.is_file():
         raise ValueError("Runtime payload JAR is absent")
@@ -91,6 +92,13 @@ def check_owned_home(home: Path, app: Path, jar: Path) -> dict:
     return verify.validate(home, jar)
 
 
+def check_manifest_image(validation: dict, manifest: dict) -> None:
+    expected = manifest.get("moduleImage")
+    actual = validation.get("moduleImage")
+    if (manifest["layout"] == "jimage-java-home/lib/modules") != (actual is not None) or actual != expected:
+        raise ValueError("Java module image differs from its staging manifest")
+
+
 def prepare(app: Path) -> dict:
     app = check_app(app)
     resources = checked_path(app / "LegadoRuntime", app)
@@ -102,15 +110,17 @@ def prepare(app: Path) -> dict:
               "layout": "source-only", "staticValidationPassed": False, "deviceValidationPassed": False}
     if not source.exists() and not destination.exists() and not marker.exists():
         return result
-    read_manifest(marker, jar)
+    manifest = read_manifest(marker, jar)
     if destination.exists():
         check_owned_home(destination, app, jar)
     if not source.exists():
         if not destination.exists():
             raise ValueError("Staging manifest exists but both Java home directories are absent")
+        check_manifest_image(verify.validate(destination, jar), manifest)
         return {**result, "javaHomePresent": True, "javaHomeRelativePath": "lib", "layout": OWNER["layout"], "staticValidationPassed": True}
     checked_tree(source, app)
     validation = verify.validate(source, jar)
+    check_manifest_image(validation, manifest)
     source_owner = checked_path(source / OWNER_FILE, app)
     if source_owner.exists():
         if json.loads(source_owner.read_text(encoding="utf-8-sig")) != OWNER:

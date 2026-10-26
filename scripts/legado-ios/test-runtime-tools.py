@@ -111,6 +111,44 @@ class RuntimeToolsTests(unittest.TestCase):
     def test_staging_cannot_replace_source(self):
         with self.assertRaisesRegex(ValueError, "separate"):
             stager.stage(self.java_home, self.jar, self.java_home)
+
+    def test_module_image_staging_retains_bytes_and_installs_at_native_boot_path(self):
+        # The writer treats class bodies as opaque bytes. These fixtures verify
+        # package integrity; actual JVM loading is a separate native CI gate.
+        probes = set(stager.images.PROBES)
+        probes.update(module + "/module-info.class" for module in stager.images.MODULES)
+        for name in probes:
+            path = self.java_home / "modules" / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(bytes.fromhex("cafebabe00000048") + name.encode("ascii"))
+        extra = self.java_home / "modules/java.base/fixture/unobserved.dat"
+        extra.parent.mkdir(parents=True)
+        extra.write_bytes(b"unchanged resource")
+        original = {path.relative_to(self.java_home).as_posix(): path.read_bytes()
+                    for path in self.java_home.rglob("*") if path.is_file()}
+        app = self.app(staged=False)
+        manifest = stager.stage(self.java_home, self.jar, app / "LegadoRuntime", module_format="jimage")
+        self.assertEqual(manifest["layout"], "jimage-java-home/lib/modules")
+        self.assertTrue(manifest["moduleImageCreation"]["allResourceBytesPreserved"])
+        self.assertNotIn("resourcePaths", manifest["moduleImage"])
+        self.assertFalse((app / "LegadoRuntime/java-home/modules").exists())
+        self.assertEqual(original, {path.relative_to(self.java_home).as_posix(): path.read_bytes()
+                                    for path in self.java_home.rglob("*") if path.is_file()})
+        app_runtime.prepare(app)
+        image = app / "lib/lib/modules"
+        self.assertTrue(image.is_file())
+        self.assertEqual(verify.validate(app / "lib", self.jar)["moduleImage"], manifest["moduleImage"])
+        self.assertFalse(app_runtime.prepare(app)["changed"])
+        # A structurally valid modification of a non-probe resource still must
+        # fail its exact staging binding before an incremental build accepts it.
+        parsed = stager.images._Image(image)
+        row = parsed.by_name["/java.base/fixture/unobserved.dat"]
+        raw = bytearray(image.read_bytes())
+        raw[row["begin"]] ^= 1
+        image.write_bytes(raw)
+        with self.assertRaisesRegex(ValueError, "differs from its staging manifest"):
+            app_runtime.prepare(app)
+
     def test_replacement_requires_ownership_marker(self):
         destination = self.root / "existing"
         destination.mkdir()

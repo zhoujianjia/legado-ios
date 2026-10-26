@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reject archived feature code/resources in the ordinary build30 reader."""
+"""Audit the clean reader and reject Java files that IPA signers misclassify."""
 import argparse
 import hashlib
 import json
@@ -7,10 +7,11 @@ import os
 from pathlib import Path
 import plistlib
 import re
+import struct
 import subprocess
 
 REPO = Path(__file__).resolve().parents[2]
-BUILD = "30"
+BUILD = "31"
 FORBIDDEN = re.compile(rb"selfrenewal|self[-_]renewal|anisette|new\.ani\.sidestore", re.I)
 UI_MARKERS = tuple(text.encode(encoding) for text in ("自簽與續簽", "自签与续签", "自續簽驗證")
                    for encoding in ("utf-8", "utf-16-be", "utf-16-le"))
@@ -29,6 +30,31 @@ def require(condition, message):
 def reject_bytes(raw, location):
     require(FORBIDDEN.search(raw) is None and not any(marker in raw for marker in UI_MARKERS),
             "Archived feature marker in " + str(location))
+
+
+def signing_binary_audit(header, byte_count, location):
+    """Match the signer's magic-based admission, then validate FAT bounds.
+
+    Java class files share CAFEBABE with FAT Mach-O. Every such resource must be
+    inside the JDK module image or a JAR, while real FAT frameworks stay intact.
+    """
+    magics = {b"\xca\xfe\xba\xbe": (">", False), b"\xbe\xba\xfe\xca": ("<", False),
+              b"\xca\xfe\xba\xbf": (">", True), b"\xbf\xba\xfe\xca": ("<", True)}
+    kind = magics.get(header[:4])
+    if kind is None:
+        return False
+    require(len(header) >= 8, "Truncated FAT header: " + str(location))
+    order, wide = kind
+    count = struct.unpack_from(order + "I", header, 4)[0]
+    require(0 < count < 40, "FAT/Java header would fail IPA signing: " + str(location))
+    record_size = 32 if wide else 20
+    require(len(header) >= 8 + count * record_size, "Truncated FAT architecture table: " + str(location))
+    for index in range(count):
+        offset = 8 + index * record_size
+        start, size = struct.unpack_from(order + ("QQ" if wide else "II"), header, offset + 8)
+        require(size > 0 and start >= 8 + count * record_size and start + size <= byte_count,
+                "FAT slice bounds exceed file size: " + str(location))
+    return True
 
 
 def source_audit():
@@ -101,16 +127,22 @@ def compiled_inputs(items):
 
 def app_audit(app):
     require(app.is_dir() and app.name == "YueduReader.app", "Reader app absent")
-    count = total = 0
+    count = total = fat_count = 0
     infos = []
     for bundle in (app, app / "PlugIns/yuedu_app_Widget.appex", app / "PlugIns/yuedu_app_ShareExtension.appex"):
         info = plistlib.loads((bundle / "Info.plist").read_bytes())
         require(info.get("CFBundleVersion") == BUILD, "Unexpected packaged build")
         expected = next(value[0] for value in TARGETS.values() if value[1] == bundle.name)
         require(info.get("CFBundleIdentifier") == expected, "Unexpected packaged identity")
+        # SideStore versions without name transliteration submit this raw value
+        # as Apple's appIdName; localized InfoPlist.strings can keep the UI name.
+        display_name = info.get("CFBundleDisplayName", info.get("CFBundleName"))
+        require(isinstance(display_name, str) and re.fullmatch(r"[A-Za-z0-9]+(?: [A-Za-z0-9]+)*", display_name),
+                "Default bundle name must use ASCII letters/numbers/spaces for sideload registration: " + bundle.name)
         require(not any("selfrenewal" in str(v).lower() for v in info.get("BGTaskSchedulerPermittedIdentifiers", [])),
                 "Archived background task identifier")
-        infos.append({"bundle": bundle.name, "identifier": expected, "build": BUILD})
+        infos.append({"bundle": bundle.name, "identifier": expected, "build": BUILD,
+                      "defaultDisplayName": display_name})
     for path in app.rglob("*"):
         require(not path.is_symlink(), "Unexpected package symlink")
         rel = path.relative_to(app)
@@ -123,11 +155,14 @@ def app_audit(app):
         count += 1
         total += path.stat().st_size
         with path.open("rb") as stream:
+            fat_count += signing_binary_audit(stream.read(1288), path.stat().st_size, rel)
+            stream.seek(0)
             tail = b""
             while chunk := stream.read(1 << 20):
                 reject_bytes(tail + chunk, rel)
                 tail = chunk[-128:]
     return {"filesScanned": count, "bytesScanned": total, "bundles": infos,
+            "fatFrameworksChecked": fat_count, "signerMisclassifiedJavaResourcesAbsent": True,
             "archivedMarkersAbsent": True, "referenceArchiveAbsent": True}
 
 

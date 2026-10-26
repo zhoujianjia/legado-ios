@@ -2,6 +2,7 @@
 """Exercise removal gates against retained payloads and conflicting build settings."""
 import importlib.util
 import plistlib
+import struct
 from pathlib import Path
 import tempfile
 import unittest
@@ -23,7 +24,7 @@ class CleanPackageTests(unittest.TestCase):
         return [{"target": name, "buildSettings": dict(
             CONFIGURATION="Release", PLATFORM_NAME="iphoneos", ARCHS="arm64", SWIFT_VERSION="5.0",
             SWIFT_OPTIMIZATION_LEVEL="-O", SWIFT_COMPILATION_MODE="wholemodule", ENABLE_DEBUG_DYLIB="NO",
-            PRODUCT_BUNDLE_IDENTIFIER=identifier, FULL_PRODUCT_NAME=product, CURRENT_PROJECT_VERSION="30",
+            PRODUCT_BUNDLE_IDENTIFIER=identifier, FULL_PRODUCT_NAME=product, CURRENT_PROJECT_VERSION="31",
             CODE_SIGNING_ALLOWED="NO", CODE_SIGNING_REQUIRED="NO", CODE_SIGN_ENTITLEMENTS="")}
             for name, (identifier, product) in audit.TARGETS.items()]
 
@@ -58,7 +59,8 @@ class CleanPackageTests(unittest.TestCase):
             for identifier, product in audit.TARGETS.values():
                 bundle = app if product == app.name else app / "PlugIns" / product
                 bundle.mkdir(parents=True)
-                (bundle / "Info.plist").write_bytes(plistlib.dumps({"CFBundleVersion": "30", "CFBundleIdentifier": identifier}))
+                (bundle / "Info.plist").write_bytes(plistlib.dumps({"CFBundleVersion": "31", "CFBundleIdentifier": identifier,
+                                                                 "CFBundleDisplayName": "Reader"}))
             self.assertEqual(len(audit.app_audit(app)["bundles"]), 3)
             payload = app / "reader.binary"
             payload.write_bytes(b"x" * ((1 << 20) - 5) + b"SelfRenewal")
@@ -73,6 +75,38 @@ class CleanPackageTests(unittest.TestCase):
             (app / "PlugIns/yuedu_app_Widget.appex/Info.plist").write_bytes(plistlib.dumps({"CFBundleVersion": "29"}))
             with self.assertRaises(ValueError):
                 audit.app_audit(app)
+
+    def test_default_sideload_name_gate_covers_app_and_each_extension(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            app = Path(temporary) / "YueduReader.app"
+            for identifier, product in audit.TARGETS.values():
+                bundle = app if product == app.name else app / "PlugIns" / product
+                bundle.mkdir(parents=True)
+                (bundle / "Info.plist").write_bytes(plistlib.dumps({"CFBundleVersion": "31", "CFBundleIdentifier": identifier,
+                                                                 "CFBundleDisplayName": "Reader"}))
+            localized = app / "zh-Hans.lproj/InfoPlist.strings"
+            localized.parent.mkdir()
+            localized.write_text('"CFBundleDisplayName" = "阅读";\n', encoding="utf-8")
+            self.assertEqual(len(audit.app_audit(app)["bundles"]), 3)
+            for _, product in audit.TARGETS.values():
+                path = (app if product == app.name else app / "PlugIns" / product) / "Info.plist"
+                original = path.read_bytes()
+                info = plistlib.loads(original)
+                info["CFBundleDisplayName"] = "阅读"
+                path.write_bytes(plistlib.dumps(info))
+                with self.subTest(product=product), self.assertRaisesRegex(ValueError, "sideload registration"):
+                    audit.app_audit(app)
+                path.write_bytes(original)
+
+    def test_signer_resource_gate_rejects_java_and_preserves_real_fat_frameworks(self):
+        java_class = bytes.fromhex("cafebabe00000048") + bytes(40)
+        with self.assertRaisesRegex(ValueError, "FAT/Java header"):
+            audit.signing_binary_audit(java_class, 336, "lib/modules/java.base/java/lang/Object.class")
+        fat = struct.pack(">IIiiIII", 0xcafebabe, 1, 0x100000c, 0, 4096, 128, 12)
+        self.assertTrue(audit.signing_binary_audit(fat, 4224, "Frameworks/Valid.framework/Valid"))
+        with self.assertRaisesRegex(ValueError, "FAT slice bounds"):
+            audit.signing_binary_audit(fat, 4200, "Frameworks/Truncated.framework/Truncated")
+        self.assertFalse(audit.signing_binary_audit(bytes.fromhex("dadafeca01000100"), 1000, "lib/lib/modules"))
 
 
 if __name__ == "__main__":

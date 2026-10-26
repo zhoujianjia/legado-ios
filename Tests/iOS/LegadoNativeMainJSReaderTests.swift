@@ -74,6 +74,11 @@ final class LegadoNativeMainJSReaderTests: XCTestCase {
             let books = try await initialFetcher.search(query: "native-query", in: source)
             stages["search"] = try Self.json(books)
             try check(books.count == 1, "Search must return exactly one native book")
+            #if LEGADO_REQUIRE_MODULE_IMAGE
+            // The actual source's top-level JVM checks must finish before its
+            // search function can return a wire response.
+            stages["moduleImagePreflight"] = "passed"
+            #endif
             let book = try XCTUnwrap(books.first)
             let detail = try await initialFetcher.fetchBookInfoPackage(url: book.bookUrl, source: source,
                 runtimeVariables: book.runtimeVariables, knownBook: book)
@@ -286,7 +291,82 @@ final class LegadoNativeMainJSReaderTests: XCTestCase {
         var source = BookSource(bookSourceUrl: base, bookSourceName: "Native product fixture")
         source.header = try json(["X-Legado-Native-Fixture": runID, "Accept-Encoding": "identity", "Connection": "close"])
         let literal = try json(base)
-        source.mainJs = """
+        #if LEGADO_REQUIRE_MODULE_IMAGE
+        guard let resources = Bundle.main.resourceURL else {
+            throw NativeReaderTestError.failed("Required native module image has no application resource directory")
+        }
+        let home = resources.appendingPathComponent("lib", isDirectory: true)
+        let image = home.appendingPathComponent("lib/modules")
+        let imageAttributes = try FileManager.default.attributesOfItem(atPath: image.path)
+        guard imageAttributes[.type] as? FileAttributeType == .typeRegular,
+              !FileManager.default.fileExists(atPath: home.appendingPathComponent("modules").path) else {
+            throw NativeReaderTestError.failed("Required native module image must be a regular App/lib/lib/modules file without exploded modules")
+        }
+        let moduleNames = ["java.base", "java.compiler", "java.datatransfer", "java.desktop", "java.instrument",
+                           "java.logging", "java.net.http", "java.prefs", "java.sql", "java.transaction.xa",
+                           "java.xml", "jdk.charsets", "jdk.unsupported"]
+        // The production class shutter deliberately denies java.nio.file and
+        // java.lang.Class. Check the real bundle with Foundation above, then use
+        // permitted module readers and ordinary class APIs in the actual JVM.
+        let moduleImagePreflight = """
+        (function() {
+          var expectedHome = \(try json(home.path));
+          var actualHome = String(Packages.java.lang.System.getProperty('java.home'));
+          if (actualHome !== expectedHome) throw new Error('jimage java.home mismatch: '+actualHome);
+          var expectedModules = \(try json(moduleNames));
+          var references = {}, actualModules = [];
+          var iterator = Packages.java.lang.module.ModuleFinder.ofSystem().findAll().iterator();
+          while (iterator.hasNext()) {
+            var reference = iterator.next();
+            var name = String(reference.descriptor().name());
+            actualModules.push(name);
+            references[name] = reference;
+          }
+          actualModules.sort();
+          if (JSON.stringify(actualModules) !== JSON.stringify(expectedModules)) {
+            throw new Error('jimage system modules mismatch: '+JSON.stringify(actualModules));
+          }
+          var probes = [
+            ['java.base','java/lang/Object.class'],
+            ['java.base','java/lang/String.class'],
+            ['java.xml','javax/xml/parsers/DocumentBuilderFactory.class'],
+            ['java.desktop','java/beans/Introspector.class'],
+            ['java.net.http','java/net/http/HttpClient.class']
+          ];
+          for (var i=0; i<probes.length; i++) {
+            var probe = probes[i], reader = references[probe[0]].open();
+            try {
+              var location = reader.find(probe[1]);
+              if (!location.isPresent() || String(location.get()) !== 'jrt:/'+probe[0]+'/'+probe[1]) {
+                throw new Error('jimage core resource is not in jrt: '+probe.join('/'));
+              }
+              var bytes = reader.read(probe[1]);
+              if (!bytes.isPresent()) throw new Error('jimage core resource cannot be read: '+probe.join('/'));
+              var buffer = bytes.get();
+              try {
+                if (buffer.remaining() < 8 || buffer.get(0) !== -54 || buffer.get(1) !== -2
+                    || buffer.get(2) !== -70 || buffer.get(3) !== -66) {
+                  throw new Error('jimage core resource has an invalid class header: '+probe.join('/'));
+                }
+              } finally { reader.release(buffer); }
+            } finally { reader.close(); }
+          }
+          // Loading these classes exercises the image-backed JVM boot/platform
+          // loaders in addition to locating their original class bytes.
+          new Packages.java.lang.Object();
+          if (String(new Packages.java.lang.String('jimage')) !== 'jimage'
+              || Packages.javax.xml.parsers.DocumentBuilderFactory.newInstance() === null
+              || String(Packages.java.beans.Introspector.decapitalize('ImageProbe')) !== 'imageProbe'
+              || Packages.java.net.http.HttpClient.newBuilder() === null) {
+            throw new Error('jimage core classes did not load');
+          }
+        })();
+
+        """
+        #else
+        let moduleImagePreflight = ""
+        #endif
+        source.mainJs = moduleImagePreflight + """
         var fixtureBase = \(literal);
         function search(key,page) { return JSON.parse(String(java.ajax(fixtureBase+'/search?key='+encodeURIComponent(key)+'&page='+page))); }
         function getBookInfo(book) {

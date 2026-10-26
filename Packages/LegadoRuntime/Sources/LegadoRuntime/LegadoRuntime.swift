@@ -125,16 +125,26 @@ public final class LegadoRuntime: @unchecked Sendable {
         if !present { issues.append("missing_runtime: build the pinned OpenJDK Mobile Zero XCFramework on macOS") }
         if let configuration {
             let manager = FileManager.default
-            for module in ["java.base", "java.xml", "java.desktop", "java.datatransfer", "java.prefs", "java.logging", "jdk.charsets", "java.compiler", "java.instrument", "java.net.http", "java.sql", "java.transaction.xa", "jdk.unsupported"] {
-                var directory: ObjCBool = false
-                let path = configuration.javaHome.appendingPathComponent("modules/\(module)").path
-                if !manager.fileExists(atPath: path, isDirectory: &directory) || !directory.boolValue {
-                    issues.append("missing_module: \(module)")
+            let image = configuration.javaHome.appendingPathComponent("lib/modules")
+            if manager.fileExists(atPath: image.path) {
+                // Packaged readers use the JDK's indexed module image so IPA
+                // signers never mistake loose Java classes for FAT Mach-O files.
+                // A present but invalid image is an error, never an exploded fallback.
+                if let problem = moduleImageIssue(image, manager: manager) { issues.append(problem) }
+            } else {
+                // The immutable native producer and standalone development probes
+                // still supply the original exploded Java home before packaging.
+                for module in ["java.base", "java.xml", "java.desktop", "java.datatransfer", "java.prefs", "java.logging", "jdk.charsets", "java.compiler", "java.instrument", "java.net.http", "java.sql", "java.transaction.xa", "jdk.unsupported"] {
+                    var directory: ObjCBool = false
+                    let path = configuration.javaHome.appendingPathComponent("modules/\(module)").path
+                    if !manager.fileExists(atPath: path, isDirectory: &directory) || !directory.boolValue {
+                        issues.append("missing_module: \(module)")
+                    }
                 }
-            }
-            let probes = ["java.base/java/lang/Object.class", "java.xml/javax/xml/parsers/DocumentBuilderFactory.class", "java.desktop/java/beans/Introspector.class"]
-            for probe in probes where !manager.fileExists(atPath: configuration.javaHome.appendingPathComponent("modules/\(probe)").path) {
-                issues.append("missing_class: \(probe)")
+                let probes = ["java.base/java/lang/Object.class", "java.xml/javax/xml/parsers/DocumentBuilderFactory.class", "java.desktop/java/beans/Introspector.class"]
+                for probe in probes where !manager.fileExists(atPath: configuration.javaHome.appendingPathComponent("modules/\(probe)").path) {
+                    issues.append("missing_class: \(probe)")
+                }
             }
             let runtimeFiles = ["conf/security/java.security",
                                 "conf/security/policy/unlimited/default_US_export.policy",
@@ -148,6 +158,41 @@ public final class LegadoRuntime: @unchecked Sendable {
             if !(32...2048).contains(configuration.maximumHeapMegabytes) { issues.append("invalid_heap: expected 32...2048 MiB") }
         } else { issues.append("missing_configuration: runtime resources not found") }
         return LegadoRuntimeDiagnostics(nativeBridgePresent: present, available: issues.isEmpty, issues: issues, deviceValidationRequired: true)
+    }
+
+    /// Bounded preflight only; build-time verification compares every indexed
+    /// resource with the pinned modules, and the native JDK owns image loading.
+    private static func moduleImageIssue(_ image: URL, manager: FileManager) -> String? {
+        do {
+            let attributes = try manager.attributesOfItem(atPath: image.path)
+            guard attributes[.type] as? FileAttributeType == .typeRegular,
+                  let size = attributes[.size] as? NSNumber, size.uint64Value > 28 else {
+                return "invalid_module_image: expected a nonempty regular file"
+            }
+            let handle = try FileHandle(forReadingFrom: image)
+            let read = Result { try handle.read(upToCount: 28) ?? Data() }
+            try handle.close()
+            let header = try read.get()
+            guard header.count == 28 else { return "invalid_module_image: truncated header" }
+            let littleEndian = header.prefix(4).elementsEqual([0xda, 0xda, 0xfe, 0xca])
+            guard littleEndian || header.prefix(4).elementsEqual([0xca, 0xfe, 0xda, 0xda]) else {
+                return "invalid_module_image: unsupported magic"
+            }
+            func word(_ start: Int) -> UInt64 {
+                (0..<4).reduce(0) { value, byte in
+                    value | (UInt64(header[start + byte]) << ((littleEndian ? byte : 3 - byte) * 8))
+                }
+            }
+            guard word(4) == 0x0001_0001 else { return "invalid_module_image: expected pinned JDK image version 1.1" }
+            let resources = word(12), table = word(16)
+            let indexBytes = 28 + table * 8 + word(20) + word(24)
+            guard resources > 0, table >= resources, indexBytes < size.uint64Value else {
+                return "invalid_module_image: index exceeds file bounds"
+            }
+            return nil
+        } catch {
+            return "invalid_module_image: \(error.localizedDescription)"
+        }
     }
 
     /// Read on a worker/actor. This never starts a JVM, creates a directory or

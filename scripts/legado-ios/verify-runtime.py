@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 from pathlib import Path
 import plistlib
 import zipfile
 
 HERE = Path(__file__).resolve().parent
+image_spec = importlib.util.spec_from_file_location("verify_module_image", HERE / "jimage-tools.py")
+images = importlib.util.module_from_spec(image_spec)
+image_spec.loader.exec_module(images)
 PROBES = {
     "java.base": "java/lang/Object.class",
     "java.xml": "javax/xml/parsers/DocumentBuilderFactory.class",
@@ -24,12 +28,24 @@ REQUIRED_DATA_FILES = (
 
 def validate(java_home: Path, jar: Path | None = None, xcframework: Path | None = None) -> dict:
     lock = json.loads((HERE / "runtime-lock.json").read_text(encoding="utf-8"))
-    for module in lock["requiredModules"]:
-        if not (java_home / "modules" / module / "module-info.class").is_file():
-            raise ValueError(f"Missing required exploded module: {module}")
-    for module, probe in PROBES.items():
-        if not (java_home / "modules" / module / probe).is_file():
-            raise ValueError(f"Missing required class: {module}/{probe}")
+    image = java_home / "lib/modules"
+    image_validation = None
+    if image.is_file():
+        if (java_home / "modules").exists():
+            raise ValueError("Mixed jimage and exploded Java module layouts")
+        image_validation = images.inspect(image)
+        image_validation.pop("resourcePaths", None)
+        if (set(image_validation["modules"]) != set(lock["requiredModules"])
+                or image_validation["moduleDescriptorCount"] != len(lock["requiredModules"])
+                or image_validation["requiredProbesVerified"] is not True):
+            raise ValueError("Module image inventory or required classes differ from the pinned runtime")
+    else:
+        for module in lock["requiredModules"]:
+            if not (java_home / "modules" / module / "module-info.class").is_file():
+                raise ValueError(f"Missing required exploded module: {module}")
+        for module, probe in PROBES.items():
+            if not (java_home / "modules" / module / probe).is_file():
+                raise ValueError(f"Missing required class: {module}/{probe}")
     for name in REQUIRED_DATA_FILES:
         path = java_home / name
         try:
@@ -58,7 +74,10 @@ def validate(java_home: Path, jar: Path | None = None, xcframework: Path | None 
                 folder = xcframework / item["LibraryIdentifier"]
                 if not (folder / item["LibraryPath"]).is_file(): raise ValueError("XCFramework library file is missing")
                 if not (folder / item.get("HeadersPath", "Headers") / "jni.h").is_file(): raise ValueError("XCFramework JNI header is missing")
-    return {"staticValidationPassed": True, "modules": lock["requiredModules"], "deviceValidationPassed": False}
+    result = {"staticValidationPassed": True, "modules": lock["requiredModules"], "deviceValidationPassed": False}
+    if image_validation is not None:
+        result["moduleImage"] = image_validation
+    return result
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
