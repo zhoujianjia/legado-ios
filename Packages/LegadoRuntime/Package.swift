@@ -18,6 +18,10 @@ if hasRuntime {
     // availability flags read by InetAddress. Merely retaining the JNI methods
     // leaves those flags zero. All names exist in both pinned native slices.
     let dynamicEntries = ["JIMAGE_Open", "JIMAGE_Close", "JIMAGE_FindResource", "JIMAGE_GetResource",
+                          // jrt's NativeImageBuffer loads the builtin jimage
+                          // library through this hook. Release dead-stripping
+                          // otherwise removes it despite retaining JIMAGE_Open.
+                          "JNI_OnLoad_jimage", "Java_jdk_internal_jimage_NativeImageBuffer_getNativeMap",
                           "VerifyClassForMajorVersion", "JNI_OnLoad_net", "JNI_OnLoad_nio",
                           "Java_java_net_InetAddress_isIPv4Available",
                           "Java_java_net_InetAddress_isIPv6Supported",

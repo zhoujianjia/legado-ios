@@ -83,7 +83,7 @@ python3 "$SCRIPT_DIR/clean-package-audit.py" --app "$APP" \
 python3 "$SCRIPT_DIR/stage-config.py" require-no-source-pack \
   --root "$APP" > "$WORK_DIR/built-source-pack-exclusion.json"
 if [[ ${LEGADO_READER_WITH_JVM:-0} == 1 ]]; then
-  python3 "$REPO_DIR/scripts/legado-ios/verify-native-exports.py" --executable "$APP/YueduReader" --report "$WORK_DIR/reader-native-exports.json"
+  python3 "$REPO_DIR/scripts/legado-ios/verify-native-exports.py" --executable "$APP/YueduReader" --report "$WORK_DIR/reader-native-exports.json" --module-image
 fi
 for executable in "$APP/YueduReader" "$APP/PlugIns/yuedu_app_Widget.appex/yuedu_app_Widget" "$APP/PlugIns/yuedu_app_ShareExtension.appex/yuedu_app_ShareExtension"; do
   [[ $(lipo -archs "$executable") == arm64 ]] || { echo "Expected ARM64-only device executable: $executable" >&2; exit 4; }

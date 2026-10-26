@@ -55,11 +55,20 @@ REQUIRED_EXPORTS = (
     "Java_sun_net_dns_ResolverConfigurationImpl_fallbackDomain0",
 )
 
+# Indexed module images also exercise the Java jrt reader. Static-library
+# detection requires its OnLoad hook before the exported native map can run.
+MODULE_IMAGE_EXPORTS = (
+    "JNI_OnLoad_jimage",
+    "Java_jdk_internal_jimage_NativeImageBuffer_getNativeMap",
+)
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--executable", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
+    parser.add_argument("--module-image", action="store_true",
+                        help="Require the additional builtin hooks used by jimage/jrt readers")
     args = parser.parse_args()
     exports = subprocess.check_output(
         ["xcrun", "dyld_info", "-arch", "arm64", "-exports", str(args.executable)],
@@ -67,12 +76,14 @@ def main() -> None:
     )
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.with_suffix(".log").write_text(exports, encoding="utf-8")
-    missing = [name for name in REQUIRED_EXPORTS
+    required = REQUIRED_EXPORTS + (MODULE_IMAGE_EXPORTS if args.module_image else ())
+    missing = [name for name in required
                if not re.search(r"(?<!\S)_" + re.escape(name) + r"(?!\S)", exports)]
     record = {
         "schemaVersion": 1,
         "requiredDynamicExportsPresent": not missing,
-        "requiredExports": list(REQUIRED_EXPORTS),
+        "requiredExports": list(required),
+        "moduleImage": args.module_image,
         "missingExports": missing,
         "deviceValidationPassed": False,
     }

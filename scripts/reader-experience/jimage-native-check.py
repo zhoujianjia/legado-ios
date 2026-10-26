@@ -208,7 +208,7 @@ def host(work):
     export_verifier = REPO / "scripts/legado-ios/verify-native-exports.py"
     export_report = work / "native-exports.json"
     subprocess.run([sys.executable, "-B", str(export_verifier), "--executable", str(executable),
-                    "--report", str(export_report)], check=True)
+                    "--report", str(export_report), "--module-image"], check=True)
     record = {"schemaVersion": 1, "sourceCommit": revision, "appPath": str(app),
               "executableSHA256": sha(executable), "infoSHA256": sha(app / "Info.plist"),
               "nativeExportsSHA256": sha(export_report), "nativeExportVerifierSHA256": sha(export_verifier),
