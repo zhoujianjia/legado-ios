@@ -11,7 +11,7 @@ import struct
 import subprocess
 
 REPO = Path(__file__).resolve().parents[2]
-BUILD = "31"
+BUILD = "32"
 FORBIDDEN = re.compile(rb"selfrenewal|self[-_]renewal|anisette|new\.ani\.sidestore", re.I)
 UI_MARKERS = tuple(text.encode(encoding) for text in ("自簽與續簽", "自签与续签", "自續簽驗證")
                    for encoding in ("utf-8", "utf-16-be", "utf-16-le"))

@@ -84,6 +84,8 @@ for index in 0 1 2; do
   python3 -B "$SCRIPT_DIR/jimage-native-check.py" case --work "$WORK" --case "$name"
   [[ $status == 0 ]] || exit "$status"
 done
+# Release the dedicated CI Simulator before the physical-device build.
+xcrun simctl shutdown "$SIMULATOR_UDID" > "$WORK/final-shutdown.log" 2>&1
 restore_source
 OVERLAY_ACTIVE=0
 python3 -B "$SCRIPT_DIR/jimage-native-check.py" finish --work "$WORK"

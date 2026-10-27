@@ -19,7 +19,7 @@ internal object RuleBase64 {
         if (value == null) throw NullPointerException("decodeStr(...) must not be null")
         return String(decodeBytes(value.toByteArray(Charsets.UTF_8)), charset(charset))
     }
-    private fun decodeBytes(input: ByteArray): ByteArray {
+    internal fun decodeBytes(input: ByteArray): ByteArray {
         if (input.isEmpty()) return input
         var offset = 0
         fun next(): Int {

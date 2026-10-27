@@ -909,8 +909,10 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
 
     func testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen() async throws {
         executionTimeAllowance = 180
-        try await withFixture(tocRedirect: true) { fixture in
+        try await withFixture(tocRedirect: true, encryptedTOCURLs: true) { fixture in
             try await self.withPublicOwnedBook(fixture) { fetcher, owned in
+                let expectedChapterURLs = [fixture.baseURL + "/c1", fixture.baseURL + "/c2"]
+                XCTAssertEqual(owned.chapters.map(\.url), expectedChapterURLs)
                 let manager = await self.manager(fixture)
                 let first = try await manager.fetchChapter(book: owned.book, chapterIndex: 0,
                     priority: .immediate, store: owned.store)
@@ -954,6 +956,7 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
                 XCTAssertEqual(restored.id, owned.book.id)
                 XCTAssertFalse(restored.isInBookshelf)
                 XCTAssertEqual(restored.onlineChapters?.map(\.id), owned.chapters.map(\.id))
+                XCTAssertEqual(restored.onlineChapters?.map(\.url), expectedChapterURLs)
                 XCTAssertEqual(restored.onlineChapters?.map(\.cachedFilename), ["0.txt", "1.txt"])
                 XCTAssertEqual(restored.onlineChapters?.first?.runtimeVariables?["nativeParsed"], "yes")
                 XCTAssertEqual(restored.runtimeVariables?["nativeBig"], String(repeating: "L", count: 10_000))
@@ -1634,7 +1637,8 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
         let dto: LegadoOriginalBook
         let chapters: [OnlineChapterRef]
     }
-    private func withFixture(tocRedirect: Bool = false, _ body: (Fixture) async throws -> Void) async throws {
+    private func withFixture(tocRedirect: Bool = false, encryptedTOCURLs: Bool = false,
+                             _ body: (Fixture) async throws -> Void) async throws {
         let diagnostics = await Task.detached { LegadoRuntime.diagnose() }.value
         let required: Bool
         #if LEGADO_REQUIRE_NATIVE_MAINJS
@@ -1648,7 +1652,7 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
             throw XCTSkip("Requires the real ordinary runtime and native-reader build; source-only cannot pass")
         }
         let runID = UUID().uuidString.lowercased()
-        let peer = try NativeOriginalLoopbackServer(runID: runID)
+        let peer = try NativeOriginalLoopbackServer(runID: runID, encryptedTOCURLs: encryptedTOCURLs)
         let ready = expectation(description: "Owned original loopback is ready")
         peer.start { ready.fulfill() }
         await fulfillment(of: [ready], timeout: 10)
@@ -1666,7 +1670,8 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
             let cache = root.appendingPathComponent("body", isDirectory: true)
             let value = Fixture(runID: runID, prefix: "/" + runID, cookieName: "native_" + runID.replacingOccurrences(of: "-", with: ""),
                 baseURL: base, root: root, contextDirectory: context, metadata: root.appendingPathComponent("books_meta.json"),
-                cacheDirectory: cache, cache: .init(rootDirectory: cache), peer: peer, source: Self.source(base: base, runID: runID, tocRedirect: tocRedirect),
+                cacheDirectory: cache, cache: .init(rootDirectory: cache), peer: peer,
+                source: Self.source(base: base, runID: runID, tocRedirect: tocRedirect, encryptedTOCURLs: encryptedTOCURLs),
                 service: .init(contextDirectory: context, operationTimeout: 45))
             fixture = value
             try await body(value)
@@ -1868,7 +1873,8 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
         return ChapterFetchManager(bookSourceFetcher: .init(mainJSService: fixture.service),
             webViewFetcher: webViewFetcher, sourceResolver: { _ in fixture.source })
     }
-    private static func source(base: String, runID: String, tocRedirect: Bool = false) -> BookSource {
+    private static func source(base: String, runID: String, tocRedirect: Bool = false,
+                               encryptedTOCURLs: Bool = false) -> BookSource {
         var source = BookSource(bookSourceUrl: base, bookSourceName: "Native original controlled source")
         source.enabledCookieJar = true
         source.header = "{\"X-Legado-Native-Fixture\":\"" + runID + "\",\"Accept-Encoding\":\"identity\",\"Connection\":\"close\"}"
@@ -1884,6 +1890,12 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
         }
         source.ruleToc.chapterList = "$.chapters"; source.ruleToc.chapterName = "$.name"
         source.ruleToc.chapterUrl = "$.url"; source.ruleToc.nextTocUrl = "$.next"
+        if encryptedTOCURLs {
+            // Public fixed AES vectors decode only the route suffix. The source
+            // supplies this fixture's unique loopback origin and run namespace.
+            source.ruleToc.chapterUrl = "$.url@js:'\(base)' + String(java.aesBase64DecodeToString(result,"
+                + "'0123456789abcdef','AES/CBC/PKCS5Padding','abcdef0123456789'))"
+        }
         source.ruleContent.content = "#text@html"; source.ruleContent.nextContentUrl = ".next@href"
         source.ruleContent.replaceRegex = "##REMOVE##"
         source.ruleContent.title = "@js:if(String(java.get('nativeBig')).length!==10000)throw new Error('lost big variable');chapter.putVariable('nativeParsed','yes');String(chapter.title)+'!'"
@@ -1935,6 +1947,7 @@ private final class NativeOriginalLoopbackServer: @unchecked Sendable {
     }
     private let runID: String
     private let emitCookie: Bool
+    private let encryptedTOCURLs: Bool
     private let listener: NWListener
     private let queue = DispatchQueue(label: "LegadoNativeOriginal.loopback")
     private let lock = NSLock()
@@ -1956,9 +1969,10 @@ private final class NativeOriginalLoopbackServer: @unchecked Sendable {
     private var headersCallback: (() -> Void)?
     private var peerCallback: (() -> Void)?
 
-    init(runID: String, emitCookie: Bool = true) throws {
+    init(runID: String, emitCookie: Bool = true, encryptedTOCURLs: Bool = false) throws {
         self.runID = runID
         self.emitCookie = emitCookie
+        self.encryptedTOCURLs = encryptedTOCURLs
         let parameters = NWParameters.tcp
         parameters.requiredLocalEndpoint = .hostPort(host: "127.0.0.1", port: .any)
         listener = try NWListener(using: parameters)
@@ -2092,9 +2106,11 @@ private final class NativeOriginalLoopbackServer: @unchecked Sendable {
         } else if target == prefix + "/book" {
             body = "<h1>Original JNI Updated</h1><a id='toc' href='\(prefix)/toc'>toc</a>"
         } else if target == prefix + "/toc" || target == prefix + "/toc-rewritten" {
-            body = try Self.json(["chapters": [["name": "One", "url": prefix + "/c1"]], "next": [prefix + "/toc2"]])
+            let chapterURL = encryptedTOCURLs ? "xtsq3Y/W+IzkuzkuThYL1g==" : prefix + "/c1"
+            body = try Self.json(["chapters": [["name": "One", "url": chapterURL]], "next": [prefix + "/toc2"]])
         } else if target == prefix + "/toc2" {
-            body = try Self.json(["chapters": [["name": "Two", "url": prefix + "/c2"]], "next": []])
+            let chapterURL = encryptedTOCURLs ? "Rlmx38MFPxOh3PWApThsow==" : prefix + "/c2"
+            body = try Self.json(["chapters": [["name": "Two", "url": chapterURL]], "next": []])
         } else if target == prefix + "/c1" {
             body = "<div id='text'>first&amp;page</div><a class='next' href='\(prefix)/c1p2'>next</a>"
         } else if target == prefix + "/c1p2" {

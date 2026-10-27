@@ -37,7 +37,7 @@ xcodebuild -version > "$WORK_DIR/xcode-version.log"
 xcodebuild -showsdks > "$WORK_DIR/apple-sdks.log"
 COMMON_SETTINGS=(
   -onlyUsePackageVersionsFromResolvedFile
-  CURRENT_PROJECT_VERSION=31
+  CURRENT_PROJECT_VERSION=32
   SWIFT_OPTIMIZATION_LEVEL=-O SWIFT_COMPILATION_MODE=wholemodule ENABLE_DEBUG_DYLIB=NO
   IPHONEOS_DEPLOYMENT_TARGET="$MIN_IOS"
   ARCHS=arm64 CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= CODE_SIGN_ENTITLEMENTS=
@@ -99,7 +99,7 @@ python3 "$SCRIPT_DIR/stage-config.py" manifest \
   --output "$OUTPUT/build-manifest.json" "${RUNTIME_ARGS[@]}"
 if [[ ${LEGADO_READER_WITH_JVM:-0} == 1 ]]; then
 cat > "$OUTPUT/README.txt" <<'TEXT'
-Build31: JVM implementation classes and resources retain their original bytes; the 13 module descriptors receive standard package metadata before jimage 1.1 packaging. This avoids SideStore treating loose Java classes as FAT Mach-O files. App ID registration defaults use English; localized desktop names remain available.
+Build32 adds the traditional-source AES chapter-URL decoder. JVM module resources retain jimage 1.1 packaging, avoiding SideStore treating loose Java classes as FAT Mach-O files. App ID registration defaults use English; localized desktop names remain available.
 Automatic renewal is removed; SideStore or another installation tool handles signing and renewal. Physical-device installation and renewal still require validation.
 阅读（unsigned，独立修改版）
 

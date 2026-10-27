@@ -24,7 +24,7 @@ class CleanPackageTests(unittest.TestCase):
         return [{"target": name, "buildSettings": dict(
             CONFIGURATION="Release", PLATFORM_NAME="iphoneos", ARCHS="arm64", SWIFT_VERSION="5.0",
             SWIFT_OPTIMIZATION_LEVEL="-O", SWIFT_COMPILATION_MODE="wholemodule", ENABLE_DEBUG_DYLIB="NO",
-            PRODUCT_BUNDLE_IDENTIFIER=identifier, FULL_PRODUCT_NAME=product, CURRENT_PROJECT_VERSION="31",
+            PRODUCT_BUNDLE_IDENTIFIER=identifier, FULL_PRODUCT_NAME=product, CURRENT_PROJECT_VERSION="32",
             CODE_SIGNING_ALLOWED="NO", CODE_SIGNING_REQUIRED="NO", CODE_SIGN_ENTITLEMENTS="")}
             for name, (identifier, product) in audit.TARGETS.items()]
 
@@ -59,7 +59,7 @@ class CleanPackageTests(unittest.TestCase):
             for identifier, product in audit.TARGETS.values():
                 bundle = app if product == app.name else app / "PlugIns" / product
                 bundle.mkdir(parents=True)
-                (bundle / "Info.plist").write_bytes(plistlib.dumps({"CFBundleVersion": "31", "CFBundleIdentifier": identifier,
+                (bundle / "Info.plist").write_bytes(plistlib.dumps({"CFBundleVersion": "32", "CFBundleIdentifier": identifier,
                                                                  "CFBundleDisplayName": "Reader"}))
             self.assertEqual(len(audit.app_audit(app)["bundles"]), 3)
             payload = app / "reader.binary"
@@ -82,7 +82,7 @@ class CleanPackageTests(unittest.TestCase):
             for identifier, product in audit.TARGETS.values():
                 bundle = app if product == app.name else app / "PlugIns" / product
                 bundle.mkdir(parents=True)
-                (bundle / "Info.plist").write_bytes(plistlib.dumps({"CFBundleVersion": "31", "CFBundleIdentifier": identifier,
+                (bundle / "Info.plist").write_bytes(plistlib.dumps({"CFBundleVersion": "32", "CFBundleIdentifier": identifier,
                                                                  "CFBundleDisplayName": "Reader"}))
             localized = app / "zh-Hans.lproj/InfoPlist.strings"
             localized.parent.mkdir()

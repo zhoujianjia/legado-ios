@@ -168,6 +168,16 @@ interface RuleJsExtensions {
     fun base64DecodeToByteArray(value: String?): ByteArray? = base64DecodeToByteArray(value, 0)
     fun base64DecodeToByteArray(value: String?, flags: Int): ByteArray? =
         if (value.isNullOrBlank()) null else RuleBase64.decodeAndroid(value, flags)
+    fun aesBase64DecodeToString(value: String, key: String, transformation: String, iv: String): String {
+        com.script.rhino.rhinoContextOrNull?.ensureActive()
+        val environment = getRuleEnvironment()
+        val context = getRuleCoroutineContext()
+        environment.ensureOpen(); context.ensureActive()
+        val bytes = RuleCrypto.decryptAes(value, key, transformation, iv)
+        com.script.rhino.rhinoContextOrNull?.ensureActive()
+        environment.ensureOpen(); context.ensureActive()
+        return String(bytes, Charsets.UTF_8)
+    }
     fun base64Encode(value: String): String = RuleBase64.encodeAndroid(value, 2)
     fun base64Encode(value: String, flags: Int): String = RuleBase64.encodeAndroid(value, flags)
     fun strToBytes(value: String): ByteArray = value.toByteArray(Charsets.UTF_8)
