@@ -21,6 +21,9 @@ jobs:
   position-regression:
     runs-on: macos-15
     timeout-minutes: 80
+    outputs:
+      reuse: ${{ steps.mode.outputs.reuse }}
+      verified: ${{ steps.admission.outputs.verified }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -32,8 +35,51 @@ jobs:
         run: |
           mkdir -p .build/ci-logs
           python -B scripts/reader-experience/test-position-regression.py -v 2>&1 | tee .build/ci-logs/reader-position-gate-tests.log
+          python -B scripts/reader-experience/test-reader-test-reuse.py -v 2>&1 | tee .build/ci-logs/reader-test-reuse-tests.log
           bash -n scripts/reader-experience/position-regression.sh
+      - name: Read the explicit packaging-retry marker from the checked-out commit
+        id: mode
+        run: python -B scripts/reader-experience/reader-test-reuse.py detect
+      - name: Admit only the fixed passing source-equivalent test evidence
+        if: steps.mode.outputs.reuse == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python -B scripts/reader-experience/reader-test-reuse.py prepare
+      - name: Download the pinned reader-position evidence in isolation
+        if: steps.mode.outputs.reuse == 'true'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: '13418485405'
+          run-id: '42028850565'
+          repository: zhoujianjia/legado-ios
+          github-token: ${{ github.token }}
+          digest-mismatch: error
+          path: .build/reused-reader-evidence/position
+      - name: Download the pinned JNI raw evidence in isolation
+        if: steps.mode.outputs.reuse == 'true'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: '13425307473'
+          run-id: '42028850565'
+          repository: zhoujianjia/legado-ios
+          github-token: ${{ github.token }}
+          digest-mismatch: error
+          path: .build/reused-reader-evidence/build
+      - name: Reverify the original exact executions and emit a separate reuse receipt
+        if: steps.mode.outputs.reuse == 'true'
+        id: admission
+        run: python -B scripts/reader-experience/reader-test-reuse.py verify
+      - name: Preserve the verified retry receipt for the dependent packaging job
+        if: steps.admission.outputs.verified == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: reader-test-reuse-admission
+          path: .build/reused-reader-evidence/receipt.json
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 7
       - name: Require the source-only reader position regressions before packaging
+        if: steps.mode.outputs.reuse != 'true'
         run: bash scripts/reader-experience/position-regression.sh 2>&1 | tee .build/ci-logs/reader-position-regression.log
       - name: Preserve selected source, raw results and failure logs
         if: always()
@@ -43,6 +89,7 @@ jobs:
           path: |
             .build/ci-logs/reader-position*.log
             .build/reader-position-regression/
+            .build/reused-reader-evidence/
           if-no-files-found: error
           include-hidden-files: true
           retention-days: 7
@@ -62,6 +109,16 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - name: Download this run's verified prior-test receipt
+        if: needs.position-regression.outputs.verified == 'true'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: reader-test-reuse-admission
+          path: .build/reused-reader-evidence
+          digest-mismatch: error
+      - name: Require an explicit verified receipt before skipping prior JNI execution
+        if: needs.position-regression.outputs.reuse == 'true'
+        run: python -B scripts/reader-experience/reader-test-reuse.py receipt
       - name: Verify the exact source tag and build the fresh ordinary JVM
         run: |
           mkdir -p .build/ci-logs
@@ -96,6 +153,7 @@ jobs:
           echo "DEVELOPER_DIR=$DEVELOPER_DIR" >> "$GITHUB_ENV"
           xcodebuild -version 2>&1 | tee .build/ci-logs/reader-xcode-version.log
       - name: Require the jimage-backed JNI product routes in three fresh Simulator hosts
+        if: needs.position-regression.outputs.verified != 'true'
         run: bash scripts/reader-experience/jimage-native-check.sh 2>&1 | tee .build/ci-logs/jimage-native-check.log
       - name: Replace Simulator resources with the exact physical-device jimage runtime
         run: |
@@ -107,9 +165,12 @@ jobs:
         run: |
           bash scripts/reader-experience/build.sh 2>&1 | tee .build/ci-logs/legado-reader-build.log
           git archive --format=zip --output=.build/reader-experience/output/source.zip "$GITHUB_SHA"
+      - name: Attach the prior-test receipt without claiming new JNI execution
+        if: needs.position-regression.outputs.verified == 'true'
+        run: python -B scripts/reader-experience/reader-test-reuse.py attach
       # Temporary public diagnostic downloads are explicitly authorized for the current development work.
       - name: Preserve the temporary clean reader, source and exact manifest
-        if: ${{ success() && hashFiles('.build/reader-experience/output/build-manifest.json') != '' && hashFiles('.build/jimage-native-check/result.json') != '' && hashFiles('.build/ci-logs/jimage-source-only-package-result.json') != '' }}
+        if: ${{ success() && hashFiles('.build/reader-experience/output/build-manifest.json') != '' && (hashFiles('.build/jimage-native-check/result.json') != '' || needs.position-regression.outputs.verified == 'true') && hashFiles('.build/ci-logs/jimage-source-only-package-result.json') != '' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: legado-native-reader-unsigned
@@ -119,6 +180,7 @@ jobs:
             .build/reader-experience/output/README.txt
             .build/reader-experience/output/source.zip
             .build/reader-experience/output/clean-package-audit.json
+            .build/reader-experience/output/reader-test-reuse.json
           if-no-files-found: error
           include-hidden-files: true
           retention-days: 1
@@ -133,6 +195,7 @@ jobs:
             .build/reader-experience/*.log
             .build/reader-experience/*.xcresult/
             .build/jimage-native-check/
+            .build/reused-reader-evidence/receipt.json
             Packages/LegadoRuntime/jvm/build/test-results/
           if-no-files-found: error
           include-hidden-files: true
@@ -142,8 +205,8 @@ jobs:
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
           This compiles the current main reader with a freshly assembled ordinary JVM JAR and the immutable audited Probe 12 native VM. Test fixtures and JUnit are excluded from the reader payload. Source/pin checks, ZIP bytes, module inventory, bytecode, final native exports and packaged resources are checked separately.
-          Self-signing and renewal implementations, tests, tools and workflows are reference-only archive content. Build32 uses optimized non-DEBUG Release for the app and both extensions. The actual compiler file lists and all final app files are checked to reject archived feature code/resources before the IPA can be uploaded. The exact source.zip may contain reference archives; the IPA must not.
-          Before device packaging, this same run requires three real source-only Swift jimage diagnostics and three exact JNI product test methods in independent freshly booted Simulator hosts. The native-required compilation flag prevents a missing runtime from becoming a skipped success. Tests bind the actual Simulator app, standard jimage 1.1, ordinary JAR, source stamp, local-mode configuration, build settings and selected runtime. Exact xcresult method identities, one passing execution per method and zero skips/failures are mandatory. These raw diagnostics are separate evidence, never IPA resources. Simulator source overlays are restored and device-specific resources replace Simulator staging before the Release build.
+          Self-signing and renewal implementations, tests, tools and workflows are reference-only archive content. Build33 uses optimized non-DEBUG Release for the app and both extensions. The actual compiler file lists and all final app files are checked to reject archived feature code/resources before the IPA can be uploaded. The exact source.zip may contain reference archives; the IPA must not.
+          Normal runs execute the source-only reader position regressions and three exact JNI product methods in fresh Simulator hosts before device packaging. A commit explicitly marked [reuse-reader-tests:42028850565] may instead reuse only that fixed run's verified source-equivalent position/JNI evidence after an exact whole-tree audit-repair allowlist and immutable artifact checks. The original source stamps and raw results remain unchanged; reader-test-reuse.json records the old run/SHA and current packaging SHA. Such a retry freshly builds the ordinary JAR and Release app and audits the package, but does not execute that fresh JAR through JNI or claim new Simulator/device acceptance. Source-only module-image diagnostics still run in the current job. Raw diagnostics remain separate evidence, never IPA resources; device staging freshly creates the device-specific jimage runtime and notices.
           The original native Actions artifact expired. This build restores the identical retained 89,898,489-byte ZIP from one fixed orphan supply commit, verifies its original SHA256, successful producer and unchanged native source inputs, then runs the unchanged extraction and native/JAR audits. The supply commit is outside this reader's history/source snapshot and contains no workflow or private data. This is exact byte reuse, not a new native compilation or renewed availability of the old artifact.
           Original traditional text consumers and the finite mainJs route use Rhino/JVM with the native CoreText reader. Book-source and host coverage remains incomplete. Reader packages contain no built-in book sources; checkout and packaged resources are checked before accepting the manifest. Users import sources in the app.
           This unsigned iOS 18+ device-target build must be signed before installation. Compilation does not establish native mainJs UI execution, physical-device reading acceptance, source-state persistence parity or full Legado compatibility.
