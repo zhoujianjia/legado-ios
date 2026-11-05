@@ -24,7 +24,7 @@ class CleanPackageTests(unittest.TestCase):
         return [{"target": name, "buildSettings": dict(
             CONFIGURATION="Release", PLATFORM_NAME="iphoneos", ARCHS="arm64", SWIFT_VERSION="5.0",
             SWIFT_OPTIMIZATION_LEVEL="-O", SWIFT_COMPILATION_MODE="wholemodule", ENABLE_DEBUG_DYLIB="NO",
-            PRODUCT_BUNDLE_IDENTIFIER=identifier, FULL_PRODUCT_NAME=product, CURRENT_PROJECT_VERSION="32",
+            PRODUCT_BUNDLE_IDENTIFIER=identifier, FULL_PRODUCT_NAME=product, CURRENT_PROJECT_VERSION="33",
             CODE_SIGNING_ALLOWED="NO", CODE_SIGNING_REQUIRED="NO", CODE_SIGN_ENTITLEMENTS="")}
             for name, (identifier, product) in audit.TARGETS.items()]
 
@@ -59,7 +59,7 @@ class CleanPackageTests(unittest.TestCase):
             for identifier, product in audit.TARGETS.values():
                 bundle = app if product == app.name else app / "PlugIns" / product
                 bundle.mkdir(parents=True)
-                (bundle / "Info.plist").write_bytes(plistlib.dumps({"CFBundleVersion": "32", "CFBundleIdentifier": identifier,
+                (bundle / "Info.plist").write_bytes(plistlib.dumps({"CFBundleVersion": "33", "CFBundleIdentifier": identifier,
                                                                  "CFBundleDisplayName": "Reader"}))
             self.assertEqual(len(audit.app_audit(app)["bundles"]), 3)
             payload = app / "reader.binary"
@@ -82,7 +82,7 @@ class CleanPackageTests(unittest.TestCase):
             for identifier, product in audit.TARGETS.values():
                 bundle = app if product == app.name else app / "PlugIns" / product
                 bundle.mkdir(parents=True)
-                (bundle / "Info.plist").write_bytes(plistlib.dumps({"CFBundleVersion": "32", "CFBundleIdentifier": identifier,
+                (bundle / "Info.plist").write_bytes(plistlib.dumps({"CFBundleVersion": "33", "CFBundleIdentifier": identifier,
                                                                  "CFBundleDisplayName": "Reader"}))
             localized = app / "zh-Hans.lproj/InfoPlist.strings"
             localized.parent.mkdir()
@@ -97,6 +97,38 @@ class CleanPackageTests(unittest.TestCase):
                 with self.subTest(product=product), self.assertRaisesRegex(ValueError, "sideload registration"):
                     audit.app_audit(app)
                 path.write_bytes(original)
+
+    def test_build33_is_required_by_all_target_settings_and_packaged_bundles(self):
+        self.assertEqual(audit.BUILD, "33")
+        build_script = Path(__file__).with_name("build.sh").read_text(encoding="utf-8")
+        self.assertIn("CURRENT_PROJECT_VERSION=33", build_script)
+        self.assertTrue(all(settings["CURRENT_PROJECT_VERSION"] == "33"
+                            for settings in audit.settings_audit(self.settings()).values()))
+        with tempfile.TemporaryDirectory() as temporary:
+            app = Path(temporary) / "YueduReader.app"
+            paths = []
+            for identifier, product in audit.TARGETS.values():
+                bundle = app if product == app.name else app / "PlugIns" / product
+                bundle.mkdir(parents=True)
+                path = bundle / "Info.plist"
+                path.write_bytes(plistlib.dumps({"CFBundleVersion": "33", "CFBundleIdentifier": identifier,
+                                                 "CFBundleDisplayName": "Reader"}))
+                paths.append(path)
+            self.assertTrue(all(bundle["build"] == "33" for bundle in audit.app_audit(app)["bundles"]))
+            for index, path in enumerate(paths):
+                original = path.read_bytes()
+                for version in ("32", "34", "", 33):
+                    settings = self.settings()
+                    settings[index]["buildSettings"]["CURRENT_PROJECT_VERSION"] = version
+                    info = plistlib.loads(original)
+                    info["CFBundleVersion"] = version
+                    path.write_bytes(plistlib.dumps(info))
+                    with self.subTest(target=settings[index]["target"], version=version):
+                        with self.assertRaisesRegex(ValueError, "CURRENT_PROJECT_VERSION"):
+                            audit.settings_audit(settings)
+                        with self.assertRaisesRegex(ValueError, "packaged build"):
+                            audit.app_audit(app)
+                    path.write_bytes(original)
 
     def test_signer_resource_gate_rejects_java_and_preserves_real_fat_frameworks(self):
         java_class = bytes.fromhex("cafebabe00000048") + bytes(40)
