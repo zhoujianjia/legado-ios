@@ -288,6 +288,26 @@ struct CoreTextPageEngineView: UIViewControllerRepresentable {
             // has no layout yet (pageIndex(for:) returns nil).
             let resolvedTarget = command.targetPosition.flatMap { engine.pageIndex(for: $0) }
             let target = max(0, min(resolvedTarget ?? command.target, max(engine.totalPages - 1, 0)))
+            var direction: UIPageViewController.NavigationDirection =
+                target >= visible.globalPageIndex ? .forward : .reverse
+            if isRTL {
+                direction = direction == .forward ? .reverse : .forward
+            }
+            // The binding may already include several taps. Keep the newest
+            // content target while the cover animation owns the stack, including
+            // a reverse tap back to the page that is still visible beneath it.
+            if pageTurnStyle == .cover, context.coordinator.isAnimatingTransition {
+                let speed = context.coordinator.registerTurnSpeed()
+                context.coordinator.pageTurnTrace.commandExecuted(
+                    version: command.version, target: target, visible: visible.globalPageIndex,
+                    speed: speed, adjacent: false, route: "coverQueued"
+                )
+                context.coordinator.animateCoverTransition(
+                    from: visible.globalPageIndex, to: target, direction: direction,
+                    on: uiViewController, targetPosition: command.targetPosition
+                )
+                return
+            }
             guard target != visible.globalPageIndex else {
                 context.coordinator.pageTurnTrace.commandExecuted(
                     version: command.version, target: target, visible: visible.globalPageIndex,
@@ -300,12 +320,6 @@ struct CoreTextPageEngineView: UIViewControllerRepresentable {
             let turnSpeed = context.coordinator.registerTurnSpeed()
             AppLogger.render("[CurlTrace] turnCommand v\(command.version) target=\(target) visible=\(visible.globalPageIndex) speed=\(String(format: "%.2f", turnSpeed))")
 
-            var direction: UIPageViewController.NavigationDirection =
-                target >= visible.globalPageIndex ? .forward : .reverse
-            // RTL: swap navigation direction to match data source swap (Before↔After).
-            if isRTL {
-                direction = direction == .forward ? .reverse : .forward
-            }
             let isAdjacent = context.coordinator.isAdjacentDisplayPage(target, to: visible.globalPageIndex)
             let shouldAnimate = command.animated && (pageTurnStyle != .none) && isAdjacent
             let traceCommand = { (route: StaticString) in
@@ -322,7 +336,8 @@ struct CoreTextPageEngineView: UIViewControllerRepresentable {
                         from: visible.globalPageIndex,
                         to: target,
                         direction: direction,
-                        on: uiViewController
+                        on: uiViewController,
+                        targetPosition: command.targetPosition
                     )
                 } else if !context.coordinator.isAnimatingTransition {
                     let targetVC = context.coordinator.displayViewController(at: target)
@@ -444,7 +459,8 @@ struct CoreTextPageEngineView: UIViewControllerRepresentable {
         private let coverDimView = UIView()
         private let coverShadowView = UIView()
         private let coverIncomingImageView = UIImageView()
-        private var coverTargetPage: Int?
+        private var coverTargetPosition: CoreTextReadingPosition?
+        private var pendingCoverTargetPosition: CoreTextReadingPosition?
         private var coverDirection: ReaderCoverTurnDirection?
         /// Version of the last ReaderPageTurnCommand this coordinator executed.
         /// updateUIViewController runs on every SwiftUI render; the version check
@@ -1198,6 +1214,12 @@ struct CoreTextPageEngineView: UIViewControllerRepresentable {
         ) {
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
+                // Cover taps accumulate in the display binding until the current
+                // animation settles. A neighbour reindex must not reset that
+                // baseline and lose the next tap in the burst.
+                if !notify, self.pageTurnStyle == .cover, self.isAnimatingTransition {
+                    return
+                }
 
                 // Latest intent wins (Readium-style): while a page-turn burst is
                 // still chaining (a queued transition was handed off and has not
@@ -1205,27 +1227,38 @@ struct CoreTextPageEngineView: UIViewControllerRepresentable {
                 // drag the binding behind the user's newest taps — eating them and
                 // triggering reverse "correction" transitions. The final transition
                 // in the chain publishes the real page.
-                if self.isPageTransitioning, self.currentPage != page {
+                // A layout callback only renumbers the page that is now visible.
+                // Its captured index may already belong to a different chapter by
+                // this queue turn. A settle likewise must not publish an older
+                // position after another turn has committed synchronously.
+                let publicationPosition = notify ? position : self.currentCoreTextPosition
+                if let position, notify, position != self.currentCoreTextPosition {
                     return
                 }
-
-                let didChange = self.currentPage != page
-                let publishTrace = self.pageTurnTrace.beginPublish(page: page, changed: didChange)
+                let resolvedPage = publicationPosition.flatMap {
+                    self.currentEngine.pageIndex(for: $0)
+                        ?? self.currentEngine.estimatedGlobalPage(for: $0)
+                } ?? page
+                if self.isPageTransitioning, self.currentPage != resolvedPage {
+                    return
+                }
+                let didChange = self.currentPage != resolvedPage
+                let publishTrace = self.pageTurnTrace.beginPublish(page: resolvedPage, changed: didChange)
                 defer { self.pageTurnTrace.endStep(publishTrace) }
 
                 if didChange {
-                    self.currentPage = page
+                    self.currentPage = resolvedPage
                 }
 
                 if notify, didChange || position != nil {
-                    self.onPageChanged(page, position)
+                    self.onPageChanged(resolvedPage, position)
                 }
             }
         }
 
         private func handleNavigate(to page: Int) {
             let clamped = max(0, min(page, max(currentEngine.totalPages - 1, 0)))
-            publishCurrentPage(clamped, notify: true)
+            publishCurrentPage(clamped, notify: false)
         }
 
         /// A tapped in-content link (TOC table, cross-reference). Unlike `handleNavigate` —
@@ -1998,7 +2031,7 @@ struct CoreTextPageEngineView: UIViewControllerRepresentable {
 
             switch gesture.state {
             case .began:
-                coverTargetPage = nil
+                coverTargetPosition = nil
                 coverDirection = nil
                 // Cancel any previous in-flight animation; don't show overlay until direction is confirmed.
                 coverOverlayView.layer.removeAllAnimations()
@@ -2007,7 +2040,7 @@ struct CoreTextPageEngineView: UIViewControllerRepresentable {
                 coverDimView.alpha = 0
 
             case .changed:
-                if coverTargetPage == nil {
+                if coverTargetPosition == nil {
                     guard let turnDirection = ReaderCoverPageMotion.direction(
                         for: translationX,
                         threshold: GestureConstants.initialTranslationThreshold,
@@ -2020,13 +2053,15 @@ struct CoreTextPageEngineView: UIViewControllerRepresentable {
                         coverDirection = turnDirection
                         guard renderSnapshotForDisplayPage(target) != nil else {
                             let targetVC = displayViewController(at: target)
-                            if isPlaceholderDisplay(targetVC) {
-                                pendingNavigation = PendingNavigation(target: .page(target))
+                            if isPlaceholderDisplay(targetVC),
+                               let position = readingPosition(from: targetVC) {
+                                pendingNavigation = PendingNavigation(target: .position(position))
                                 AppLogger.render("[FlipTrace] coverInteractive forward blocked placeholder targetPage=\(target)")
                             }
                             return
                         }
-                        coverTargetPage = target
+                        guard let targetPosition = readingPosition(from: displayViewController(at: target)) else { return }
+                        coverTargetPosition = targetPosition
                         coverOverlayView.frame = view.bounds
                         coverCurrentImageView.frame = view.bounds
                         coverOverlayView.isHidden = false
@@ -2036,16 +2071,17 @@ struct CoreTextPageEngineView: UIViewControllerRepresentable {
                         // Don't start animation if snapshot is not ready (chapter not loaded).
                         guard let targetSnapshot = renderSnapshotForDisplayPage(target) else { return }
                         coverDirection = turnDirection
-                        coverTargetPage = target
+                        guard let targetPosition = readingPosition(from: displayViewController(at: target)) else { return }
+                        coverTargetPosition = targetPosition
                         coverOverlayView.frame = view.bounds
                         coverCurrentImageView.frame = view.bounds
                         coverCurrentImageView.image = renderSnapshotForDisplayPage(currentPage)
                         coverOverlayView.isHidden = false
                         setupIncomingView(for: target, snapshot: targetSnapshot, motion: motion, in: view)
                     }
-                    if coverTargetPage != nil { onUserPageTurnBegan() }
+                    if coverTargetPosition != nil { onUserPageTurnBegan() }
                 }
-                guard coverTargetPage != nil, let coverDirection else { return }
+                guard coverTargetPosition != nil, let coverDirection else { return }
                 let motion = ReaderCoverPageMotion(direction: coverDirection, isRTL: isRTL)
                 let rawProgress = min(motion.dragProgress(translationX: translationX, width: width), 0.999)
                 let newX = motion.interactiveX(progress: rawProgress, width: width)
@@ -2060,7 +2096,7 @@ struct CoreTextPageEngineView: UIViewControllerRepresentable {
                 }
 
             case .ended, .cancelled, .failed:
-                guard let targetPage = coverTargetPage, let coverDirection else {
+                guard let targetPosition = coverTargetPosition, let coverDirection else {
                     resetCoverOverlay()
                     return
                 }
@@ -2092,24 +2128,9 @@ struct CoreTextPageEngineView: UIViewControllerRepresentable {
                         self.coverDimView.alpha = shouldCommit ? 0 : GestureConstants.maxDimmingAlpha
                     }
                 } completion: { _ in
-                    if shouldCommit {
-                        var settledPosition: CoreTextReadingPosition?
-                        // Set the real VC immediately so updateUIViewController returns early, avoiding double animation.
-                        if let pvc = self.coverPageViewController {
-                            let realVC = self.displayViewController(at: targetPage)
-                            AppLogger.render("[FlipTrace] coverInteractive commit targetPage=\(targetPage) realType=\(type(of: realVC))")
-                            self.applyPlaybackHighlight(to: realVC)
-                            pvc.setViewControllers([realVC], direction: .forward, animated: false)
-                            pvc.view.layoutIfNeeded()
-                            self.captureStablePosition(from: realVC, readerDriven: true)
-                            settledPosition = self.readingPosition(from: realVC)
-                        }
-                        self.publishCurrentPage(
-                            targetPage,
-                            position: settledPosition,
-                            notify: true
-                        )
-                        self.warmUpNext(currentGlobalPage: targetPage)
+                    if shouldCommit || self.pendingCoverTargetPosition != nil,
+                       let pvc = self.coverPageViewController {
+                        self.finishCoverTransition(to: targetPosition, direction: .forward, on: pvc)
                     }
                     self.resetCoverOverlay()
                     if let pvc = self.coverPageViewController {
@@ -2124,25 +2145,49 @@ struct CoreTextPageEngineView: UIViewControllerRepresentable {
 
         // MARK: - Cover programmatic transition (tap zone)
 
+        private func finishCoverTransition(
+            to position: CoreTextReadingPosition,
+            direction: UIPageViewController.NavigationDirection,
+            on pageViewController: UIPageViewController
+        ) {
+            // Neighbour pagination can renumber the target while the overlay is
+            // animating. Resolve its content identity only when the turn lands.
+            let destination = pendingCoverTargetPosition ?? position
+            pendingCoverTargetPosition = nil
+            let realVC = displayViewController(for: destination)
+            applyPlaybackHighlight(to: realVC)
+            pageViewController.setViewControllers([realVC], direction: direction, animated: false)
+            pageViewController.view.layoutIfNeeded()
+            if let page = syncStablePosition(
+                afterShowing: realVC, notifyFallback: true, readerDriven: true
+            ) {
+                warmUpNext(currentGlobalPage: page)
+            }
+        }
+
         func animateCoverTransition(
             from oldPage: Int,
             to targetPage: Int,
             direction: UIPageViewController.NavigationDirection,
-            on pvc: UIPageViewController
+            on pvc: UIPageViewController,
+            targetPosition requestedPosition: CoreTextReadingPosition? = nil
         ) {
-            guard !isAnimatingTransition else { return }
-            guard let view = pvc.view else { return }
-            
-            // Boundary protection
             let total = currentEngine.totalPages
             guard targetPage >= 0, total == 0 || targetPage < total else {
-                resetCoverOverlay()
+                if !isAnimatingTransition { resetCoverOverlay() }
                 return
             }
+            guard let targetPosition = requestedPosition
+                ?? currentEngine.readingPosition(forPage: targetPage) else { return }
+            if isAnimatingTransition {
+                pendingCoverTargetPosition = targetPosition
+                return
+            }
+            guard let view = pvc.view else { return }
             if renderSnapshotForDisplayPage(targetPage) == nil {
                 let targetVC = displayViewController(at: targetPage)
                 if isPlaceholderDisplay(targetVC) {
-                    pendingNavigation = PendingNavigation(target: .page(targetPage))
+                    pendingNavigation = PendingNavigation(target: .position(targetPosition))
                     AppLogger.render("[FlipTrace] coverProgrammatic blocked placeholder targetPage=\(targetPage)")
                     return
                 }
@@ -2175,40 +2220,14 @@ struct CoreTextPageEngineView: UIViewControllerRepresentable {
                     self.coverDimView.alpha = 0
                 } completion: { _ in
                     self.endRetimableTurn()
-                    // Capture the latest binding value.
-                    let latestPage = self.currentPage
-                    let realVC = self.displayViewController(at: latestPage)
-                    AppLogger.render("[FlipTrace] coverProgrammatic forward latestPage=\(latestPage) realType=\(type(of: realVC))")
-                    self.applyPlaybackHighlight(to: realVC)
-                    pvc.setViewControllers([realVC], direction: direction, animated: false)
-                    pvc.view.layoutIfNeeded()
-                    
-                    self.captureStablePosition(from: realVC, readerDriven: true)
-                    self.publishCurrentPage(
-                        latestPage,
-                        position: self.readingPosition(from: realVC),
-                        notify: true
-                    )
-                    self.warmUpNext(currentGlobalPage: latestPage)
+                    self.finishCoverTransition(to: targetPosition, direction: direction, on: pvc)
 
                     self.resetCoverOverlay()
                     self.endAnimatedTransition(on: pvc)
                 }
             } else {
                 guard let targetSnapshot = renderSnapshotForDisplayPage(targetPage) else {
-                    let latestPage = self.currentPage
-                    let realVC = displayViewController(at: latestPage)
-                    AppLogger.render("[FlipTrace] coverProgrammatic backward snapshotMiss targetPage=\(targetPage) latestPage=\(latestPage) realType=\(type(of: realVC))")
-                    self.applyPlaybackHighlight(to: realVC)
-                    pvc.setViewControllers([realVC], direction: direction, animated: false)
-                    pvc.view.layoutIfNeeded()
-                    self.captureStablePosition(from: realVC, readerDriven: true)
-                    self.publishCurrentPage(
-                        latestPage,
-                        position: self.readingPosition(from: realVC),
-                        notify: true
-                    )
-                    self.warmUpNext(currentGlobalPage: latestPage)
+                    self.finishCoverTransition(to: targetPosition, direction: direction, on: pvc)
                     self.resetCoverOverlay()
                     self.endAnimatedTransition(on: pvc)
                     return
@@ -2223,20 +2242,7 @@ struct CoreTextPageEngineView: UIViewControllerRepresentable {
                     self.coverDimView.alpha = 0.3
                 } completion: { _ in
                     self.endRetimableTurn()
-                    let latestPage = self.currentPage
-                    let realVC = self.displayViewController(at: latestPage)
-                    AppLogger.render("[FlipTrace] coverProgrammatic backward latestPage=\(latestPage) realType=\(type(of: realVC))")
-                    self.applyPlaybackHighlight(to: realVC)
-                    pvc.setViewControllers([realVC], direction: direction, animated: false)
-                    pvc.view.layoutIfNeeded()
-                    
-                    self.captureStablePosition(from: realVC, readerDriven: true)
-                    self.publishCurrentPage(
-                        latestPage,
-                        position: self.readingPosition(from: realVC),
-                        notify: true
-                    )
-                    self.warmUpNext(currentGlobalPage: latestPage)
+                    self.finishCoverTransition(to: targetPosition, direction: direction, on: pvc)
 
                     self.resetCoverOverlay()
                     self.endAnimatedTransition(on: pvc)
@@ -2298,7 +2304,8 @@ struct CoreTextPageEngineView: UIViewControllerRepresentable {
             coverIncomingImageView.image = nil
             coverShadowView.frame = .zero
             coverDimView.alpha = 0
-            coverTargetPage = nil
+            coverTargetPosition = nil
+            pendingCoverTargetPosition = nil
             coverDirection = nil
         }
 

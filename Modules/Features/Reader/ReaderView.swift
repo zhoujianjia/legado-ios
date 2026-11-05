@@ -986,25 +986,19 @@ struct ReaderView: View {
         }
     }
 
-    func coreTextPositionIfLayoutReady(
-        engine: any PageRenderingProvider,
-        page: Int
-    ) -> (spineIndex: Int, charOffset: Int)? {
-        let (spineIndex, charOffset) = engine.charOffset(forPage: page)
-        guard engine.chapterPagination(forSpine: spineIndex, charOffset: charOffset) != nil else {
+    func currentPagedPositionIfLayoutReady(
+        engine: any PageRenderingProvider
+    ) -> CoreTextReadingPosition? {
+        // The session owns content identity. A chapter arriving can renumber
+        // currentPage before the display binding catches up; resolving that old
+        // index here would save a different page, sometimes the chapter start.
+        guard let position = readerSessionCoordinator?.state.location.coreTextPosition,
+              engine.chapterPagination(
+                forSpine: position.spineIndex, charOffset: position.charOffset
+              ) != nil else {
             return nil
         }
-        return (spineIndex, charOffset)
-    }
-
-    func scheduleCoreTextPageChanged(
-        _ newPage: Int,
-        engine: any PageRenderingProvider,
-        visiblePosition: CoreTextReadingPosition? = nil
-    ) {
-        DispatchQueue.main.async {
-            handleCoreTextPageChanged(newPage, engine: engine, visiblePosition: visiblePosition)
-        }
+        return position
     }
 
     func handleCoreTextPageChanged(
@@ -1015,20 +1009,18 @@ struct ReaderView: View {
         guard ReaderProgressSyncPolicy.canPublishIndexPosition(
             isTXT: book?.resolvedPipelineKind == .txt, indexReady: txtIndexReady
         ) else { return }
-        let newChapter = visiblePosition?.spineIndex ?? engine.charOffset(forPage: newPage).spineIndex
+        // Index-only updates describe display numbering, not navigation. Never
+        // reconstruct a content position from an index carried across a layout.
+        guard let settledPosition = visiblePosition else { return }
+        let resolvedPage = engine.pageIndex(for: settledPosition) ?? newPage
+        let newChapter = settledPosition.spineIndex
         let chapterChanged = newChapter != currentChapterIndex
 
         currentChapterIndex = newChapter
-        let settledPosition = visiblePosition
-            ?? engine.readingPosition(forPage: newPage)
-            ?? CoreTextReadingPosition(
-                spineIndex: engine.charOffset(forPage: newPage).spineIndex,
-                charOffset: engine.charOffset(forPage: newPage).charOffset
-            )
         moveReaderSession(
             to: settledPosition,
             source: .settledPage,
-            pageIndex: newPage,
+            pageIndex: resolvedPage,
             totalPages: engine.totalPages,
             shouldPersist: false
         )
@@ -1102,16 +1094,18 @@ struct ReaderView: View {
             return
         }
 
-        guard coreTextPositionIfLayoutReady(engine: engine, page: newPage) != nil else {
-            progressTrace("onPageChanged skipPersist page=\(newPage) reason=layoutNotReady")
+        guard engine.chapterPagination(
+            forSpine: settledPosition.spineIndex, charOffset: settledPosition.charOffset
+        ) != nil else {
+            progressTrace("onPageChanged skipPersist page=\(resolvedPage) reason=layoutNotReady")
             return
         }
 
-        epubRenderer.updateCurrentPosition(globalPage: newPage, engine: engine)
+        epubRenderer.updateCurrentPosition(globalPage: resolvedPage, engine: engine)
 
         readerSessionCoordinator?.send(.settlePage(
             position: settledPosition,
-            pageIndex: newPage,
+            pageIndex: resolvedPage,
             totalPages: engine.totalPages,
             persist: true
         ))
@@ -1725,7 +1719,10 @@ struct ReaderView: View {
                     autoReadRevealPage: autoReadRevealPage,
                     autoReadRevealHandle: autoReadRevealHandle,
                     onPageChanged: { newPage, visiblePosition in
-                        scheduleCoreTextPageChanged(newPage, engine: ctEngine, visiblePosition: visiblePosition)
+                        // The coordinator already publishes on the next main-queue
+                        // turn. Commit its content position before another layout
+                        // update can overtake it.
+                        handleCoreTextPageChanged(newPage, engine: ctEngine, visiblePosition: visiblePosition)
                     },
                     onTapZone: handleTouchAction,
                     onUserPageTurnBegan: { hideReaderChromeForPageTurn() },

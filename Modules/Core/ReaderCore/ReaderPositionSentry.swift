@@ -157,7 +157,9 @@ final class ReaderPositionSentry {
         if report.severity == .anomaly {
             AppLogger.anomaly(report.summary, category: .reader, detail: report.detail)
         } else {
-            AppLogger.render("⟐ positionSentry \(report.summary)", level: report.severity)
+            // Within-chapter resets remain notices, but their source and position trail
+            // must survive export even when verbose narration is off.
+            AppLogger.render("⟐ positionSentry \(report.summary)", level: report.severity, detail: report.detail)
         }
     }
 

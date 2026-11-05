@@ -81,6 +81,53 @@ struct ReaderPositionSentryTests {
         #expect(report.severity == .notice)
     }
 
+    @Test("a chapter reset notice keeps its position evidence in the exported production log with verbose off")
+    func chapterResetNoticeExportsEvidenceWithVerboseOff() throws {
+        // Exercise the default sink, including AppLogger and the persisted log. A unique
+        // book label isolates this entry without clearing or acknowledging the shared log.
+        let log = DiagnosticLog.shared
+        let wasVerbose = log.isVerboseEnabled
+        log.isVerboseEnabled = false
+        defer { log.isVerboseEnabled = wasVerbose }
+
+        let bookLabel = "chapter-reset-test-\(UUID().uuidString)"
+        let sentry = ReaderPositionSentry()
+        sentry.beginBook(label: bookLabel)
+        sentry.observeCommit(position(7, 1800), source: .pagedTurn, readerDriven: true)
+        sentry.observeCommit(position(7, 0), source: .pagedTurn)
+
+        let entries = log.snapshot().filter { $0.detail?.contains("book=\(bookLabel)") == true }
+        let entry = try #require(entries.first)
+        #expect(entries.count == 1)
+        #expect(entry.category == .reader)
+        #expect(entry.severity == .notice)
+        #expect(!entry.severity.isReportable)
+        let detail = try #require(entry.detail)
+        #expect(detail.contains("guard=A1"))
+        #expect(detail.contains("source=pagedTurn"))
+        #expect(detail.contains("from=(ch7,off1800)"))
+        #expect(detail.contains("to=(ch7,off0)"))
+        #expect(detail.contains("charDelta=-1800"))
+        #expect(detail.contains("--- recent position events (oldest first) ---"))
+        #expect(detail.contains("commit pagedTurn (ch7,off1800)"))
+        #expect(detail.contains("commit pagedTurn (ch7,off0)"))
+
+        let exported = DiagnosticReportBundle(
+            filename: "chapter-reset-test.txt",
+            entries: entries,
+            session: log.currentSession,
+            uncleanSessions: [],
+            acknowledgesReport: false
+        ).render()
+        #expect(exported.contains("entries=1  reportable=0"))
+        #expect(exported.contains("source=pagedTurn"))
+        #expect(exported.contains("from=(ch7,off1800)"))
+        #expect(exported.contains("to=(ch7,off0)"))
+        #expect(exported.contains("--- recent position events (oldest first) ---"))
+        #expect(exported.contains("commit pagedTurn (ch7,off1800)"))
+        #expect(exported.contains("commit pagedTurn (ch7,off0)"))
+    }
+
     /// Distance is not the test — being unaccounted for is. A one-character move nobody
     /// asked for is still nobody asking for it.
     @Test("even a tiny unexplained move is recorded")

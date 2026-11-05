@@ -27,6 +27,12 @@
 
 **絕對頁碼降級成只供顯示**：頁尾「12/300」、進度條。任何把 `globalPageIndex` 存起來跨越一次排版的地方都是 bug。
 
+這也包含非動畫的頁碼重編號通知：`onNavigateToPage` 只更新顯示，不得當成翻頁落點提交。
+通知排進主佇列之後，相鄰章節可能再次改變頁碼前綴；把舊頁碼反查成位置再寫回 session，
+可能把章中錨點變成章首。真正落點必須攜帶可見頁的字元位置，交付時確認仍是最新落點，
+再依當下版面解析顯示頁碼。離開閱讀器時，書架進度與 Calibre 同步也使用 session 的同一份
+字元位置，不從顯示頁碼還原位置。
+
 > 例外（有意保留）：跨頁對開（固定版面配對）與 curl 背面的 front/back 虛擬索引仍走索引。固定版面永不重新編號，curl 的正反面配對本質上就是索引配對。
 
 ### 2　UIKit 回呼進行中，不得同步改寫頁堆疊
@@ -67,6 +73,9 @@ UIKit 會在它自己選的時機、為使用者可能永遠不會翻到的頁�
 - `Tests/iOS/yuedu appTests/ReaderPositionWalkTests.swift` — 章內／章界／書界／未排版／部分排版的步進行為，以及「重新排版前面的章節不得移動步進目的地」。
 - `Tests/iOS/yuedu appTests/ReaderStackWriteGateTests.swift` — 所有權窗口、巢狀轉場、一次只重播一筆、優先序不受回呼順序影響。
 - `Tests/iOS/yuedu appTests/ReaderPageTransitionQueueTests.swift` — 排隊翻頁的重新錨定。
+- `Tests/iOS/yuedu appTests/ReaderPagedPositionSyncTests.swift` — 連續重編號不得提交章首，遲到的通知不得覆蓋最新字元位置。
+- `Tests/iOS/yuedu appTests/ReaderCoverPositionTests.swift` — 覆蓋動畫跨越頁碼重編號時，落點仍是命令的字元位置。
+- `Tests/iOS/yuedu appTests/ReaderPositionSentryTests.swift` — 關閉詳細追蹤時，同章回首的 notice 仍匯出位置與軌跡。
 
 ## 儀器覆蓋率審計（2026-09-08）
 
@@ -136,6 +145,7 @@ UIKit 會在它自己選的時機、為使用者可能永遠不會翻到的頁�
 ## 日誌判準（Release Console 可見）
 
 - `⟐ positionSentry 位置變動沒有來源` — A1。無主的位置變動，帶 `charDelta`／`spineDelta`。
+  notice 與 anomaly 都保留 `detail` 中的 `from/to/source` 與近期位置軌跡；關閉詳細追蹤也能匯出。
 - `[FlipTrace] pageForward from=<position> to=<position>` — 步進兩端都是 position。出現絕對頁碼就是回歸。
 - `⟐ stackWrite deferred <kind>` / `[FlipTrace] stackWrite replay <kind>` — gate 有在擋。
 - `⟐ stackWrite dropped <kind> inFavourOf=<kind>` — 欠著的堆疊寫入被更高優先級蓋掉。

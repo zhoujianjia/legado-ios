@@ -41,9 +41,9 @@ enum AppLogger {
             category: .parse, severity: level, defaultSeverity: .notice)
     }
 
-    static func render(_ message: String, error: Error? = nil, context: [String: Any] = [:], level: DiagnosticSeverity? = nil) {
+    static func render(_ message: String, error: Error? = nil, context: [String: Any] = [:], level: DiagnosticSeverity? = nil, detail: String? = nil) {
         log(logger: renderLog, level: .error, message: message, error: error, context: context,
-            category: .reader, severity: level, defaultSeverity: .notice)
+            category: .reader, severity: level, defaultSeverity: .notice, detail: detail)
     }
 
     static func cache(_ message: String, error: Error? = nil, context: [String: Any] = [:], level: DiagnosticSeverity? = nil) {

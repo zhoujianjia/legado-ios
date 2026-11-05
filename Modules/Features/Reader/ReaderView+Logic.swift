@@ -486,23 +486,18 @@ extension ReaderView {
         if let engine = epubRenderer.engine, usesCoreTextEPUB {
             let total = engine.totalPages
             guard total > 0 else { return }
-            let candidatePage: Int = {
-                if currentPage == 0, engine.currentPage > 0 {
-                    return engine.currentPage
-                }
-                return currentPage
-            }()
-            guard let resolved = coreTextPositionIfLayoutReady(engine: engine, page: candidatePage) else {
-                AppLogger.render("autoSave coreText skipped page=\(candidatePage) reason=layoutNotReady")
+            guard let resolved = currentPagedPositionIfLayoutReady(engine: engine) else {
+                AppLogger.render("autoSave coreText skipped page=\(currentPage) reason=positionNotReady")
                 return
             }
+            let candidatePage = engine.pageIndex(for: resolved)
             let spineIndex = resolved.spineIndex
             let charOffset = resolved.charOffset
             currentChapterIndex = spineIndex
             let pct = engine.totalProgress(forSpine: spineIndex, charOffset: charOffset)
             let normalized = min(1.0, max(0.0, pct))
             AppLogger.render(
-                "autoSave coreText page=\(candidatePage) spine=\(spineIndex) charOffset=\(charOffset) pct=\(String(format: "%.6f", normalized))"
+                "autoSave coreText page=\(candidatePage.map(String.init) ?? "unresolved") spine=\(spineIndex) charOffset=\(charOffset) pct=\(String(format: "%.6f", normalized))"
             )
             store.updatePosition(bookId: bookId, position: normalized, forceSave: force)
             notifySourceSaveRead(isPageTurn: !force)
@@ -561,9 +556,7 @@ extension ReaderView {
                 epubRenderer.scrollEngine?.chunks.first { $0.chapterIndex == location.spineIndex }?.attributedString.string
             }
         } else if let engine = epubRenderer.engine {
-            position = coreTextPositionIfLayoutReady(engine: engine,
-                page: currentPage == 0 && engine.currentPage > 0 ? engine.currentPage : currentPage)
-                .map { CoreTextReadingPosition(spineIndex: $0.spineIndex, charOffset: $0.charOffset) }
+            position = currentPagedPositionIfLayoutReady(engine: engine)
             text = position.flatMap { engine.chapterText(forSpine: $0.spineIndex) }
         } else { return }
         guard let position, let text, session.chapters.indices.contains(position.spineIndex) else { return }
