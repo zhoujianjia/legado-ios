@@ -265,7 +265,7 @@ struct OfflineDownloadSourceConcurrencyTests {
                 var edited = fixture.chapters; edited[0].title = "Temporary title"
                 let replacement = edited
                 var injected = false
-                #expect(try fixture.owner.compareRuntimeVariables(expected: beforeReset, variables: ["writer": "ordered"], beforeWrite: {
+                let acceptedReset = try fixture.owner.compareRuntimeVariables(expected: beforeReset, variables: ["writer": "ordered"], beforeWrite: {
                     guard !injected else { return }; injected = true
                     // committing=true forces both immediate edits to coalesce
                     // behind this real writer turn, including an equal restore.
@@ -275,7 +275,8 @@ struct OfflineDownloadSourceConcurrencyTests {
                         _ = try fixture.owner.runtimeVariablesSnapshot(bookID: fixture.bookID, index: 0, url: first.url)
                         Issue.record("An unaligned immediate view must not mint a proof")
                     } catch { #expect((error as? LegadoRuntimeError)?.code == "STATE_CONFLICT") }
-                }))
+                })
+                #expect(acceptedReset)
                 return beforeReset
             }
             // The queued restore runs before this next writer turn.
