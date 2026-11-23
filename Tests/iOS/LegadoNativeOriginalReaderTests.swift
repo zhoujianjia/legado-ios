@@ -989,7 +989,10 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
                 runtimeVariables: origin.runtimeVariables)
             XCTFail("Forking must leave the transferred owner inactive")
         } catch let error as LegadoRuntimeError { XCTAssertEqual(error.code, "INVALID_STATE_OWNER") }
-        var foreign = cached; foreign.bookUrl += "/another-book"
+        let foreign = BookOrigin(sourceId: cached.sourceId, sourceName: cached.sourceName,
+            bookUrl: cached.bookUrl + "/another-book", tocUrl: cached.tocUrl,
+            coverUrl: cached.coverUrl, intro: cached.intro, lastChapter: cached.lastChapter,
+            wordCount: cached.wordCount, kind: cached.kind, runtimeVariables: cached.runtimeVariables)
         let requestsAfter = fixture.peer.snapshot.requests.count
         do {
             _ = try await model.prepareTOCPackage(for: foreign)
@@ -1009,7 +1012,10 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
         known.runtimeVariables = OriginalBookAdoption.variables(origin.runtimeVariables)
         let freshVariables = try await service.prepareOriginalBookPreview(url: known.bookUrl,
             source: revisedSource, runtimeVariables: known.runtimeVariables, knownBook: known)
-        var fresh = cached; fresh.runtimeVariables = freshVariables
+        let fresh = BookOrigin(sourceId: cached.sourceId, sourceName: cached.sourceName,
+            bookUrl: cached.bookUrl, tocUrl: cached.tocUrl, coverUrl: cached.coverUrl,
+            intro: cached.intro, lastChapter: cached.lastChapter, wordCount: cached.wordCount,
+            kind: cached.kind, runtimeVariables: freshVariables)
         BookSourceStore.shared.sources = previousSources + [revisedSource]
         let refreshed = try await model.prepareTOCPackage(for: fresh)
         XCTAssertEqual(refreshed.runtimeVariables?[LegadoMainJSSourceService.originalPreviewContextKey],
