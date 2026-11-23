@@ -206,6 +206,174 @@ struct OfflineDownloadSourceConcurrencyTests {
         }
     }
 
+    @Test("independent chapter variables and cache publication preserve the sibling's exact owner proof")
+    func siblingChapterWritesKeepTargetProofCurrent() async throws {
+        try await withChapterFixture { fixture in
+            let first = try #require(try await onChapterOwner(fixture.queue) {
+                try fixture.owner.runtimeVariablesSnapshot(bookID: fixture.bookID, index: 0, url: fixture.chapters[0].url)
+            })
+            let second = try #require(try await onChapterOwner(fixture.queue) {
+                try fixture.owner.runtimeVariablesSnapshot(bookID: fixture.bookID, index: 1, url: fixture.chapters[1].url)
+            })
+            #expect(try await onChapterOwner(fixture.queue) {
+                try fixture.owner.publishCachedFiles(bookID: fixture.bookID,
+                    updates: [.init(index: 0, chapterID: first.chapterID, url: first.url, filename: "0.txt")], beforeWrite: {})
+            })
+            let unchangedSibling = try #require(try await onChapterOwner(fixture.queue) {
+                try fixture.owner.runtimeVariablesSnapshot(bookID: fixture.bookID, index: 1, url: second.url)
+            })
+            #expect(unchangedSibling == second)
+            #expect(try await onChapterOwner(fixture.queue) {
+                try fixture.owner.compareRuntimeVariables(expected: second, variables: nil)
+            })
+            #expect(try await onChapterOwner(fixture.queue) {
+                try fixture.owner.compareRuntimeVariables(expected: second, variables: ["sibling": "accepted"])
+            })
+            #expect(try await onChapterOwner(fixture.queue) {
+                try !fixture.owner.compareRuntimeVariables(expected: first, variables: ["stale": "denied"])
+            })
+            let refreshedFirst = try #require(try await onChapterOwner(fixture.queue) {
+                try fixture.owner.runtimeVariablesSnapshot(bookID: fixture.bookID, index: 0, url: first.url)
+            })
+            #expect(try await onChapterOwner(fixture.queue) {
+                try fixture.owner.compareRuntimeVariables(expected: refreshedFirst, variables: ["target": "accepted"])
+            })
+            // The publication must use the current whole-entry basis revision,
+            // rather than skipping the UI view because this proof is older.
+            #expect(fixture.owner.chapters(for: fixture.bookID)?[0].runtimeVariables == ["target": "accepted"])
+            #expect(fixture.owner.chapters(for: fixture.bookID)?[0].cachedFilename == "0.txt")
+            #expect(fixture.owner.chapters(for: fixture.bookID)?[1].runtimeVariables == ["sibling": "accepted"])
+            #expect(try await onChapterOwner(fixture.queue) {
+                let reopened = BookChapterStore(directoryURL: fixture.root, persistenceQueue: fixture.queue)
+                return try reopened.ownerChapters(for: fixture.bookID)?[1].runtimeVariables == ["sibling": "accepted"]
+            })
+        }
+    }
+
+    @Test("same-target ABA, coalesced TOC reset, stale capture and eviction cannot revive a chapter proof")
+    func chapterProofsRejectABAResetAndReload() async throws {
+        try await withChapterFixture { fixture in
+            let resetProof = try await onChapterOwner(fixture.queue) {
+                let first = try #require(try fixture.owner.runtimeVariablesSnapshot(bookID: fixture.bookID,
+                    index: 0, url: fixture.chapters[0].url))
+                #expect(try fixture.owner.compareRuntimeVariables(expected: first, variables: ["state": "B"]))
+                let middle = try #require(try fixture.owner.runtimeVariablesSnapshot(bookID: fixture.bookID, index: 0, url: first.url))
+                #expect(middle.revision != first.revision)
+                #expect(try fixture.owner.compareRuntimeVariables(expected: middle, variables: first.variables))
+                #expect(try !fixture.owner.compareRuntimeVariables(expected: first, variables: ["stale": "denied"]))
+                let beforeReset = try #require(try fixture.owner.runtimeVariablesSnapshot(bookID: fixture.bookID, index: 0, url: first.url))
+                var edited = fixture.chapters; edited[0].title = "Temporary title"
+                let replacement = edited
+                var injected = false
+                #expect(try fixture.owner.compareRuntimeVariables(expected: beforeReset, variables: ["writer": "ordered"], beforeWrite: {
+                    guard !injected else { return }; injected = true
+                    // committing=true forces both immediate edits to coalesce
+                    // behind this real writer turn, including an equal restore.
+                    fixture.owner.setChapters(replacement, for: fixture.bookID)
+                    fixture.owner.setChapters(fixture.chapters, for: fixture.bookID)
+                    do {
+                        _ = try fixture.owner.runtimeVariablesSnapshot(bookID: fixture.bookID, index: 0, url: first.url)
+                        Issue.record("An unaligned immediate view must not mint a proof")
+                    } catch { #expect((error as? LegadoRuntimeError)?.code == "STATE_CONFLICT") }
+                }))
+                return beforeReset
+            }
+            // The queued restore runs before this next writer turn.
+            try await onChapterOwner(fixture.queue) {
+                #expect(try !fixture.owner.compareRuntimeVariables(expected: resetProof, variables: ["coalesced": "denied"]))
+                let current = try #require(try fixture.owner.runtimeVariablesSnapshot(bookID: fixture.bookID,
+                    index: 0, url: fixture.chapters[0].url))
+                fixture.owner.removeChapters(for: fixture.bookID)
+                fixture.owner.setChapters(fixture.chapters, for: fixture.bookID)
+                #expect(try !fixture.owner.compareRuntimeVariables(expected: current, variables: ["cleared": "denied"]))
+                try fixture.owner.flushReportingFailure(for: fixture.bookID)
+                let beforeEviction = try #require(try fixture.owner.runtimeVariablesSnapshot(bookID: fixture.bookID,
+                    index: 0, url: fixture.chapters[0].url))
+                for _ in 0..<9 {
+                    let other = UUID()
+                    fixture.owner.setChapters(fixture.chapters, for: other)
+                    try fixture.owner.flushReportingFailure(for: other)
+                }
+                let reloaded = try #require(try fixture.owner.runtimeVariablesSnapshot(bookID: fixture.bookID,
+                    index: 0, url: fixture.chapters[0].url))
+                #expect(reloaded != beforeEviction)
+                #expect(try !fixture.owner.compareRuntimeVariables(expected: beforeEviction, variables: ["evicted": "denied"]))
+                #expect(try fixture.owner.compareRuntimeVariables(expected: reloaded, variables: ["fresh": "accepted"]))
+            }
+            let afterDirectChange = try await onChapterOwner(fixture.queue) {
+                let before = try #require(try fixture.owner.runtimeVariablesSnapshot(bookID: fixture.bookID,
+                    index: 0, url: fixture.chapters[0].url))
+                var queued = fixture.chapters; queued[1].title = "Queued ordinary change"
+                let pendingList = queued
+                var injected = false
+                #expect(try fixture.owner.compareRuntimeVariables(expected: before, variables: ["writer": "accepted"], beforeWrite: {
+                    guard !injected else { return }; injected = true
+                    fixture.owner.setChapters(pendingList, for: fixture.bookID)
+                }))
+                // A direct owner turn consumes the pending value before its
+                // already queued callback runs. That empty callback is no edit.
+                fixture.owner.setChapters(fixture.chapters, for: fixture.bookID)
+                return try #require(try fixture.owner.runtimeVariablesSnapshot(bookID: fixture.bookID,
+                    index: 0, url: fixture.chapters[0].url))
+            }
+            #expect(try await onChapterOwner(fixture.queue) {
+                try fixture.owner.runtimeVariablesSnapshot(bookID: fixture.bookID, index: 0,
+                    url: fixture.chapters[0].url) == afterDirectChange
+            })
+        }
+    }
+
+    private struct ChapterFixture: @unchecked Sendable {
+        let root: URL
+        let queue: DispatchQueue
+        let owner: BookChapterStore
+        let bookID: UUID
+        let chapters: [OnlineChapterRef]
+    }
+
+    private func withChapterFixture(_ body: (ChapterFixture) async throws -> Void) async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("ChapterProof-\(UUID().uuidString)", isDirectory: true)
+        let queue = DispatchQueue(label: "test.chapter.proof.\(UUID().uuidString)")
+        let owner = BookChapterStore(directoryURL: root, persistenceQueue: queue)
+        let fixture = ChapterFixture(root: root, queue: queue, owner: owner, bookID: UUID(), chapters: (0..<2).map {
+            OnlineChapterRef(index: $0, title: "Chapter \($0)", url: "https://chapter-proof.invalid/c\($0)")
+        })
+        var problem: Error?
+        do {
+            try await onChapterOwner(queue) {
+                owner.setChapters(fixture.chapters, for: fixture.bookID)
+                try owner.flushReportingFailure(for: fixture.bookID)
+            }
+            try await body(fixture)
+        } catch { problem = error }
+        do { try await onChapterOwner(queue) { try FileManager.default.removeItem(at: root) } }
+        catch { if problem == nil { problem = error } }
+        if let problem { throw problem }
+    }
+
+    private func onChapterOwner<T: Sendable>(_ queue: DispatchQueue, _ operation: @escaping @Sendable () throws -> T) async throws -> T {
+        try await withThrowingTaskGroup(of: T.self) { group in
+            defer { group.cancelAll() }
+            group.addTask {
+                let gate = ChapterOwnerQueueResult<T>()
+                return try await withTaskCancellationHandler {
+                    try await withCheckedThrowingContinuation { continuation in
+                        guard gate.attach(continuation) else { return }
+                        queue.async {
+                            guard !gate.isCancelled else { return }
+                            gate.finish(Result { try operation() })
+                        }
+                    }
+                } onCancel: { gate.cancel() }
+            }
+            group.addTask {
+                try await Task.sleep(for: .seconds(5)) // Assertion deadline, not state settling.
+                throw URLError(.timedOut)
+            }
+            return try await group.next()!
+        }
+    }
+
     private func withHostFixture(_ body: (HostFixture) async throws -> Void) async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("OwnerAdmission-\(UUID().uuidString)", isDirectory: true)
         let store = await Task.detached { BookStore(metadataFileURL: root.appendingPathComponent("books_meta.json"), legacyMetadataDefaults: nil) }.value
@@ -311,6 +479,29 @@ struct OfflineDownloadSourceConcurrencyTests {
                     book: book, chapters: [chapter], taskID: id, deadline: deadline, singleChapter: true)
             }
         }
+    }
+}
+
+private final class ChapterOwnerQueueResult<Value: Sendable>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuation: CheckedContinuation<Value, Error>?
+    private var cancelled = false
+    var isCancelled: Bool { lock.withLock { cancelled } }
+    func attach(_ value: CheckedContinuation<Value, Error>) -> Bool {
+        let accepted = lock.withLock { () -> Bool in
+            guard !cancelled else { return false }
+            continuation = value; return true
+        }
+        if !accepted { value.resume(throwing: CancellationError()) }
+        return accepted
+    }
+    func finish(_ result: Result<Value, Error>) {
+        let pending = lock.withLock { let value = continuation; continuation = nil; return value }
+        pending?.resume(with: result)
+    }
+    func cancel() {
+        let pending = lock.withLock { cancelled = true; let value = continuation; continuation = nil; return value }
+        pending?.resume(throwing: CancellationError())
     }
 }
 

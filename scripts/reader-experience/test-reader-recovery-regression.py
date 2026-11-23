@@ -71,7 +71,9 @@ class RecoveryGateTests(unittest.TestCase):
                              "Modules/Features/Reader/ReaderViewModel.swift",
                              "Modules/Core/BookSource/BookSourceFetcher+OriginalPreview.swift",
                              "Targets/Yuedu/SharedApp/AppDependencies.swift",
-                             "Modules/Services/Online/LegadoPersistentStateHost.swift"):
+                             "Modules/Services/Online/LegadoPersistentStateHost.swift",
+                             "scripts/reader-experience/reader-position-barrier.py",
+                             "Modules/Services/LibraryStore/BookChapterStore.swift"):
                 self.assertIn(relative, {item["path"] for item in selected["sourceInputs"]})
             path.write_text('struct '+suite+' {\n@Test(arguments: [1,2])\nfunc one(value: Int) {}\n}')
             with self.assertRaisesRegex(ValueError, "Unsupported selected"):
@@ -85,6 +87,7 @@ class RecoveryGateTests(unittest.TestCase):
         self.assertIn('"${BUILD_SELECTION[@]}" build-for-testing', original)
         self.assertIn('for index in 0 1 2', original)
         self.assertIn('YUEDU_TEST_ACTION=test-without-building', later)
+        self.assertIn("LegadoChapterOwnerPersistenceTests", gate.SUITES)
         self.assertNotIn('build-for-testing', later)
         for suite in gate.SUITES:
             self.assertIn("yuedu appTests/"+suite, original)

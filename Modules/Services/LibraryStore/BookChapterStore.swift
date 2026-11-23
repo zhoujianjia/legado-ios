@@ -25,8 +25,19 @@ final class BookChapterStore: @unchecked Sendable {
         let chapterID: UUID
         let index: Int
         let url: String
-        let revision: Int
+        /// This target's proof revision, independent of unrelated chapter writes.
+        var revision: Int { proof.revision }
         let variables: [String: String]?
+        fileprivate let proof: RuntimeVariablesProof
+    }
+    fileprivate final class RuntimeVariablesProof: @unchecked Sendable, Equatable {
+        let revision: Int
+        init(revision: Int) { self.revision = revision }
+        static func == (lhs: RuntimeVariablesProof, rhs: RuntimeVariablesProof) -> Bool { lhs === rhs }
+    }
+    private final class WeakRuntimeVariablesProof {
+        weak var value: RuntimeVariablesProof?
+        init(_ value: RuntimeVariablesProof) { self.value = value }
     }
     private struct Entry {
         /// `nil`: the book has no list.
@@ -45,12 +56,15 @@ final class BookChapterStore: @unchecked Sendable {
         /// Coalesced ordinary mutations: at most one pending list and queue turn per book.
         var pendingOwnerChanges: [UUID: Entry] = [:]
         var ownerChangeQueued = Set<UUID>()
+        /// Only snapshots retain these tickets; no second chapter list is held here.
+        var runtimeProofs: [UUID: [Int: WeakRuntimeVariablesProof]] = [:]
     }
 
     /// Lists kept in memory once read. A reader holds the one it is on; a pass over the
     /// whole shelf (the launch refresh, AI 整理) reads one book after another and must not
     /// end up holding them all, as the shelf file used to.
     private static let cachedListLimit = 8
+    private static let runtimeProofLimit = 1_024
 
     let directoryURL: URL
     /// Production injects BookStore's existing persistence queue. The old locked cache is
@@ -84,6 +98,7 @@ final class BookChapterStore: @unchecked Sendable {
         return state.withLock { state in
             // Set while this read was in flight: that list is newer than the file.
             if let entry = state.entries[bookID] { return entry.chapters }
+            state.runtimeProofs.removeValue(forKey: bookID)
             state.nextRevision &+= 1
             let entry = Entry(chapters: loaded, isDirty: false, revision: state.nextRevision)
             state.entries[bookID] = entry
@@ -123,8 +138,23 @@ final class BookChapterStore: @unchecked Sendable {
         guard let chapters = entry.chapters, chapters.indices.contains(index),
               chapters[index].index == index, chapters[index].url.utf8.elementsEqual(url.utf8) else { return nil }
         let chapter = chapters[index]
-        return RuntimeVariablesSnapshot(bookID: bookID, chapterID: chapter.id, index: index, url: url,
-            revision: entry.revision, variables: chapter.runtimeVariables)
+        return try state.withLock { state in
+            // Only the clean read cache may have evicted this still-owned row.
+            // Reinstall it for a new capture, never for an old expected proof.
+            if state.entries[bookID] == nil, state.pendingOwnerChanges[bookID] == nil, !entry.isDirty {
+                state.entries[bookID] = entry
+                Self.touch(bookID, entry: entry, in: &state)
+                Self.evictLeastRecentlyUsed(in: &state)
+            }
+            // An ordinary edit can be visible before its coalesced queue turn.
+            // Never register an old owner row as a proof of that newer UI state.
+            guard state.entries[bookID]?.revision == entry.revision else {
+                throw LegadoRuntimeError(code: "STATE_CONFLICT", message: "Chapter metadata changed while capturing its owner proof")
+            }
+            let proof = try Self.runtimeProof(bookID: bookID, index: index, revision: entry.revision, in: &state)
+            return RuntimeVariablesSnapshot(bookID: bookID, chapterID: chapter.id, index: index, url: url,
+                variables: chapter.runtimeVariables, proof: proof)
+        }
     }
 
     /// Ordered with all ordinary changes on the same existing persistence queue. Changes
@@ -138,8 +168,10 @@ final class BookChapterStore: @unchecked Sendable {
                                  beforeWrite: () throws -> Void = {}) throws -> Bool {
         dispatchPrecondition(condition: .onQueue(persistenceQueue))
         let entry = try ownerEntry(for: expected.bookID)
-        guard entry.revision == expected.revision, var candidate = entry.chapters,
-              candidate.indices.contains(expected.index), candidate[expected.index].id == expected.chapterID,
+        guard state.withLock({ $0.runtimeProofs[expected.bookID]?[expected.index]?.value === expected.proof }),
+              var candidate = entry.chapters,
+              candidate.indices.contains(expected.index), candidate[expected.index].index == expected.index,
+              candidate[expected.index].id == expected.chapterID,
               candidate[expected.index].url.utf8.elementsEqual(expected.url.utf8),
               BookStore.RuntimeBookSnapshot.sameVariables(candidate[expected.index].runtimeVariables, expected.variables) else { return false }
         if BookStore.RuntimeBookSnapshot.sameVariables(variables, expected.variables), !entry.isDirty {
@@ -149,24 +181,30 @@ final class BookChapterStore: @unchecked Sendable {
         committing = true
         defer { committing = false }
         try write(candidate, for: expected.bookID, beforeWrite: beforeWrite, claimCommit: claimCommit)
-        let revision = BookStore.RuntimeBookSnapshot.sameVariables(variables, expected.variables) ? entry.revision : state.withLock { state in
+        let changed = !BookStore.RuntimeBookSnapshot.sameVariables(variables, expected.variables)
+        let revision = !changed ? entry.revision : state.withLock { state in
             state.nextRevision &+= 1
             return state.nextRevision
         }
         let published = Entry(chapters: candidate, isDirty: false, revision: revision)
         ownerState.entries[expected.bookID] = published
         Self.touch(expected.bookID, entry: published, in: &ownerState)
-        Self.evictLeastRecentlyUsed(in: &ownerState)
+        evictOwnerEntries()
+        let proof = changed ? RuntimeVariablesProof(revision: revision) : expected.proof
         state.withLock { state in
+            if changed { Self.invalidateRuntimeProofs(expected.bookID, indices: [expected.index], in: &state) }
             // A subsequent ordinary mutation already owns the UI view. Its queued owner
             // operation follows this commit and must retain its exact chapter metadata.
-            guard state.entries[expected.bookID]?.revision == expected.revision else { return }
+            guard state.entries[expected.bookID]?.revision == entry.revision else { return }
             state.entries[expected.bookID] = published
             Self.touch(expected.bookID, entry: published, in: &state)
             Self.evictLeastRecentlyUsed(in: &state)
+            // A durable acknowledgement never adopts a later UI edit. When that
+            // edit prevented publication this new ticket remains unregistered.
+            if changed { state.runtimeProofs[expected.bookID, default: [:]][expected.index] = WeakRuntimeVariablesProof(proof) }
         }
         accepted(.init(bookID: expected.bookID, chapterID: expected.chapterID, index: expected.index,
-            url: expected.url, revision: revision, variables: variables))
+            url: expected.url, variables: variables, proof: proof))
         return true
     }
 
@@ -193,7 +231,8 @@ final class BookChapterStore: @unchecked Sendable {
                 throw LegadoRuntimeError(code: "STATE_CONFLICT", message: "The cached chapter no longer has its granted TOC identity")
             }
         }
-        let changed = updates.contains { candidate[$0.index].cachedFilename != $0.filename }
+        let changedIndices = updates.filter { candidate[$0.index].cachedFilename != $0.filename }.map(\.index)
+        let changed = !changedIndices.isEmpty
         if !changed && !entry.isDirty { try beforeWrite(); return false }
         for value in updates { candidate[value.index].cachedFilename = value.filename }
         committing = true; defer { committing = false }
@@ -203,8 +242,9 @@ final class BookChapterStore: @unchecked Sendable {
         let revision = state.withLock { state in state.nextRevision &+= 1; return state.nextRevision }
         let published = Entry(chapters: candidate, isDirty: false, revision: revision)
         ownerState.entries[bookID] = published
-        Self.touch(bookID, entry: published, in: &ownerState); Self.evictLeastRecentlyUsed(in: &ownerState)
+        Self.touch(bookID, entry: published, in: &ownerState); evictOwnerEntries()
         state.withLock { state in
+            Self.invalidateRuntimeProofs(bookID, indices: changedIndices, in: &state)
             guard state.entries[bookID]?.revision == entry.revision else { return }
             state.entries[bookID] = published
             Self.touch(bookID, entry: published, in: &state); Self.evictLeastRecentlyUsed(in: &state)
@@ -319,7 +359,7 @@ final class BookChapterStore: @unchecked Sendable {
                 ownerState.entries[bookID] = entry
                 Self.touch(bookID, entry: entry, in: &ownerState)
             }
-            Self.evictLeastRecentlyUsed(in: &ownerState)
+            evictOwnerEntries()
             state.withLock { state in
                 for (bookID, revision) in written {
                     guard var entry = state.entries[bookID], entry.revision == revision else { continue }
@@ -341,6 +381,7 @@ final class BookChapterStore: @unchecked Sendable {
     private func enqueueOwnerChange(_ bookID: UUID, entry: Entry, in state: inout State) {
         if DispatchQueue.getSpecific(key: queueKey) != nil, !committing {
             state.pendingOwnerChanges.removeValue(forKey: bookID)
+            state.runtimeProofs.removeValue(forKey: bookID)
             ownerState.entries[bookID] = entry
             ownerState.recency.removeAll { $0 == bookID }
         } else {
@@ -349,7 +390,9 @@ final class BookChapterStore: @unchecked Sendable {
             persistenceQueue.async { [self] in
                 guard let entry = self.state.withLock({ state -> Entry? in
                     state.ownerChangeQueued.remove(bookID)
-                    return state.pendingOwnerChanges.removeValue(forKey: bookID)
+                    guard let pending = state.pendingOwnerChanges.removeValue(forKey: bookID) else { return nil }
+                    state.runtimeProofs.removeValue(forKey: bookID)
+                    return pending
                 }) else { return }
                 ownerState.entries[bookID] = entry
                 ownerState.recency.removeAll { $0 == bookID }
@@ -362,6 +405,9 @@ final class BookChapterStore: @unchecked Sendable {
             Self.touch(bookID, entry: entry, in: &ownerState)
             return entry
         }
+        // Reload/eviction is a new owner observation, never a way to revive an
+        // old snapshot whose DTO happens to have returned to the same bytes.
+        state.withLock { $0.runtimeProofs.removeValue(forKey: bookID) }
         let loaded = try readFileReportingFailure(for: bookID)
         let entry = state.withLock { state -> Entry in
             if let existing = state.entries[bookID], !existing.isDirty, existing.chapters == loaded { return existing }
@@ -376,7 +422,7 @@ final class BookChapterStore: @unchecked Sendable {
         }
         ownerState.entries[bookID] = entry
         Self.touch(bookID, entry: entry, in: &ownerState)
-        Self.evictLeastRecentlyUsed(in: &ownerState)
+        evictOwnerEntries()
         return entry
     }
 
@@ -431,6 +477,9 @@ final class BookChapterStore: @unchecked Sendable {
     // MARK: - Cache
 
     private static func markChanged(_ bookID: UUID, chapters: [OnlineChapterRef]?, in state: inout State) {
+        // This ordinary replacement may be a TOC/source reset. Invalidate now,
+        // before queued edit -> revert operations can coalesce to equal bytes.
+        state.runtimeProofs.removeValue(forKey: bookID)
         state.nextRevision &+= 1
         state.entries[bookID] = Entry(chapters: chapters, isDirty: true, revision: state.nextRevision)
         state.recency.removeAll { $0 == bookID }
@@ -442,9 +491,43 @@ final class BookChapterStore: @unchecked Sendable {
         state.recency.append(bookID)
     }
 
-    private static func evictLeastRecentlyUsed(in state: inout State) {
+    @discardableResult
+    private static func evictLeastRecentlyUsed(in state: inout State) -> [UUID] {
+        var removed: [UUID] = []
         while state.recency.count > cachedListLimit {
-            state.entries.removeValue(forKey: state.recency.removeFirst())
+            let bookID = state.recency.removeFirst()
+            state.entries.removeValue(forKey: bookID)
+            state.runtimeProofs.removeValue(forKey: bookID)
+            removed.append(bookID)
         }
+        return removed
+    }
+
+    private func evictOwnerEntries() {
+        let removed = Self.evictLeastRecentlyUsed(in: &ownerState)
+        guard !removed.isEmpty else { return }
+        state.withLock { state in for bookID in removed { state.runtimeProofs.removeValue(forKey: bookID) } }
+    }
+
+    private static func invalidateRuntimeProofs(_ bookID: UUID, indices: [Int], in state: inout State) {
+        guard !indices.isEmpty else { return }
+        for index in indices { state.runtimeProofs[bookID]?.removeValue(forKey: index) }
+        if state.runtimeProofs[bookID]?.isEmpty == true { state.runtimeProofs.removeValue(forKey: bookID) }
+    }
+
+    /// Runs on the existing writer. Weak tickets keep sequential cache validation
+    /// from retaining a proof for every chapter in a large library.
+    private static func runtimeProof(bookID: UUID, index: Int, revision: Int, in state: inout State) throws -> RuntimeVariablesProof {
+        if let existing = state.runtimeProofs[bookID]?[index]?.value { return existing }
+        state.runtimeProofs = state.runtimeProofs.compactMapValues { entries in
+            let live = entries.filter { $0.value.value != nil }
+            return live.isEmpty ? nil : live
+        }
+        guard state.runtimeProofs.values.reduce(0, { $0 + $1.count }) < runtimeProofLimit else {
+            throw LegadoRuntimeError(code: "STATE_LIMIT", message: "Too many active chapter metadata proofs")
+        }
+        let proof = RuntimeVariablesProof(revision: revision)
+        state.runtimeProofs[bookID, default: [:]][index] = WeakRuntimeVariablesProof(proof)
+        return proof
     }
 }

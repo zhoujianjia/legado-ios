@@ -22,7 +22,7 @@ def load(name, filename):
 native = load("reader_recovery_native_helpers", "jimage-native-check.py")
 SUITES = ("ReaderViewModelChapterStateTests", "BookshelfRefreshCoordinatorTests",
           "OfflineDownloadManagerTests", "OfflineDownloadSourceConcurrencyTests",
-          "ChangeSourceCacheCoverageTests", "ReaderSourceChangeCacheTests")
+          "ChangeSourceCacheCoverageTests", "ReaderSourceChangeCacheTests", "LegadoChapterOwnerPersistenceTests")
 NATIVE_METHOD = "LegadoNativeOriginalReaderTests/testNativeOriginalAuditedDownloadsOverlapHeldHTTPAndPreserveOwners()"
 UI_METHOD = "ReaderChapterFailureExitUITests/testSecondChapterFailureCanExitWithChromeHidden()"
 INPUTS = (".github/workflows/legado-reader.yml", "scripts/reader-experience/jimage-native-check.sh",
@@ -32,7 +32,8 @@ INPUTS = (".github/workflows/legado-reader.yml", "scripts/reader-experience/jima
           "Tests/iOS-UI/ReaderBookSourceSmokeUITests.swift",
           "Modules/Services/Online/ChangeSourceCache.swift", "Modules/Features/Reader/ReaderViewModel.swift",
           "Modules/Core/BookSource/BookSourceFetcher+OriginalPreview.swift",
-          "Targets/Yuedu/SharedApp/AppDependencies.swift", "Modules/Services/Online/LegadoPersistentStateHost.swift")
+          "Targets/Yuedu/SharedApp/AppDependencies.swift", "Modules/Services/Online/LegadoPersistentStateHost.swift",
+          "scripts/reader-experience/reader-position-barrier.py", "Modules/Services/LibraryStore/BookChapterStore.swift")
 
 
 def require(value, message):

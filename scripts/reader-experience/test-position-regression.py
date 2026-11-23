@@ -41,7 +41,11 @@ class PositionRegressionGateTests(unittest.TestCase):
         self.assertEqual(selected, list(check.SUITES))
         self.assertIn("LEGADO_RUNTIME_SOURCE_ONLY=1", shell)
         workflow = (check.REPO / ".github/workflows/legado-reader.yml").read_text(encoding="utf-8")
-        self.assertRegex(workflow, r"reader:\s+needs: position-regression")
+        reader = workflow.split("\n  reader:\n", 1)[1]
+        self.assertNotIn("needs:", reader.split("    steps:", 1)[0])
+        self.assertLess(reader.index("reader-position-barrier.py --work"),
+                        reader.index("bash scripts/reader-experience/build.sh"))
+        self.assertIn("hashFiles('.build/reader-position-barrier/result.json') != ''", reader)
         self.assertIn("run: bash scripts/reader-experience/position-regression.sh", workflow)
 
     def test_exact_methods_and_parameter_leaves_pass(self):
