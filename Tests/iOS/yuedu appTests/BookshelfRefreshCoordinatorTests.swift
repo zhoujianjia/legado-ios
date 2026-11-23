@@ -176,7 +176,7 @@ private actor RefreshProbe {
         } else {
             let invocation = UUID()
             failing = try await withTaskCancellationHandler {
-                try await withCheckedThrowingContinuation { continuation in
+                try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Bool, Error>) in
                     if Task.isCancelled { continuation.resume(throwing: CancellationError()) }
                     else { completions[invocation] = (request.bookID, continuation) }
                 }
@@ -191,7 +191,7 @@ private actor RefreshProbe {
         if starts.count >= count { return }
         let id = UUID()
         try await withTaskCancellationHandler {
-            try await withCheckedThrowingContinuation { continuation in
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
                 if Task.isCancelled { continuation.resume(throwing: CancellationError()) }
                 else { startWaiters[id] = (count, continuation) }
             }
@@ -229,7 +229,7 @@ private actor RefreshProbe {
     func wait() async throws {
         if fired { return }
         try await withTaskCancellationHandler {
-            try await withCheckedThrowingContinuation { continuation in
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
                 if Task.isCancelled { continuation.resume(throwing: CancellationError()) }
                 else { waiter = continuation }
             }

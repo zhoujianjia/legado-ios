@@ -173,7 +173,7 @@ private actor CandidateSearchProbe {
         guard sourceID == heldSourceID, !isOpen else { return }
         let id = UUID()
         try await withTaskCancellationHandler {
-            try await withCheckedThrowingContinuation { continuation in
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
                 if Task.isCancelled { continuation.resume(throwing: CancellationError()) }
                 else { queries[id] = continuation }
             }
@@ -184,7 +184,7 @@ private actor CandidateSearchProbe {
         if started.count >= count { return }
         let id = UUID()
         try await withTaskCancellationHandler {
-            try await withCheckedThrowingContinuation { continuation in
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
                 if Task.isCancelled { continuation.resume(throwing: CancellationError()) }
                 else { observers[id] = (count, continuation) }
             }
