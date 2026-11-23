@@ -27,7 +27,7 @@ struct ChangeSourceCacheCoverageTests {
         #expect(cache.entry(for: bookId)?.completedAttemptSourceIDs == nil)
     }
 
-    @Test("full attempt coverage keeps failures separate and invalidates for source set or current origin changes")
+    @Test("full attempt coverage keeps failures separate, binds the source set and filters the current origin only for display")
     func completeAttemptCoverageIsBoundToSourceSet() async throws {
         let directory = temporaryDirectory()
         defer { remove(directory) }
@@ -46,8 +46,10 @@ struct ChangeSourceCacheCoverageTests {
             excludingOriginKey: "current", allowCached: true)
         #expect(changed.origins == nil)
         let switched = await cache.readForSearch(for: bookId, days: 5, sourceIDs: [sourceId, failedId],
-            excludingOriginKey: "different-current", allowCached: true)
-        #expect(switched.origins == nil)
+            excludingOriginKey: ChangeSourceCache.originKey(sourceId: sourceId, bookUrl: origin.bookUrl), allowCached: true)
+        #expect(switched.canEndSearch)
+        #expect(switched.origins?.isEmpty == true)
+        #expect(switched.allOrigins.map(\.sourceId) == [sourceId])
         let disabled = await cache.readForSearch(for: bookId, days: 0, sourceIDs: [sourceId, failedId],
             excludingOriginKey: "current", allowCached: true)
         #expect(disabled.origins == nil)
@@ -63,7 +65,7 @@ struct ChangeSourceCacheCoverageTests {
         #expect(cleared.origins?.count == 1)
     }
 
-    @Test("a complete cache still expires using the configured day window")
+    @Test("an old complete cache expires outside the reader's one-day window")
     func completeEntryExpires() async throws {
         let directory = temporaryDirectory()
         defer { remove(directory) }
@@ -92,7 +94,7 @@ struct ChangeSourceCacheCoverageTests {
         let key = ChangeSourceCache.originKey(sourceId: sourceId, bookUrl: origin.bookUrl)
         let coverage = BookOriginSearchCoverage(sourceCount: 2, completedAllAttempts: true,
             attemptedSourceCount: 2, resultSourceCount: 1, failedSourceCount: 1)
-        let incompatibleVersions: [Int?] = [nil, 0, 1, ChangeSourceCache.searchCompatibilityVersion + 1]
+        let incompatibleVersions: [Int?] = [nil, 0, 1, 2, ChangeSourceCache.searchCompatibilityVersion + 1]
         for version in incompatibleVersions {
             let entry = ChangeSourceCache.Entry(origins: [origin], failedKeys: [key], timestamp: Date(),
                 completedAttemptSourceIDs: [sourceId, failedId], excludedOriginKey: "current", scanCoverage: coverage,
@@ -132,10 +134,12 @@ struct ChangeSourceCacheCoverageTests {
             await cache.storeCompleted(origins: [oldOrigin], for: bookId, sourceIDs: [oldSourceId],
                 excludingOriginKey: "current", coverage: coverage)
         }
-        await enqueued.wait()
+        try await withDeadline { try await enqueued.wait() }
         oldStore.cancel()
         releaseQueue.signal()
-        await oldStore.value
+        try await withDeadline {
+            await withTaskCancellationHandler { await oldStore.value } onCancel: { oldStore.cancel() }
+        }
         #expect(cache.entry(for: bookId) == nil)
         await cache.storeCompleted(origins: [makeOrigin(newSourceId)], for: bookId, sourceIDs: [newSourceId],
             excludingOriginKey: "current", coverage: coverage)
@@ -153,14 +157,16 @@ struct ChangeSourceCacheCoverageTests {
                 context: ChangeSourceCache.SearchContext(digest: "owned-cancelled-partial"),
                 acceptedAttempts: [oldSourceId: .results], timestamp: Date())
         }
-        await partialEnqueued.wait()
+        try await withDeadline { try await partialEnqueued.wait() }
         partial.cancel()
         partialRelease.signal()
-        await partial.value
+        try await withDeadline {
+            await withTaskCancellationHandler { await partial.value } onCancel: { partial.cancel() }
+        }
         #expect(partialCache.entry(for: bookId)?.completedAttemptSourceIDs == [newSourceId])
     }
 
-    @Test("partial scans display unchanged origins and real terminal progress for at most five minutes")
+    @Test("partial scans survive reopening from disk for one day without sliding their timestamp")
     func partialSnapshotPreservesProgressAndExpiresWithoutSlidingTime() async throws {
         let directory = temporaryDirectory()
         defer { remove(directory) }
@@ -175,12 +181,16 @@ struct ChangeSourceCacheCoverageTests {
         let sourceIDs = Set(ids), timestamp = Date(timeIntervalSince1970: 1_800_000_000)
         await cache.storePartial(origins: [origin], for: bookId, sourceIDs: sourceIDs,
             excludingOriginKey: "current", context: context, acceptedAttempts: attempts, timestamp: timestamp)
-        let recent = await cache.readForSearch(for: bookId, days: 5, sourceIDs: sourceIDs,
-            excludingOriginKey: "current", allowCached: true, context: context, now: timestamp.addingTimeInterval(299))
+        // A new instance exercises the persisted path, as when the reader is
+        // closed and reopened hours later rather than immediately.
+        let reopened = ChangeSourceCache(directory: directory)
+        let recent = await reopened.readForSearch(for: bookId, days: 1, sourceIDs: sourceIDs,
+            excludingOriginKey: "current", allowCached: true, context: context, now: timestamp.addingTimeInterval(86_399))
         #expect(recent.origins == nil)
         #expect(!recent.canEndSearch)
         #expect(recent.displayOrigins.map(\.bookUrl) == [origin.bookUrl])
         #expect(recent.displayOrigins.first?.runtimeVariables == origin.runtimeVariables)
+        #expect(recent.allOrigins.first?.runtimeVariables == origin.runtimeVariables)
         #expect(recent.acceptedAttempts == attempts)
         #expect(recent.timestamp == timestamp)
         #expect(cache.entry(for: bookId)?.completedAttemptSourceIDs == nil)
@@ -193,7 +203,8 @@ struct ChangeSourceCacheCoverageTests {
         await cache.storePartial(origins: recent.displayOrigins, for: bookId, sourceIDs: sourceIDs,
             excludingOriginKey: "current", context: context, acceptedAttempts: recent.acceptedAttempts,
             timestamp: try #require(recent.timestamp))
-        for (days, allowed, now) in [(5, true, timestamp.addingTimeInterval(300)),
+        for (days, allowed, now) in [(1, true, timestamp.addingTimeInterval(86_400)),
+                                     (5, true, timestamp.addingTimeInterval(86_400)),
                                      (0, true, timestamp.addingTimeInterval(1)),
                                      (5, false, timestamp.addingTimeInterval(1)),
                                      (5, true, timestamp.addingTimeInterval(-1))] {
@@ -204,6 +215,79 @@ struct ChangeSourceCacheCoverageTests {
             #expect(!rejected.canEndSearch)
         }
         #expect(cache.entry(for: bookId)?.timestamp == timestamp)
+    }
+
+    @Test("completed reader results keep a one-day window across instances and never cross book or configuration")
+    func completedSnapshotUsesOneDayWindowWithoutSlidingTime() async throws {
+        let directory = temporaryDirectory()
+        defer { remove(directory) }
+        let cache = ChangeSourceCache(directory: directory)
+        let bookId = UUID(), sourceId = UUID()
+        let origin = makeOrigin(sourceId)
+        let context = ChangeSourceCache.SearchContext(digest: "owned-one-day-complete")
+        let sourceIDs: Set<UUID> = [sourceId]
+        let attempts: [UUID: BookOriginSearchAttempt.Outcome] = [sourceId: .results]
+        await cache.storeCompleted(origins: [origin], for: bookId, sourceIDs: sourceIDs,
+            excludingOriginKey: "current", coverage: ChangeSourceCache.coverage(
+                sourceIDs: sourceIDs, attempts: attempts, completed: true),
+            context: context, acceptedAttempts: attempts)
+        let timestamp = try #require(cache.entry(for: bookId)?.timestamp)
+        let reopened = ChangeSourceCache(directory: directory)
+        for days in [1, 5] {
+            let hit = await reopened.readForSearch(for: bookId, days: days, sourceIDs: sourceIDs,
+                excludingOriginKey: "current", allowCached: true, context: context,
+                now: timestamp.addingTimeInterval(86_399))
+            #expect(hit.canEndSearch)
+            #expect(hit.origins?.map(\.bookUrl) == [origin.bookUrl])
+            #expect(hit.acceptedAttempts == attempts)
+            #expect(hit.timestamp == timestamp)
+            let expired = await reopened.readForSearch(for: bookId, days: days, sourceIDs: sourceIDs,
+                excludingOriginKey: "current", allowCached: true, context: context,
+                now: timestamp.addingTimeInterval(86_400))
+            #expect(!expired.canEndSearch)
+            #expect(expired.displayOrigins.isEmpty)
+            #expect(expired.acceptedAttempts.isEmpty)
+        }
+        let otherBook = await reopened.readForSearch(for: UUID(), days: 1, sourceIDs: sourceIDs,
+            excludingOriginKey: "current", allowCached: true, context: context, now: timestamp)
+        #expect(!otherBook.canEndSearch)
+        #expect(otherBook.displayOrigins.isEmpty)
+        let changed = await reopened.readForSearch(for: bookId, days: 1, sourceIDs: sourceIDs,
+            excludingOriginKey: "current", allowCached: true,
+            context: ChangeSourceCache.SearchContext(digest: "owned-other-title-author-or-rules"), now: timestamp)
+        #expect(!changed.canEndSearch)
+        #expect(changed.displayOrigins.isEmpty)
+        #expect(changed.acceptedAttempts.isEmpty)
+        #expect(reopened.entry(for: bookId)?.timestamp == timestamp)
+    }
+
+    @Test("a fully searched empty list is cached but manual refresh and disabled caching still bypass it")
+    func completedEmptySnapshotIsReusedUnlessExplicitlyBypassed() async throws {
+        let directory = temporaryDirectory()
+        defer { remove(directory) }
+        let cache = ChangeSourceCache(directory: directory)
+        let bookId = UUID(), sourceId = UUID()
+        let context = ChangeSourceCache.SearchContext(digest: "owned-empty-complete")
+        let sourceIDs: Set<UUID> = [sourceId]
+        let attempts: [UUID: BookOriginSearchAttempt.Outcome] = [sourceId: .empty]
+        await cache.storeCompleted(origins: [], for: bookId, sourceIDs: sourceIDs,
+            excludingOriginKey: "current", coverage: ChangeSourceCache.coverage(
+                sourceIDs: sourceIDs, attempts: attempts, completed: true),
+            context: context, acceptedAttempts: attempts)
+        let timestamp = try #require(cache.entry(for: bookId)?.timestamp)
+        let reopened = ChangeSourceCache(directory: directory)
+        let cached = await reopened.readForSearch(for: bookId, days: 1, sourceIDs: sourceIDs,
+            excludingOriginKey: "current", allowCached: true, context: context, now: timestamp)
+        #expect(cached.canEndSearch)
+        #expect(cached.origins?.isEmpty == true)
+        #expect(cached.acceptedAttempts == attempts)
+        for (days, allowed) in [(1, false), (0, true)] {
+            let bypass = await reopened.readForSearch(for: bookId, days: days, sourceIDs: sourceIDs,
+                excludingOriginKey: "current", allowCached: allowed, context: context, now: timestamp)
+            #expect(!bypass.canEndSearch)
+            #expect(bypass.origins == nil)
+            #expect(bypass.acceptedAttempts.isEmpty)
+        }
     }
 
     @Test("source-change identity binds rules, order, UUID, query and search scope but ignores operational clocks")
@@ -226,7 +310,7 @@ struct ChangeSourceCacheCoverageTests {
         #expect(try await context([second, first]) != original)
         #expect(try await context([first, second], title: "other") != original)
         #expect(try await context([first, second], author: "other") != original)
-        #expect(try await context([first, second], excluded: "other") != original)
+        #expect(try await context([first, second], excluded: "other") == original)
         let state = BookSourceRuntimeStateStore.shared
         defer { state.setSourceVariableJSON(nil, for: first.bookSourceUrl) }
         state.setSourceVariableJSON("{\"更多设置\":{\"搜索模式\":\"owned-new-scope\"}}", for: first.bookSourceUrl)
@@ -295,6 +379,20 @@ struct ChangeSourceCacheCoverageTests {
         }.value
     }
 
+    private func withDeadline(_ operation: @escaping @Sendable () async throws -> Void) async throws {
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask { try await operation() }
+            group.addTask {
+                // Failure deadline only; successful ordering uses queue ACKs.
+                try await Task.sleep(for: .seconds(5))
+                throw CacheTestDeadline.exceeded
+            }
+            defer { group.cancelAll() }
+            _ = try await group.next()
+        }
+    }
+    private enum CacheTestDeadline: Error { case exceeded }
+
     private func temporaryDirectory() -> URL {
         FileManager.default.temporaryDirectory.appendingPathComponent("ChangeSourceCoverage-\(UUID())", isDirectory: true)
     }
@@ -310,13 +408,22 @@ struct ChangeSourceCacheCoverageTests {
 
 private actor CacheStoreEnqueuedSignal {
     private var signalled = false
-    private var waiter: CheckedContinuation<Void, Never>?
+    private var waiters: [UUID: CheckedContinuation<Void, Error>] = [:]
     func signal() {
         signalled = true
-        waiter?.resume(); waiter = nil
+        let ready = Array(waiters.values)
+        waiters.removeAll()
+        ready.forEach { $0.resume() }
     }
-    func wait() async {
+    func wait() async throws {
         if signalled { return }
-        await withCheckedContinuation { waiter = $0 }
+        let id = UUID()
+        try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                if Task.isCancelled { continuation.resume(throwing: CancellationError()) }
+                else { waiters[id] = continuation }
+            }
+        } onCancel: { Task { await self.cancel(id) } }
     }
+    private func cancel(_ id: UUID) { waiters.removeValue(forKey: id)?.resume(throwing: CancellationError()) }
 }

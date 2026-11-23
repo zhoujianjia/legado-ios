@@ -375,7 +375,7 @@ final class ReaderViewModel: ObservableObject {
                 sources: prepared.sources,
                 concurrency: concurrency,
                 fetcher: fetcher,
-                excludingOriginKey: currentOriginKey,
+                excludingOriginKey: "",
                 bypassSearchCache: true,
                 onAttemptFinished: { [weak self] attempt in
                     guard let self, !Task.isCancelled, self.changeSourceGeneration == generation else { return }
@@ -962,7 +962,9 @@ private actor ReaderSourceChangeWork {
     }
 
     private var order: BookSourceSearchOrder?
-    private var origins: [BookOrigin] = []
+    // Keep the active origin too: switching A to B only changes the display,
+    // never the persisted candidate list or the accepted source coverage.
+    private var allCandidates: [BookOrigin] = []
     private var seenOriginKeys: Set<String> = []
     private var acceptedAttempts: [UUID: BookOriginSearchAttempt.Outcome] = [:]
     private var context: ChangeSourceCache.SearchContext?
@@ -998,18 +1000,18 @@ private actor ReaderSourceChangeWork {
         let cached = await ChangeSourceCache.shared.readForSearch(for: bookId, days: cacheDays,
             sourceIDs: order.sourceIDs, excludingOriginKey: excludingOriginKey,
             allowCached: !forceRefresh && context != nil, context: context)
-        origins = order.ordered(cached.displayOrigins)
-        seenOriginKeys = Set(origins.map { ChangeSourceCache.originKey(sourceId: $0.sourceId, bookUrl: $0.bookUrl) })
+        allCandidates = order.ordered(cached.allOrigins)
+        seenOriginKeys = Set(allCandidates.map { ChangeSourceCache.originKey(sourceId: $0.sourceId, bookUrl: $0.bookUrl) })
         acceptedAttempts = cached.acceptedAttempts
         timestamp = cached.timestamp ?? Date()
         completed = cached.canEndSearch
         return Prepared(sources: sources.filter { acceptedAttempts[$0.id] == nil },
-            displayOrigins: origins, canEndSearch: cached.canEndSearch, failedKeys: cached.failedKeys)
+            displayOrigins: displayOrigins(), canEndSearch: cached.canEndSearch, failedKeys: cached.failedKeys)
     }
 
     func accept(_ attempt: BookOriginSearchAttempt) -> [BookOrigin]? {
         let started = SourcePerfTrace.now
-        defer { SourcePerfTrace.record("changeSource.order", "origins=\(origins.count) batch=\(attempt.origins.count) main=\(Thread.isMainThread)", since: started) }
+        defer { SourcePerfTrace.record("changeSource.order", "origins=\(allCandidates.count) batch=\(attempt.origins.count) main=\(Thread.isMainThread)", since: started) }
         guard !Task.isCancelled, let order, order.includes(attempt.sourceID), acceptedAttempts[attempt.sourceID] == nil,
               attempt.origins.allSatisfy({ $0.sourceId == attempt.sourceID }) else { return nil }
         // No await between adding this source's results and its finished fact.
@@ -1017,15 +1019,15 @@ private actor ReaderSourceChangeWork {
         let added = attempt.origins.filter {
             seenOriginKeys.insert(ChangeSourceCache.originKey(sourceId: $0.sourceId, bookUrl: $0.bookUrl)).inserted
         }
-        origins.append(contentsOf: added)
+        allCandidates.append(contentsOf: added)
         acceptedAttempts[attempt.sourceID] = attempt.outcome
         // Only actual new search progress advances freshness. Merely reopening
-        // or closing the same partial snapshot never extends its five minutes.
+        // or closing the same partial snapshot never extends its one-day window.
         timestamp = Date()
         hasNewAttempts = true
         guard !added.isEmpty else { return nil }
-        origins = order.ordered(origins)
-        return origins
+        allCandidates = order.ordered(allCandidates)
+        return displayOrigins()
     }
 
     func storeCompleted(coverage: BookOriginSearchCoverage) async {
@@ -1033,24 +1035,30 @@ private actor ReaderSourceChangeWork {
               Set(acceptedAttempts.keys) == order.sourceIDs else { return }
         guard cacheDays > 0, let context else { completed = true; return }
         let combined = ChangeSourceCache.coverage(sourceIDs: order.sourceIDs, attempts: acceptedAttempts, completed: true)
-        await ChangeSourceCache.shared.storeCompleted(origins: origins, for: bookId,
-            sourceIDs: order.sourceIDs, excludingOriginKey: excludedOriginKey, coverage: combined,
+        await ChangeSourceCache.shared.storeCompleted(origins: allCandidates, for: bookId,
+            sourceIDs: order.sourceIDs, excludingOriginKey: "", coverage: combined,
             context: context, acceptedAttempts: acceptedAttempts)
         if !Task.isCancelled { completed = true }
     }
 
     func checkpoint() async {
         guard cacheDays > 0, !completed, hasNewAttempts, let order, let context, let bookId = bookID else { return }
-        await ChangeSourceCache.shared.storePartial(origins: origins, for: bookId,
-            sourceIDs: order.sourceIDs, excludingOriginKey: excludedOriginKey, context: context,
+        await ChangeSourceCache.shared.storePartial(origins: allCandidates, for: bookId,
+            sourceIDs: order.sourceIDs, excludingOriginKey: "", context: context,
             acceptedAttempts: acceptedAttempts, timestamp: timestamp)
     }
 
+    private func displayOrigins() -> [BookOrigin] {
+        allCandidates.filter {
+            ChangeSourceCache.originKey(sourceId: $0.sourceId, bookUrl: $0.bookUrl) != excludedOriginKey
+        }
+    }
+
     func warmJobs(sources: [BookSource], failedKeys: Set<String>, cached: [String: TOCPackage]) -> [(String, BookOrigin, BookSource)] {
-        SourcePerfTrace.span("changeSource.toc.prepare", "sources=\(sources.count) origins=\(origins.count) main=\(Thread.isMainThread)") {
+        SourcePerfTrace.span("changeSource.toc.prepare", "sources=\(sources.count) origins=\(allCandidates.count) main=\(Thread.isMainThread)") {
             var byID: [UUID: BookSource] = [:]
             for source in sources where byID[source.id] == nil { byID[source.id] = source }
-            return origins.compactMap { origin in
+            return displayOrigins().compactMap { origin in
                 let key = ChangeSourceCache.originKey(sourceId: origin.sourceId, bookUrl: origin.bookUrl)
                 guard cached[key] == nil, !failedKeys.contains(key),
                       !failedKeys.contains(ChangeSourceCache.urlKey(origin.bookUrl)),

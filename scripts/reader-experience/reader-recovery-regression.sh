@@ -60,7 +60,9 @@ run_group unit \
   -only-testing:'yuedu appTests/ReaderViewModelChapterStateTests' \
   -only-testing:'yuedu appTests/BookshelfRefreshCoordinatorTests' \
   -only-testing:'yuedu appTests/OfflineDownloadManagerTests' \
-  -only-testing:'yuedu appTests/OfflineDownloadSourceConcurrencyTests'
+  -only-testing:'yuedu appTests/OfflineDownloadSourceConcurrencyTests' \
+  -only-testing:'yuedu appTests/ChangeSourceCacheCoverageTests' \
+  -only-testing:'yuedu appTests/ReaderSourceChangeCacheTests'
 run_group native-download \
   -only-testing:'yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalAuditedDownloadsOverlapHeldHTTPAndPreserveOwners'
 run_group failure-ui \

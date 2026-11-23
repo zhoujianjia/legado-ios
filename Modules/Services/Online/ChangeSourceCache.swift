@@ -2,17 +2,17 @@ import CryptoKit
 import Foundation
 
 /// Persists 換源 (in-book source switch) search results per book so reopening the
-/// sheet doesn't re-run a full cross-source search every time. Honors
-/// 網路設定 →「搜索結果快取天數」(`GlobalSettings.searchCacheDays`): `<= 0` disables
-/// the cache, otherwise results within that window are reused.
+/// sheet doesn't re-run a full cross-source search every time. Reader searches
+/// reuse complete and partial progress for at most one day. 網路設定 →
+///「搜索結果快取天數」(`GlobalSettings.searchCacheDays`) still disables reuse at `<= 0`.
 ///
 /// Also remembers which origins failed to switch (TOC fetch threw) so the list
 /// can flag them — failure flags survive a re-search of the same book.
 final class ChangeSourceCache: @unchecked Sendable {
     static let shared = ChangeSourceCache()
-    // Versions admission policy plus configuration-bound resumable progress,
-    // independently of application build numbers. Older records are rescanned.
-    static let searchCompatibilityVersion = 2
+    // Version 3 stores every candidate, including the currently active origin.
+    // Older snapshots filtered that origin before persistence and must rescan.
+    static let searchCompatibilityVersion = 3
 
     /// A digest of the actual ordered configuration, never a replacement for the
     /// original preview's own identity/revision checks. Built off the main actor.
@@ -20,7 +20,7 @@ final class ChangeSourceCache: @unchecked Sendable {
         let digest: String
 
         static func make(title: String, author: String, sources: [BookSource],
-            excludingOriginKey: String) throws -> SearchContext {
+            excludingOriginKey _: String = "") throws -> SearchContext {
             let started = SourcePerfTrace.now
             defer { SourcePerfTrace.record("changeSource.context", "sources=\(sources.count) main=\(Thread.isMainThread)", since: started) }
             struct SourceIdentity: Encodable {
@@ -31,7 +31,6 @@ final class ChangeSourceCache: @unchecked Sendable {
             struct Identity: Encodable {
                 let title: String
                 let author: String
-                let excludedOrigin: String
                 let sources: [SourceIdentity]
             }
             let encoder = JSONEncoder()
@@ -55,8 +54,10 @@ final class ChangeSourceCache: @unchecked Sendable {
                 identities.append(SourceIdentity(id: source.id,
                     configuration: Self.hash(try encoder.encode(stable)), searchScope: scope))
             }
+            // The current origin is a display filter. Switching sources does
+            // not change which book/configuration this candidate set belongs to.
             return SearchContext(digest: Self.hash(try encoder.encode(Identity(title: title, author: author,
-                excludedOrigin: excludingOriginKey, sources: identities))))
+                sources: identities))))
         }
 
         private static func hash(_ bytes: Data) -> String {
@@ -70,6 +71,8 @@ final class ChangeSourceCache: @unchecked Sendable {
         var timestamp: Date
         // Missing in older entries, which may contain an automatically paused scan.
         var completedAttemptSourceIDs: Set<UUID>? = nil
+        // Legacy diagnostic field; version 3 candidates are not scoped to this
+        // display-only exclusion. Reader writes use the empty value.
         var excludedOriginKey: String? = nil
         var scanCoverage: BookOriginSearchCoverage? = nil
         var searchCompatibilityVersion: Int? = nil
@@ -130,6 +133,9 @@ final class ChangeSourceCache: @unchecked Sendable {
         /// data is separate and can never take the complete early-return path.
         let origins: [BookOrigin]?
         let failedKeys: Set<String>
+        /// The persisted candidate set, including the currently active origin.
+        /// Work must retain it when resuming/checkpointing a filtered display.
+        let allOrigins: [BookOrigin]
         let displayOrigins: [BookOrigin]
         let acceptedAttempts: [UUID: BookOriginSearchAttempt.Outcome]
         let canEndSearch: Bool
@@ -146,26 +152,32 @@ final class ChangeSourceCache: @unchecked Sendable {
                 let entry = self.readEntry(for: bookId)
                 let identityMatches = allowCached && days > 0 && entry?.context == context
                     && entry?.searchCompatibilityVersion == Self.searchCompatibilityVersion
-                    && entry?.excludedOriginKey == excludingOriginKey
                 let attempts = entry?.acceptedAttempts ?? [:]
                 let progressValid = Set(attempts.keys).isSubset(of: sourceIDs)
                     && entry?.origins.allSatisfy({ attempts[$0.sourceId] == .results }) == true
                     && entry.map { Self.matchesCoverage($0.scanCoverage, sourceCount: sourceIDs.count, attempts: attempts) } == true
                 let observedNow = now ?? Date()
                 let age = entry.map { observedNow.timeIntervalSince($0.timestamp) }
-                let fresh = age.map { $0 >= 0 && $0 < TimeInterval(days) * 86_400 } == true
+                // A reader often closes before all sources finish. Keep those
+                // results for the same day as a full scan, then resume only
+                // sources without a recorded terminal attempt. Reopening alone
+                // never advances the original progress timestamp.
+                let maxAge = min(TimeInterval(days), 1) * 86_400
+                let fresh = age.map { $0 >= 0 && $0 < maxAge } == true
                 let complete = identityMatches && fresh && entry?.completedAttemptSourceIDs == sourceIDs
                     && entry?.scanCoverage?.completedAllAttempts == true
                     && entry?.scanCoverage?.sourceCount == sourceIDs.count
                     && entry?.scanCoverage?.attemptedSourceCount == sourceIDs.count
-                    && !(entry?.origins.isEmpty ?? true)
                     && (context == nil || (progressValid && Set(attempts.keys) == sourceIDs))
-                let partial = identityMatches && context != nil && progressValid && !attempts.isEmpty
+                let partial = identityMatches && fresh && context != nil && progressValid && !attempts.isEmpty
                     && entry?.scanCoverage?.completedAllAttempts == false
-                    && age.map { $0 >= 0 && $0 < min(TimeInterval(days) * 86_400, 300) } == true
                 let usable = complete || partial
-                continuation.resume(returning: SearchSnapshot(origins: complete ? entry?.origins : nil,
-                    failedKeys: Set(entry?.failedKeys ?? []), displayOrigins: usable ? entry?.origins ?? [] : [],
+                let allOrigins = usable ? entry?.origins ?? [] : []
+                let displayOrigins = allOrigins.filter {
+                    Self.originKey(sourceId: $0.sourceId, bookUrl: $0.bookUrl) != excludingOriginKey
+                }
+                continuation.resume(returning: SearchSnapshot(origins: complete ? displayOrigins : nil,
+                    failedKeys: Set(entry?.failedKeys ?? []), allOrigins: allOrigins, displayOrigins: displayOrigins,
                     acceptedAttempts: usable ? attempts : [:], canEndSearch: complete,
                     timestamp: usable ? entry?.timestamp : nil))
             }

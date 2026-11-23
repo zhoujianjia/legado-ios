@@ -21,14 +21,16 @@ def load(name, filename):
 
 native = load("reader_recovery_native_helpers", "jimage-native-check.py")
 SUITES = ("ReaderViewModelChapterStateTests", "BookshelfRefreshCoordinatorTests",
-          "OfflineDownloadManagerTests", "OfflineDownloadSourceConcurrencyTests")
+          "OfflineDownloadManagerTests", "OfflineDownloadSourceConcurrencyTests",
+          "ChangeSourceCacheCoverageTests", "ReaderSourceChangeCacheTests")
 NATIVE_METHOD = "LegadoNativeOriginalReaderTests/testNativeOriginalAuditedDownloadsOverlapHeldHTTPAndPreserveOwners()"
 UI_METHOD = "ReaderChapterFailureExitUITests/testSecondChapterFailureCanExitWithChromeHidden()"
 INPUTS = (".github/workflows/legado-reader.yml", "scripts/reader-experience/jimage-native-check.sh",
           "scripts/reader-experience/reader-recovery-regression.sh", "scripts/reader-experience/reader-recovery-regression.py",
           "scripts/reader-experience/run-reader-failure-smoke.py", "scripts/reader-experience/run-online-smoke.py",
           "scripts/reader-experience/online-source-fixture.py", "Tests/iOS/LegadoNativeOriginalReaderTests.swift",
-          "Tests/iOS-UI/ReaderBookSourceSmokeUITests.swift")
+          "Tests/iOS-UI/ReaderBookSourceSmokeUITests.swift",
+          "Modules/Services/Online/ChangeSourceCache.swift", "Modules/Features/Reader/ReaderViewModel.swift")
 
 
 def require(value, message):

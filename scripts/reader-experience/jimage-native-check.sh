@@ -62,6 +62,8 @@ for selector in \
   'yuedu appTests/BookshelfRefreshCoordinatorTests' \
   'yuedu appTests/OfflineDownloadManagerTests' \
   'yuedu appTests/OfflineDownloadSourceConcurrencyTests' \
+  'yuedu appTests/ChangeSourceCacheCoverageTests' \
+  'yuedu appTests/ReaderSourceChangeCacheTests' \
   'yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalAuditedDownloadsOverlapHeldHTTPAndPreserveOwners' \
   'yuedu appUITests/ReaderChapterFailureExitUITests/testSecondChapterFailureCanExitWithChromeHidden'; do
   BUILD_SELECTION+=("-only-testing:$selector")
