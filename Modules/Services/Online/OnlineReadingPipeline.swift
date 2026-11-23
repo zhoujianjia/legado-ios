@@ -458,38 +458,31 @@ actor ChapterFetchManager {
         // If an in-flight request already exists for this chapter, share its result.
         // Do not refresh the generation token here, or the in-flight task's result
         // would be treated as a stale generation.
-        if let existing = tasks[taskKey] {
-            if let existingPriority = priorities[taskKey],
-                priority == .jump,
-                existingPriority.rawValue < priority.rawValue
-            {
-                existing.cancel()
-                tasks.removeValue(forKey: taskKey)
-                priorities.removeValue(forKey: taskKey)
-                generationTokens.removeValue(forKey: taskKey)
-                revokeOriginalGeneration(taskKey)
-                states[taskKey] = .missing
-            } else {
-                do {
-                    return try await existing.value
-                } catch let error where Self.isCancellation(error) {
-                    // Someone else's task was torn down. This caller was not cancelled and
-                    // learned nothing about the chapter, yet inheriting that error made it
-                    // report a load failure for a fetch it never owned — the spurious
-                    // 章節載入失敗 that a refresh always cleared. Run our own request instead.
-                    guard !Task.isCancelled else { throw CancellationError() }
-                    AppLogger.parse("⟐ chapterFetch shared task cancelled, restarting", context: [
-                        "index": chapterIndex,
-                    ])
-                    ChapterRetryLog.record(
-                        .inheritedCancellation, chapter: chapterIndex, bookId: book.id.uuidString
-                    )
-                    if tasks[taskKey] == existing {
-                        tasks.removeValue(forKey: taskKey)
-                        priorities.removeValue(forKey: taskKey)
-                        generationTokens.removeValue(forKey: taskKey)
-                        revokeOriginalGeneration(taskKey)
-                    }
+        while let existing = tasks[taskKey] {
+            // Awaiting the same Swift task donates the caller's priority without
+            // restarting HTTP. Explicit refresh calls cancelFetch first instead.
+            if let existingPriority = priorities[taskKey], existingPriority.rawValue < priority.rawValue {
+                priorities[taskKey] = priority
+            }
+            do {
+                return try await existing.value
+            } catch let error where Self.isCancellation(error) {
+                // Someone else's task was torn down. This caller was not cancelled and
+                // learned nothing about the chapter, yet inheriting that error made it
+                // report a load failure for a fetch it never owned — the spurious
+                // 章節載入失敗 that a refresh always cleared. Run our own request instead.
+                guard !Task.isCancelled else { throw CancellationError() }
+                AppLogger.parse("⟐ chapterFetch shared task cancelled, restarting", context: [
+                    "index": chapterIndex,
+                ])
+                ChapterRetryLog.record(
+                    .inheritedCancellation, chapter: chapterIndex, bookId: book.id.uuidString
+                )
+                if tasks[taskKey] == existing {
+                    tasks.removeValue(forKey: taskKey)
+                    priorities.removeValue(forKey: taskKey)
+                    generationTokens.removeValue(forKey: taskKey)
+                    revokeOriginalGeneration(taskKey)
                 }
             }
         }

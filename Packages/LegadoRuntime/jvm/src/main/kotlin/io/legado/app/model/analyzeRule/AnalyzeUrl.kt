@@ -82,6 +82,10 @@ class AnalyzeUrl(
 
     init {
         environment.ensureOpen()
+        // Validate the original inputs before header initialization or any of the
+        // retained URL-script/template/option interpreters. Every pagination URL
+        // creates its own AnalyzeUrl, so the policy applies to later pages too.
+        if (environment.platform.staticHttpUrlsOnly) requireStaticHttpUrlInputs()
         val matcher = paramPattern.matcher(baseUrl)
         if (matcher.find()) baseUrl = baseUrl.substring(0, matcher.start())
         (headerMapF ?: runScriptWithContext(context) {
@@ -97,6 +101,39 @@ class AnalyzeUrl(
         analyzeJs()
         replaceKeyPageJs()
         analyzeUrl()
+    }
+
+    private fun requireStaticHttpUrlInputs() {
+        fun reject(): Nothing = unsupportedRule("Static HTTP-only session requires literal HTTP(S) URLs")
+        fun reference(raw: String): java.net.URI {
+            // Conservative RFC 3986 ASCII subset. '@' (userinfo or a retained JS
+            // marker), braces, angle brackets, quotes, backslashes and whitespace
+            // are outside this grammar. Percent escapes remain URL data; they are
+            // not decoded and fed back into the retained rule interpreters.
+            if (raw.isEmpty() || raw.any { !(it in 'a'..'z' || it in 'A'..'Z' || it in '0'..'9'
+                    || it in "-._~:/?#[]!$&'()*+,;=%") }) reject()
+            var offset = 0
+            while (offset < raw.length) {
+                if (raw[offset] == '%') {
+                    if (offset + 2 >= raw.length) reject()
+                    val high = raw[offset + 1].digitToIntOrNull(16) ?: reject()
+                    val low = raw[offset + 2].digitToIntOrNull(16) ?: reject()
+                    val octet = high * 16 + low
+                    if (octet < 0x20 || octet == 0x7f) reject()
+                    offset += 3
+                } else offset++
+            }
+            return try { java.net.URI(raw) } catch (_: java.net.URISyntaxException) { reject() }
+        }
+        fun requireHttp(uri: java.net.URI) {
+            if (!uri.isAbsolute || uri.isOpaque || uri.scheme.lowercase() !in setOf("http", "https")
+                || uri.host.isNullOrEmpty() || uri.rawUserInfo != null
+                || (uri.port != -1 && uri.port !in 1..65535)) reject()
+        }
+        val base = baseUrl.takeIf { it.isNotEmpty() }?.let { reference(it).also(::requireHttp) }
+        val target = reference(mUrl)
+        val resolved = if (target.isAbsolute) target else base?.resolve(target) ?: reject()
+        requireHttp(resolved)
     }
 
     private fun isLoginHeaderSite(url: String): Boolean {

@@ -358,8 +358,9 @@ protocol LegadoOriginalPreviewExecuting: Sendable {
 }
 
 struct NativeLegadoOriginalPreviewExecutor: LegadoOriginalPreviewExecuting {
-    static func embeddingOptions(owner: String) -> LegadoSessionOptions {
-        .init(httpTransport: .jvmOkHttp, stateOwner: owner, sourceMode: .originalTraditional, cookieAccess: .appOwnerText)
+    static func embeddingOptions(owner: String, staticHttpUrlsOnly: Bool = false) -> LegadoSessionOptions {
+        .init(httpTransport: .jvmOkHttp, stateOwner: owner, sourceMode: .originalTraditional,
+            cookieAccess: .appOwnerText, staticHttpUrlsOnly: staticHttpUrlsOnly)
     }
     func execute(sourceJSON: String, sourceURL: String, sourceRevision: String,
                  grant: OriginalRuntimePreviewGrant?, operation: LegadoOriginalPreviewOperation,

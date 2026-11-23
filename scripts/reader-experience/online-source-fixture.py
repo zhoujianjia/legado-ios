@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Loopback HTTP fixture for the existing JSC/native reader, never a JVM gate."""
+"""Owned reader UI fixtures; HTTP trace evidence alone never attests a JVM."""
 from __future__ import annotations
 
 import argparse
@@ -21,6 +21,8 @@ import uuid
 
 DEFAULT_PORT = 18769
 FIXTURE = "reader-book-source-smoke-v1"
+FAILURE_SCENARIO = "chapter-failure"
+FAILURE_FIXTURE = "reader-chapter-failure-smoke-v1"
 QUERY = "OnlineSmoke"
 DETAIL_MARKER = "ONLINE_DETAIL_HTTP_RESPONSE"
 CHAPTERS = ("Chapter 1 Opening", "Chapter 2 Crossing")
@@ -36,16 +38,21 @@ def digest(value):
     return hashlib.sha256(value).hexdigest()
 
 
-def metadata(origin, run_id):
-    base = origin + "/fixture/" + run_id
-    return {"schemaVersion": 1, "fixture": FIXTURE, "runId": run_id, "origin": origin,
+def metadata(origin, run_id, scenario="success"):
+    if scenario not in ("success", FAILURE_SCENARIO):
+        raise ValueError("Unknown reader fixture scenario")
+    base = origin + ("/failure-fixture/" if scenario == FAILURE_SCENARIO else "/fixture/") + run_id
+    result = {"schemaVersion": 1, "fixture": FIXTURE, "runId": run_id, "origin": origin,
             "baseURL": base, "sourceURL": base + "/sources.json",
             "sourceName": "Online Smoke Source " + run_id,
             "bookTitle": QUERY + " Book " + run_id, "query": QUERY}
+    if scenario == FAILURE_SCENARIO:
+        result.update(fixture=FAILURE_FIXTURE, scenario=scenario)
+    return result
 
 
-def responses(origin, run_id):
-    info = metadata(origin, run_id)
+def responses(origin, run_id, scenario="success"):
+    info = metadata(origin, run_id, scenario)
     base, title = info["baseURL"], info["bookTitle"]
     # The expected visible prefix is constructed by JSC. It never appears in a
     # source/HTML response, so serving a pre-transformed body cannot pass the UI.
@@ -77,6 +84,8 @@ def responses(origin, run_id):
                              for j in range(18))
         bodies[f"chapter{i}.html"] = ("text/html; charset=utf-8",
                                       f'<h1>{CHAPTERS[i]}</h1><div id="content">{paragraphs}</div>'.encode("ascii"))
+    if scenario == FAILURE_SCENARIO:
+        bodies["chapter1.html"] = ("text/plain; charset=utf-8", b"Owned second chapter HTTP 500")
     return {base.removeprefix(origin) + "/" + name: value for name, value in bodies.items()}
 
 
@@ -109,12 +118,17 @@ class FixtureServer(ThreadingHTTPServer):
         self.server_name = "localhost"
         self.server_port = self.server_address[1]
 
-    def __init__(self, port=DEFAULT_PORT):
+    def __init__(self, port=DEFAULT_PORT, scenario="success"):
         super().__init__(("127.0.0.1", port), Handler)
-        self.info = metadata(f"http://localhost:{self.server_port}", str(uuid.uuid4()))
-        self.routes = responses(self.info["origin"], self.info["runId"])
+        self.scenario = scenario
+        self.info = metadata(f"http://localhost:{self.server_port}", str(uuid.uuid4()), scenario)
+        self.routes = responses(self.info["origin"], self.info["runId"], scenario)
         self.records = []
         self.lock = threading.Lock()
+        self.response_completed = threading.Condition(self.lock)
+        self.failure_held = threading.Event()
+        self.failure_release = threading.Event()
+        self.failure_released_by_control = False
         self.started = time.monotonic_ns()
 
     def get_request(self):
@@ -124,7 +138,11 @@ class FixtureServer(ThreadingHTTPServer):
 
     def trace(self):
         with self.lock:
-            return dict(self.info, requests=json.loads(json.dumps(self.records)))
+            result = dict(self.info, requests=json.loads(json.dumps(self.records)))
+            if self.scenario == FAILURE_SCENARIO:
+                result["failureControl"] = {"firstRequestHeld": self.failure_held.is_set(),
+                                            "releasedByControl": self.failure_released_by_control}
+            return result
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -155,6 +173,35 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(200 if good else 409, "application/json; charset=utf-8",
                        encoded(server.trace() if good else {"error": "runId does not match this server"}))
             return
+        if self.command == "GET" and parsed.path in ("/failure-held", "/release-failure") and server.scenario == FAILURE_SCENARIO:
+            if query != {"runId": [server.info["runId"]]}:
+                self.reply(400, "application/json", encoded({"error": "Wrong failure fixture run"}))
+                return
+            # A real request-entry signal establishes prefetch ownership before
+            # UI selection; the release command never fabricates a chapter result.
+            ready = server.failure_held.wait(timeout=6)
+            if ready and parsed.path == "/release-failure":
+                with server.lock:
+                    server.failure_released_by_control = True
+                server.failure_release.set()
+            self.reply(200 if ready else 408, "application/json", encoded({"runId": server.info["runId"], "firstRequestHeld": ready}))
+            return
+        if self.command == "GET" and parsed.path == "/failure-observed" and server.scenario == FAILURE_SCENARIO:
+            wanted = query.get("count", [])
+            valid = (query.get("runId") == [server.info["runId"]] and wanted in (["1"], ["2"])
+                     and set(query) == {"runId", "count"})
+            if not valid:
+                self.reply(400, "application/json", encoded({"error": "Invalid failure observation"}))
+                return
+            def failures():
+                return sum(row["path"].endswith("/chapter1.html") and row["response"]["writeCompleted"]
+                           for row in server.records)
+            # Await the actual response write, never an arbitrary UI-settling delay.
+            with server.response_completed:
+                ready = server.response_completed.wait_for(lambda: failures() >= int(wanted[0]), timeout=6)
+                count = failures()
+            self.reply(200 if ready else 408, "application/json", encoded({"runId": server.info["runId"], "completedFailures": count}))
+            return
         body = b""
         try:
             length = int(self.headers.get("Content-Length", "0"))
@@ -174,7 +221,7 @@ class Handler(BaseHTTPRequestHandler):
                 status, content_type, answer = 400, "application/json; charset=utf-8", encoded({"error": "GET body must be empty"})
             else:
                 content_type, answer = server.routes[parsed.path]
-                status = 200
+                status = 500 if server.scenario == FAILURE_SCENARIO and parsed.path.endswith("/chapter1.html") else 200
         except (ValueError, TimeoutError, OSError) as failure:
             status, content_type, answer = 400, "application/json; charset=utf-8", encoded({"error": str(failure)})
         if self.command == "HEAD":
@@ -189,11 +236,21 @@ class Handler(BaseHTTPRequestHandler):
                                "bodySHA256": digest(answer), "bodyBytes": len(answer)}}
         with server.lock:
             record["sequence"] = len(server.records) + 1
+            held = (status == 500 and server.scenario == FAILURE_SCENARIO and parsed.path.endswith("/chapter1.html")
+                    and not server.failure_held.is_set())
+            if held:
+                record["heldForReaderSelection"] = True
+                server.failure_held.set()
             server.records.append(record)
+        if held and not server.failure_release.wait(timeout=45):
+            with server.lock:
+                record["response"]["writeError"] = "Held chapter was not explicitly released"
+            return
         try:
             self.reply(status, content_type, answer)
-            with server.lock:
+            with server.response_completed:
                 record["response"]["writeCompleted"] = True
+                server.response_completed.notify_all()
         except OSError as failure:
             with server.lock:
                 record["response"]["writeError"] = type(failure).__name__ + ": " + str(failure)
@@ -212,7 +269,7 @@ class Handler(BaseHTTPRequestHandler):
         sys.stderr.write("online-source-fixture: " + (format % args) + "\n")
 
 
-def verify_trace(trace, expected_run_id=None):
+def verify_trace(trace, expected_run_id=None, scenario="success"):
     """Reject incomplete/stale/altered HTTP evidence; known successful repeats are allowed."""
     def require(condition, message):
         if not condition:
@@ -226,10 +283,10 @@ def verify_trace(trace, expected_run_id=None):
     url = urlsplit(origin)
     require(url.scheme == "http" and url.hostname == "localhost" and url.port is not None
             and 1 <= url.port <= 65535 and origin == f"http://localhost:{url.port}", "Origin must be explicit loopback localhost")
-    info = metadata(origin, run_id)
+    info = metadata(origin, run_id, scenario)
     for key, value in info.items():
         require(trace.get(key) == value, "Trace metadata mismatch: " + key)
-    expected = responses(origin, run_id)
+    expected = responses(origin, run_id, scenario)
     records = trace.get("requests")
     require(isinstance(records, list) and records, "No business requests captured")
     counts = {path: 0 for path in expected}
@@ -251,7 +308,8 @@ def verify_trace(trace, expected_run_id=None):
         require(request.get("bodyBase64") == "" and request.get("bodySHA256") == digest(b"")
                 and type(request.get("bodyBytes")) is int and request["bodyBytes"] == 0, "Unexpected/missing request body evidence")
         response = request.get("response")
-        require(isinstance(response, dict) and response.get("status") == 200
+        expected_status = 500 if scenario == FAILURE_SCENARIO and path.endswith("/chapter1.html") else 200
+        require(isinstance(response, dict) and response.get("status") == expected_status
                 and response.get("writeCompleted") is True and "writeError" not in response, "Business response did not complete successfully")
         content_type, wanted = expected[path]
         try:
@@ -264,7 +322,15 @@ def verify_trace(trace, expected_run_id=None):
         require(b"JSC_ONLY_" not in actual, "HTTP fixture must not supply the JSC-only visible marker")
         counts[path] += 1
     require(all(counts.values()), "Missing required real HTTP requests: " + repr([path for path, count in counts.items() if not count]))
-    return {"schemaVersion": 1, "fixture": FIXTURE, "passed": True, "runId": run_id,
+    if scenario == FAILURE_SCENARIO:
+        require(trace.get("failureControl") == {"firstRequestHeld": True, "releasedByControl": True},
+                "First failed prefetch must be held and explicitly released after UI selection")
+        require(counts[info["baseURL"].removeprefix(origin) + "/chapter1.html"] == 2,
+                "Failure scenario requires one failure plus one explicit retry, with no automatic retry")
+        failures = [row for row in records if row["path"].endswith("/chapter1.html")]
+        require(failures[0].get("heldForReaderSelection") is True
+                and "heldForReaderSelection" not in failures[1], "Only the initial failed request may be held")
+    return {"schemaVersion": 1, "fixture": info["fixture"], "passed": True, "runId": run_id,
             "origin": origin, "baseURL": info["baseURL"], "requestCount": len(records), "routeCounts": counts,
             "responseSHA256": {path: digest(body) for path, (_, body) in expected.items()},
             "provesJVMCompatibility": False, "deviceValidationPassed": False}
@@ -295,6 +361,7 @@ def main(argv=None):
     parser.add_argument("--ready-file", type=Path)
     parser.add_argument("--diagnose-startup", action="store_true",
                         help="Record startup stages and one bounded pre-readiness stack dump")
+    parser.add_argument("--scenario", choices=("success", FAILURE_SCENARIO), default="success")
     args = parser.parse_args(argv[1:] if argv[:1] == ["serve"] else argv)
     dump_armed = False
     try:
@@ -309,7 +376,7 @@ def main(argv=None):
         if args.ready_file and args.ready_file.exists():
             parser.error("ready file already exists; use a fresh evidence directory")
         startup_stage(args.diagnose_startup, "construct.before")
-        with FixtureServer(args.port) as server:
+        with FixtureServer(args.port, scenario=args.scenario) as server:
             startup_stage(args.diagnose_startup, "construct.after")
             startup_stage(args.diagnose_startup, "ready.publish.before")
             if args.ready_file:

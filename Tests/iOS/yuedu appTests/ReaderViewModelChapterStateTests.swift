@@ -390,34 +390,32 @@ struct ReaderViewModelChapterStateTests {
         )
     }
 
-    @Test("jump promotes an in-flight immediate request")
-    func jumpPromotesImmediateRequest() async throws {
+    @Test("chapter navigation keeps an in-flight prefetch and its progress")
+    func navigationJoinsInFlightPrefetch() async throws {
         let fetcher = MockChapterFetcher()
         let book = makeBook()
         let readyPackage = makePackage(bookId: book.id, chapterIndex: 0, content: "jump")
 
         await fetcher.enqueuePending(chapterIndex: 0)
-        await fetcher.enqueuePending(chapterIndex: 0)
         let viewModel = makeViewModel(chapterFetcher: fetcher)
 
-        await viewModel.ensureChapterReady(book: book, chapterIndex: 0, priority: .immediate, store: nil)
+        await viewModel.ensureChapterReady(book: book, chapterIndex: 0, priority: .prefetch, store: nil)
         await waitForState(.loading, in: viewModel, chapterIndex: 0)
+        await waitUntil { await fetcher.hasPendingRequest(for: 0) }
 
         await viewModel.ensureChapterReady(book: book, chapterIndex: 0, priority: .jump, store: nil)
+        await viewModel.ensureChapterReady(book: book, chapterIndex: 0, priority: .jump, store: nil)
 
-        await waitUntil {
-            let fetchCount = await fetcher.fetchCount(for: 0)
-            let cancelCount = await fetcher.cancelCount(for: 0)
-            return fetchCount == 2 && cancelCount == 1
-        }
-        #expect(await fetcher.priorities(for: 0) == [.immediate, .jump])
+        #expect(await fetcher.fetchCount(for: 0) == 1)
+        #expect(await fetcher.cancelCount(for: 0) == 0)
+        #expect(await fetcher.priorities(for: 0) == [.prefetch])
 
         await fetcher.resolvePending(chapterIndex: 0, with: .success(readyPackage))
         await waitForState(.ready, in: viewModel, chapterIndex: 0)
     }
 
-    @Test("repeated jump promotion stays deduped during cancellation")
-    func repeatedJumpPromotionStaysDeduped() async throws {
+    @Test("explicit refresh replaces once while navigation joins the reserved replacement")
+    func repeatedRefreshStaysDeduped() async throws {
         let fetcher = MockChapterFetcher()
         let book = makeBook()
         let readyPackage = makePackage(bookId: book.id, chapterIndex: 0, content: "promoted")
@@ -432,22 +430,73 @@ struct ReaderViewModelChapterStateTests {
         await waitUntil { await fetcher.hasPendingRequest(for: 0) }
 
         let firstJump = Task { @MainActor in
-            await viewModel.ensureChapterReady(book: book, chapterIndex: 0, priority: .jump, store: nil)
+            await viewModel.ensureChapterReady(book: book, chapterIndex: 0, priority: .jump,
+                store: nil, forceReload: true)
         }
         await waitUntil { await fetcher.cancelCount(for: 0) == 1 }
 
         let secondJump = Task { @MainActor in
             await viewModel.ensureChapterReady(book: book, chapterIndex: 0, priority: .jump, store: nil)
+            await viewModel.ensureChapterReady(book: book, chapterIndex: 0, priority: .jump,
+                store: nil, forceReload: true)
         }
 
+        await secondJump.value
         await fetcher.resumeBlockedCancellation()
         await firstJump.value
-        await secondJump.value
 
-        #expect(await fetcher.fetchCount(for: 0) == 2)
+        await waitUntil { await fetcher.fetchCount(for: 0) == 2 }
+        await viewModel.ensureChapterReady(book: book, chapterIndex: 0, priority: .jump,
+            store: nil, forceReload: true)
+        #expect(await fetcher.cancelCount(for: 0) == 1)
+        #expect(await fetcher.priorities(for: 0) == [.immediate, .jump])
 
         await fetcher.resolvePending(chapterIndex: 0, with: .success(readyPackage))
         await waitForState(.ready, in: viewModel, chapterIndex: 0)
+    }
+
+    @Test("a late cache hit cannot cancel or complete a newer explicit refresh")
+    func lateCacheProbeCannotReplaceRefresh() async throws {
+        let fetcher = MockChapterFetcher()
+        let book = makeBook()
+        let viewModel = makeViewModel(chapterFetcher: fetcher)
+        await fetcher.enqueuePending(chapterIndex: 0)
+        await fetcher.blockNextCacheProbe()
+        let probe = Task { @MainActor in
+            await viewModel.ensureChapterReady(book: book, chapterIndex: 0,
+                priority: .immediate, store: nil)
+        }
+        await waitUntil { await fetcher.hasBlockedCacheProbe() }
+        await viewModel.ensureChapterReady(book: book, chapterIndex: 0,
+            priority: .jump, store: nil, forceReload: true)
+        await waitUntil { await fetcher.hasPendingRequest(for: 0) }
+        await fetcher.setCached(chapterIndex: 0)
+        await fetcher.resumeBlockedCacheProbe()
+        await probe.value
+        #expect(viewModel.chapterStates[0] == .loading)
+        #expect(!viewModel.isChapterContentAvailable(at: 0))
+        #expect(await fetcher.cancelCount(for: 0) == 1)
+        #expect(await fetcher.fetchCount(for: 0) == 1)
+        await fetcher.resolvePending(chapterIndex: 0, with: .success(
+            makePackage(bookId: book.id, chapterIndex: 0, content: "fresh body")))
+        await waitForState(.ready, in: viewModel, chapterIndex: 0)
+    }
+
+    @Test("closing while reload cancellation is pending cannot start another chapter request")
+    func closingRevokesPendingReload() async throws {
+        let fetcher = MockChapterFetcher()
+        let book = makeBook()
+        let viewModel = makeViewModel(chapterFetcher: fetcher)
+        await fetcher.blockNextCancellation()
+        let reload = Task { @MainActor in
+            await viewModel.ensureChapterReady(book: book, chapterIndex: 0,
+                priority: .jump, store: nil, forceReload: true)
+        }
+        await waitUntil { await fetcher.cancelCount(for: 0) == 1 }
+        await viewModel.cancelAll(for: book.id)
+        await fetcher.resumeBlockedCancellation()
+        await reload.value
+        #expect(await fetcher.fetchCount(for: 0) == 0)
     }
 
     private func makeBook() -> ReadingBook {
@@ -611,6 +660,8 @@ actor MockChapterFetcher: ChapterFetching {
         blockedCacheProbeContinuation?.resume()
         blockedCacheProbeContinuation = nil
     }
+
+    func hasBlockedCacheProbe() -> Bool { blockedCacheProbeContinuation != nil }
 
     func fetchCount(for chapterIndex: Int) -> Int {
         fetchRecords[chapterIndex]?.count ?? 0

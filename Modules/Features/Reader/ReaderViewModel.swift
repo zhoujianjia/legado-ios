@@ -32,6 +32,7 @@ final class ReaderViewModel: ObservableObject {
         let token: UUID
         let priority: ChapterFetchPriority
         let task: Task<Void, Never>
+        var isReloading = false
     }
 
     private var chapterFetcher: ChapterFetching
@@ -39,6 +40,8 @@ final class ReaderViewModel: ObservableObject {
     private var bookSourceFetcher: BookSourceFetching
     private var offlineDownloadManager: (any OfflineDownloadManaging)?
     private var inFlightRequests: [Int: InFlightRequest] = [:]
+    /// Only active cache probes. A reset/reload revokes their permission to publish.
+    private var cacheProbeTokens: [Int: UUID] = [:]
     /// Books already checked for auto manga detection this session (cached-chapter path),
     /// so a genuine text book is not re-probed on every `ensureChapterReady`.
     private var mangaDetectionAttempted: Set<UUID> = []
@@ -109,6 +112,7 @@ final class ReaderViewModel: ObservableObject {
     }
 
     func resetChapterState(for chapterIndex: Int) {
+        cacheProbeTokens[chapterIndex] = nil
         if let existing = inFlightRequests.removeValue(forKey: chapterIndex) {
             existing.task.cancel()
         }
@@ -127,6 +131,7 @@ final class ReaderViewModel: ObservableObject {
             request.task.cancel()
         }
         inFlightRequests.removeAll()
+        cacheProbeTokens.removeAll()
         chapterStates.removeAll()
         // The single-chapter form (`resetChapterState`) drops this too. Leaving it behind
         // made every chapter keep claiming "content available" against a cache that 移除下載
@@ -149,21 +154,56 @@ final class ReaderViewModel: ObservableObject {
         book: ReadingBook?,
         chapterIndex: Int,
         priority: ChapterFetchPriority,
-        store: BookStore?
+        store: BookStore?,
+        forceReload: Bool = false
     ) async {
         guard let book, let refs = book.onlineChapters, refs.indices.contains(chapterIndex) else {
             return
         }
         currentBookId = book.id.uuidString
 
+        if forceReload, !refs[chapterIndex].shouldRenderAsVolumeSeparator {
+            // Reserve the replacement before awaiting cancellation. Repeated taps
+            // and normal entry requests must join this reservation, not cancel the
+            // newly started request when an older cancellation finishes late.
+            if inFlightRequests[chapterIndex]?.isReloading == true { return }
+            cacheProbeTokens[chapterIndex] = nil
+            inFlightRequests[chapterIndex]?.task.cancel()
+            let token = UUID()
+            inFlightRequests[chapterIndex] = InFlightRequest(token: token, priority: priority,
+                task: Task<Void, Never> {}, isReloading: true)
+            setChapterState(.loading, for: chapterIndex, contentAvailable: false)
+            await chapterFetcher.cancelChapter(bookId: book.id, chapterIndex: chapterIndex)
+            guard inFlightRequests[chapterIndex]?.token == token else { return }
+            guard !Task.isCancelled else {
+                clearInFlight(chapterIndex: chapterIndex, token: token)
+                return
+            }
+            let task = startFetchTask(book: book, chapterIndex: chapterIndex,
+                priority: priority, store: store, token: token)
+            inFlightRequests[chapterIndex] = InFlightRequest(token: token, priority: priority,
+                task: task, isReloading: true)
+            return
+        }
+
         // Volume headers (作品相关 / 第N卷 …) have no fetchable content. Mark ready immediately so
         // the builder renders a divider page instead of spinning forever on an empty fetch.
         if refs[chapterIndex].shouldRenderAsVolumeSeparator {
+            cacheProbeTokens[chapterIndex] = nil
             if let existing = inFlightRequests.removeValue(forKey: chapterIndex) {
                 existing.task.cancel()
                 await chapterFetcher.cancelChapter(bookId: book.id, chapterIndex: chapterIndex)
             }
             setChapterState(.ready, for: chapterIndex, contentAvailable: true)
+            return
+        }
+
+        if let existing = inFlightRequests[chapterIndex] {
+            if existing.priority.rawValue < priority.rawValue, !existing.isReloading {
+                inFlightRequests[chapterIndex] = InFlightRequest(token: existing.token,
+                    priority: priority, task: existing.task)
+            }
+            // Navigation joins useful work; explicit refresh is the only replacer.
             return
         }
 
@@ -178,7 +218,13 @@ final class ReaderViewModel: ObservableObject {
             chapterStates[chapterIndex] = .loading
         }
 
-        if await chapterFetcher.isChapterCached(book: book, chapterIndex: chapterIndex) {
+        let probeToken = UUID()
+        cacheProbeTokens[chapterIndex] = probeToken
+        let cached = await chapterFetcher.isChapterCached(book: book, chapterIndex: chapterIndex)
+        guard cacheProbeTokens[chapterIndex] == probeToken else { return }
+        cacheProbeTokens[chapterIndex] = nil
+        guard !Task.isCancelled else { return }
+        if cached {
             setChapterState(.ready, for: chapterIndex, contentAvailable: true)
             if let existing = inFlightRequests.removeValue(forKey: chapterIndex) {
                 existing.task.cancel()
@@ -186,34 +232,6 @@ final class ReaderViewModel: ObservableObject {
             }
             inspectCachedChapter(
                 book: book, chapterIndex: chapterIndex, store: store)
-            return
-        }
-
-        if let existing = inFlightRequests[chapterIndex] {
-            guard priority == .jump, existing.priority.rawValue < priority.rawValue else {
-                return
-            }
-
-            existing.task.cancel()
-            let token = UUID()
-            inFlightRequests[chapterIndex] = InFlightRequest(
-                token: token,
-                priority: priority,
-                task: Task<Void, Never> {}
-            )
-            setChapterState(.loading, for: chapterIndex, contentAvailable: false)
-            await chapterFetcher.cancelChapter(bookId: book.id, chapterIndex: chapterIndex)
-            guard inFlightRequests[chapterIndex]?.token == token else {
-                return
-            }
-            let task = startFetchTask(
-                book: book,
-                chapterIndex: chapterIndex,
-                priority: priority,
-                store: store,
-                token: token
-            )
-            inFlightRequests[chapterIndex] = InFlightRequest(token: token, priority: priority, task: task)
             return
         }
 
@@ -238,6 +256,11 @@ final class ReaderViewModel: ObservableObject {
     /// book. `runBook` treats cancellation as a clean exit, so the download simply stopped —
     /// no error, no queue, state still `.downloading`.
     func cancelAll(for bookId: UUID) async {
+        // Revoke presentation requests before the await, including a reload still
+        // waiting for cancellation. Do not cancel wrappers here: a downloader may
+        // now share their manager-owned request, which the call below must spare.
+        cacheProbeTokens.removeAll()
+        inFlightRequests.removeAll()
         await chapterFetcher.cancelAll(for: bookId, includingDownloads: false)
     }
 
@@ -836,7 +859,7 @@ final class ReaderViewModel: ObservableObject {
         store: BookStore?,
         token: UUID
     ) -> Task<Void, Never> {
-        Task { [weak self] in
+        Task(priority: priority.taskPriority) { [weak self] in
             guard let self else { return }
             do {
                 let package = try await self.chapterFetcher.fetchChapter(

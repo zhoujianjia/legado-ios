@@ -53,11 +53,22 @@ SELECTORS=(
   'yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen'
   'yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalWebBookPreviewTransferAndReopen'
 )
-SELECTION=()
-for selector in "${SELECTORS[@]}"; do SELECTION+=("-only-testing:$selector"); done
+BUILD_SELECTION=()
+for selector in "${SELECTORS[@]}"; do BUILD_SELECTION+=("-only-testing:$selector"); done
+# Compile all later required selections into this same xctestrun. The original
+# three fresh-host execution selectors and their fixed verdicts stay independent.
+for selector in \
+  'yuedu appTests/ReaderViewModelChapterStateTests' \
+  'yuedu appTests/BookshelfRefreshCoordinatorTests' \
+  'yuedu appTests/OfflineDownloadManagerTests' \
+  'yuedu appTests/OfflineDownloadSourceConcurrencyTests' \
+  'yuedu appTests/LegadoNativeOriginalReaderTests/testNativeOriginalAuditedDownloadsOverlapHeldHTTPAndPreserveOwners' \
+  'yuedu appUITests/ReaderChapterFailureExitUITests/testSecondChapterFailureCanExitWithChromeHidden'; do
+  BUILD_SELECTION+=("-only-testing:$selector")
+done
 xcodebuild -project "$REPO_DIR/Yuedu-Reader.xcodeproj" -scheme Yuedu-Reader \
   -destination "$YUEDU_DEST" "${ARGS[@]}" -parallel-testing-enabled NO \
-  -resultBundlePath "$WORK/build.xcresult" "${SELECTION[@]}" build-for-testing \
+  -resultBundlePath "$WORK/build.xcresult" "${BUILD_SELECTION[@]}" build-for-testing \
   > "$WORK/build.log" 2>&1
 xcodebuild -project "$REPO_DIR/Yuedu-Reader.xcodeproj" -scheme Yuedu-Reader \
   -destination "$YUEDU_DEST" "${ARGS[@]}" -showBuildSettings -json > "$WORK/app-build-settings.json"

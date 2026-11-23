@@ -6,18 +6,20 @@ extension ReaderView {
     // MARK: - Online Chapter Lazy Loading
     func ensureChapterReady(
         chapterIndex: Int,
-        priority: ChapterFetchPriority = .immediate
+        priority: ChapterFetchPriority = .immediate,
+        forceReload: Bool = false
     ) {
         guard let currentBook = book else { return }
         #if DEBUG
         AppLogger.render("[StateDebug] ensureChapterReady ch=\(chapterIndex) priority=\(priority) currentCh=\(currentChapterIndex)")
         #endif
-        Task { @MainActor in
+        Task(priority: priority.taskPriority) { @MainActor in
             await readerViewModel.ensureChapterReady(
                 book: currentBook,
                 chapterIndex: chapterIndex,
                 priority: priority,
-                store: store
+                store: store,
+                forceReload: forceReload
             )
         }
     }
@@ -321,6 +323,14 @@ extension ReaderView {
             } else {
                 retryChapterButton.buttonStyle(.borderedProminent)
             }
+            // The card intercepts the reader's chrome/exit gestures. Its own exit
+            // stays reachable even when chrome was hidden before the request failed.
+            Button(action: closeReader) {
+                Label(localized("返回"), systemImage: "chevron.backward")
+                    .frame(minHeight: DSLayout.minimumTapTarget)
+            }
+            .buttonStyle(.bordered)
+            .accessibilityIdentifier("reader_chapter_failure_back")
         }
         .padding(DSSpacing.xl)
         .frame(maxWidth: 300)
@@ -339,6 +349,7 @@ extension ReaderView {
                 .font(DSFont.body.weight(.semibold))
                 .padding(.horizontal, DSSpacing.lg)
         }
+        .accessibilityIdentifier("reader_chapter_failure_retry")
     }
 
     /// The book's source when 提供裝置識別碼 is the plausible repair for this
@@ -410,9 +421,9 @@ extension ReaderView {
             chapterIndex: idx
         )
         store.clearCachedChapter(bookId: currentBook.id, chapterIndex: idx)
-        readerViewModel.resetChapterState(for: idx)
-        // .jump = user-initiated highest priority; preempts any stale in-flight.
-        ensureChapterReady(chapterIndex: idx, priority: .jump)
+        // Explicit refresh replaces the old request; ordinary chapter navigation
+        // joins a useful prefetch instead of throwing its progress away.
+        ensureChapterReady(chapterIndex: idx, priority: .jump, forceReload: true)
     }
 
     func prefetchAdjacentChapters(around chapterIndex: Int) {

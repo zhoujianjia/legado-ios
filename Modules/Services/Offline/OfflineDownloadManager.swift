@@ -1,4 +1,5 @@
 import Foundation
+import LegadoRuntime
 
 protocol OfflineDownloadManaging: Sendable {
     func start(
@@ -52,6 +53,10 @@ actor OfflineDownloadManager: OfflineDownloadManaging {
     /// Attempts spent per chapter, `bookId → chapterIndex → count`. In memory only, like
     /// Legado's `errorDownloadMap`: a relaunch is a fresh set of attempts.
     private var chapterAttempts: [UUID: [Int: Int]] = [:]
+    /// Explicit 429, or opaque JVM HTTP_ERROR, postpones attempts for the same site.
+    /// An unknown HTTP status is not labelled 429 and never automatically retried.
+    /// This is transient retry state, not a persisted library/download timestamp.
+    private var sourceBackoffs: [String: TimeInterval] = [:]
 
     /// Chapter outcomes not yet written to the store, per book.
     ///
@@ -382,6 +387,12 @@ actor OfflineDownloadManager: OfflineDownloadManaging {
         await withTaskGroup(of: Void.self) { group in
             var running = 0
             while !Task.isCancelled {
+                // Reap completed children as slots are reused instead of retaining a task
+                // result for every chapter until the entire book has been scheduled.
+                if running >= chapterSlotCapacity {
+                    if await group.next() != nil { running -= 1 } else { running = 0 }
+                    continue
+                }
                 let snapshot = await MainActor.run { () -> (ReadingBook, BookOfflineDownloadTask)? in
                     guard
                         let book = store.readingBook(id: originalBook.id), book.isInBookshelf,
@@ -425,10 +436,8 @@ actor OfflineDownloadManager: OfflineDownloadManaging {
                     continue
                 }
 
-                await acquireChapterSlot()
                 guard !Task.isCancelled else {
                     releaseChapter(index, bookId: book.id)
-                    releaseChapterSlot()
                     break
                 }
                 group.addTask { [weak self] in
@@ -438,7 +447,6 @@ actor OfflineDownloadManager: OfflineDownloadManaging {
                         book: book,
                         store: store
                     )
-                    await self?.releaseChapterSlot()
                 }
                 running += 1
             }
@@ -457,9 +465,20 @@ actor OfflineDownloadManager: OfflineDownloadManaging {
         store: BookStore
     ) async {
         defer { releaseChapter(index, bookId: book.id) }
+        let site = Self.downloadSite(book: book, ref: ref)
 
         while !Task.isCancelled {
+            var ownsSlot = false
             do {
+                // Throttled/retrying workers suspend before taking a global permit,
+                // so a slow site cannot occupy another book's network slots.
+                try await waitForSourceBackoff(site)
+                try await acquireChapterSlot()
+                ownsSlot = true
+                if (sourceBackoffs[site] ?? 0) > ProcessInfo.processInfo.systemUptime {
+                    releaseChapterSlot(); ownsSlot = false
+                    continue // A sibling observed a throttle while this worker queued.
+                }
                 let validation = await SourcePerfTrace.spanAsync(
                     "offline.validation",
                     book.title
@@ -520,7 +539,7 @@ actor OfflineDownloadManager: OfflineDownloadManaging {
                     }
                 }
 
-                guard !Task.isCancelled else { return }
+                try Task.checkCancellation()
                 let finalValidation = await chapterStore.validationState(
                     bookId: book.id,
                     chapterIndex: index,
@@ -532,17 +551,29 @@ actor OfflineDownloadManager: OfflineDownloadManaging {
                 guard finalValidation == .complete else {
                     throw OfflineDownloadManagerError.invalidPackage
                 }
+                try Task.checkCancellation()
+                releaseChapterSlot(); ownsSlot = false
                 markCompleted(index, bookId: book.id, store: store)
                 return
             } catch is CancellationError {
+                if ownsSlot { releaseChapterSlot() }
                 return
             } catch {
+                if ownsSlot { releaseChapterSlot() }
                 guard !Task.isCancelled else { return }
                 let category = failureCategory(for: error)
                 let attempts = (chapterAttempts[book.id]?[index] ?? 0) + 1
                 chapterAttempts[book.id, default: [:]][index] = attempts
+                if Self.httpStatus(error) == 429 || Self.isUnknownRuntimeHTTPFailure(error) {
+                    let now = ProcessInfo.processInfo.systemUptime
+                    sourceBackoffs = sourceBackoffs.filter { $0.value > now }
+                    sourceBackoffs[site] = max(sourceBackoffs[site] ?? now,
+                        now + (Self.isUnknownRuntimeHTTPFailure(error) ? 30
+                            : min(30, retryBackoff * pow(2, Double(attempts - 1)))))
+                }
 
-                if attempts < Self.maximumChapterAttempts, Self.isRetryable(category) {
+                if attempts < Self.maximumChapterAttempts, Self.isRetryable(category),
+                   Self.permitsAutomaticRetry(error) {
                     // Back off before trying again — retrying a source the instant it failed
                     // is how a transient error becomes three of them. Legado waits a flat
                     // second here; the wait grows with the attempt so a struggling source
@@ -562,7 +593,8 @@ actor OfflineDownloadManager: OfflineDownloadManaging {
                     )
                     let backoff = retryBackoff * Double(attempts)
                     if backoff > 0 {
-                        try? await Task.sleep(nanoseconds: UInt64(backoff * 1_000_000_000))
+                        do { try await Task.sleep(nanoseconds: UInt64(backoff * 1_000_000_000)) }
+                        catch { return }
                     }
                     continue
                 }
@@ -604,7 +636,41 @@ actor OfflineDownloadManager: OfflineDownloadManaging {
     /// 並發數 mid-download applies from the next book (or the next resume).
     private var chapterSlotCapacity = 1
     private var chapterSlotsInUse = 0
-    private var chapterSlotWaiters: [CheckedContinuation<Void, Never>] = []
+    private struct ChapterSlotWaiter {
+        let id: UUID
+        let continuation: CheckedContinuation<Void, Error>
+    }
+    private var chapterSlotWaiters: [ChapterSlotWaiter] = []
+    #if DEBUG
+    private struct SlotQueueObserver {
+        let id: UUID
+        let count: Int
+        let continuation: CheckedContinuation<Void, Error>
+        let timer: Task<Void, Never>
+    }
+    private var slotQueueObservers: [SlotQueueObserver] = []
+
+    func waitUntilChapterSlotsQueued(_ count: Int) async throws {
+        try Task.checkCancellation()
+        if chapterSlotWaiters.count >= count { return }
+        let id = UUID()
+        try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                guard !Task.isCancelled else { continuation.resume(throwing: CancellationError()); return }
+                let timer = Task { [weak self] in
+                    do { try await Task.sleep(for: .seconds(5)) } catch { return }
+                    await self?.finishSlotQueueObserver(id, error: URLError(.timedOut))
+                }
+                slotQueueObservers.append(.init(id: id, count: count, continuation: continuation, timer: timer))
+            }
+        } onCancel: { Task { await self.finishSlotQueueObserver(id, error: CancellationError()) } }
+    }
+    private func finishSlotQueueObserver(_ id: UUID, error: Error) {
+        guard let index = slotQueueObservers.firstIndex(where: { $0.id == id }) else { return }
+        let value = slotQueueObservers.remove(at: index)
+        value.timer.cancel(); value.continuation.resume(throwing: error)
+    }
+    #endif
 
     private func refreshChapterSlotCapacity() async {
         let configured: Int
@@ -626,14 +692,31 @@ actor OfflineDownloadManager: OfflineDownloadManaging {
         drainChapterSlotWaiters()
     }
 
-    private func acquireChapterSlot() async {
+    private func acquireChapterSlot() async throws {
+        try Task.checkCancellation()
         if chapterSlotsInUse < chapterSlotCapacity {
             chapterSlotsInUse += 1
             return
         }
-        await withCheckedContinuation { continuation in
-            chapterSlotWaiters.append(continuation)
-        }
+        let id = UUID()
+        try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                guard !Task.isCancelled else { continuation.resume(throwing: CancellationError()); return }
+                chapterSlotWaiters.append(.init(id: id, continuation: continuation))
+                #if DEBUG
+                let ready = slotQueueObservers.filter { chapterSlotWaiters.count >= $0.count }
+                slotQueueObservers.removeAll { chapterSlotWaiters.count >= $0.count }
+                for observer in ready { observer.timer.cancel(); observer.continuation.resume() }
+                #endif
+            }
+        } onCancel: { Task { await self.cancelChapterSlotWaiter(id) } }
+        // Cancellation may arrive after a freed permit was handed to this waiter.
+        if Task.isCancelled { releaseChapterSlot(); throw CancellationError() }
+    }
+
+    private func cancelChapterSlotWaiter(_ id: UUID) {
+        guard let index = chapterSlotWaiters.firstIndex(where: { $0.id == id }) else { return }
+        chapterSlotWaiters.remove(at: index).continuation.resume(throwing: CancellationError())
     }
 
     private func releaseChapterSlot() {
@@ -646,7 +729,67 @@ actor OfflineDownloadManager: OfflineDownloadManaging {
     private func drainChapterSlotWaiters() {
         while chapterSlotsInUse < chapterSlotCapacity, !chapterSlotWaiters.isEmpty {
             chapterSlotsInUse += 1
-            chapterSlotWaiters.removeFirst().resume()
+            chapterSlotWaiters.removeFirst().continuation.resume()
+        }
+    }
+
+    private static func permitsAutomaticRetry(_ error: Error) -> Bool {
+        // JVM HTTP_ERROR carries no trustworthy HTTP status/header. Cool down
+        // its site and leave the chapter failed for explicit retry, rather than
+        // guessing a status from source-controlled text or issuing three requests.
+        if isUnknownRuntimeHTTPFailure(error) { return false }
+        if let status = httpStatus(error) { return status == 429 || !(400...499).contains(status) }
+        var underlying = error
+        for _ in 0..<8 {
+            if let failure = underlying as? SourceFailure {
+                if [.authentication, .rejected, .invalidAddress, .connectionRemoved].contains(failure.kind) { return false }
+                underlying = SourceFailure.loggable(failure)
+            } else if let fetch = underlying as? FetchError {
+                if case .cloudflareChallengeRequired = fetch { return false }
+                return true
+            } else { return true }
+        }
+        return true
+    }
+
+    private static func httpStatus(_ error: Error) -> Int? {
+        var underlying = error
+        for _ in 0..<8 {
+            if let failure = underlying as? SourceFailure {
+                if let status = failure.status { return status }
+                underlying = SourceFailure.loggable(failure)
+            } else if let fetch = underlying as? FetchError, case .httpError(let status) = fetch {
+                return status
+            } else { return nil }
+        }
+        return nil // Runtime messages are source-controlled, never HTTP-status evidence.
+    }
+
+    private static func isUnknownRuntimeHTTPFailure(_ error: Error) -> Bool {
+        guard httpStatus(error) == nil else { return false }
+        var underlying = error
+        for _ in 0..<8 {
+            if let failure = underlying as? SourceFailure { underlying = SourceFailure.loggable(failure) }
+            else { return (underlying as? LegadoRuntimeError)?.code == "HTTP_ERROR" }
+        }
+        return false
+    }
+
+    private static func downloadSite(book: ReadingBook, ref: OnlineChapterRef) -> String {
+        let base = book.tocURL ?? book.bookInfoURL ?? book.source
+        if let host = URL(string: ref.sanitizedContentURL, relativeTo: URL(string: base))?.host {
+            return host.lowercased()
+        }
+        return book.bookSourceId?.uuidString ?? book.id.uuidString
+    }
+
+    private func waitForSourceBackoff(_ site: String) async throws {
+        while let until = sourceBackoffs[site] {
+            try Task.checkCancellation()
+            let delay = until - ProcessInfo.processInfo.systemUptime
+            if delay <= 0 { sourceBackoffs.removeValue(forKey: site); return }
+            // A real server-throttle backoff, never a timing workaround for task state.
+            try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
         }
     }
 

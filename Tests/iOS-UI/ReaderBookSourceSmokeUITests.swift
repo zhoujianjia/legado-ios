@@ -2,15 +2,17 @@ import CryptoKit
 import Foundation
 import XCTest
 
-/// Real HTTP import, source parsing and CoreText reading. The independent fixture
-/// verifier checks the retained wire evidence; this is not a JVM/device gate.
-final class ReaderBookSourceSmokeUITests: XCTestCase {
-    private var directory: URL!
-    private let fixtureOrigin = URL(string: "http://localhost:18769")!
-    private let query = "OnlineSmoke"
-    private let firstMarker = "JSC_ONLY_CHAPTER_ONE"
-    private let secondMarker = "JSC_ONLY_CHAPTER_TWO"
-    private let secondChapter = "Chapter 2 Crossing"
+/// Shared real import/navigation mechanics. HTTP bodies alone do not attest
+/// interpreter execution or physical-device acceptance.
+class ReaderBookSourceSmokeTestCase: XCTestCase {
+    var directory: URL!
+    var fixtureOrigin: URL { URL(string: "http://localhost:18769")! }
+    var expectedFixtureID: String { "reader-book-source-smoke-v1" }
+    var fixturePathPrefix: String { "/fixture/" }
+    let query = "OnlineSmoke"
+    let firstMarker = "JSC_ONLY_CHAPTER_ONE"
+    let secondMarker = "JSC_ONLY_CHAPTER_TWO"
+    let secondChapter = "Chapter 2 Crossing"
 
     override func setUpWithError() throws {
         continueAfterFailure = false
@@ -30,14 +32,21 @@ final class ReaderBookSourceSmokeUITests: XCTestCase {
         }
     }
 
+    struct OnlineFixture {
+        let runID: String
+        let baseURL: String
+        let sourceURL: String
+        let title: String
+    }
+
     @MainActor
-    func testHTTPSourceImportSearchDetailsTOCAndJSCNativeReading() async throws {
+    func importSourceAndOpenDetail(_ app: XCUIApplication) async throws -> OnlineFixture {
         let health = try await fetchJSON(path: "/health")
-        XCTAssertEqual(health["fixture"] as? String, "reader-book-source-smoke-v1")
+        XCTAssertEqual(health["fixture"] as? String, expectedFixtureID)
         let runID = try XCTUnwrap(health["runId"] as? String)
         XCTAssertNotNil(UUID(uuidString: runID))
         XCTAssertEqual(health["origin"] as? String, fixtureOrigin.absoluteString)
-        let baseURL = fixtureOrigin.absoluteString + "/fixture/" + runID
+        let baseURL = fixtureOrigin.absoluteString + fixturePathPrefix + runID
         XCTAssertEqual(health["baseURL"] as? String, baseURL)
         let sourceURL = baseURL + "/sources.json"
         XCTAssertEqual(health["sourceURL"] as? String, sourceURL)
@@ -50,8 +59,6 @@ final class ReaderBookSourceSmokeUITests: XCTestCase {
                        "A fresh server run must start with no business requests")
         attachJSON(health, name: "online-source-fixture-health")
 
-        let app = XCUIApplication()
-        defer { app.terminate() }
         app.launchArguments = [
             "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
             "-yd_root_tab_visible_ids", "(bookshelf, search, settings)", "-bookLayoutIsGrid", "NO",
@@ -102,42 +109,11 @@ final class ReaderBookSourceSmokeUITests: XCTestCase {
         for _ in 0..<4 where !addBook.isHittable { app.swipeDown() }
         tapReady(addBook, app: app)
         XCTAssertTrue(app.buttons["Remove"].firstMatch.waitForExistence(timeout: 15), "Adding must create the real shelf copy.\n\(app.debugDescription)")
-        tapReady(app.buttons["Resume"].firstMatch, app: app)
-        let firstPage = try waitForVisiblePage(app, marker: firstMarker, otherChapter: secondMarker)
-        capture(app, name: "online-04-first-jsc-transformed-coretext-page")
-
-        showControls(app, identifier: "reader_tool_tableOfContents").tap()
-        let chapter = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", secondChapter)).firstMatch
-        tapReady(chapter, app: app)
-        let secondPage = try waitForVisiblePage(app, marker: secondMarker, otherChapter: firstMarker)
-        capture(app, name: "online-05-selected-second-jsc-transformed-page")
-        showControls(app, identifier: "reader_back_button").tap()
-        XCTAssertTrue(app.buttons["Resume"].firstMatch.waitForExistence(timeout: 15), "Closing returns to the source detail")
-        tapReady(app.navigationBars.buttons.firstMatch, app: app)
-        tapReady(app.tabBars.buttons["Library"].firstMatch, app: app)
-        let shelf = app.descendants(matching: .any).matching(identifier: "home_book_list")
-        XCTAssertTrue(shelf.firstMatch.waitForExistence(timeout: 20), app.debugDescription)
-        XCTAssertEqual(shelf.count, 1, "The visible bookshelf must have one list")
-        // A row exposes nested accessibility buttons. Count matching book cells,
-        // not both button representations of the same persisted shelf entry.
-        let shelved = shelf.firstMatch.cells.containing(.staticText, identifier: title)
-        XCTAssertTrue(shelved.firstMatch.waitForExistence(timeout: 20), "The imported online book must be on the bookshelf.\n\(app.debugDescription)")
-        XCTAssertEqual(shelved.count, 1, "The flow must add one shelf copy")
-        capture(app, name: "online-06-returned-to-real-bookshelf")
-
-        let trace = try await fetchJSON(path: "/trace?runId=" + runID)
-        attachJSON(trace, name: "online-source-raw-http-trace")
-        let counts = try verifyHTTPTrace(trace, runID: runID, baseURL: baseURL)
-        attachJSON(["runId": runID, "sourceURL": sourceURL, "bookTitle": title, "routeCounts": counts,
-                    "visibleFirstPage": firstPage, "visibleSelectedPage": secondPage,
-                    "rawHTTPDidNotContainJSCMarker": true, "realImportReviewConfirmed": true,
-                    "returnedToBookshelf": true, "jvmIntegratedIntoReading": false,
-                    "deliveredIPAExecuted": false, "deviceValidationPassed": false],
-                   name: "online-source-reader-smoke-evidence")
+        return OnlineFixture(runID: runID, baseURL: baseURL, sourceURL: sourceURL, title: title)
     }
 
     @MainActor
-    private func fetchJSON(path: String) async throws -> [String: Any] {
+    func fetchJSON(path: String) async throws -> [String: Any] {
         let url = try XCTUnwrap(URL(string: fixtureOrigin.absoluteString + path))
         var request = URLRequest(url: url)
         request.timeoutInterval = 8
@@ -147,7 +123,7 @@ final class ReaderBookSourceSmokeUITests: XCTestCase {
         return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
     }
 
-    private func verifyHTTPTrace(_ trace: [String: Any], runID: String, baseURL: String) throws -> [String: Int] {
+    func verifyHTTPTrace(_ trace: [String: Any], runID: String, baseURL: String) throws -> [String: Int] {
         XCTAssertEqual(trace["runId"] as? String, runID)
         XCTAssertEqual(trace["origin"] as? String, fixtureOrigin.absoluteString)
         XCTAssertEqual(trace["baseURL"] as? String, baseURL)
@@ -182,7 +158,7 @@ final class ReaderBookSourceSmokeUITests: XCTestCase {
     }
 
     @MainActor
-    private func tapReady(_ element: XCUIElement, app: XCUIApplication) {
+    func tapReady(_ element: XCUIElement, app: XCUIApplication) {
         let ready = XCTNSPredicateExpectation(
             predicate: NSPredicate(format: "exists == true AND hittable == true AND enabled == true"), object: element)
         XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 15), .completed, app.debugDescription)
@@ -190,7 +166,7 @@ final class ReaderBookSourceSmokeUITests: XCTestCase {
     }
 
     @MainActor
-    private func waitForVisiblePage(_ app: XCUIApplication, marker: String, otherChapter: String) throws -> String {
+    func waitForVisiblePage(_ app: XCUIApplication, marker: String, otherChapter: String) throws -> String {
         func visible() -> XCUIElement? {
             app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", marker)).allElementsBoundByIndex.first {
                 $0.exists && $0.isHittable && $0.frame.contains(CGPoint(x: app.frame.midX, y: app.frame.midY))
@@ -206,7 +182,7 @@ final class ReaderBookSourceSmokeUITests: XCTestCase {
     }
 
     @MainActor
-    private func showControls(_ app: XCUIApplication, identifier: String) -> XCUIElement {
+    func showControls(_ app: XCUIApplication, identifier: String) -> XCUIElement {
         let control = app.buttons[identifier].firstMatch
         if !control.exists || !control.isHittable {
             app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
@@ -217,7 +193,7 @@ final class ReaderBookSourceSmokeUITests: XCTestCase {
     }
 
     @MainActor
-    private func capture(_ app: XCUIApplication, name: String) {
+    func capture(_ app: XCUIApplication, name: String) {
         let image = XCTAttachment(screenshot: app.screenshot())
         image.name = name
         image.lifetime = .keepAlways
@@ -228,7 +204,7 @@ final class ReaderBookSourceSmokeUITests: XCTestCase {
         add(tree)
     }
 
-    private func attachJSON(_ value: [String: Any], name: String) {
+    func attachJSON(_ value: [String: Any], name: String) {
         do {
             let data = try JSONSerialization.data(withJSONObject: value, options: [.prettyPrinted, .sortedKeys])
             let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
@@ -236,5 +212,121 @@ final class ReaderBookSourceSmokeUITests: XCTestCase {
             attachment.lifetime = .keepAlways
             add(attachment)
         } catch { XCTFail("Could not retain JSON evidence: \(error)") }
+    }
+}
+
+final class ReaderBookSourceSmokeUITests: ReaderBookSourceSmokeTestCase {
+    @MainActor
+    func testHTTPSourceImportSearchDetailsTOCAndJSCNativeReading() async throws {
+        let app = XCUIApplication()
+        defer { app.terminate() }
+        let fixture = try await importSourceAndOpenDetail(app)
+        let runID = fixture.runID, baseURL = fixture.baseURL
+        let sourceURL = fixture.sourceURL, title = fixture.title
+        tapReady(app.buttons["Resume"].firstMatch, app: app)
+        let firstPage = try waitForVisiblePage(app, marker: firstMarker, otherChapter: secondMarker)
+        capture(app, name: "online-04-first-jsc-transformed-coretext-page")
+
+        showControls(app, identifier: "reader_tool_tableOfContents").tap()
+        let chapter = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", secondChapter)).firstMatch
+        tapReady(chapter, app: app)
+        let secondPage = try waitForVisiblePage(app, marker: secondMarker, otherChapter: firstMarker)
+        capture(app, name: "online-05-selected-second-jsc-transformed-page")
+        showControls(app, identifier: "reader_back_button").tap()
+        XCTAssertTrue(app.buttons["Resume"].firstMatch.waitForExistence(timeout: 15), "Closing returns to the source detail")
+        tapReady(app.navigationBars.buttons.firstMatch, app: app)
+        tapReady(app.tabBars.buttons["Library"].firstMatch, app: app)
+        let shelf = app.descendants(matching: .any).matching(identifier: "home_book_list")
+        XCTAssertTrue(shelf.firstMatch.waitForExistence(timeout: 20), app.debugDescription)
+        XCTAssertEqual(shelf.count, 1, "The visible bookshelf must have one list")
+        // A row exposes nested accessibility buttons. Count matching book cells,
+        // not both button representations of the same persisted shelf entry.
+        let shelved = shelf.firstMatch.cells.containing(.staticText, identifier: title)
+        XCTAssertTrue(shelved.firstMatch.waitForExistence(timeout: 20), "The imported online book must be on the bookshelf.\n\(app.debugDescription)")
+        XCTAssertEqual(shelved.count, 1, "The flow must add one shelf copy")
+        capture(app, name: "online-06-returned-to-real-bookshelf")
+
+        let trace = try await fetchJSON(path: "/trace?runId=" + runID)
+        attachJSON(trace, name: "online-source-raw-http-trace")
+        let counts = try verifyHTTPTrace(trace, runID: runID, baseURL: baseURL)
+        attachJSON(["runId": runID, "sourceURL": sourceURL, "bookTitle": title, "routeCounts": counts,
+                    "visibleFirstPage": firstPage, "visibleSelectedPage": secondPage,
+                    "rawHTTPDidNotContainJSCMarker": true, "realImportReviewConfirmed": true,
+                    "returnedToBookshelf": true, "jvmIntegratedIntoReading": false,
+                    "deliveredIPAExecuted": false, "deviceValidationPassed": false],
+                   name: "online-source-reader-smoke-evidence")
+    }
+
+}
+
+/// A separate fixture process, namespace, trace and 1/1 verdict from the success smoke.
+final class ReaderChapterFailureExitUITests: ReaderBookSourceSmokeTestCase {
+    override var fixtureOrigin: URL { URL(string: "http://localhost:18770")! }
+    override var expectedFixtureID: String { "reader-chapter-failure-smoke-v1" }
+    override var fixturePathPrefix: String { "/failure-fixture/" }
+
+    @MainActor
+    func testSecondChapterFailureCanExitWithChromeHidden() async throws {
+        let app = XCUIApplication()
+        defer { app.terminate() }
+        let fixture = try await importSourceAndOpenDetail(app)
+        tapReady(app.buttons["Resume"].firstMatch, app: app)
+        _ = try waitForVisiblePage(app, marker: firstMarker, otherChapter: secondMarker)
+        let held = try await fetchJSON(path: "/failure-held?runId=" + fixture.runID)
+        XCTAssertEqual(held["firstRequestHeld"] as? Bool, true)
+        showControls(app, identifier: "reader_tool_tableOfContents").tap()
+        let chapter = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", secondChapter)).firstMatch
+        tapReady(chapter, app: app)
+        requireHiddenChrome(app)
+        let released = try await fetchJSON(path: "/release-failure?runId=" + fixture.runID)
+        XCTAssertEqual(released["firstRequestHeld"] as? Bool, true)
+
+        try await requireFailure(app, runID: fixture.runID, completedFailures: 1)
+        capture(app, name: "failure-01-hidden-chrome-and-http-500")
+        tapReady(app.buttons["reader_chapter_failure_retry"].firstMatch, app: app)
+        try await requireFailure(app, runID: fixture.runID, completedFailures: 2)
+        capture(app, name: "failure-02-explicit-retry-still-exitable")
+        tapReady(app.buttons["reader_chapter_failure_back"].firstMatch, app: app)
+        XCTAssertTrue(app.buttons["Resume"].firstMatch.waitForExistence(timeout: 15),
+                      "The failure card must return to the existing source detail.\n\(app.debugDescription)")
+        XCTAssertFalse(app.buttons["reader_chapter_failure_back"].firstMatch.exists)
+        XCTAssertEqual(app.alerts.count, 0, "A chapter failure must not present a navigation-blocking alert")
+        capture(app, name: "failure-03-returned-to-detail")
+        tapReady(app.navigationBars.buttons.firstMatch, app: app)
+        tapReady(app.tabBars.buttons["Library"].firstMatch, app: app)
+        let shelf = app.descendants(matching: .any).matching(identifier: "home_book_list").firstMatch
+        XCTAssertTrue(shelf.waitForExistence(timeout: 20), app.debugDescription)
+        XCTAssertTrue(shelf.cells.containing(.staticText, identifier: fixture.title).firstMatch.exists)
+        XCTAssertFalse(app.buttons["reader_chapter_failure_back"].firstMatch.exists,
+                       "The failed reader must not take navigation back from the library")
+        XCTAssertEqual(app.alerts.count, 0)
+        capture(app, name: "failure-04-library-remains-usable")
+        let trace = try await fetchJSON(path: "/trace?runId=" + fixture.runID)
+        let records = try XCTUnwrap(trace["requests"] as? [[String: Any]])
+        let failedPath = try XCTUnwrap(URL(string: fixture.baseURL)?.path) + "/chapter1.html"
+        let failures = records.filter { ($0["path"] as? String) == failedPath }
+        XCTAssertEqual(failures.count, 2, "Only the initial attempt and one explicit retry may reach the failed chapter")
+        XCTAssertTrue(failures.allSatisfy { ($0["response"] as? [String: Any])?["status"] as? Int == 500 })
+        attachJSON(trace, name: "reader-failure-owned-http-trace")
+    }
+
+    @MainActor
+    private func requireFailure(_ app: XCUIApplication, runID: String, completedFailures: Int) async throws {
+        // The server awaits its actual completed response write; no UI-settling sleep.
+        let observed = try await fetchJSON(path: "/failure-observed?runId=" + runID + "&count=" + String(completedFailures))
+        XCTAssertEqual(observed["completedFailures"] as? Int, completedFailures)
+        let back = app.buttons["reader_chapter_failure_back"].firstMatch
+        let shown = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == true AND hittable == true"), object: back)
+        XCTAssertEqual(XCTWaiter.wait(for: [shown], timeout: 15), .completed, app.debugDescription)
+        requireHiddenChrome(app)
+        XCTAssertEqual(app.alerts.count, 0)
+    }
+
+    @MainActor
+    private func requireHiddenChrome(_ app: XCUIApplication) {
+        let chrome = app.buttons["reader_back_button"].firstMatch
+        let hidden = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false OR hittable == false"), object: chrome)
+        XCTAssertEqual(XCTWaiter.wait(for: [hidden], timeout: 10), .completed,
+                       "The card's exit must work with reader chrome hidden.\n\(app.debugDescription)")
     }
 }

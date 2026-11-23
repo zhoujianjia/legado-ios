@@ -53,14 +53,17 @@ public struct LegadoSessionOptions: Encodable, Sendable {
     /// choose this owner or a persistence path. Nil preserves isolated memory.
     public let stateOwner: String?
     public let sourceMode: SourceMode
-    public init(httpTransport: HTTPTransport, userAgent: String? = nil, stateOwner: String? = nil, sourceMode: SourceMode = .existing, cookieAccess: CookieAccess = .sessionJar) {
+    /// Embedding-only restriction for audited parallel content. Imported rules cannot disable it.
+    public let staticHttpUrlsOnly: Bool
+    public init(httpTransport: HTTPTransport, userAgent: String? = nil, stateOwner: String? = nil, sourceMode: SourceMode = .existing, cookieAccess: CookieAccess = .sessionJar, staticHttpUrlsOnly: Bool = false) {
         self.cookieAccess = cookieAccess
         self.httpTransport = httpTransport
         self.userAgent = userAgent
         self.stateOwner = stateOwner
         self.sourceMode = sourceMode
+        self.staticHttpUrlsOnly = staticHttpUrlsOnly
     }
-    private enum CodingKeys: String, CodingKey { case httpTransport, userAgent, stateOwner, sourceMode, cookieAccess }
+    private enum CodingKeys: String, CodingKey { case httpTransport, userAgent, stateOwner, sourceMode, cookieAccess, staticHttpUrlsOnly }
     public func encode(to encoder: any Encoder) throws {
         var values = encoder.container(keyedBy: CodingKeys.self)
         try values.encode(httpTransport, forKey: .httpTransport)
@@ -69,6 +72,7 @@ public struct LegadoSessionOptions: Encodable, Sendable {
         // Preserve the previous embedding JSON for the default route.
         if sourceMode != .existing { try values.encode(sourceMode, forKey: .sourceMode) }
         if cookieAccess != .sessionJar { try values.encode(cookieAccess, forKey: .cookieAccess) }
+        if staticHttpUrlsOnly { try values.encode(true, forKey: .staticHttpUrlsOnly) }
     }
 }
 

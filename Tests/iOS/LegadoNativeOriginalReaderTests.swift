@@ -907,6 +907,87 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
         }
     }
 
+    func testNativeOriginalAuditedDownloadsOverlapHeldHTTPAndPreserveOwners() async throws {
+        executionTimeAllowance = 180
+        try await withFixture { first in
+            try await self.withFixture { second in
+                var source = first.source
+                source.header = "{}"
+                source.concurrentRate = "1000" // Keep the original one-second admission interval.
+                source.jsLib = ""; source.loginCheckJs = ""; source.eventListener = false
+                source.ruleContent = ContentRule()
+                source.ruleContent.content = OriginalContentReadPolicy.content
+                source.ruleContent.nextContentUrl = OriginalContentReadPolicy.nextPage
+                let selectedSource = source
+                let refs = [OnlineChapterRef(index: 0, title: "First", url: first.baseURL + "/parallel"),
+                    OnlineChapterRef(index: 1, title: "Second", url: second.baseURL + "/parallel")]
+                let owned = try await self.ownedBook(first, title: "Concurrent owned reader",
+                    url: first.baseURL + "/book", tocURL: first.baseURL + "/toc",
+                    chapters: refs, variables: ["unchanged": "preserved"])
+                let fetcher = BookSourceFetcher(mainJSService: first.service)
+                let web = await MainActor.run { WebViewFetcher.shared }
+                let manager = ChapterFetchManager(bookSourceFetcher: fetcher, webViewFetcher: web,
+                    sourceResolver: { _ in selectedSource })
+                let one = self.expectation(description: "First real owned HTTP waits for its body")
+                let two = self.expectation(description: "Second real owned HTTP enters before the first body completes")
+                first.peer.armCompletableBody(target: first.prefix + "/parallel", headersSent: { one.fulfill() })
+                second.peer.armCompletableBody(target: second.prefix + "/parallel", headersSent: { two.fulfill() })
+                let firstJob = Task { try await manager.fetchChapter(book: owned.book, chapterIndex: 0,
+                    priority: .download, store: owned.store) }
+                let secondJob = Task { try await manager.fetchChapter(book: owned.book, chapterIndex: 1,
+                    priority: .download, store: owned.store) }
+                defer { firstJob.cancel(); secondJob.cancel(); first.peer.completeHeldBody(); second.peer.completeHeldBody() }
+                await self.fulfillment(of: [one, two], timeout: 20)
+                let overlapped = first.peer.snapshot.heldHeadersSent && second.peer.snapshot.heldHeadersSent
+                if !overlapped { firstJob.cancel(); secondJob.cancel() }
+                first.peer.completeHeldBody(); second.peer.completeHeldBody()
+                var problem: Error?
+                do {
+                    let a = try await self.finishAuditedDownload(firstJob)
+                    let b = try await self.finishAuditedDownload(secondJob)
+                    XCTAssertTrue(overlapped)
+                    XCTAssertEqual(a.state, .cached); XCTAssertEqual(b.state, .cached)
+                    XCTAssertTrue(a.content.contains("parallel owned body"))
+                    XCTAssertTrue(b.content.contains("parallel owned body"))
+                    let current = await MainActor.run { owned.store.readingBook(id: owned.book.id) }
+                    XCTAssertEqual(current?.runtimeVariables?["unchanged"], "preserved")
+                    XCTAssertEqual(current?.onlineChapters?.map(\.id), refs.map(\.id))
+                    _ = try await manager.fetchChapter(book: owned.book, chapterIndex: 0, priority: .download, store: owned.store)
+                    _ = try await manager.fetchChapter(book: owned.book, chapterIndex: 1, priority: .download, store: owned.store)
+                    XCTAssertEqual(first.peer.snapshot.requests.map(\.target), [first.prefix + "/parallel", first.prefix + "/parallel-2.html"])
+                    XCTAssertEqual(second.peer.snapshot.requests.map(\.target), [second.prefix + "/parallel", second.prefix + "/parallel-2.html"])
+                    self.attach(["twoActualOwnedHTTPBodiesOverlapped": overlapped,
+                        "sourceConcurrentRateUnchanged": selectedSource.concurrentRate,
+                        "firstHeadersEpochMs": first.peer.snapshot.heldHeadersAtEpochMs ?? 0,
+                        "secondHeadersEpochMs": second.peer.snapshot.heldHeadersAtEpochMs ?? 0,
+                        "durableReadbackWithoutMoreHTTP": true], name: "OriginalNative-bounded-download-overlap")
+                } catch { problem = error }
+                firstJob.cancel(); secondJob.cancel()
+                // Both waits have deadlines and forward cancellation into the real
+                // fetch generations; failed overlap never leaves a held HTTP body.
+                _ = try? await self.finishAuditedDownload(firstJob)
+                _ = try? await self.finishAuditedDownload(secondJob)
+                do { try await fetcher.clearAllChapterCacheAwait(bookId: owned.book.id) }
+                catch { if problem == nil { problem = error } }
+                if let problem { throw problem }
+            }
+        }
+    }
+
+    private func finishAuditedDownload(_ task: Task<ChapterPackage, Error>) async throws -> ChapterPackage {
+        try await withThrowingTaskGroup(of: ChapterPackage.self) { group in
+            defer { group.cancelAll() }
+            group.addTask {
+                try await withTaskCancellationHandler { try await task.value } onCancel: { task.cancel() }
+            }
+            group.addTask {
+                try await Task.sleep(for: .seconds(10)) // Native cache/owner completion deadline.
+                throw NativeOriginalReaderError.failed("Audited download did not finish after its HTTP body was released")
+            }
+            return try await group.next()!
+        }
+    }
+
     func testNativeOriginalPublicConsumersUseOwnedReaderAndOfflineReopen() async throws {
         executionTimeAllowance = 180
         try await withFixture(tocRedirect: true, encryptedTOCURLs: true) { fixture in
@@ -1956,6 +2037,8 @@ private final class NativeOriginalLoopbackServer: @unchecked Sendable {
     private var errors: [String] = []
     private var connections: [UUID: NWConnection] = [:]
     private var heldConnection: UUID?
+    private var completableBody = false
+    private var heldCompletionStarted = false
     private var holdNext = false
     private var holdTarget: String?
     private var heldHeaders = false
@@ -2013,6 +2096,25 @@ private final class NativeOriginalLoopbackServer: @unchecked Sendable {
     }
     func armHeldBody(target: String, headersSent: @escaping () -> Void, peerClosed: @escaping () -> Void) {
         lock.withLock { holdNext = true; holdTarget = target; headersCallback = headersSent; peerCallback = peerClosed }
+    }
+    func armCompletableBody(target: String, headersSent: @escaping () -> Void) {
+        lock.withLock { completableBody = true; holdNext = true; holdTarget = target; headersCallback = headersSent }
+    }
+    func completeHeldBody() {
+        let pending = lock.withLock { () -> (NWConnection, Data, Int)? in
+            guard completableBody, !heldCompletionStarted, let id = heldConnection, let connection = connections[id],
+                  let index = requests.firstIndex(where: { $0.heldBody }) else { return nil }
+            heldCompletionStarted = true
+            return (connection, Data(Data(requests[index].responseBody.utf8).dropFirst()), index)
+        }
+        guard let (connection, body, index) = pending else { return }
+        connection.send(content: body, contentContext: .finalMessage, isComplete: true,
+            completion: .contentProcessed { [weak self] error in
+                guard let self else { connection.cancel(); return }
+                if let error { self.recordError("Held response completion failed: \(error)") }
+                self.lock.withLock { self.requests[index].completeResponseWritten = error == nil }
+                connection.cancel()
+            })
     }
     func stop(completed: @escaping () -> Void) {
         let open = lock.withLock { stopping = true; stopCallback = completed; return Array(connections.values) }
@@ -2116,6 +2218,10 @@ private final class NativeOriginalLoopbackServer: @unchecked Sendable {
         } else if target == prefix + "/c1p2" {
             body = "<div id='text'>last pageREMOVE</div><a class='next' href='\(prefix)/c2'>next chapter</a>"
         } else if target == prefix + "/c2" { body = "<div id='text'>second chapter</div>" }
+        else if target == prefix + "/parallel" {
+            body = "<div class='con'>parallel owned body</div><a href=\"\(prefix)/parallel-2.html\">下一页</a>"
+        }
+        else if target == prefix + "/parallel-2.html" { body = "<div class='con'>parallel second page</div>" }
         else if target == prefix + "/duplicate" || target == prefix + "/held" { body = "Batch wire content" }
         else { throw NativeOriginalReaderError.failed("Unknown fixture route: \(target)") }
         let entry = lock.withLock { () -> (Int, Bool) in
@@ -2147,7 +2253,10 @@ private final class NativeOriginalLoopbackServer: @unchecked Sendable {
                     self.heldHeadersAtEpochMs = Date().timeIntervalSince1970 * 1000
                     let value = self.headersCallback; self.headersCallback = nil; return value
                 }
-                if entry.1 { self.monitorPeer(connection, id: id); callback?() }
+                if entry.1 {
+                    if !self.lock.withLock({ self.completableBody }) { self.monitorPeer(connection, id: id) }
+                    callback?()
+                }
                 else { connection.cancel() }
             })
     }

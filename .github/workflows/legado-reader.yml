@@ -40,6 +40,11 @@ jobs:
       - name: Read the explicit packaging-retry marker from the checked-out commit
         id: mode
         run: python -B scripts/reader-experience/reader-test-reuse.py detect
+      - name: Require fresh compilation and execution for the new build34 regressions
+        if: steps.mode.outputs.reuse == 'true'
+        run: |
+          echo 'Build34 requires freshly compiled unit/native/UI selections and same-run Simulator evidence. The historical package-only reuse marker cannot satisfy these new gates; remove that marker and run the fresh workflow.' >&2
+          exit 1
       - name: Admit only the fixed passing source-equivalent test evidence
         if: steps.mode.outputs.reuse == 'true'
         env:
@@ -130,6 +135,11 @@ jobs:
           python -B scripts/reader-experience/test-runtime-packaging.py -v 2>&1 | tee .build/ci-logs/reader-runtime-packaging-tests.log
           python -B scripts/reader-experience/test-runtime-notices.py -v 2>&1 | tee .build/ci-logs/reader-notice-tests.log
           python -B scripts/reader-experience/test-jimage-native-check.py -v 2>&1 | tee .build/ci-logs/jimage-native-gate-tests.log
+          python -B scripts/reader-experience/test-online-source-fixture.py -v 2>&1 | tee .build/ci-logs/reader-owned-fixture-tests.log
+          python -B scripts/reader-experience/test-online-smoke-tools.py -v 2>&1 | tee .build/ci-logs/reader-owned-runner-tests.log
+          python -B scripts/reader-experience/test-reader-failure-smoke.py -v 2>&1 | tee .build/ci-logs/reader-failure-gate-tests.log
+          python -B scripts/reader-experience/test-reader-recovery-regression.py -v 2>&1 | tee .build/ci-logs/reader-recovery-gate-tests.log
+          bash -n scripts/reader-experience/reader-recovery-regression.sh
           python -B -u scripts/tests/xctest_wrapper_test.py 2>&1 | tee .build/ci-logs/xctest-wrapper-tests.log
           python -B scripts/reader-experience/clean-native-supply.py --self-test 2>&1 | tee .build/ci-logs/reader-native-supply-tests.log
           python -B scripts/legado-ios/test-runtime-tools.py -v 2>&1 | tee .build/ci-logs/reader-runtime-staging-tests.log
@@ -155,6 +165,8 @@ jobs:
       - name: Require the jimage-backed JNI product routes in three fresh Simulator hosts
         if: needs.position-regression.outputs.verified != 'true'
         run: bash scripts/reader-experience/jimage-native-check.sh 2>&1 | tee .build/ci-logs/jimage-native-check.log
+      - name: Require fresh foreground, bookshelf, download and failure-exit regressions
+        run: bash scripts/reader-experience/reader-recovery-regression.sh 2>&1 | tee .build/ci-logs/reader-recovery-regression.log
       - name: Replace Simulator resources with the exact physical-device jimage runtime
         run: |
           python -B scripts/legado-ios/stage-runtime.py --java-home .build/legado-ios/device-static/java-home --jar Packages/LegadoRuntime/jvm/build/libs/legado-runtime.jar --destination Resources/LegadoRuntime --replace --module-format jimage
@@ -170,7 +182,7 @@ jobs:
         run: python -B scripts/reader-experience/reader-test-reuse.py attach
       # Temporary public diagnostic downloads are explicitly authorized for the current development work.
       - name: Preserve the temporary clean reader, source and exact manifest
-        if: ${{ success() && hashFiles('.build/reader-experience/output/build-manifest.json') != '' && (hashFiles('.build/jimage-native-check/result.json') != '' || needs.position-regression.outputs.verified == 'true') && hashFiles('.build/ci-logs/jimage-source-only-package-result.json') != '' }}
+        if: ${{ success() && hashFiles('.build/reader-experience/output/build-manifest.json') != '' && hashFiles('.build/reader-recovery-regression/result.json') != '' && (hashFiles('.build/jimage-native-check/result.json') != '' || needs.position-regression.outputs.verified == 'true') && hashFiles('.build/ci-logs/jimage-source-only-package-result.json') != '' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: legado-native-reader-unsigned
@@ -195,6 +207,7 @@ jobs:
             .build/reader-experience/*.log
             .build/reader-experience/*.xcresult/
             .build/jimage-native-check/
+            .build/reader-recovery-regression/
             .build/reused-reader-evidence/receipt.json
             Packages/LegadoRuntime/jvm/build/test-results/
           if-no-files-found: error
@@ -205,7 +218,8 @@ jobs:
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'TEXT'
           This compiles the current main reader with a freshly assembled ordinary JVM JAR and the immutable audited Probe 12 native VM. Test fixtures and JUnit are excluded from the reader payload. Source/pin checks, ZIP bytes, module inventory, bytecode, final native exports and packaged resources are checked separately.
-          Self-signing and renewal implementations, tests, tools and workflows are reference-only archive content. Build33 uses optimized non-DEBUG Release for the app and both extensions. The actual compiler file lists and all final app files are checked to reject archived feature code/resources before the IPA can be uploaded. The exact source.zip may contain reference archives; the IPA must not.
+          Self-signing and renewal implementations, tests, tools and workflows are reference-only archive content. Build34 uses optimized non-DEBUG Release for the app and both extensions, preserving Build33 reading-position fixes. The actual compiler file lists and all final app files are checked to reject archived feature code/resources before the IPA can be uploaded. The exact source.zip may contain reference archives; the IPA must not.
+          This build additionally requires fresh exact-source reader-state, bookshelf-refresh and offline-download suites, one held real JNI download-concurrency method and one failure-exit UI method. They reuse this run's Simulator build through test-without-building, with separate raw results, zero failures/skips and complete selected method identities. The UI fixture's traditional source uses the real retained JVM, never a compatibility parser. Older source-equivalent evidence cannot satisfy these new required gates. These are Simulator correctness observations, not measured physical-device speedups or real-site acceptance.
           Normal runs execute the source-only reader position regressions and three exact JNI product methods in fresh Simulator hosts before device packaging. A commit explicitly marked [reuse-reader-tests:42028850565] may instead reuse only that fixed run's verified source-equivalent position/JNI evidence after an exact whole-tree audit-repair allowlist and immutable artifact checks. The original source stamps and raw results remain unchanged; reader-test-reuse.json records the old run/SHA and current packaging SHA. Such a retry freshly builds the ordinary JAR and Release app and audits the package, but does not execute that fresh JAR through JNI or claim new Simulator/device acceptance. Source-only module-image diagnostics still run in the current job. Raw diagnostics remain separate evidence, never IPA resources; device staging freshly creates the device-specific jimage runtime and notices.
           The original native Actions artifact expired. This build restores the identical retained 89,898,489-byte ZIP from one fixed orphan supply commit, verifies its original SHA256, successful producer and unchanged native source inputs, then runs the unchanged extraction and native/JAR audits. The supply commit is outside this reader's history/source snapshot and contains no workflow or private data. This is exact byte reuse, not a new native compilation or renewed availability of the old artifact.
           Original traditional text consumers and the finite mainJs route use Rhino/JVM with the native CoreText reader. Book-source and host coverage remains incomplete. Reader packages contain no built-in book sources; checkout and packaged resources are checked before accepting the manifest. Users import sources in the app.

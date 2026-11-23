@@ -1780,25 +1780,32 @@ struct BookRow: View {
     private let coverW: CGFloat = BookRow.coverSize.width
     private let coverH: CGFloat = BookRow.coverSize.height
     @State private var coverFrame = BookshelfCoverFrameBox()
+    @State private var refreshState: BookshelfBookRefreshState?
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        if isEditing {
-            // Let List retain its native multi-selection accessibility actions.
-            content
-        } else {
-            content
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(BookshelfAccessibility.description(for: book))
-                .accessibilityAddTraits(.isButton)
-                .accessibilityAction { openBook() }
-                .accessibilityActions {
-                    if let onShowWork {
-                        Button(localized("作品詳情")) { onShowWork() }
+        Group {
+            if isEditing {
+                // Let List retain its native multi-selection accessibility actions.
+                content
+            } else {
+                content
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(BookshelfAccessibility.description(for: book))
+                    .accessibilityValue(refreshState?.phase.bookshelfTitle ?? "")
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityAction { openBook() }
+                    .accessibilityActions {
+                        if let onShowWork {
+                            Button(localized("作品詳情")) { onShowWork() }
+                        }
+                        Button(localized("編輯書籍資訊")) { onEdit() }
+                        Button(localized("刪除書籍"), role: .destructive) { onDelete() }
                     }
-                    Button(localized("編輯書籍資訊")) { onEdit() }
-                    Button(localized("刪除書籍"), role: .destructive) { onDelete() }
-                }
+            }
+        }
+        .task(id: book.id) {
+            refreshState = await MainActor.run { ChapterUpdater.state(for: book.id) }
         }
     }
 
@@ -1881,6 +1888,7 @@ struct BookRow: View {
                     }
                     progressBadge
                 }
+                BookshelfRefreshIndicator(phase: refreshState?.phase ?? .idle)
             }
             .padding(.top, 2)
 
@@ -1947,6 +1955,62 @@ struct BookRow: View {
 
 }
 
+private extension BookshelfBookRefreshState.Phase {
+    var bookshelfTitle: String {
+        switch self {
+        case .idle: return ""
+        case .queued: return localized("等待更新")
+        case .refreshing: return localized("更新中")
+        case .completed: return localized("更新完成")
+        case .failed: return localized("更新失敗")
+        case .cancelled: return localized("已取消")
+        }
+    }
+}
+
+/// Receives only this book's phase, without observing the store or coordinator.
+private struct BookshelfRefreshIndicator: View {
+    let phase: BookshelfBookRefreshState.Phase
+
+    @ViewBuilder var body: some View {
+        if phase != .idle {
+            HStack(spacing: DSSpacing.xs) {
+                if phase == .refreshing {
+                    ProgressView().controlSize(.mini).accessibilityHidden(true)
+                } else {
+                    Image(systemName: symbol).accessibilityHidden(true)
+                }
+                Text(phase.bookshelfTitle).lineLimit(1)
+            }
+            .font(DSFont.caption2)
+            .foregroundStyle(phase == .failed ? DSColor.destructive : DSColor.textSecondary)
+        }
+    }
+
+    private var symbol: String {
+        switch phase {
+        case .queued: return "clock"
+        case .completed: return "checkmark.circle"
+        case .failed: return "exclamationmark.circle"
+        case .cancelled: return "xmark.circle"
+        case .idle, .refreshing: return "arrow.clockwise"
+        }
+    }
+}
+
+#if DEBUG
+#Preview("Bookshelf refresh states") {
+    VStack(alignment: .leading, spacing: DSSpacing.sm) {
+        BookshelfRefreshIndicator(phase: .queued)
+        BookshelfRefreshIndicator(phase: .refreshing)
+        BookshelfRefreshIndicator(phase: .completed)
+        BookshelfRefreshIndicator(phase: .failed)
+        BookshelfRefreshIndicator(phase: .cancelled)
+    }
+    .padding(DSSpacing.md)
+}
+#endif
+
 // MARK: - Book Sync Indicator
 
 /// Cloud-in-a-ring shown on a bookshelf row only while the book is downloading
@@ -2000,6 +2064,7 @@ struct BookGridCell: View {
     /// 作品詳情 (5f), offered for every book.
     var onShowWork: (() -> Void)? = nil
     @State private var coverFrame = BookshelfCoverFrameBox()
+    @State private var refreshState: BookshelfBookRefreshState?
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -2092,6 +2157,7 @@ struct BookGridCell: View {
                     .opacity(isEditing ? 0 : 1)
                     .allowsHitTesting(!isEditing)
                 }
+                BookshelfRefreshIndicator(phase: refreshState?.phase ?? .idle)
             }
             // While selecting, the title and author select the book too.
             .contentShape(Rectangle())
@@ -2100,6 +2166,7 @@ struct BookGridCell: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(BookshelfAccessibility.description(for: book))
+        .accessibilityValue(refreshState?.phase.bookshelfTitle ?? "")
         .accessibilityAddTraits(isEditing && isSelected ? [.isButton, .isSelected] : .isButton)
         .accessibilityAction { activate() }
         // The overflow menu is no longer its own element, so its items become the
@@ -2112,6 +2179,9 @@ struct BookGridCell: View {
                 Button(localized("編輯書籍資訊")) { onEdit() }
                 Button(localized("刪除書籍"), role: .destructive) { onDelete() }
             }
+        }
+        .task(id: book.id) {
+            refreshState = await MainActor.run { ChapterUpdater.state(for: book.id) }
         }
     }
 

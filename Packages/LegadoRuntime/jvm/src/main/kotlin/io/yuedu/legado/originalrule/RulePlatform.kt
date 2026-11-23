@@ -38,6 +38,8 @@ internal fun rethrowRuleControlFailure(error: Exception) {
 
 /** No network/browser/update-book capability is inferred from the existing mainJs hosts. */
 open class RulePlatform {
+    /** Trusted embedding policy, never imported source configuration. */
+    open val staticHttpUrlsOnly: Boolean = false
     open suspend fun <T> runWebBook(context: CoroutineContext, action: suspend () -> T): T =
         unsupportedRule("original WebBook execution owner")
     open fun executeUrl(analyzed: AnalyzeUrl): StrResponse = unsupportedRule("original AnalyzeUrl execution")

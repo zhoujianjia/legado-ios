@@ -464,6 +464,7 @@ struct LegadoContentBatchExecutionRequest: @unchecked Sendable {
     let cache: ChapterCacheRepository
     var singleChapter: Bool = false
     var nextChapterURL: String? = nil
+    var staticHttpUrlsOnly: Bool = false
 }
 protocol LegadoOriginalContentBatchExecuting: Sendable {
     func execute(_ request: LegadoContentBatchExecutionRequest) async throws -> LegadoOriginalContentBatchResult
@@ -483,7 +484,8 @@ struct NativeLegadoOriginalContentBatchExecutor: LegadoOriginalContentBatchExecu
             let runtime = try await process.executor()
             try check(request.deadline)
             let session = try await runtime.createSession(sourceJSON: request.sourceJSON,
-                options: NativeLegadoOriginalPreviewExecutor.embeddingOptions(owner: owner))
+                options: NativeLegadoOriginalPreviewExecutor.embeddingOptions(owner: owner,
+                    staticHttpUrlsOnly: request.staticHttpUrlsOnly))
             do {
                 try await process.attachOriginalInvocation(owner: owner, runtime: runtime, session: session,
                     taskID: request.taskID, sourceID: request.sourceID)

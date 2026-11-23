@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import LegadoRuntime
 import os
 import Testing
 @testable import yuedu_app
@@ -278,7 +279,7 @@ struct OfflineDownloadManagerTests {
         )
         // Before the slot pool this hung here forever: the download loop fetched one
         // chapter, awaited it, and only then looked for the next.
-        await fixture.fetcher.waitUntilInFlight(4)
+        try await fixture.fetcher.waitUntilInFlight(4)
         await fixture.fetcher.openGate()
         await fixture.manager.waitUntilIdle()
 
@@ -288,6 +289,63 @@ struct OfflineDownloadManagerTests {
         let task = try #require(fixture.store.books.first?.offlineDownloadTask)
         #expect(task.completedIndices == Set(0...7))
         #expect(fixture.store.books.first?.offlineDownloadState == .available)
+    }
+
+    @Test("pausing a queued book does not wait for another book's occupied slots", .timeLimit(.minutes(1)))
+    @MainActor
+    func queuedSlotCanBeCancelledWithoutWaitingForAnotherBook() async throws {
+        let fixture = makeFixture(chapters: 8)
+        defer { fixture.cleanup() }
+        var other = ReadingBook(title: "Other offline book", author: "Author", contentFilename: "")
+        other.isOnline = true; other.onlineChapters = fixture.book.onlineChapters
+        other.contentPipelineKind = .html
+        fixture.store.replaceBooksFromSync([fixture.book, other])
+        await fixture.fetcher.closeGate()
+        await fixture.manager.start(book: fixture.book, selection: .range(0...7), store: fixture.store)
+        try await fixture.fetcher.waitUntilInFlight(4)
+        await fixture.manager.start(book: other, selection: .range(0...7), store: fixture.store)
+        try await fixture.manager.waitUntilChapterSlotsQueued(1)
+        // The first book's real fetch gate stays closed throughout pause. A cancelled
+        // waiter must finish without borrowing or waiting for any of its four slots.
+        await fixture.manager.pause(bookId: other.id, store: fixture.store)
+        #expect(fixture.store.readingBook(id: other.id)?.offlineDownloadTask?.isPaused == true)
+        #expect(await fixture.fetcher.requestedIndices.count == 4)
+        await fixture.fetcher.openGate()
+        await fixture.manager.waitUntilIdle()
+        #expect(fixture.store.readingBook(id: fixture.book.id)?.offlineDownloadState == .available)
+    }
+
+    @Test("authorization and challenge failures are not automatically retried")
+    @MainActor
+    func authorizationFailuresDoNotSpendMoreRequests() async throws {
+        let failures: [any Error] = [FetchError.httpError(401), FetchError.httpError(403), FetchError.httpError(404),
+            FetchError.cloudflareChallengeRequired("https://fixture.invalid/challenge"),
+            SourceFailure(kind: .authentication, underlying: FetchError.httpError(401)),
+            SourceFailure(kind: .rejected, status: 403, underlying: URLError(.badServerResponse)),
+            SourceFailure(kind: .network, underlying: LegadoRuntimeError(code: "HTTP_ERROR", message: "opaque server failure"))]
+        for error in failures {
+            let fixture = makeFixture(chapters: 1, failingIndices: [0])
+            await fixture.fetcher.setFailureError(error)
+            await fixture.manager.start(book: fixture.book, selection: .range(0...0), store: fixture.store)
+            await fixture.manager.waitUntilIdle()
+            #expect(await fixture.fetcher.requestedIndices == [0])
+            #expect(fixture.store.readingBook(id: fixture.book.id)?.offlineDownloadState == .partial)
+            fixture.cleanup()
+        }
+    }
+
+    @Test("a typed throttling response can retry without losing the chapter claim")
+    @MainActor
+    func throttlingResponseCanRecover() async throws {
+        let fixture = makeFixture(chapters: 1, failingIndices: [0])
+        defer { fixture.cleanup() }
+        await fixture.fetcher.setFailureError(SourceFailure(kind: .rejected, status: 429,
+            underlying: URLError(.badServerResponse)))
+        await fixture.fetcher.setRemainingFailures(1)
+        await fixture.manager.start(book: fixture.book, selection: .range(0...0), store: fixture.store)
+        await fixture.manager.waitUntilIdle()
+        #expect(await fixture.fetcher.requestedIndices == [0, 0])
+        #expect(fixture.store.readingBook(id: fixture.book.id)?.offlineDownloadState == .available)
     }
 
     @Test("removing a download survives a reconcile pass that is mid-validation")
@@ -406,8 +464,12 @@ private actor TestOfflineChapterFetcher: ChapterFetching {
     private(set) var peakConcurrency = 0
     private var inFlight = 0
     private var isGated = false
-    private var gateWaiters: [CheckedContinuation<Void, Never>] = []
-    private var inFlightWatchers: [(target: Int, continuation: CheckedContinuation<Void, Never>)] = []
+    private struct Waiter {
+        let continuation: CheckedContinuation<Void, Error>
+        let timer: Task<Void, Never>
+    }
+    private var gateWaiters: [UUID: Waiter] = [:]
+    private var inFlightWatchers: [UUID: (target: Int, waiter: Waiter)] = [:]
     /// When set, only this many attempts fail before the chapter starts succeeding — models
     /// a transient blip rather than a permanently broken chapter.
     private var remainingFailures: Int?
@@ -440,23 +502,42 @@ private actor TestOfflineChapterFetcher: ChapterFetching {
     func openGate() {
         isGated = false
         let waiters = gateWaiters
-        gateWaiters = []
-        for waiter in waiters { waiter.resume() }
+        gateWaiters = [:]
+        for waiter in waiters.values { waiter.timer.cancel(); waiter.continuation.resume() }
     }
 
     /// Resumes once `target` fetches are simultaneously in flight. Returns immediately if
     /// that many already are.
-    func waitUntilInFlight(_ target: Int) async {
+    func waitUntilInFlight(_ target: Int) async throws {
+        try Task.checkCancellation()
         if inFlight >= target { return }
-        await withCheckedContinuation { continuation in
-            inFlightWatchers.append((target, continuation))
-        }
+        let id = UUID()
+        try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                guard !Task.isCancelled else { continuation.resume(throwing: CancellationError()); return }
+                let timer = Task { [weak self] in
+                    do { try await Task.sleep(for: .seconds(5)) } catch { return }
+                    await self?.cancelWatcher(id, error: URLError(.timedOut))
+                }
+                inFlightWatchers[id] = (target, .init(continuation: continuation, timer: timer))
+            }
+        } onCancel: { Task { await self.cancelWatcher(id, error: CancellationError()) } }
     }
 
     private func noteInFlightChanged() {
-        let reached = inFlightWatchers.filter { inFlight >= $0.target }
-        inFlightWatchers.removeAll { inFlight >= $0.target }
-        for watcher in reached { watcher.continuation.resume() }
+        let reached = inFlightWatchers.filter { inFlight >= $0.value.target }
+        for (id, watcher) in reached {
+            inFlightWatchers.removeValue(forKey: id)
+            watcher.waiter.timer.cancel(); watcher.waiter.continuation.resume()
+        }
+    }
+    private func cancelWatcher(_ id: UUID, error: Error) {
+        guard let value = inFlightWatchers.removeValue(forKey: id) else { return }
+        value.waiter.timer.cancel(); value.waiter.continuation.resume(throwing: error)
+    }
+    private func cancelGate(_ id: UUID, error: Error) {
+        guard let value = gateWaiters.removeValue(forKey: id) else { return }
+        value.timer.cancel(); value.continuation.resume(throwing: error)
     }
 
     func isChapterCached(book: ReadingBook, chapterIndex: Int) async -> Bool {
@@ -475,9 +556,17 @@ private actor TestOfflineChapterFetcher: ChapterFetching {
         noteInFlightChanged()
         defer { inFlight -= 1 }
         if isGated {
-            await withCheckedContinuation { continuation in
-                gateWaiters.append(continuation)
-            }
+            let id = UUID()
+            try await withTaskCancellationHandler {
+                try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                    guard !Task.isCancelled else { continuation.resume(throwing: CancellationError()); return }
+                    let timer = Task { [weak self] in
+                        do { try await Task.sleep(for: .seconds(5)) } catch { return }
+                        await self?.cancelGate(id, error: URLError(.timedOut))
+                    }
+                    gateWaiters[id] = .init(continuation: continuation, timer: timer)
+                }
+            } onCancel: { Task { await self.cancelGate(id, error: CancellationError()) } }
         }
         if failingIndices.contains(chapterIndex) {
             if let remaining = remainingFailures {

@@ -44,6 +44,7 @@ internal class ProductionRulePlatform(
 ) : RulePlatform() {
     private val task: RuntimeTask get() = taskProvider?.invoke() ?: initialTask
     private val hostDispatch = dispatch
+    override val staticHttpUrlsOnly: Boolean get() = task.session.options.staticHttpUrlsOnly
     override val userAgent: String? get() = task.session.options.userAgent
     override fun log(value: Any?): Any? = if (task.sensitiveSourceOperation) value else super.log(value)
     override fun ruleDiagnostic(error: Throwable, loggerName: String, message: String) {

@@ -257,11 +257,45 @@ actor LegadoMainJSSourceService {
     private var sessions: [String: Session] = [:]
     private struct Waiter {
         let id: UUID
+        let mode: SourceLeaseMode
         let continuation: CheckedContinuation<Void, Error>
         let deadlineTask: Task<Void, Never>
     }
+    private enum SourceLeaseMode { case exclusive, contentRead(String) }
     private var busy: Set<String> = []
+    private var contentReaders: [String: Int] = [:]
+    private var contentReadRevisions: [String: String] = [:]
     private var waiters: [String: [Waiter]] = [:]
+    #if DEBUG
+    private struct SourceQueueObserver {
+        let id: UUID
+        let count: Int
+        let continuation: CheckedContinuation<Void, Error>
+        let timer: Task<Void, Never>
+    }
+    private var sourceQueueObservers: [String: [SourceQueueObserver]] = [:]
+    func waitUntilSourceOperationsQueued(_ key: String, count: Int) async throws {
+        try Task.checkCancellation()
+        if (waiters[key]?.count ?? 0) >= count { return }
+        let id = UUID()
+        try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                guard !Task.isCancelled else { continuation.resume(throwing: CancellationError()); return }
+                let timer = Task { [weak self] in
+                    do { try await Task.sleep(for: .seconds(5)) } catch { return }
+                    await self?.finishSourceQueueObserver(key, id: id,
+                        error: LegadoRuntimeError(code: "TIMEOUT", message: "Source queue observation deadline elapsed"))
+                }
+                sourceQueueObservers[key, default: []].append(.init(id: id, count: count, continuation: continuation, timer: timer))
+            }
+        } onCancel: { Task { await self.finishSourceQueueObserver(key, id: id, error: CancellationError()) } }
+    }
+    private func finishSourceQueueObserver(_ key: String, id: UUID, error: Error) {
+        guard let index = sourceQueueObservers[key]?.firstIndex(where: { $0.id == id }),
+              let value = sourceQueueObservers[key]?.remove(at: index) else { return }
+        value.timer.cancel(); value.continuation.resume(throwing: error)
+    }
+    #endif
 
     private struct BookRecord: Codable {
         let version: Int
@@ -458,10 +492,10 @@ actor LegadoMainJSSourceService {
         return Date().addingTimeInterval(operationTimeout)
     }
 
-    private func acquire(_ key: String, deadline: Date) async throws {
+    private func acquire(_ key: String, deadline: Date, mode: SourceLeaseMode = .exclusive) async throws {
         try Task.checkCancellation()
         guard deadline.timeIntervalSinceNow > 0 else { throw failure("TIMEOUT", "Source operation expired while queued") }
-        if busy.insert(key).inserted { return }
+        if waiters[key]?.isEmpty != false, canGrant(key, mode: mode) { grant(key, mode: mode); return }
         let id = UUID()
         try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
@@ -473,12 +507,18 @@ actor LegadoMainJSSourceService {
                     catch { return } // Acquired/cancelled waiters cancel their timer.
                     await self?.timeoutWaiter(id, key: key)
                 }
-                waiters[key, default: []].append(Waiter(id: id, continuation: continuation, deadlineTask: deadlineTask))
+                waiters[key, default: []].append(Waiter(id: id, mode: mode, continuation: continuation, deadlineTask: deadlineTask))
+                #if DEBUG
+                let count = waiters[key]?.count ?? 0
+                let ready = (sourceQueueObservers[key] ?? []).filter { count >= $0.count }
+                sourceQueueObservers[key]?.removeAll { count >= $0.count }
+                for observer in ready { observer.timer.cancel(); observer.continuation.resume() }
+                #endif
             }
         } onCancel: { Task { await self.cancelWaiter(id, key: key) } }
-        if Task.isCancelled { release(key); throw CancellationError() }
+        if Task.isCancelled { release(key, mode: mode); throw CancellationError() }
         if deadline.timeIntervalSinceNow <= 0 {
-            release(key)
+            release(key, mode: mode)
             throw failure("TIMEOUT", "Source operation expired while queued")
         }
     }
@@ -493,14 +533,47 @@ actor LegadoMainJSSourceService {
         let waiter = waiters[key]!.remove(at: index)
         waiter.deadlineTask.cancel()
         waiter.continuation.resume(throwing: error)
+        drainSourceWaiters(key)
     }
-    private func release(_ key: String) {
-        if var queue = waiters[key], !queue.isEmpty {
-            let next = queue.removeFirst()
-            waiters[key] = queue
+    private func canGrant(_ key: String, mode: SourceLeaseMode) -> Bool {
+        guard !busy.contains(key) else { return false }
+        switch mode {
+        case .exclusive: return (contentReaders[key] ?? 0) == 0
+        case .contentRead(let signature):
+            return (contentReaders[key] ?? 0) < 2
+                && (contentReadRevisions[key] == nil || contentReadRevisions[key] == signature)
+        }
+    }
+    private func grant(_ key: String, mode: SourceLeaseMode) {
+        switch mode {
+        case .exclusive: busy.insert(key)
+        case .contentRead(let signature):
+            contentReadRevisions[key] = signature
+            contentReaders[key, default: 0] += 1
+        }
+    }
+    private func release(_ key: String, mode: SourceLeaseMode = .exclusive) {
+        switch mode {
+        case .exclusive: busy.remove(key)
+        case .contentRead:
+            let count = max(0, (contentReaders[key] ?? 0) - 1)
+            if count == 0 {
+                contentReaders.removeValue(forKey: key)
+                contentReadRevisions.removeValue(forKey: key)
+            } else { contentReaders[key] = count }
+        }
+        drainSourceWaiters(key)
+    }
+    private func drainSourceWaiters(_ key: String) {
+        // FIFO writer preference: a queued metadata/stateful operation cannot be
+        // overtaken by later read-content jobs. Existing mutations stay exclusive.
+        while let next = waiters[key]?.first, canGrant(key, mode: next.mode) {
+            waiters[key]?.removeFirst()
+            grant(key, mode: next.mode)
             next.deadlineTask.cancel()
             next.continuation.resume()
-        } else { waiters.removeValue(forKey: key); busy.remove(key) }
+        }
+        if waiters[key]?.isEmpty == true { waiters.removeValue(forKey: key) }
     }
 
     private func saveBook(_ book: [String: Any], source: BookSource, signature: String) throws -> ContextReference {
@@ -1379,8 +1452,13 @@ extension LegadoMainJSSourceService {
                               singleChapter: Bool = false, nextChapterURL: String? = nil) async throws -> LegadoOriginalContentBatchResult {
         let signature = try originalSignature(source)
         try validateOriginalBook(book, sourceURL: source.bookSourceUrl)
-        try await acquire(source.bookSourceUrl, deadline: deadline)
-        defer { release(source.bookSourceUrl) }
+        let auditedRead = OriginalContentReadPolicy.permits(source: source, book: book,
+            chapters: chapters, singleChapter: singleChapter)
+        let mode: SourceLeaseMode = auditedRead ? .contentRead(signature) : .exclusive
+        try await SourcePerfTrace.spanAsync("legado.original.content.queue", "main=\(Thread.isMainThread) chapters=\(chapters.count)") {
+            try await acquire(source.bookSourceUrl, deadline: deadline, mode: mode)
+        }
+        defer { release(source.bookSourceUrl, mode: mode) }
         try acceptOriginalRevision(source, signature: signature)
         try Task.checkCancellation()
         guard deadline.timeIntervalSinceNow > 0 else { throw failure("TIMEOUT", "Original batch deadline elapsed") }
@@ -1388,7 +1466,7 @@ extension LegadoMainJSSourceService {
         return try await contentBatchExecutor.execute(.init(sourceJSON: sourceJSON, sourceURL: source.bookSourceUrl,
             sourceRevision: signature, sourceID: source.id, store: store, bookID: bookID, book: book,
             chapters: chapters, taskID: taskID, deadline: deadline, cache: cache,
-            singleChapter: singleChapter, nextChapterURL: nextChapterURL))
+            singleChapter: singleChapter, nextChapterURL: nextChapterURL, staticHttpUrlsOnly: auditedRead))
     }
 
     private func originalSignature(_ source: BookSource) throws -> String {

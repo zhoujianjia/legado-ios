@@ -45,8 +45,14 @@ def validate_ready(value):
     if (not isinstance(run_id, str) or not 8 <= len(run_id) <= 64
             or any(c not in "0123456789abcdef-" for c in run_id)):
         raise ValueError("Fixture must identify its own fresh run")
-    origin = "http://localhost:18769"
-    if value.get("origin") != origin or value.get("baseURL") != origin + "/fixture/" + run_id:
+    failure = value.get("scenario") == "chapter-failure"
+    if value.get("scenario") not in (None, "chapter-failure"):
+        raise ValueError("Unknown owned fixture scenario")
+    origin = "http://localhost:18770" if failure else "http://localhost:18769"
+    prefix = "/failure-fixture/" if failure else "/fixture/"
+    if failure and value.get("fixture") != "reader-chapter-failure-smoke-v1":
+        raise ValueError("Failure fixture identity mismatch")
+    if value.get("origin") != origin or value.get("baseURL") != origin + prefix + run_id:
         raise ValueError("Only the owned localhost fixture origin is accepted")
     if value.get("sourceURL") != value["baseURL"] + "/sources.json":
         raise ValueError("Fixture import URL does not belong to this run")
@@ -79,7 +85,9 @@ def stop(process):
     return process.poll() is not None
 
 
-def run(work, command):
+def run(work, command, scenario="success"):
+    if scenario not in ("success", "chapter-failure"):
+        raise ValueError("Unknown owned fixture scenario")
     work = smoke.config.checked_path(work)
     work.mkdir(parents=True, exist_ok=True)
     paths = {name: work / name for name in (
@@ -96,11 +104,16 @@ def run(work, command):
     stopped = False
     with paths["online-fixture-server.log"].open("xb") as log:
         try:
-            process = subprocess.Popen([sys.executable, "-B", str(HERE / "online-source-fixture.py"),
-                                        "--port", "18769", "--diagnose-startup",
-                                        "--ready-file", str(paths["online-fixture-ready.json"])],
+            arguments = [sys.executable, "-B", str(HERE / "online-source-fixture.py"),
+                         "--port", "18770" if scenario == "chapter-failure" else "18769", "--diagnose-startup",
+                         "--ready-file", str(paths["online-fixture-ready.json"])]
+            if scenario != "success":
+                arguments += ["--scenario", scenario]
+            process = subprocess.Popen(arguments,
                                        cwd=REPO, stdout=log, stderr=subprocess.STDOUT)
             ready = wait_ready(process, paths["online-fixture-ready.json"])
+            if ready.get("scenario", "success") != scenario:
+                raise ValueError("Owned fixture started a different scenario")
             code = subprocess.run(command, cwd=REPO, check=False).returncode
             if process.poll() is not None:
                 raise RuntimeError("Owned fixture exited while the reader test was executing")
@@ -129,7 +142,7 @@ def run(work, command):
     return code if code is not None and 0 <= code <= 125 else 1
 
 
-def result(work, summary):
+def result(work, summary, scenario="success"):
     work = smoke.config.checked_path(work)
     process = smoke.read_json(work / "online-fixture-process.json")
     if (process.get("sourceCommit") != smoke.source_sha()
@@ -137,11 +150,14 @@ def result(work, summary):
             or process.get("fixtureStopped") is not True or process.get("issue") is not None):
         raise ValueError("Online reader requires this source's successful command and stopped owned fixture")
     ready = validate_ready(process.get("ready"))
+    if ready.get("scenario", "success") != scenario:
+        raise ValueError("Result requires its own exact fixture scenario")
     trace = smoke.read_json(work / "online-fixture-trace.json")
     if trace.get("runId") != ready["runId"]:
         raise ValueError("Online trace does not belong to this fixture process")
     fixture = load("online_reader_fixture_evidence", HERE / "online-source-fixture.py")
-    verified = fixture.verify_trace(trace, expected_run_id=ready["runId"])
+    verified = (fixture.verify_trace(trace, expected_run_id=ready["runId"], scenario=scenario)
+                if scenario != "success" else fixture.verify_trace(trace, expected_run_id=ready["runId"]))
     return {"schemaVersion": 1, "sourceCommit": process["sourceCommit"], "status": "passed",
             "configuration": "Debug", "executionPlatform": "ios-simulator",
             "targetedTests": smoke.verify_summary(summary, 1),

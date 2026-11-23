@@ -5,14 +5,15 @@ import com.google.gson.JsonObject
 /** Embedding configuration, separate from imported book-source data and JS bindings. */
 internal data class RuntimeSessionOptions(val httpTransport: String = "platform-host", val userAgent: String? = null,
                                         val stateOwner: String? = null, val sourceMode: String = "existing",
-                                        val cookieAccess: String = "session-jar") {
+                                        val cookieAccess: String = "session-jar",
+                                        val staticHttpUrlsOnly: Boolean = false) {
     val usesJvmHttp get() = httpTransport == "jvm-okhttp"
     val usesAppCookieOwner get() = cookieAccess in setOf("app-owner-read", "app-owner-text")
     val writesAppCookieOwner get() = cookieAccess == "app-owner-text"
     val usesOriginalTraditional get() = sourceMode == "original-traditional"
     companion object {
         fun parse(options: JsonObject): RuntimeSessionOptions {
-            require(options.keySet().all { it in setOf("httpTransport", "userAgent", "stateOwner", "sourceMode", "cookieAccess") }) { "Unknown runtime session option" }
+            require(options.keySet().all { it in setOf("httpTransport", "userAgent", "stateOwner", "sourceMode", "cookieAccess", "staticHttpUrlsOnly") }) { "Unknown runtime session option" }
             fun string(name: String): String? = options[name]?.let {
                 require(it.isJsonPrimitive && it.asJsonPrimitive.isString) { "$name must be a string" }; it.asString
             }
@@ -30,7 +31,13 @@ internal data class RuntimeSessionOptions(val httpTransport: String = "platform-
             require(cookieAccess in setOf("session-jar", "app-owner-read", "app-owner-text")) { "Unknown Cookie access mode: $cookieAccess" }
             if (cookieAccess != "session-jar" && (sourceMode != "original-traditional" || owner == null))
                 throw RuntimeFailure("UNSUPPORTED_CAPABILITY", "App Cookie owner access requires original traditional mode and an explicit owner")
-            return RuntimeSessionOptions(mode, agent, owner, sourceMode, cookieAccess)
+            val staticUrls = options["staticHttpUrlsOnly"]?.let {
+                require(it.isJsonPrimitive && it.asJsonPrimitive.isBoolean) { "staticHttpUrlsOnly must be a boolean" }
+                it.asBoolean
+            } ?: false
+            if (staticUrls && sourceMode != "original-traditional")
+                throw RuntimeFailure("UNSUPPORTED_CAPABILITY", "Static HTTP URLs require original traditional mode")
+            return RuntimeSessionOptions(mode, agent, owner, sourceMode, cookieAccess, staticUrls)
         }
     }
 }
