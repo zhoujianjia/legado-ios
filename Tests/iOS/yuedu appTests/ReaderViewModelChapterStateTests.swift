@@ -230,6 +230,7 @@ struct ReaderViewModelChapterStateTests {
     func duplicateRequestsDeduplicate() async throws {
         let fetcher = MockChapterFetcher()
         let book = makeBook()
+        let readyPackage = makePackage(bookId: book.id, chapterIndex: 0, content: "deduplicated")
 
         await fetcher.enqueuePending(chapterIndex: 0)
         let viewModel = makeViewModel(chapterFetcher: fetcher)
@@ -239,6 +240,14 @@ struct ReaderViewModelChapterStateTests {
 
         await viewModel.ensureChapterReady(book: book, chapterIndex: 0, priority: .immediate, store: nil)
 
+        // Loading is published before the scheduled fetch starts. Observe the
+        // actual pending request before counting calls, then finish that same
+        // request so this test also detects a replacement or leaked waiter.
+        await waitUntil { await fetcher.hasPendingRequest(for: 0) }
+        #expect(await fetcher.fetchCount(for: 0) == 1)
+        #expect(await fetcher.cancelCount(for: 0) == 0)
+        await fetcher.resolvePending(chapterIndex: 0, with: .success(readyPackage))
+        await waitForState(.ready, in: viewModel, chapterIndex: 0)
         #expect(await fetcher.fetchCount(for: 0) == 1)
     }
 

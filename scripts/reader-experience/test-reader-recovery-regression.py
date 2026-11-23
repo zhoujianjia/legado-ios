@@ -70,7 +70,8 @@ class RecoveryGateTests(unittest.TestCase):
             for relative in ("Modules/Services/Online/ChangeSourceCache.swift",
                              "Modules/Features/Reader/ReaderViewModel.swift",
                              "Modules/Core/BookSource/BookSourceFetcher+OriginalPreview.swift",
-                             "Targets/Yuedu/SharedApp/AppDependencies.swift"):
+                             "Targets/Yuedu/SharedApp/AppDependencies.swift",
+                             "Modules/Services/Online/LegadoPersistentStateHost.swift"):
                 self.assertIn(relative, {item["path"] for item in selected["sourceInputs"]})
             path.write_text('struct '+suite+' {\n@Test(arguments: [1,2])\nfunc one(value: Int) {}\n}')
             with self.assertRaisesRegex(ValueError, "Unsupported selected"):

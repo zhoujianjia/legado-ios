@@ -32,7 +32,7 @@ INPUTS = (".github/workflows/legado-reader.yml", "scripts/reader-experience/jima
           "Tests/iOS-UI/ReaderBookSourceSmokeUITests.swift",
           "Modules/Services/Online/ChangeSourceCache.swift", "Modules/Features/Reader/ReaderViewModel.swift",
           "Modules/Core/BookSource/BookSourceFetcher+OriginalPreview.swift",
-          "Targets/Yuedu/SharedApp/AppDependencies.swift")
+          "Targets/Yuedu/SharedApp/AppDependencies.swift", "Modules/Services/Online/LegadoPersistentStateHost.swift")
 
 
 def require(value, message):

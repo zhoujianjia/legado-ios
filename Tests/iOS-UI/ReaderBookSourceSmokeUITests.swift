@@ -130,6 +130,7 @@ class ReaderBookSourceSmokeTestCase: XCTestCase {
         let basePath = try XCTUnwrap(URL(string: baseURL)?.path)
         let names = ["sources.json", "search", "book.html", "toc.html", "chapter0.html", "chapter1.html"]
         var counts = Dictionary(uniqueKeysWithValues: names.map { (basePath + "/" + $0, 0) })
+        var firstSearchPages = 0
         let records = try XCTUnwrap(trace["requests"] as? [[String: Any]])
         for (index, record) in records.enumerated() {
             XCTAssertEqual(record["sequence"] as? Int, index + 1)
@@ -139,7 +140,13 @@ class ReaderBookSourceSmokeTestCase: XCTestCase {
             XCTAssertNotNil(counts[path], "No unknown business route may be ignored")
             counts[path, default: 0] += 1
             let parameters = try XCTUnwrap(record["query"] as? [String: [String]])
-            XCTAssertEqual(parameters, path.hasSuffix("/search") ? ["q": [query], "page": ["1"]] : [:])
+            if path.hasSuffix("/search") {
+                XCTAssertTrue(parameters == ["q": [query], "page": ["1"]]
+                    || parameters == ["q": [query], "page": ["2"]])
+                if parameters["page"] == ["1"] { firstSearchPages += 1 }
+            } else {
+                XCTAssertEqual(parameters, [:])
+            }
             let response = try XCTUnwrap(record["response"] as? [String: Any])
             XCTAssertEqual(response["status"] as? Int, 200)
             XCTAssertEqual(response["writeCompleted"] as? Bool, true)
@@ -149,11 +156,15 @@ class ReaderBookSourceSmokeTestCase: XCTestCase {
             XCTAssertEqual(response["bodySHA256"] as? String,
                            SHA256.hash(data: body).map { String(format: "%02x", $0) }.joined())
             let text = String(decoding: body, as: UTF8.self)
+            if path.hasSuffix("/search"), parameters["page"] == ["2"] {
+                XCTAssertEqual(text, "<div class=\"empty\">No more fixture books.</div>")
+            }
             XCTAssertFalse(text.contains("JSC_ONLY_"), "The HTTP fixture must never precompute the JS-only marker")
             if path.hasSuffix("/chapter0.html") { XCTAssertTrue(text.contains("RAW_ONLY_CHAPTER_ONE")) }
             if path.hasSuffix("/chapter1.html") { XCTAssertTrue(text.contains("RAW_ONLY_CHAPTER_TWO")) }
         }
         for (path, count) in counts { XCTAssertGreaterThan(count, 0, "Missing actual HTTP request: " + path) }
+        XCTAssertGreaterThan(firstSearchPages, 0)
         return counts
     }
 
@@ -277,7 +288,14 @@ final class ReaderChapterFailureExitUITests: ReaderBookSourceSmokeTestCase {
         showControls(app, identifier: "reader_tool_tableOfContents").tap()
         let chapter = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", secondChapter)).firstMatch
         tapReady(chapter, app: app)
-        requireHiddenChrome(app)
+        // Opening Contents explicitly raised the reader chrome. Selecting a
+        // chapter dismisses that sheet but preserves the chrome; hide it through
+        // the loading page's real tap gesture before releasing the held failure.
+        let loading = try waitForVisiblePage(app, marker: secondChapter, otherChapter: firstMarker)
+        XCTAssertTrue(loading.contains("Loading"), "The held chapter must still be loading before the failure is released")
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        try requireHiddenChrome(app)
+        capture(app, name: "failure-00-hidden-loading-before-response")
         let released = try await fetchJSON(path: "/release-failure?runId=" + fixture.runID)
         XCTAssertEqual(released["firstRequestHeld"] as? Bool, true)
 
@@ -318,15 +336,20 @@ final class ReaderChapterFailureExitUITests: ReaderBookSourceSmokeTestCase {
         let back = app.buttons["reader_chapter_failure_back"].firstMatch
         let shown = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == true AND hittable == true"), object: back)
         XCTAssertEqual(XCTWaiter.wait(for: [shown], timeout: 15), .completed, app.debugDescription)
-        requireHiddenChrome(app)
+        try requireHiddenChrome(app)
         XCTAssertEqual(app.alerts.count, 0)
     }
 
     @MainActor
-    private func requireHiddenChrome(_ app: XCUIApplication) {
+    private func requireHiddenChrome(_ app: XCUIApplication) throws {
         let chrome = app.buttons["reader_back_button"].firstMatch
         let hidden = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false OR hittable == false"), object: chrome)
-        XCTAssertEqual(XCTWaiter.wait(for: [hidden], timeout: 10), .completed,
+        let result = XCTWaiter.wait(for: [hidden], timeout: 10)
+        XCTAssertEqual(result, .completed,
                        "The card's exit must work with reader chrome hidden.\n\(app.debugDescription)")
+        // An async XCTest assertion can begin teardown without stopping its
+        // continuation. Do not release the HTTP gate or keep navigating after
+        // this required precondition failed.
+        if result != .completed { throw NSError(domain: "ReaderFailureSmoke", code: 1) }
     }
 }

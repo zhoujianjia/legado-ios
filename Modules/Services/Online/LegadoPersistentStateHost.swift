@@ -357,10 +357,16 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
     private var originalInvalidations: [String: Task<Void, Never>] = [:]
 #if DEBUG
     private var originalSessionCloseForTesting: (@Sendable (LegadoSourceSession) async throws -> Void)?
+    private var contentBatchPreparationForTesting: (@Sendable (String, String) async throws -> Void)?
 
     /// Replaces only the close boundary; all shared cleanup and proof gates run.
     func setOriginalSessionCloseForTesting(_ operation: (@Sendable (LegadoSourceSession) async throws -> Void)?) {
         originalSessionCloseForTesting = operation
+    }
+
+    /// Holds only metadata preparation; actual App proofs and owner fences still run.
+    func setContentBatchPreparationForTesting(_ operation: (@Sendable (String, String) async throws -> Void)?) {
+        contentBatchPreparationForTesting = operation
     }
 #endif
 
@@ -469,26 +475,48 @@ actor LegadoPersistentStateHost: LegadoPlatformHost {
                           chapters: [OriginalRuntimeBatchChapter], deadline: Date,
                           cache: ChapterCacheRepository = BookSourceFetcher.chapterCacheRepository,
                           singleChapter: Bool = false) async throws -> String {
-        let previous = revisions[sourceURL]
-        guard book.origin.utf8.elementsEqual(sourceURL.utf8),
-              await store.prepareOriginalRuntimeBookSnapshot(id: bookID, sourceID: sourceID, bookURL: book.bookURL) != nil else {
-            throw failure("UNSUPPORTED_CAPABILITY", "Batch requires an existing App book/source UUID")
+        guard book.origin.utf8.elementsEqual(sourceURL.utf8) else {
+            throw failure("UNSUPPORTED_CAPABILITY", "Batch requires its existing App source identity")
         }
-        let backing = try AppLegadoContentBatchOwner(taskID: taskID, store: store, bookID: bookID, sourceID: sourceID,
-            book: book, chapters: chapters, deadline: deadline, cache: cache, singleChapter: singleChapter)
-        for value in chapters {
-            guard let current = try await store.originalRuntimeChapterSnapshot(bookID: bookID,
-                index: value.chapter.index, url: value.chapter.url), current.chapterID == value.chapter.id else {
-                throw failure("UNSUPPORTED_CAPABILITY", "Batch chapter TOC identity is no longer current")
-            }
-            try value.generation.check(deadline: deadline)
-        }
-        try await backing.prepareBookCompletion(deadline: deadline)
-        try Task.checkCancellation(); try await backing.validateState(deadline: deadline)
-        guard revisions[sourceURL] == previous else { throw failure("SOURCE_CHANGED", "Source changed while binding the App batch owner") }
+        try Task.checkCancellation()
+        // Register this one grant before yielding. Cold siblings of the same
+        // revision retain different owner IDs; neither mistakes the other's
+        // initial revision registration for a source change. A real change or
+        // revoke removes this ID permanently, including A -> B -> A changes.
         let owner = try bind(sourceURL: sourceURL, sourceRevision: sourceRevision)
-        bookOwners[owner] = backing; contentOwners[owner] = backing
-        return owner
+        var prepared: AppLegadoContentBatchOwner?
+        do {
+#if DEBUG
+            try await contentBatchPreparationForTesting?(taskID, owner)
+#endif
+            guard await store.prepareOriginalRuntimeBookSnapshot(id: bookID, sourceID: sourceID, bookURL: book.bookURL) != nil else {
+                throw failure("UNSUPPORTED_CAPABILITY", "Batch requires an existing App book/source UUID")
+            }
+            let backing = try AppLegadoContentBatchOwner(taskID: taskID, store: store, bookID: bookID, sourceID: sourceID,
+                book: book, chapters: chapters, deadline: deadline, cache: cache, singleChapter: singleChapter)
+            prepared = backing
+            for value in chapters {
+                guard let current = try await store.originalRuntimeChapterSnapshot(bookID: bookID,
+                    index: value.chapter.index, url: value.chapter.url), current.chapterID == value.chapter.id else {
+                    throw failure("UNSUPPORTED_CAPABILITY", "Batch chapter TOC identity is no longer current")
+                }
+                try value.generation.check(deadline: deadline)
+            }
+            try await backing.prepareBookCompletion(deadline: deadline)
+            try Task.checkCancellation(); try await backing.validateState(deadline: deadline)
+            guard !cancelled.contains(taskID) else { throw CancellationError() }
+            guard let binding = bindings[owner], binding.sourceURL == sourceURL,
+                  binding.sourceRevision == sourceRevision, revisions[sourceURL] == sourceRevision else {
+                throw failure("SOURCE_CHANGED", "Source changed while binding the App batch owner")
+            }
+            // No await or replacement bind between the identity fence and publication.
+            bookOwners[owner] = backing; contentOwners[owner] = backing
+            return owner
+        } catch {
+            prepared?.revoke()
+            revoke(owner: owner)
+            throw error
+        }
     }
 
     func finishContentBatchResult(owner: String, taskID: String, book: LegadoOriginalBook, deadline: Date) async throws -> Bool {

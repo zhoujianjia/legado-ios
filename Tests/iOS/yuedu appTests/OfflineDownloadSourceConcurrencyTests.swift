@@ -135,6 +135,129 @@ struct OfflineDownloadSourceConcurrencyTests {
         #expect(guardedJSON?["staticHttpUrlsOnly"] as? Bool == true)
     }
 
+    @Test("cold same-revision App owner siblings both complete their real metadata proofs")
+    func coldOwnerSiblingsKeepIndependentGrants() async throws {
+        try await withHostFixture { fixture in
+            let first = fixture.start("first", index: 0)
+            let second = fixture.start("second", index: 1)
+            defer { first.cancel(); second.cancel() }
+            try await fixture.probe.waitForEntries(2)
+            await fixture.probe.release("first")
+            let firstOwner = try await finish(first)
+            // Finish one initial registration while the sibling still prepares.
+            // A nil -> same-revision transition must not invalidate that sibling.
+            await fixture.probe.release("second")
+            let secondOwner = try await finish(second)
+            #expect(firstOwner != secondOwner)
+            #expect(try await fixture.host.finishContentBatchResult(owner: firstOwner, taskID: "first",
+                book: fixture.book, deadline: Date().addingTimeInterval(5)) == false)
+            #expect(try await fixture.host.finishContentBatchResult(owner: secondOwner, taskID: "second",
+                book: fixture.book, deadline: Date().addingTimeInterval(5)) == false)
+            let counts = await fixture.host.ownershipCounts()
+            #expect(counts.bindings == 2)
+            #expect(counts.sourceRevisions == 1)
+        }
+    }
+
+    @Test("pending App grants reject revision changes, ABA, revocation and cancellation without leaking owners")
+    func pendingOwnersCannotReviveAfterInvalidation() async throws {
+        for scenario in ["change", "aba", "revoke", "cancel", "cancel-rpc"] {
+            try await withHostFixture { fixture in
+                let pending = fixture.start("pending", index: 0)
+                defer { pending.cancel() }
+                try await fixture.probe.waitForEntries(1)
+                let oldOwner = try #require(await fixture.probe.boundOwners["pending"])
+                var otherOwners: [String] = []
+                do {
+                    switch scenario {
+                    case "change", "aba":
+                        otherOwners.append(try await fixture.host.bind(sourceURL: fixture.sourceURL, sourceRevision: "r2"))
+                        if scenario == "aba" {
+                            otherOwners.append(try await fixture.host.bind(sourceURL: fixture.sourceURL, sourceRevision: "r1"))
+                        }
+                    case "revoke":
+                        await fixture.host.revoke(owner: oldOwner)
+                        otherOwners.append(try await fixture.host.bind(sourceURL: fixture.sourceURL, sourceRevision: "r1"))
+                    case "cancel-rpc":
+                        await fixture.host.cancel(taskID: "pending")
+                        // Host RPC cancellation must reject publication even
+                        // though Swift Task.checkCancellation still succeeds.
+                        #expect(!pending.isCancelled)
+                    default: pending.cancel()
+                    }
+                    await fixture.probe.release("pending")
+                    do {
+                        _ = try await finish(pending)
+                        Issue.record("An invalidated pending owner must not be published: \(scenario)")
+                    } catch {
+                        if scenario == "cancel" || scenario == "cancel-rpc" { #expect(error is CancellationError) }
+                        else { #expect((error as? LegadoRuntimeError)?.code == "SOURCE_CHANGED") }
+                    }
+                } catch {
+                    for owner in otherOwners { await fixture.host.revoke(owner: owner) }
+                    throw error
+                }
+                for owner in otherOwners { await fixture.host.revoke(owner: owner) }
+                let counts = await fixture.host.ownershipCounts()
+                #expect(counts.bindings == 0)
+                #expect(counts.sourceRevisions == 0)
+                #expect(counts.leases == 0)
+            }
+        }
+    }
+
+    private func withHostFixture(_ body: (HostFixture) async throws -> Void) async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("OwnerAdmission-\(UUID().uuidString)", isDirectory: true)
+        let store = await Task.detached { BookStore(metadataFileURL: root.appendingPathComponent("books_meta.json"), legacyMetadataDefaults: nil) }.value
+        let sourceID = UUID(), sourceURL = "https://owner-\(UUID().uuidString).invalid"
+        let refs = (0..<2).map { OnlineChapterRef(index: $0, title: "Chapter \($0)", url: sourceURL + "/c\($0)") }
+        var value = ReadingBook(title: "Owned admission", author: "Owned author", contentFilename: "")
+        value.isOnline = true; value.isInBookshelf = false; value.bookSourceId = sourceID
+        value.bookInfoURL = sourceURL + "/book"; value.tocURL = sourceURL + "/toc"; value.onlineChapters = refs
+        store.saveReadingBook(value)
+        await BookStore.queuedWritesLanded()
+        let book = LegadoOriginalBook(bookURL: sourceURL + "/book", origin: sourceURL,
+            name: value.title, author: value.author, tocURL: sourceURL + "/toc")
+        let chapters = refs.map { ref in OriginalRuntimeBatchChapter(chapter: ref,
+            generation: .init(bookID: value.id, chapter: ref, token: UUID()),
+            dto: .init(bookURL: book.bookURL, url: ref.url, index: Int32(ref.index), title: ref.title, baseURL: book.tocURL)) }
+        let host = LegadoPersistentStateHost(backing: AppLegadoOwnedStateBacking(sources: .shared, login: .shared))
+        let probe = AdmissionProbe()
+        await host.setContentBatchPreparationForTesting { task, owner in try await probe.holdBinding(task, owner: owner) }
+        let fixture = HostFixture(host: host, probe: probe, store: store, bookID: value.id,
+            sourceID: sourceID, sourceURL: sourceURL, book: book, chapters: chapters,
+            cache: ChapterCacheRepository(rootDirectory: root.appendingPathComponent("cache", isDirectory: true)))
+        var problem: Error?
+        do { try await body(fixture) } catch { problem = error }
+        await probe.releaseAll()
+        for owner in await probe.boundOwners.values { await host.revoke(owner: owner) }
+        await host.setContentBatchPreparationForTesting(nil)
+        for chapter in chapters { chapter.generation.revoke() }
+        await BookStore.queuedWritesLanded()
+        do { try await Task.detached { try FileManager.default.removeItem(at: root) }.value }
+        catch { if problem == nil { problem = error } }
+        if let problem { throw problem }
+    }
+
+    private struct HostFixture {
+        let host: LegadoPersistentStateHost
+        let probe: AdmissionProbe
+        let store: BookStore
+        let bookID: UUID
+        let sourceID: UUID
+        let sourceURL: String
+        let book: LegadoOriginalBook
+        let chapters: [OriginalRuntimeBatchChapter]
+        let cache: ChapterCacheRepository
+        func start(_ task: String, index: Int) -> Task<String, Error> {
+            Task {
+                try await host.bindContentBatch(sourceURL: sourceURL, sourceRevision: "r1", taskID: task,
+                    store: store, bookID: bookID, sourceID: sourceID, book: book, chapters: [chapters[index]],
+                    deadline: Date().addingTimeInterval(10), cache: cache, singleChapter: true)
+            }
+        }
+    }
+
     private func finish<T: Sendable>(_ task: Task<T, Error>) async throws -> T {
         defer { task.cancel() }
         return try await withThrowingTaskGroup(of: T.self) { group in
@@ -195,6 +318,7 @@ private actor AdmissionProbe: LegadoOriginalContentBatchExecuting {
     private(set) var entries: [String] = []
     private(set) var peak = 0
     private(set) var staticURLFlags: [String: Bool] = [:]
+    private(set) var boundOwners: [String: String] = [:]
     private var running = 0
     private struct Gate {
         let continuation: CheckedContinuation<Void, Error>
@@ -203,10 +327,17 @@ private actor AdmissionProbe: LegadoOriginalContentBatchExecuting {
     private var gates: [String: Gate] = [:]
     private var observers: [UUID: (Int, Gate)] = [:]
     func execute(_ request: LegadoContentBatchExecutionRequest) async throws -> LegadoOriginalContentBatchResult {
-        entries.append(request.taskID); running += 1; peak = max(peak, running)
         staticURLFlags[request.taskID] = request.staticHttpUrlsOnly
+        try await hold(request.taskID)
+        return .init(book: request.book, missingChapters: [])
+    }
+    func holdBinding(_ id: String, owner: String) async throws {
+        boundOwners[id] = owner
+        try await hold(id)
+    }
+    private func hold(_ id: String) async throws {
+        entries.append(id); running += 1; peak = max(peak, running)
         defer { running -= 1 }
-        let id = request.taskID
         try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
                 guard !Task.isCancelled else { continuation.resume(throwing: CancellationError()); return }
@@ -221,7 +352,6 @@ private actor AdmissionProbe: LegadoOriginalContentBatchExecuting {
                 }
             }
         } onCancel: { Task { await self.cancelRun(id, error: CancellationError()) } }
-        return .init(book: request.book, missingChapters: [])
     }
     func waitForEntries(_ count: Int) async throws {
         try Task.checkCancellation()

@@ -24,6 +24,7 @@ FIXTURE = "reader-book-source-smoke-v1"
 FAILURE_SCENARIO = "chapter-failure"
 FAILURE_FIXTURE = "reader-chapter-failure-smoke-v1"
 QUERY = "OnlineSmoke"
+EMPTY_SEARCH_PAGE = b'<div class="empty">No more fixture books.</div>'
 DETAIL_MARKER = "ONLINE_DETAIL_HTTP_RESPONSE"
 CHAPTERS = ("Chapter 1 Opening", "Chapter 2 Crossing")
 RAW_MARKERS = ("RAW_ONLY_CHAPTER_ONE", "RAW_ONLY_CHAPTER_TWO")
@@ -215,12 +216,18 @@ class Handler(BaseHTTPRequestHandler):
                 status, content_type, answer = 405, "application/json; charset=utf-8", encoded({"error": "GET required"})
             elif parsed.path not in server.routes:
                 status, content_type, answer = 404, "application/json; charset=utf-8", encoded({"error": "Unknown current-run route"})
-            elif query != ({"q": [QUERY], "page": ["1"]} if parsed.path.endswith("/search") else {}):
+            elif query not in ([{"q": [QUERY], "page": ["1"]}, {"q": [QUERY], "page": ["2"]}]
+                               if parsed.path.endswith("/search") else [{}]):
                 status, content_type, answer = 400, "application/json; charset=utf-8", encoded({"error": "Unexpected query"})
             elif body:
                 status, content_type, answer = 400, "application/json; charset=utf-8", encoded({"error": "GET body must be empty"})
             else:
                 content_type, answer = server.routes[parsed.path]
+                # The retained original search reports its actual result page,
+                # so aggregate search may probe page two. End pagination with a
+                # real empty HTML page rather than a fixture-only HTTP error.
+                if parsed.path.endswith("/search") and query["page"] == ["2"]:
+                    answer = EMPTY_SEARCH_PAGE
                 status = 500 if server.scenario == FAILURE_SCENARIO and parsed.path.endswith("/chapter1.html") else 200
         except (ValueError, TimeoutError, OSError) as failure:
             status, content_type, answer = 400, "application/json; charset=utf-8", encoded({"error": str(failure)})
@@ -290,6 +297,7 @@ def verify_trace(trace, expected_run_id=None, scenario="success"):
     records = trace.get("requests")
     require(isinstance(records, list) and records, "No business requests captured")
     counts = {path: 0 for path in expected}
+    search_pages = {"1": 0, "2": 0}
     for sequence, request in enumerate(records, 1):
         require(isinstance(request, dict) and request.get("sequence") == sequence, "Missing/invalid request sequence")
         path = request.get("path")
@@ -297,7 +305,13 @@ def verify_trace(trace, expected_run_id=None, scenario="success"):
         target = request.get("target")
         require(isinstance(target, str) and target.startswith("/"), "Missing origin-form request target")
         parsed = urlsplit(target)
-        query = {"q": [QUERY], "page": ["1"]} if path.endswith("/search") else {}
+        query = request.get("query") if path.endswith("/search") else {}
+        if path.endswith("/search"):
+            require(query in ({"q": [QUERY], "page": ["1"]}, {"q": [QUERY], "page": ["2"]}),
+                    "Search query differs from the finite fixture pages")
+            page = query["page"][0]
+            require(page == "1" or search_pages["1"] > 0, "An empty search page requires the first result page")
+            search_pages[page] += 1
         require(not parsed.scheme and not parsed.netloc and not parsed.fragment and parsed.path == path
                 and parse_qs(parsed.query, keep_blank_values=True) == query and request.get("query") == query,
                 "Request target/query differs from fixture contract")
@@ -312,6 +326,8 @@ def verify_trace(trace, expected_run_id=None, scenario="success"):
         require(isinstance(response, dict) and response.get("status") == expected_status
                 and response.get("writeCompleted") is True and "writeError" not in response, "Business response did not complete successfully")
         content_type, wanted = expected[path]
+        if path.endswith("/search") and query["page"] == ["2"]:
+            wanted = EMPTY_SEARCH_PAGE
         try:
             actual = base64.b64decode(response["bodyBase64"], validate=True)
         except (KeyError, TypeError, ValueError) as failure:
@@ -322,6 +338,7 @@ def verify_trace(trace, expected_run_id=None, scenario="success"):
         require(b"JSC_ONLY_" not in actual, "HTTP fixture must not supply the JSC-only visible marker")
         counts[path] += 1
     require(all(counts.values()), "Missing required real HTTP requests: " + repr([path for path, count in counts.items() if not count]))
+    require(search_pages["1"] > 0, "Missing first search result page")
     if scenario == FAILURE_SCENARIO:
         require(trace.get("failureControl") == {"firstRequestHeld": True, "releasedByControl": True},
                 "First failed prefetch must be held and explicitly released after UI selection")
@@ -332,6 +349,7 @@ def verify_trace(trace, expected_run_id=None, scenario="success"):
                 and "heldForReaderSelection" not in failures[1], "Only the initial failed request may be held")
     return {"schemaVersion": 1, "fixture": info["fixture"], "passed": True, "runId": run_id,
             "origin": origin, "baseURL": info["baseURL"], "requestCount": len(records), "routeCounts": counts,
+            "searchPages": search_pages,
             "responseSHA256": {path: digest(body) for path, (_, body) in expected.items()},
             "provesJVMCompatibility": False, "deviceValidationPassed": False}
 

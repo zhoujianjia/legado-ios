@@ -49,7 +49,7 @@ class FailureFixtureTests(unittest.TestCase):
         with response:
             return response.status, response.read()
 
-    def complete(self):
+    def complete(self, include_second_page=False):
         base = self.server.info["baseURL"].removeprefix(self.server.info["origin"])
         for route in fixture.ROUTES:
             query = "?q=OnlineSmoke&page=1" if route == "search" else ""
@@ -62,6 +62,10 @@ class FailureFixtureTests(unittest.TestCase):
             else:
                 status, _ = self.get(base + "/" + route + query)
             self.assertEqual(status, 500 if route == "chapter1.html" else 200)
+            if route == "search" and include_second_page:
+                page_status, page_body = self.get(base + "/search?q=OnlineSmoke&page=2")
+                self.assertEqual(page_status, 200)
+                self.assertEqual(page_body, fixture.EMPTY_SEARCH_PAGE)
         self.get(base + "/chapter1.html")
         # Await the actual completed write before taking a trace snapshot.
         status, body = self.get("/failure-observed?runId=" + self.server.info["runId"] + "&count=2")
@@ -95,6 +99,26 @@ class FailureFixtureTests(unittest.TestCase):
     def test_failure_observer_is_bound_to_this_run_and_bounded_count(self):
         for suffix in ("runId=other&count=1", "runId=" + self.server.info["runId"] + "&count=3"):
             self.assertEqual(self.get("/failure-observed?" + suffix)[0], 400)
+
+    def test_real_second_search_page_is_empty_success_and_keeps_two_chapter_failures(self):
+        trace = self.complete(include_second_page=True)
+        result = fixture.verify_trace(trace, self.server.info["runId"], scenario=fixture.FAILURE_SCENARIO)
+        self.assertEqual(result["requestCount"], 8)
+        self.assertEqual(result["searchPages"], {"1": 1, "2": 1})
+        self.assertEqual(sum(row["path"].endswith("/chapter1.html") for row in trace["requests"]), 2)
+
+    def test_finite_search_page_contract_rejects_repeated_body_and_unconfigured_page(self):
+        trace = self.complete(include_second_page=True)
+        searches = [row for row in trace["requests"] if row["path"].endswith("/search")]
+        altered_body = deepcopy(trace)
+        altered_body["requests"][searches[1]["sequence"] - 1]["response"] = deepcopy(searches[0]["response"])
+        unknown_page = deepcopy(trace)
+        row = unknown_page["requests"][searches[1]["sequence"] - 1]
+        row["query"]["page"] = ["3"]
+        row["target"] = row["target"].replace("page=2", "page=3")
+        for bad in (altered_body, unknown_page):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                fixture.verify_trace(bad, self.server.info["runId"], scenario=fixture.FAILURE_SCENARIO)
 
 
 class FailureVerdictTests(unittest.TestCase):
