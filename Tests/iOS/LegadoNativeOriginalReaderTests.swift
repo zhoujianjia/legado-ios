@@ -2231,7 +2231,10 @@ private final class NativeOriginalLoopbackServer: @unchecked Sendable {
             return (connection, Data(Data(requests[index].responseBody.utf8).dropFirst()), index)
         }
         guard let (connection, body, index) = pending else { return }
-        connection.send(content: body, contentContext: .finalMessage, isComplete: true,
+        // Complete the same stream context that sent the held prefix. TCP will
+        // not process a different context while that earlier message is incomplete.
+        // Completing defaultStream also writes FIN after the remaining body bytes.
+        connection.send(content: body, contentContext: .defaultStream, isComplete: true,
             completion: .contentProcessed { [weak self] error in
                 guard let self else { connection.cancel(); return }
                 if let error { self.recordError("Held response completion failed: \(error)") }
@@ -2364,7 +2367,7 @@ private final class NativeOriginalLoopbackServer: @unchecked Sendable {
         let header = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: \(content.count)\r\n" + setCookie + "Connection: close\r\n\r\n"
         var response = Data(header.utf8)
         response.append(entry.1 ? Data(content.prefix(1)) : content)
-        connection.send(content: response, contentContext: entry.1 ? .defaultMessage : .finalMessage, isComplete: !entry.1,
+        connection.send(content: response, contentContext: entry.1 ? .defaultStream : .finalMessage, isComplete: !entry.1,
             completion: .contentProcessed { [weak self] error in
                 guard let self else { connection.cancel(); return }
                 if let error { self.recordError("Response write failed: \(error)"); connection.cancel(); return }
