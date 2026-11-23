@@ -413,10 +413,7 @@ final class ReaderViewModel: ObservableObject {
     /// its TOC exactly once — the commit used to fetch it a second time.
     func prepareTOCPackage(for origin: BookOrigin) async throws -> TOCPackage {
         let key = ChangeSourceCache.originKey(sourceId: origin.sourceId, bookUrl: origin.bookUrl)
-        if let cached = searchTOCCache[key] {
-            Self.recordPreparedTOC(chapters: cached.chapters.count, cacheHit: true)
-            return cached
-        }
+        let cached = searchTOCCache[key]
         guard let source = BookSourceStore.shared.source(id: origin.sourceId)
         else {
             let error = NSError(
@@ -442,32 +439,78 @@ final class ReaderViewModel: ObservableObject {
         // source's bookInfo JS uses to stash chapter-list state.
         var tocUrl = origin.tocUrl.trimmingCharacters(in: .whitespacesAndNewlines)
         var tocRuntimeVariables = origin.runtimeVariables
+        let previewKey = LegadoMainJSSourceService.originalPreviewContextKey
+        if !source.isJsSource, cached?.runtimeVariables?[previewKey] != nil {
+            tocRuntimeVariables = cached?.runtimeVariables
+            if tocUrl.isEmpty { tocUrl = cached?.tocURL ?? "" }
+        }
+        // Preserve the search metadata while validating its original source/book
+        // identity. A source switch must never rename the book being read.
+        var knownBook = OnlineBook(
+            name: "",
+            author: "",
+            intro: origin.intro,
+            coverUrl: origin.coverUrl,
+            bookUrl: origin.bookUrl,
+            tocUrl: tocUrl,
+            wordCount: origin.wordCount,
+            lastChapter: origin.lastChapter,
+            kind: origin.kind,
+            sourceId: origin.sourceId,
+            sourceName: origin.sourceName,
+            runtimeVariables: tocRuntimeVariables
+        )
+        if !source.isJsSource, cached != nil || !tocUrl.isEmpty, tocRuntimeVariables?[previewKey] != nil {
+            // Validate before a memory-cache hit too. A completed handoff forks
+            // its owner, so the old context's chapter IDs cannot be reused.
+            do {
+                tocRuntimeVariables = try await bookSourceFetcher.prepareOriginalBookPreview(
+                    source: source, knownBook: knownBook)
+                knownBook.runtimeVariables = tocRuntimeVariables
+            } catch {
+                // A fresh search may carry a new valid reference after this
+                // memory entry's source/owner changed. Only those explicit
+                // validation failures invalidate the cached owner; IO, timeout
+                // and cancellation errors retain their normal failure path.
+                guard let typed = error as? LegadoRuntimeError, !Task.isCancelled,
+                      ["CONTEXT_MISMATCH", "CONTEXT_CORRUPT", "STATE_CONFLICT", "INVALID_STATE_OWNER"].contains(typed.code),
+                      let cachedReference = cached?.runtimeVariables?[previewKey],
+                      let currentReference = origin.runtimeVariables?[previewKey], currentReference != cachedReference else {
+                    Self.recordSourceTOCFailure(error, phase: .detail)
+                    throw error
+                }
+                if let removed = searchTOCCache.removeValue(forKey: key) {
+                    searchTOCChapterCount = max(0, searchTOCChapterCount - removed.chapters.count)
+                }
+                tocUrl = origin.tocUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+                knownBook.tocUrl = tocUrl
+                knownBook.runtimeVariables = origin.runtimeVariables
+                do {
+                    tocRuntimeVariables = try await bookSourceFetcher.prepareOriginalBookPreview(
+                        source: source, knownBook: knownBook)
+                    knownBook.runtimeVariables = tocRuntimeVariables
+                } catch {
+                    Self.recordSourceTOCFailure(error, phase: .detail)
+                    throw error
+                }
+            }
+        }
+        if let cached {
+            if source.isJsSource || cached.runtimeVariables?[previewKey] == tocRuntimeVariables?[previewKey] {
+                Self.recordPreparedTOC(chapters: cached.chapters.count, cacheHit: true)
+                return cached
+            }
+            if let removed = searchTOCCache.removeValue(forKey: key) {
+                searchTOCChapterCount = max(0, searchTOCChapterCount - removed.chapters.count)
+            }
+        }
         if tocUrl.isEmpty {
-            // Hand over what the 換源 search already established, so a detail page that omits a
-            // field keeps the origin's value instead of blanking it. name/author are deliberately
-            // left empty: `BookOrigin` carries none (a source switch keeps the book's identity,
-            // which lives on the ReadingBook, not on the origin), and this path exists only to
-            // resolve a missing tocUrl — the switch must never rename the book being read.
-            let knownBook = OnlineBook(
-                name: "",
-                author: "",
-                intro: origin.intro,
-                coverUrl: origin.coverUrl,
-                bookUrl: origin.bookUrl,
-                tocUrl: origin.tocUrl,
-                wordCount: origin.wordCount,
-                lastChapter: origin.lastChapter,
-                kind: origin.kind,
-                sourceId: origin.sourceId,
-                sourceName: origin.sourceName,
-                runtimeVariables: origin.runtimeVariables
-            )
             let info: BookInfoPackage
             do {
                 info = try await bookSourceFetcher.fetchBookInfoPackage(
                     url: origin.bookUrl,
                     source: source,
-                    runtimeVariables: origin.runtimeVariables,
+                    runtimeVariables: tocRuntimeVariables,
                     knownBook: knownBook
                 )
             } catch {

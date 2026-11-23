@@ -89,6 +89,15 @@ enum OriginalBookAdoption {
 }
 
 extension BookSourceFetching {
+    func prepareOriginalBookPreview(source: BookSource, knownBook: OnlineBook) async throws -> [String: String]? {
+        guard !source.isJsSource,
+              knownBook.runtimeVariables?[LegadoMainJSSourceService.originalPreviewContextKey] != nil else {
+            return knownBook.runtimeVariables
+        }
+        throw LegadoRuntimeError(code: "UNSUPPORTED_CAPABILITY",
+            message: "Original preview preparation needs the existing live source dependency")
+    }
+
     /// A stored book supplies its actual current chapter projection to an
     /// isolated metadata preview. This grants neither a cache writer nor an App
     /// UUID; its normal BookStore commit and explicit transfer still own adoption.

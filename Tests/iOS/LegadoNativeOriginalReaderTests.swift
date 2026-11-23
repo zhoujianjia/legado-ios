@@ -903,8 +903,125 @@ final class LegadoNativeOriginalReaderTests: XCTestCase {
                 fixture.prefix + "/c1", fixture.prefix + "/c1p2", fixture.prefix + "/c2"])
             XCTAssertTrue(requests.allSatisfy { $0.fixtureHeader == fixture.runID && $0.method == "GET" })
             XCTAssertTrue(requests.dropFirst().allSatisfy { $0.cookie.contains(fixture.cookieName + "=wire") })
+            try await self.assertCachedTransferredOriginCanPrepareTOC(fixture, service: reopened,
+                detail: detail, transferredTOC: transferTOC, store: owned.store, bookID: owned.book.id)
             try await reopened.closeSessions()
         }
+    }
+
+    @MainActor
+    private func assertCachedTransferredOriginCanPrepareTOC(_ fixture: Fixture,
+        service: LegadoMainJSSourceService, detail: BookInfoPackage,
+        transferredTOC: TOCPackage, store: BookStore, bookID: UUID) async throws {
+        let previousSources = BookSourceStore.shared.sources
+        BookSourceStore.shared.sources = previousSources + [fixture.source]
+        defer { BookSourceStore.shared.sources = previousSources }
+
+        let origin = BookOrigin(sourceId: fixture.source.id, sourceName: fixture.source.bookSourceName,
+            bookUrl: detail.bookURL, tocUrl: detail.tocUrl, coverUrl: detail.coverUrl,
+            intro: detail.intro, lastChapter: detail.lastChapter, wordCount: detail.wordCount,
+            kind: detail.kind, runtimeVariables: transferredTOC.runtimeVariables)
+        XCTAssertFalse(origin.tocUrl.isEmpty)
+        let requestsBefore = fixture.peer.snapshot.requests.count
+        do {
+            _ = try await service.originalTOC(url: origin.tocUrl, source: fixture.source,
+                runtimeVariables: origin.runtimeVariables)
+            XCTFail("A transferred preview must not become an active TOC owner")
+        } catch let error as LegadoRuntimeError { XCTAssertEqual(error.code, "INVALID_STATE_OWNER") }
+        XCTAssertEqual(fixture.peer.snapshot.requests.count, requestsBefore)
+
+        // Round-trip the complete candidate through the actual reader cache.
+        // Reopening a new reader must not depend on its old in-memory TOC map.
+        let directory = fixture.root.appendingPathComponent("source-change", isDirectory: true)
+        let cache = ChangeSourceCache(directory: directory)
+        let context = try await Task.detached {
+            try ChangeSourceCache.SearchContext.make(title: detail.name, author: "Owned author", sources: [fixture.source])
+        }.value
+        let attempts: [UUID: BookOriginSearchAttempt.Outcome] = [fixture.source.id: .results]
+        await cache.storeCompleted(origins: [origin], for: bookID, sourceIDs: [fixture.source.id],
+            excludingOriginKey: "", coverage: ChangeSourceCache.coverage(
+                sourceIDs: [fixture.source.id], attempts: attempts, completed: true),
+            context: context, acceptedAttempts: attempts)
+        let snapshot = await ChangeSourceCache(directory: directory).readForSearch(for: bookID, days: 1,
+            sourceIDs: [fixture.source.id], excludingOriginKey: "another-current-origin", allowCached: true, context: context)
+        XCTAssertTrue(snapshot.canEndSearch)
+        let cached = try XCTUnwrap(snapshot.displayOrigins.first)
+        XCTAssertEqual(cached.runtimeVariables, origin.runtimeVariables)
+
+        let fetcher = BookSourceFetcher(mainJSService: service)
+        let web = WebViewFetcher.shared
+        let manager = ChapterFetchManager(bookSourceFetcher: fetcher, webViewFetcher: web,
+            sourceResolver: { _ in fixture.source })
+        let coordinator = OnlineBookCoordinator(bookSourceFetcher: fetcher,
+            chapterFetchManager: manager, webViewFetcher: web)
+        let model = ReaderViewModel(chapterFetcher: LiveChapterFetcher(chapterFetchManager: manager),
+            bookCoordinator: coordinator, bookSourceFetcher: LiveBookSourceFetcher(bookSourceFetcher: fetcher))
+        let prepared = try await model.prepareTOCPackage(for: cached)
+        XCTAssertEqual(prepared.chapters.map(\.url), transferredTOC.chapters.map(\.url))
+        XCTAssertEqual(prepared.runtimeVariables?["nativeInfo"], origin.runtimeVariables?["nativeInfo"])
+        let oldReference = try XCTUnwrap(origin.runtimeVariables?[LegadoMainJSSourceService.originalPreviewContextKey])
+        let newReference = try XCTUnwrap(prepared.runtimeVariables?[LegadoMainJSSourceService.originalPreviewContextKey])
+        XCTAssertNotEqual(newReference, oldReference)
+        XCTAssertEqual(fixture.peer.snapshot.requests.dropFirst(requestsBefore).map(\.target),
+            [fixture.prefix + "/toc", fixture.prefix + "/toc2"])
+        XCTAssertEqual(cache.entry(for: bookID)?.origins.first?.runtimeVariables, origin.runtimeVariables)
+
+        // Complete the real product handoff, then select the candidate again in
+        // this same reader. Its memory cache must replace transferred owners
+        // and chapter identities, while the next active hit needs no HTTP.
+        let live = LiveBookSourceFetcher(bookSourceFetcher: fetcher)
+        try await store.updateOnlineBookSource(bookId: bookID, origin: cached,
+            preparedTOC: prepared, bookSourceFetcher: live)
+        let selectedAgain = try await model.prepareTOCPackage(for: cached)
+        let selectedReference = try XCTUnwrap(selectedAgain.runtimeVariables?[LegadoMainJSSourceService.originalPreviewContextKey])
+        XCTAssertNotEqual(selectedReference, newReference)
+        XCTAssertNotEqual(selectedAgain.chapters.map(\.id), prepared.chapters.map(\.id))
+        XCTAssertEqual(fixture.peer.snapshot.requests.dropFirst(requestsBefore).map(\.target),
+            [fixture.prefix + "/toc", fixture.prefix + "/toc2", fixture.prefix + "/toc", fixture.prefix + "/toc2"])
+        let afterReprepare = fixture.peer.snapshot.requests.count
+        let activeHit = try await model.prepareTOCPackage(for: cached)
+        XCTAssertEqual(activeHit.chapters.map(\.id), selectedAgain.chapters.map(\.id))
+        XCTAssertEqual(fixture.peer.snapshot.requests.count, afterReprepare)
+
+        // The fork does not reactivate the old reference or accept another book.
+        do {
+            _ = try await service.originalTOC(url: origin.tocUrl, source: fixture.source,
+                runtimeVariables: origin.runtimeVariables)
+            XCTFail("Forking must leave the transferred owner inactive")
+        } catch let error as LegadoRuntimeError { XCTAssertEqual(error.code, "INVALID_STATE_OWNER") }
+        var foreign = cached; foreign.bookUrl += "/another-book"
+        let requestsAfter = fixture.peer.snapshot.requests.count
+        do {
+            _ = try await model.prepareTOCPackage(for: foreign)
+            XCTFail("Cached preview references must retain their original book identity")
+        } catch let error as LegadoRuntimeError { XCTAssertEqual(error.code, "CONTEXT_MISMATCH") }
+        XCTAssertEqual(fixture.peer.snapshot.requests.count, requestsAfter)
+
+        // A newly obtained, valid source-revision reference must not be blocked
+        // by the previous revision's in-memory TOC. No search result is forged:
+        // the normal owner creates this explicit known-book metadata preview.
+        var revisedSource = fixture.source
+        revisedSource.lastUpdateTime += 1
+        var revisedHeaders = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(revisedSource.header.utf8)) as? [String: String])
+        revisedHeaders["X-Owned-Revision"] = "new"
+        revisedSource.header = String(decoding: try JSONSerialization.data(withJSONObject: revisedHeaders), as: UTF8.self)
+        var known = detail.onlineBook
+        known.runtimeVariables = OriginalBookAdoption.variables(origin.runtimeVariables)
+        let freshVariables = try await service.prepareOriginalBookPreview(url: known.bookUrl,
+            source: revisedSource, runtimeVariables: known.runtimeVariables, knownBook: known)
+        var fresh = cached; fresh.runtimeVariables = freshVariables
+        BookSourceStore.shared.sources = previousSources + [revisedSource]
+        let refreshed = try await model.prepareTOCPackage(for: fresh)
+        XCTAssertEqual(refreshed.runtimeVariables?[LegadoMainJSSourceService.originalPreviewContextKey],
+            freshVariables[LegadoMainJSSourceService.originalPreviewContextKey])
+        XCTAssertNotEqual(refreshed.chapters.map(\.id), selectedAgain.chapters.map(\.id))
+        XCTAssertEqual(fixture.peer.snapshot.requests.dropFirst(requestsAfter).map(\.target),
+            [fixture.prefix + "/toc", fixture.prefix + "/toc2"])
+        attach(["transferredReferenceRemainsInactive": true, "cachedNonemptyTOCSafelyForked": true,
+            "sameReaderReplacesTransferredTOC": true, "activeTOCHitRequiresNoHTTP": true,
+            "newSourceReferenceReplacesObsoleteMemoryTOC": true,
+            "extraSearchOrDetailRequests": 0, "foreignBookReferenceRejected": true],
+            name: "OriginalNative-cached-transferred-origin")
     }
 
     func testNativeOriginalAuditedDownloadsOverlapHeldHTTPAndPreserveOwners() async throws {

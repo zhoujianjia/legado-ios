@@ -17,6 +17,10 @@ protocol BookSourceFetching {
     /// fetcher's existing service. Implementations without original contexts do no work.
     @MainActor func noteOriginalExploreAppPause()
 
+    /// Validates an existing original preview, forking a completed handoff before
+    /// another metadata selection. This performs no detail or search request.
+    func prepareOriginalBookPreview(source: BookSource, knownBook: OnlineBook) async throws -> [String: String]?
+
     func fetchBookInfoPackage(
         url: String,
         source: BookSource,
@@ -225,6 +229,15 @@ struct LiveWebContentFetcher: WebContentFetching {
 
 struct LiveBookSourceFetcher: BookSourceFetching {
     let bookSourceFetcher: BookSourceFetcher
+
+    func prepareOriginalBookPreview(source: BookSource, knownBook: OnlineBook) async throws -> [String: String]? {
+        guard !source.isJsSource,
+              knownBook.runtimeVariables?[LegadoMainJSSourceService.originalPreviewContextKey] != nil else {
+            return knownBook.runtimeVariables
+        }
+        return try await bookSourceFetcher.mainJSService.prepareOriginalBookPreview(url: knownBook.bookUrl,
+            source: source, runtimeVariables: knownBook.runtimeVariables, knownBook: knownBook)
+    }
 
     func searchOutcome(query: String, in source: BookSource,
         earlyFilter: ((_ name: String, _ author: String) -> Bool)?) async throws -> BookSourceSearchOutcome {

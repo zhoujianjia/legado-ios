@@ -68,7 +68,9 @@ class RecoveryGateTests(unittest.TestCase):
             self.assertEqual(len(selected["groups"]["unit"]), len(gate.SUITES) * 2)
             self.assertEqual(selected["groups"]["native-download"], {gate.NATIVE_METHOD: 1})
             for relative in ("Modules/Services/Online/ChangeSourceCache.swift",
-                             "Modules/Features/Reader/ReaderViewModel.swift"):
+                             "Modules/Features/Reader/ReaderViewModel.swift",
+                             "Modules/Core/BookSource/BookSourceFetcher+OriginalPreview.swift",
+                             "Targets/Yuedu/SharedApp/AppDependencies.swift"):
                 self.assertIn(relative, {item["path"] for item in selected["sourceInputs"]})
             path.write_text('struct '+suite+' {\n@Test(arguments: [1,2])\nfunc one(value: Int) {}\n}')
             with self.assertRaisesRegex(ValueError, "Unsupported selected"):
