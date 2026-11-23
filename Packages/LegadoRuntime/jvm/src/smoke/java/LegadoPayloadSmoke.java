@@ -330,7 +330,7 @@ public class LegadoPayloadSmoke {
         });
         var sourceJson=new JsonObject();sourceJson.addProperty("bookSourceUrl",origin);sourceJson.addProperty("enabledCookieJar",true);sourceJson.addProperty("concurrentRate","12/60000");
         var contentRule=new JsonObject();contentRule.addProperty("contentBatch","for(var i=0;i<2;i++){if(!java.cacheContent(result.get(i),java.ajax(result.get(i).getAbsoluteURL())))throw new Error('save failed')}");sourceJson.add("ruleContent",contentRule);
-        var options=new io.yuedu.legado.RuntimeSessionOptions("jvm-okhttp",null,owner,"existing","session-jar");
+        var options=new io.yuedu.legado.RuntimeSessionOptions("jvm-okhttp",null,owner,"existing","session-jar",false);
         var session=new io.yuedu.legado.RuntimeSession("ordinary-batch-session",sourceJson,options);
         var job=kotlinx.coroutines.JobKt.Job((kotlinx.coroutines.Job)null);
         var task=new io.yuedu.legado.RuntimeTask(taskID,session,job,System.currentTimeMillis()+15000,null);
